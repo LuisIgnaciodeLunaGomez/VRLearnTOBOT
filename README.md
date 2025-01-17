@@ -6,7 +6,7 @@ Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Bu
 ### Tutor del trabajo
 <p>Carlos López Nozal</p>
 <p>Departamento de Ingeniería Informática, Universidad de Burgos</p>
-<p>Contacto: clopezno@ubu.es</p>
+<p>Contacto: <mailto: clopezno@ubu.es></p>
 
 # Resumen del trabajo
 Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicación educativa para fomentar el aprendizaje de la programación y la robótica en niños y adolescentes de entre 6 y 18 años. La aplicación se implementa en un entorno virtual que simula un espacio académico, permitiendo superar barreras económicas y formativas mediante el acceso a herramientas avanzadas. Estas herramientas facilitarán tanto la construcción guiada de robots físicos basados en LEGO® Wedo como la simulación virtual de su ensamblaje y programación en un entorno visual similar a Scratch muy utilizado en entornos educativos.
