@@ -6,7 +6,7 @@ Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Bu
 ### Tutor del trabajo
 <p>Carlos López Nozal</p>
 <p>Departamento de Ingeniería Informática, Universidad de Burgos</p>
-<p>Contacto: <mailto clopezno@ubu.es></p>
+<p>Contacto:  <a href="mailto:clopezno@ubu.es">clopezno@ubu.es</a></p>
 
 # Resumen del trabajo
 Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicación educativa para fomentar el aprendizaje de la programación y la robótica en niños y adolescentes de entre 6 y 18 años. La aplicación se implementa en un entorno virtual que simula un espacio académico, permitiendo superar barreras económicas y formativas mediante el acceso a herramientas avanzadas. Estas herramientas facilitarán tanto la construcción guiada de robots físicos basados en LEGO® Wedo como la simulación virtual de su ensamblaje y programación en un entorno visual similar a Scratch muy utilizado en entornos educativos.
@@ -104,10 +104,10 @@ Este trabajo toma como referencia otras plataformas y aplicaciones que combinan 
 # Contacto
 
 <ul>
-<li><strong>Email: </strong>correo@luisgnaciodeluna.com | ldg1008@alu.ubu.es</li>
+<li><strong>Email: </strong><a href="mailto:correo@luisgnaciodeluna.com">correo@luisgnaciodeluna.com </a> | <a href="mailto:ldg1008@alu.ubu.es">ldg1008@alu.ubu.es</li>
 
- <li><strong>Web: </strong>https://luisignaciodeluna.com</li>
-<li><strong>Linkedin: </strong> https://www.linkedin.com/in/luisignaciodeluna/</li>
+ <li><strong>Web: </strong><a href="https://luisignaciodeluna.com">Luisignaciodeluna.com</a></li>
+<li><strong>Linkedin: </strong><a href="https://www.linkedin.com/in/luisignaciodeluna/">Perfil</li>
  
 </ul>
 
