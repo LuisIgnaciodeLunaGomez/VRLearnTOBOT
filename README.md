@@ -25,7 +25,7 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
  <li>Simulación</li>
  <li>Scratch</li>
  <li>LEGO® Wedo</li>
- <li>STEAM/li>
+ <li>STEAM</li>
  <li>Gamificación</li>
  <li>Realidad Virtual (RV)</li>
 </ul>
