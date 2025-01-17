@@ -45,7 +45,7 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
 <ul>
  <li><strong>Entorno de desarrollo:</strong> Implementación del entorno virtual mediante Unity, integrando prefabs (bloques y piezas lego) y simulaciones en tiempo real.</li>
 <li><strong>Modelado 3D:</strong>strong> Diseño y exportación de componentes robóticos con Blender para integrarlos en Unity, teniendo en cuenta la optimización de texturas y mallas.</li>
-<li>Programación orientada a bloques: Recreación de un motor de programación visual basado en Blockly/Scratch, integrando funcionalidades específicas para la simulación y control de robots.</li>
+<li><strong>Programación orientada a bloques: </strong>strong>Recreación de un motor de programación visual basado en Blockly/Scratch, integrando funcionalidades específicas para la simulación y control de robots.</li>
 <li><strong>Control de versiones:</strong> Integración de Plastic SCM para gestión de cambios y sincronización con repositorios en Unity Cloud y GitHub, asegurando la trazabilidad del desarrollo.</li>
 <li><strong>Bases de datos en tiempo real:</strong> Uso de Firebase para gestionar y sincronizar datos entre usuarios, permitiendo almacenar información sobre proyectos, configuraciones y resultados en tiempo real.</li>
 <li><strtong>Diseño y modelado UML:</strong> Creación de diagramas UML para representar las interacciones del sistema, el flujo de datos y los componentes clave del software.</li>
