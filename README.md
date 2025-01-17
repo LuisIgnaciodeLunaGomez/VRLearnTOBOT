@@ -1,14 +1,14 @@
 <h1>VRLearnTOBOT</h1>
 
-## Laboratorio virtual asistido de programación y robótica .
+## Laboratorio virtual  de programación y robótica .
 Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Burgos desarrollado por Luis Ignacio de Luna Gómez
 
-### Tutor del proyecto
+### Tutor del trabajo
 <p>Carlos López Nozal</p>
 <p>Departamento de Ingeniería Informática, Universidad de Burgos</p>
 <p>Contacto: clopezno@ubu.es</p>
 
-# Resumen del proyecto
+# Resumen del trabajo
 Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicación educativa para fomentar el aprendizaje de la programación y la robótica en niños y adolescentes de entre 6 y 18 años. La aplicación se implementa en un entorno virtual que simula un espacio académico, permitiendo superar barreras económicas y formativas mediante el acceso a herramientas avanzadas. Estas herramientas facilitarán tanto la construcción guiada de robots físicos basados en LEGO® Wedo como la simulación virtual de su ensamblaje y programación en un entorno visual similar a Scratch muy utilizado en entornos educativos.
 
 # Inspiración y relevancia educativa
@@ -34,16 +34,16 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
 
 <ul>
 <li><strong>Gamificación y pedagogía de la programación:</strong> Aplicación de principios de gamificación y métodos pedagógicos soportados por algoritmos inteligentes para facilitar el aprendizaje de programación en entornos virtuales.</li>
-<li><strong>Técnicas de simulación virtual:</strong> Uso de motores gráficos (como Unity) y bibliotecas de físicas para crear experiencias de aprendizaje inmersivas y realistas..</li>
+<li><strong>Técnicas de simulación virtual:</strong> Uso de motores gráficos (como Unity) y bibliotecas de físicas para crear experiencias de aprendizaje inmersivas y realistas.</li>
 <li><strong>Transformación de bloques visuales a código ejecutable:</strong> Análisis de cómo los bloques de programación visuales (Scratch) se traducen en instrucciones ejecutables y su impacto en la optimización del aprendizaje.</li>
-<li><strong>Optimización de modelos 3D en entornos interactivos:</strong> Uso de herramientas como Blender para crear y optimizar modelos 3D que soporten simulaciones en tiempo real con un balance adecuado entre detalle visual y rendimiento..</li>
+<li><strong>Optimización de modelos 3D en entornos interactivos:</strong> Uso de herramientas como Blender para crear y optimizar modelos 3D que soporten simulaciones en tiempo real con un balance adecuado entre detalle visual y rendimiento.</li>
  <li><strong>Realidad Virtual (RV) y Realidad Aumentada (RA):</strong> Integración de RV y RA para mejorar la interacción y la experiencia educativa en aplicaciones 3D.</li>
 </ul>
 
 # Conceptos Técnicos:
 
 <ul>
- <li><strong>Entorno de desarrollo:</strong> Implementación del entorno virtual mediante Unity, integrando prefabs y simulaciones en tiempo real..</li>
+ <li><strong>Entorno de desarrollo:</strong> Implementación del entorno virtual mediante Unity, integrando prefabs (bloques y piezas lego) y simulaciones en tiempo real.</li>
 <li><strong>Modelado 3D:</strong>strong> Diseño y exportación de componentes robóticos con Blender para integrarlos en Unity, teniendo en cuenta la optimización de texturas y mallas.</li>
 <li>Programación orientada a bloques: Recreación de un motor de programación visual basado en Blockly/Scratch, integrando funcionalidades específicas para la simulación y control de robots.</li>
 <li><strong>Control de versiones:</strong> Integración de Plastic SCM para gestión de cambios y sincronización con repositorios en Unity Cloud y GitHub, asegurando la trazabilidad del desarrollo.</li>
@@ -51,7 +51,7 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
 <li><strtong>Diseño y modelado UML:</strtong> Creación de diagramas UML para representar las interacciones del sistema, el flujo de datos y los componentes clave del software.</li>
 <li><strong>WebGL y A-Frame:</strong> Exploración de A-Frame para crear experiencias 3D que puedan ejecutarse en navegadores mediante WebGL, ofreciendo una opción accesible y multiplataforma.</li>
 <li><strong>Compatibilidad con dispositivos VR:</strong> Diseño del entorno 3D para garantizar una experiencia fluida en gafas de RV como Oculus, considerando el rendimiento y la optimización para hardware específico.</li>
-<li> <strong>Validación y pruebas de software:</strong>strong> Metodologías para garantizar la calidad del software, incluyendo pruebas unitarias para validar módulos individuales, pruebas de integración para garantizar la interoperabilidad de los componentes, y pruebas de usabilidad para evaluar la experiencia del usuario objetivo.</li>
+<li> <strong>Validación y pruebas de software:</strong> Metodologías para garantizar la calidad del software, incluyendo pruebas unitarias para validar módulos individuales, pruebas de integración para garantizar la interoperabilidad de los componentes, y pruebas de usabilidad para evaluar la experiencia del usuario objetivo.</li>
 </ul>
 
 # Herramientas utilizadas:
@@ -68,8 +68,6 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
   <li>Boostrap</li>
   <li>Ionic</li>
  </ul>
-
-.
   
 # Control de versiones
 
@@ -93,13 +91,14 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
 
 # Referencias inspiradoras
 
-Este trabajo también toma como referencia otras plataformas y aplicaciones que combinan la educación, la robótica y la programación lo que subraya la importancia de herramientas interactivas y virtuales en la educación actual.
+Este trabajo toma como referencia otras plataformas y aplicaciones que combinan la educación, la robótica y la programación lo que subraya la importancia de herramientas interactivas y virtuales en la educación actual.
 
 <ul>
-<li><strong>CoSpaces Edu:</strong> Plataforma para crear y explorar mundos virtuales en 3D utilizando programación visual y JavaScript.</li>
-<li><strong>Robot Virtual Worlds:</strong>Entorno de simulación para programar robots virtuales basado en robots del tipo LEGO® NXT.</li>
-<li><strong>VEXcode VR:</strong> Plataforma para programar robots virtuales mediante bloques o texto.</li>
-<li><strongCoderZ:strong> Entorno gamificado para programar robots virtuales en 3D</li>
+<li><strong>CoSpaces Edu: </strong> Plataforma para crear y explorar mundos virtuales en 3D utilizando programación visual y JavaScript.</li>
+<li><strong>Robot Virtual Worlds: </strong>Entorno de simulación para programar robots virtuales basado en robots del tipo LEGO® NXT.</li>
+<li><strong>VEXcode VR: </strong> Plataforma para programar robots virtuales mediante bloques o texto.</li>
+<li><strong>CoderZ: </strong>strong> Entorno gamificado para programar robots virtuales en 3D</li>
+ <li><strong>Ublockly: </strong>Integración de Blockly en Unity</li>
 </ul>
 
 # Contacto
