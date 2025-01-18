@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638727412196431700
-    m_Hash: 754178983
+      ticks: 638727902232565183
+    m_Hash: 2080996491
   m_LockFileStatus:
     m_FilePath: C:/Users/Luis/Documents/GitHub/VRLearnTOBOT/VRLearnTOBOT/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638727412196446745
-    m_Hash: 4015426909
+      ticks: 638727902232691107
+    m_Hash: 1244182802
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:
