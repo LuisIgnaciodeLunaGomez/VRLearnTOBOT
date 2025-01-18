@@ -61,7 +61,7 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
   <li>Unity 6.0</li>
   <li>Blender 4.3 </li>
   <li>Firebase</li>
- <li>Pastic SCM (Unity Cloud)</li>
+ <li>Unity Cloud (anteriormente Plastic SCM</li>
  <li>Github</li>
  <li>Zube</li>
   <li>A-Frame</li> 
