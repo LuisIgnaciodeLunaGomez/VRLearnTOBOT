@@ -1,0 +1,17 @@
+#configuración del archivo .gitignore para evitar la subida de archivos de Unity
+#los archivos de UNITY se localizan en Control de versiones de Unity - Plastic SCM
+
+# Archivos generados por Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# Configuración personal
+UserSettings/
+
+# Archivos de Plastic SCM
+.plastic/
