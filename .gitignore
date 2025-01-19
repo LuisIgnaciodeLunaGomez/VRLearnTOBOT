@@ -15,3 +15,6 @@ UserSettings/
 
 # Archivos de Plastic SCM
 .plastic/
+
+# Ignorar configuraciones de Visual Studio
+.vs/
