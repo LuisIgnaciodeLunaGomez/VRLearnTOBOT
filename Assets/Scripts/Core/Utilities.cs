@@ -11,9 +11,9 @@
  * 
  * Versión: 1.0.0
  */
+using UnityEngine;
 
-
-public class InicialPRefabs
+public class Utilities
 {
     
 }

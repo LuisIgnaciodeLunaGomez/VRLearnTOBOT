@@ -13,7 +13,9 @@
  */
 
 
-public class InicialPRefabs
+using UnityEngine;
+
+public class Runner
 {
     
 }

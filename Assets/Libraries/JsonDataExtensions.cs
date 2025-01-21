@@ -1,3 +1,18 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 21/01/2025
+ * 
+ * Versión: 1.0.0
+ */
+
+
 //Requiere instalar el paquete NGUT Newtonsoft.Json Install-Package Newtonsoft.Json instalar también en Unity com.unity.nuget.newtonsoft-json
 
 using UnityEngine;

@@ -11,9 +11,7 @@
  * 
  * Versión: 1.0.0
  */
-
-
-public class InicialPRefabs
+namespace System.Runtime.CompilerServices
 {
-    
+    internal static class IsExternalInit { }
 }
