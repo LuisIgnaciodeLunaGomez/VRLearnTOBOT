@@ -10,7 +10,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{864FD29E-B2ED-A222-BC8A-58EE3507DD78}</ProjectGuid>
+    <ProjectGuid>{2AF31773-6B5D-3D09-051F-A15783CA8D37}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -68,11 +68,14 @@
     <Compile Include="Assets\Scripts\enum\OperatorPrecedence.cs" />
     <Compile Include="Assets\Scripts\Mutators\Mutators.cs" />
     <Compile Include="Assets\Scripts\Core\Xml.cs" />
+    <Compile Include="Assets\Scripts\ScratchView\ToolBox\BaseToolBox.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
     <Compile Include="Assets\Scripts\Code\CodeName.cs" />
+    <Compile Include="Assets\Scripts\Configuration\BlocksConnections.cs" />
     <Compile Include="Assets\Scripts\Code\Runner.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigGenerator.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigInterpreter.cs" />
+    <Compile Include="Assets\Scripts\ScratchView\ToolBox\ScracthToolBox.cs" />
     <Compile Include="Assets\Libraries\JsonDataExtensions.cs" />
     <Compile Include="Assets\Scripts\Core\Blockly.cs" />
     <Compile Include="Assets\Scripts\Code\Generator.cs" />
@@ -81,9 +84,9 @@
     <Compile Include="Assets\Scripts\Configuration\ConfigCode.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableNames.cs" />
     <Compile Include="Assets\Scripts\Core\WorkSpace.cs" />
-    <Compile Include="Assets\Scripts\Configuration\blocksConnections.cs" />
     <Compile Include="Assets\Scripts\Core\Utilities.cs" />
     <Compile Include="Assets\Scripts\Core\Defines.cs" />
+    <Compile Include="Assets\Scripts\ScratchView\WorkSpaceView.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigRunner.cs" />
   </ItemGroup>
   <ItemGroup>
