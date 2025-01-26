@@ -66,7 +66,6 @@
     <Compile Include="Assets\Scripts\Variables\VariableData.cs" />
     <Compile Include="Assets\Scripts\Blocks\Blocks.cs" />
     <Compile Include="Assets\Scripts\enum\OperatorPrecedence.cs" />
-    <Compile Include="Assets\Scripts\ScratchView\Toolbar.cs" />
     <Compile Include="Assets\Scripts\Mutators\Mutators.cs" />
     <Compile Include="Assets\Scripts\Core\Xml.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
@@ -78,6 +77,7 @@
     <Compile Include="Assets\Libraries\JsonDataExtensions.cs" />
     <Compile Include="Assets\Scripts\Core\Blockly.cs" />
     <Compile Include="Assets\Scripts\Code\Generator.cs" />
+    <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
     <Compile Include="Assets\Prefabs\InicialPrefabs.cs" />
     <Compile Include="Assets\Scripts\Code\Interpreter.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigCode.cs" />

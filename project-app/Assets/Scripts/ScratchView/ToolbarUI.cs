@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Toolbar : MonoBehaviour
+public class ToolbarUI : MonoBehaviour
 {
     private VisualElement toolbar;
 
