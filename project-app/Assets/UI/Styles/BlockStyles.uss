@@ -1,0 +1,51 @@
+VisualElement {}
+/* Bloque principal */
+.block {
+    width: auto;
+    min-height: 40px;
+    background-color: #ffcc00; /* Color amarillo (eventos) */
+    border-radius: 10px; /* Bordes redondeados */
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+/* Fondo del bloque */
+/* Fondo del bloque */
+.block-background {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px 10px;
+    background-image: url("Hat_block_grey.png"); /* Ruta del ícono */
+    background-size: cover; /* Ajustar al tamaño del bloque */
+    background-repeat: no-repeat; /* No repetir el fondo */
+    background-position: center; /* Centrar el ícono */
+    border-radius: inherit; /* Mantiene el borde redondeado */
+}
+
+
+/* Contenido del bloque */
+.block-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* Espaciado entre icono y texto */
+}
+
+/* Icono del bloque */
+.block-icon {
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+/* Texto del bloque */
+.block-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+

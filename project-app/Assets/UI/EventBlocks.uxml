@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
+    
+  <!-- Añadir el archivo de estilos -->
+    <engine:Style src="Styles/BlockStyles.uss" />
+
+    <!-- Bloques de eventos -->
+    <engine:VisualElement class="block">
+        <engine:VisualElement class="block-icon" />
+        <engine:Label text="al hacer clic en" class="block-label" />
+    </engine:VisualElement>
+
+    <engine:VisualElement class="block">
+        <engine:VisualElement class="block-icon" />
+        <engine:Label text="al presionar tecla" class="block-label" />
+    </engine:VisualElement>
+
+    <engine:VisualElement class="block">
+        <engine:VisualElement class="block-icon" />
+        <engine:Label text="al hacer clic en este objeto" class="block-label" />
+    </engine:VisualElement>
+</engine:UXML>

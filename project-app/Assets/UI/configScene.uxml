@@ -3,30 +3,23 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:engine="UnityEngine.UIElements"
     xmlns:editor="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
->
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
 
+    
    <!-- Barra de herramientas -->
    <engine:VisualElement name="ToolBar" class="toolbar">
-
    <engine:VisualElement name="ScratchLogo" class="logo" />
     <!-- Contenedor izquierdo -->
-    <engine:VisualElement name="toolbar-center" class="toolbar-center">
-       
-        
+    <engine:VisualElement name="toolbar-center" class="toolbar-center">  
     </engine:VisualElement>
     
     <!-- Contenedor derecho -->
     <engine:VisualElement name="toolbar-right" class="toolbar-right">
-        <!-- Botón de bandera verde -->
-        
+        <!-- Botón de bandera verde --> 
     </engine:VisualElement>
 </engine:VisualElement>
-
-
     <!-- Contenedor principal -->
-  <engine:Style src="configScene.uss" />
-
+  <engine:Style src="Styles/configScene.uss" />
      <engine:VisualElement name="MainContainer" >
         <engine:ScrollView name="Toolbox"  />
         <engine:ScrollView name="ScrollBlocks" />

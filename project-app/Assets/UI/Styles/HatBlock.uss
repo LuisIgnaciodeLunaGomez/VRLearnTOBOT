@@ -1,0 +1,26 @@
+VisualElement 
+/* Estilo del bloque Hat */
+.hat-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto; /* Ajusta automáticamente según el contenido */
+    height: 50px;
+    padding: 5px 15px;
+    background-color: #FFBF00; /* Amarillo como Scratch */
+    border-radius: 15px 15px 0 0; /* Bordes superiores redondeados */
+    border: 1px solid #E6AC00; /* Bordes para darle forma */
+    margin-bottom: 10px;
+    background-image: url("Icons/Hat_block_grey.png"); /* Imagen como fondo */
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Texto dentro del bloque */
+.hat-block-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff; /* Blanco para el texto */
+    text-align: center;
+    padding-left: 10px;
+}

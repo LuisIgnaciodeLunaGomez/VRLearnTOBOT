@@ -5,6 +5,8 @@ public class ScratchUI : MonoBehaviour
 {
     private ScrollView toolbox;
     private VisualElement workspace;
+    private ScrollBlocks scrollBlocks; // Referencia al componente ScrollBlocks
+
 
     void OnEnable()
     {
@@ -15,6 +17,8 @@ public class ScratchUI : MonoBehaviour
         // Referencias a la caja de herramientas y el workspace
         toolbox = root.Q<ScrollView>("Toolbox");
         //  workspace = root.Q<VisualElement>("Workspace");
+        // Cargar y aplicar el archivo USS
+     
 
         // Asegúrate de que toolbox no es null
         if (toolbox == null)
@@ -22,7 +26,9 @@ public class ScratchUI : MonoBehaviour
             Debug.LogError("No se encontró el Toolbox. Verifica el ID en el UXML.");
             return;
         }
+      //  var styleSheet = Resources.Load<StyleSheet>("../../UI/Styles/BlockStyles");
 
+       
         // Lista de categorías con sus colores
         var categories = new (string name, Color color)[]
         {
@@ -36,6 +42,8 @@ public class ScratchUI : MonoBehaviour
             ("Variables", new Color(1f, 0.6f, 0.2f)),     // Naranja oscuro
             ("Mis bloques", new Color(1f, 0.4f, 0.4f))    // Rojo
         };
+
+
 
         // Crear los botones
         foreach (var category in categories)
@@ -66,6 +74,18 @@ public class ScratchUI : MonoBehaviour
             categoryButton.RegisterCallback<ClickEvent>(evt =>
             {
                 Debug.Log($"Categoría seleccionada: {categoryName}");
+
+                if (categoryName == "Eventos")
+                {
+                    var scrollBlocksComponent = Object.FindFirstObjectByType<ScrollBlocks>();                if (scrollBlocksComponent != null)
+                    {
+                        scrollBlocksComponent.ShowEventBlocks();
+                    }
+                    else
+                    {
+                        Debug.LogError("No se encontró el componente ScrollBlocks.");
+                    }
+                }
             });
 
             // Agregar el botón a la toolbox

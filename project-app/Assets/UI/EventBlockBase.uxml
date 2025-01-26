@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
+
+    <!-- Estilos -->
+    <engine:Style src="Styles/BlockStyles.uss" />
+
+    <!-- Bloque principal -->
+    <engine:VisualElement name="EventBlock" class="block">
+        <!-- Fondo del bloque -->
+        <engine:VisualElement name="BlockBackground" class="block-background">
+            <!-- Contenido del bloque -->
+            <engine:VisualElement name="BlockContent" class="block-content">
+                <!-- Ícono del bloque -->
+                <engine:VisualElement name="BlockIcon" class="block-icon" />
+                <!-- Texto inicial -->
+                <engine:Label name="BlockLabel" text="Evento base" class="block-label" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

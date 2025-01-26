@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\Variables\VariableData.cs" />
     <Compile Include="Assets\Scripts\Blocks\Blocks.cs" />
     <Compile Include="Assets\Scripts\enum\OperatorPrecedence.cs" />
+    <Compile Include="Assets\Scripts\Blocks\HatBlockMamager.cs" />
     <Compile Include="Assets\Scripts\Mutators\Mutators.cs" />
     <Compile Include="Assets\Scripts\Core\Xml.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
@@ -77,20 +78,28 @@
     <Compile Include="Assets\Libraries\JsonDataExtensions.cs" />
     <Compile Include="Assets\Scripts\Core\Blockly.cs" />
     <Compile Include="Assets\Scripts\Code\Generator.cs" />
+    <Compile Include="Assets\Scripts\ScratchView\ScrollBlocks.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
     <Compile Include="Assets\Prefabs\InicialPrefabs.cs" />
     <Compile Include="Assets\Scripts\Code\Interpreter.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigCode.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableNames.cs" />
     <Compile Include="Assets\Scripts\Core\WorkSpace.cs" />
+    <Compile Include="Assets\Scripts\Mutators\EventBlockMutator.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ScratchUI.cs" />
     <Compile Include="Assets\Scripts\Core\Utilities.cs" />
     <Compile Include="Assets\Scripts\Core\Defines.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigRunner.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlocksTypes\EventBlocks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\UI\configScene.uxml" />
-    <None Include="Assets\UI\configScene.uss" />
+    <None Include="Assets\UI\EventBlockBase.uxml" />
+    <None Include="Assets\UI\Styles\configScene.uss" />
+    <None Include="Assets\UI\EventBlocks.uxml" />
+    <None Include="Assets\UI\Styles\HatBlock.uss" />
+    <None Include="Assets\UI\Styles\BlockStyles.uss" />
+    <None Include="Assets\UI\HatBlock.uxml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
