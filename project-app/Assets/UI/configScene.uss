@@ -1,0 +1,112 @@
+VisualElement {}
+
+#MainContainer {
+    display: flex;
+    flex-direction: row; /* Organiza los elementos en fila */
+    height: 100%; /* Ocupa toda la altura de la ventana */
+    width: 100%; /* Asegúrate de ocupar todo el ancho de la ventana */
+}
+
+#Toolbox {
+    width: 200px; /* Define un ancho fijo para el Toolbox */
+    height: 100%; /* Ocupa toda la altura */
+    background-color: #ffffff; /* Para visualizar mejor su espacio */
+    padding: 10px;
+    border-right-width: 2px;
+    border-right-color: #CCC;
+    border-right-style: solid; /* Línea divisoria */
+    overflow-y: auto; /* Scroll si es necesario */
+}
+
+#ScrollBlocks {
+    flex-grow: 2; /* Ocupa el resto del espacio */
+    background-color: #F9F9F9; /* Fondo blanco */
+    padding: 10px; /* Espaciado interno */
+    overflow-y: scroll; /* Habilita el scroll vertical */
+    height: 100%; /* Altura total */
+    border-right-width: 2px;
+    border-right-color: #CCC;
+    border-right-style: solid; /* Línea divisoria */
+}
+
+#Workspace {
+    flex-grow: 4; /* Ocupa el espacio restante */
+    background-color: #F9F9F9;
+   
+  
+   
+    overflow: scroll;
+
+}/* Botón contenedor */
+.category-button {
+    width: 100%; /* Ocupa todo el ancho del Toolbox */
+    height: 100px; /* Altura del botón */
+    margin-bottom: 15px; /* Espaciado entre botones */
+    display: flex;
+    flex-direction: column; /* Organiza ícono y texto verticalmente */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ícono circular */
+.category-icon {
+    width: 50px; /* Ancho del ícono */
+    height: 50px; /* Alto del ícono */
+    background-color: orange; /* Cambia según la categoría en el código */
+    border-radius: 50%; /* Hace que sea un círculo */
+    margin-bottom: 5px; /* Espacio entre ícono y texto */
+}
+
+/* Texto debajo del ícono */
+.category-label {
+    font-size: 16px; /* Tamaño del texto */
+   -unity-font-style: bold; /* Cambia el estilo de texto a negrita */
+     -unity-text-align: middle-center; /* Centra el texto */
+    color: #333;
+}
+
+    #ToolBar {
+    height: 60px; /* Altura fija */
+    background-color:  #9966FF; /* Color violeta (como Scratch) */
+    display: flex; /* Alinea los iconos horizontalmente */
+    flex-direction: row; /* Orden horizontal */
+    justify-content: space-between; /* Espacio entre los elementos */
+    align-items: center; /* Centra verticalmente los elementos */
+    padding: 0 10px; /* Espaciado interno horizontal */
+    border-bottom-width: 2px; /* Línea divisoria inferior */
+    border-bottom-color: #ccc;
+    border-bottom-style: solid;
+}
+
+    .icon-button {
+    width: 40px; /* Tamaño del ícono */
+    height: 40px;
+    background-color: #ffffff; /* Fondo blanco */
+    border-radius: 5px; /* Bordes redondeados */
+    margin: 0 5px; /* Espaciado entre íconos */
+    display: flex; /* Centrar el contenido */
+    align-items: center; /* Centrado vertical */
+    justify-content: center; /* Centrado horizontal */
+    cursor: pointer; /* Cambiar el cursor al pasar sobre el ícono */
+   
+    transition: background-color 0.2s; /* Efecto de hover */
+}
+
+.icon-button:hover {
+    background-color: #f0f0f0; /* Color de fondo al pasar el mouse */
+}
+
+.toolbar-center, .toolbar-right {
+    display: flex;
+    flex-direction: row; /* Elementos en fila */
+    align-items: center; /* Centrar verticalmente */
+    gap: 10px; /* Espaciado entre elementos */
+}
+
+.logo {
+    width: 100px; /* Tamaño del logo */
+    height: 40px;
+    background-size: contain; /* Ajusta el logo */
+    background-repeat: no-repeat;
+    background-position: center;
+}
