@@ -1,0 +1,17 @@
+{
+  "category": "Eventos",
+  "blocks": [
+    {
+      "text": "al hacer clic en",
+      "iconPath": "Icons/click_icon"
+    },
+    {
+      "text": "al presionar tecla",
+      "iconPath": "Icons/key_icon"
+    },
+    {
+      "text": "cuando el fondo cambie a",
+      "iconPath": "Icons/background_change_icon"
+    }
+  ]
+}

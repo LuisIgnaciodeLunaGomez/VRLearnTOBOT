@@ -61,34 +61,36 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.26f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Connection\ConnectionTypes.cs" />
     <Compile Include="Assets\Scripts\enum\enumerator.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockConnection.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableData.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Blocks.cs" />
     <Compile Include="Assets\Scripts\enum\OperatorPrecedence.cs" />
     <Compile Include="Assets\Scripts\Blocks\HatBlockMamager.cs" />
+    <Compile Include="Assets\Scripts\Blocks\Block.cs" />
     <Compile Include="Assets\Scripts\Mutators\Mutators.cs" />
     <Compile Include="Assets\Scripts\Core\Xml.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
+    <Compile Include="Assets\Scripts\Core\Define.cs" />
     <Compile Include="Assets\Scripts\Code\CodeName.cs" />
     <Compile Include="Assets\Scripts\Configuration\BlocksConnections.cs" />
     <Compile Include="Assets\Scripts\Code\Runner.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigGenerator.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigInterpreter.cs" />
     <Compile Include="Assets\Libraries\JsonDataExtensions.cs" />
-    <Compile Include="Assets\Scripts\Core\Blockly.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockUIFactory.cs" />
     <Compile Include="Assets\Scripts\Code\Generator.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ScrollBlocks.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
-    <Compile Include="Assets\Prefabs\InicialPrefabs.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockInput.cs" />
     <Compile Include="Assets\Scripts\Code\Interpreter.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigCode.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableNames.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockDataLoader.cs" />
     <Compile Include="Assets\Scripts\Core\WorkSpace.cs" />
     <Compile Include="Assets\Scripts\Mutators\EventBlockMutator.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ScratchUI.cs" />
     <Compile Include="Assets\Scripts\Core\Utilities.cs" />
-    <Compile Include="Assets\Scripts\Core\Defines.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigRunner.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlocksTypes\EventBlocks.cs" />
   </ItemGroup>

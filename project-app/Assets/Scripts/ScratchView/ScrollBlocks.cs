@@ -1,3 +1,19 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 26/01/2025
+ * 
+ * Versión: 1.0.0
+ */
+
+
+
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,10 +34,6 @@ public class ScrollBlocks : MonoBehaviour
             Debug.LogError("No se encontró la zona de bloques (ScrollBlocks).");
             return;
         }
-
-
-        // Mostrar los bloques de eventos por defecto
-        //ShowEventBlocks();
     }
 
     public void ShowEventBlocks()
@@ -56,10 +68,38 @@ public class ScrollBlocks : MonoBehaviour
         }
     }
 
-    VisualElement CreateBlock(string text, string iconPath)
+    // Método para mostrar bloques de una categoría específica
+    public void ShowBlocksByCategory(string categoryName)
     {
-        Debug.Log($"Creando bloque con texto: {text}");
+        Debug.Log($"Cargando bloques para la categoría: {categoryName}");
 
+        // Limpia los bloques existentes
+        scrollBlocks.Clear();
+
+        // Ruta del archivo JSON
+       // string jsonFilePath = $"{Application.dataPath}/Scripts/Blocks/JSONFiles/{categoryName.ToLower()}Blocks.json";
+        string jsonFilePath = $"JSONFiles/{categoryName.ToLower()}Blocks"; // Sin la extensión ".json"
+
+
+        var categoryData = BlockDataLoader.LoadCategoryData(jsonFilePath);
+        if (categoryData == null || categoryData.blocks == null)
+        {
+            Debug.LogError($"No se pudieron cargar los bloques para la categoría: {categoryName}");
+            return;
+        }
+
+        // Crear y agregar cada bloque al área de trabajo
+        foreach (var blockData in categoryData.blocks)
+        {
+            var block = CreateBlock(blockData.text, blockData.iconPath);
+            scrollBlocks.Add(block);
+        }
+    }
+
+
+    // Método para crear un bloque genérico
+    private VisualElement CreateBlock(string text, string iconPath)
+    {
         var block = new VisualElement();
         block.AddToClassList("block");
 
@@ -71,20 +111,15 @@ public class ScrollBlocks : MonoBehaviour
         var label = new Label(text);
         label.AddToClassList("block-label");
 
-        // Icono
+        // Icono (si corresponde)
         if (!string.IsNullOrEmpty(iconPath))
         {
-            Debug.Log($"Cargando ícono desde: {iconPath}");
             var icon = new VisualElement();
             icon.AddToClassList("block-icon");
             var iconTexture = Resources.Load<Texture2D>(iconPath);
             if (iconTexture != null)
             {
                 icon.style.backgroundImage = new StyleBackground(iconTexture);
-            }
-            else
-            {
-                Debug.LogError($"No se pudo cargar el ícono: {iconPath}");
             }
             content.Add(icon);
         }
@@ -94,6 +129,7 @@ public class ScrollBlocks : MonoBehaviour
 
         return block;
     }
+
 
     VisualElement CreateHatBlock(string label, string iconPath)
     {

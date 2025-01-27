@@ -11,6 +11,7 @@
  * 
  * Versión: 1.0.0
  */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,20 @@ using System.Threading.Tasks;
         IsShadow = 9,
 
         //---- max 31 (mask int) ------
+    }
+    public enum ConnectionType
+    {
+        Output,
+        Input,
+        Previous,
+        Next
+    }
+    public enum EConnection
+    {
+        InputValue,
+        OutputValue,
+        NextStatement,
+        PrevStatement
     }
 }
 

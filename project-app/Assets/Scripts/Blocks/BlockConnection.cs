@@ -12,8 +12,36 @@
  * Versión: 1.0.0
  */
 
+using System.Collections.Generic;
+using static enumerator;
 
-public class BlocksConnection
+public class BlockConnection
 {
-    
+    public Block SourceBlock { get; private set; }
+    public Block TargetBlock { get; private set; }
+    public ConnectionType Type { get; private set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public BlockConnection(Block sourceBlock, ConnectionType type)
+    {
+        SourceBlock = sourceBlock;
+        Type = type;
+    }
+
+    public void Connect(BlockConnection targetConnection)
+    {
+        if (targetConnection != null)
+        {
+            TargetBlock = targetConnection.SourceBlock;
+        }
+    }
+
+    public void Disconnect()
+    {
+        TargetBlock = null;
+    }
 }
+
+
+

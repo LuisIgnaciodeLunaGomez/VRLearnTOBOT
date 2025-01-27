@@ -1,3 +1,17 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 26/01/2025
+ * 
+ * Versión: 1.0.0
+ */
+
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,19 +30,30 @@ public class ScratchUI : MonoBehaviour
 
         // Referencias a la caja de herramientas y el workspace
         toolbox = root.Q<ScrollView>("Toolbox");
-        //  workspace = root.Q<VisualElement>("Workspace");
+        workspace = root.Q<VisualElement>("Workspace");
         // Cargar y aplicar el archivo USS
-     
 
+        // Buscar el componente ScrollBlocks en la jerarquía
+        scrollBlocks = Object.FindFirstObjectByType<ScrollBlocks>();
         // Asegúrate de que toolbox no es null
         if (toolbox == null)
         {
             Debug.LogError("No se encontró el Toolbox. Verifica el ID en el UXML.");
             return;
         }
-      //  var styleSheet = Resources.Load<StyleSheet>("../../UI/Styles/BlockStyles");
+        //  var styleSheet = Resources.Load<StyleSheet>("../../UI/Styles/BlockStyles");
+        if (workspace == null)
+        {
+            Debug.LogError("No se encontró el Workspace. Verifica el ID en el UXML.");
+            return;
+        }
+        if (scrollBlocks == null)
+        {
+            Debug.LogError("No se encontró el componente ScrollBlocks. Asegúrate de que está agregado a un objeto de la escena.");
+            return;
+        }
 
-       
+
         // Lista de categorías con sus colores
         var categories = new (string name, Color color)[]
         {
@@ -70,23 +95,29 @@ public class ScratchUI : MonoBehaviour
             categoryButton.Add(categoryIcon);
             categoryButton.Add(categoryLabel);
 
-            // Agregar evento de clic
+            
+            // Evento de clic
             categoryButton.RegisterCallback<ClickEvent>(evt =>
             {
                 Debug.Log($"Categoría seleccionada: {categoryName}");
-
-                if (categoryName == "Eventos")
-                {
-                    var scrollBlocksComponent = Object.FindFirstObjectByType<ScrollBlocks>();                if (scrollBlocksComponent != null)
-                    {
-                        scrollBlocksComponent.ShowEventBlocks();
-                    }
-                    else
-                    {
-                        Debug.LogError("No se encontró el componente ScrollBlocks.");
-                    }
-                }
+                scrollBlocks.ShowBlocksByCategory(categoryName);
             });
+            /*  categoryButton.RegisterCallback<ClickEvent>(evt =>
+              {
+                  Debug.Log($"Categoría seleccionada: {categoryName}");
+
+                  if (categoryName == "Eventos")
+                  {
+                      var scrollBlocksComponent = Object.FindFirstObjectByType<ScrollBlocks>();                if (scrollBlocksComponent != null)
+                      {
+                          scrollBlocksComponent.ShowEventBlocks();
+                      }
+                      else
+                      {
+                          Debug.LogError("No se encontró el componente ScrollBlocks.");
+                      }
+                  }
+              });*/
 
             // Agregar el botón a la toolbox
             toolbox.Add(categoryButton);
