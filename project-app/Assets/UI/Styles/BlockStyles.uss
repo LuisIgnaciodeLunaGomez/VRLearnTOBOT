@@ -18,7 +18,6 @@ VisualElement {}
     flex-direction: row;
     align-items: center;
     padding: 5px 10px;
-    background-image: url("Hat_block_grey.png"); /* Ruta del ícono */
     background-size: cover; /* Ajustar al tamaño del bloque */
     background-repeat: no-repeat; /* No repetir el fondo */
     background-position: center; /* Centrar el ícono */

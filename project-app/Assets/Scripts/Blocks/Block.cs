@@ -39,7 +39,8 @@ public class Block
         Workspace = workspace;
 
         VisualElement = new VisualElement(); // Define el contenedor visual del bloque
-        VisualElement = BlockUIFactory.CreateBlockElement(this);
+        VisualElement = BlockUIFactory.CreateBlockElement(Type, "Texto de prueba", "Sprites/event_block");
+
         VisualElement.AddToClassList("block");
 
         // Inicializar conexiones

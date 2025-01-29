@@ -28,19 +28,21 @@ public class BlockDataLoader
     [System.Serializable]
     public class BlockData
     {
-        public string text;       // Texto del bloque
+        public string type;     // Tipo de bloque
+        public string text;      // Texto del bloque
         public string iconPath;   // Ruta al icono del bloque
+        public string spriteName; // Nombre del sprite
     }
 
     [System.Serializable]
-    public class CategoryData
+    public class BlockCategoryData
     {
-        public string category;        // Nombre de la categoría
+        public string category;      // Nombre de la categoría
         public List<BlockData> blocks; // Lista de bloques
     }
 
     // Método para cargar los datos de bloques desde un archivo JSON
-    public static CategoryData LoadCategoryData(string jsonFilePath)
+    public static BlockCategoryData LoadCategoryData(string jsonFilePath)
     {
         var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargar desde la carpeta Resources
         if (jsonText == null)
@@ -49,6 +51,16 @@ public class BlockDataLoader
             return null;
         }
 
-        return JsonUtility.FromJson<CategoryData>(jsonText.text);
+        Debug.Log($"JSON encontrado: {jsonFilePath}, contenido: {jsonText.text}");
+
+        try
+        {
+            return JsonUtility.FromJson<BlockCategoryData>(jsonText.text);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"❌ Error al parsear JSON {jsonFilePath}: {e.Message}");
+            return null;
+        }
     }
 }

@@ -1,15 +1,15 @@
-/*
+Ôªø/*
  * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
  *
- * Grado en IngenierÌa Inform·tica - Universidad de Burgos
+ * Grado en Ingenier√≠a Inform√°tica - Universidad de Burgos
  *
- * Autor: Luis Ignacio de Luna GÛmez
+ * Autor: Luis Ignacio de Luna G√≥mez
  * 
  * email: ldg1008@alu.ubu.es
  * 
  * Fecha: 26/01/2025
  * 
- * VersiÛn: 1.0.0
+ * Versi√≥n: 1.0.0
  */
 
 
@@ -20,7 +20,7 @@ using UnityEngine.UIElements;
 
 public class ScrollBlocks : MonoBehaviour
 {
-    private VisualElement scrollBlocks; // Zona donde se mostrar·n los bloques
+    private VisualElement scrollBlocks; // Zona donde se mostrar√°n los bloques
 
     void OnEnable()
     {
@@ -31,7 +31,7 @@ public class ScrollBlocks : MonoBehaviour
         scrollBlocks = root.Q<VisualElement>("ScrollBlocks");
         if (scrollBlocks == null)
         {
-            Debug.LogError("No se encontrÛ la zona de bloques (ScrollBlocks).");
+            Debug.LogError("No se encontr√≥ la zona de bloques (ScrollBlocks).");
             return;
         }
     }
@@ -54,12 +54,12 @@ public class ScrollBlocks : MonoBehaviour
 
         scrollBlocks.Add(block1);
 
-        // Agregar un men˙ desplegable al bloque
+        // Agregar un men√∫ desplegable al bloque
        // eventBlock.AddDropdown("Tecla:");
 
-        // Ejemplo de bloque con n˙mero
+        // Ejemplo de bloque con n√∫mero
        // var block2 = eventBlock.CreateEventBlock("cuando volumen del sonido
-        // AÒade los bloques de eventos
+        // A√±ade los bloques de eventos
         foreach (var blockData in EventBlocks.Blocks)
         {
             Debug.Log($"Creando bloque: {blockData.text}");
@@ -68,36 +68,77 @@ public class ScrollBlocks : MonoBehaviour
         }
     }
 
-    // MÈtodo para mostrar bloques de una categorÌa especÌfica
+    // M√©todo para mostrar bloques de una categor√≠a espec√≠fica
     public void ShowBlocksByCategory(string categoryName)
     {
-        Debug.Log($"Cargando bloques para la categorÌa: {categoryName}");
+        Debug.Log($"Cargando bloques para la categor√≠a: {categoryName}");
 
         // Limpia los bloques existentes
         scrollBlocks.Clear();
 
         // Ruta del archivo JSON
        // string jsonFilePath = $"{Application.dataPath}/Scripts/Blocks/JSONFiles/{categoryName.ToLower()}Blocks.json";
-        string jsonFilePath = $"JSONFiles/{categoryName.ToLower()}Blocks"; // Sin la extensiÛn ".json"
-
+        string jsonFilePath = $"JSONFiles/{categoryName.ToLower()}Blocks"; // Sin la extensi√≥n ".json"
+        Debug.Log($"Intentando cargar JSON desde: {jsonFilePath}");
 
         var categoryData = BlockDataLoader.LoadCategoryData(jsonFilePath);
-        if (categoryData == null || categoryData.blocks == null)
+        // Depuraci√≥n: verificar si se carg√≥ correctamente el JSON
+        if (categoryData == null)
         {
-            Debug.LogError($"No se pudieron cargar los bloques para la categorÌa: {categoryName}");
+            Debug.LogError($"No se pudo cargar el archivo JSON: {jsonFilePath}");
             return;
         }
 
-        // Crear y agregar cada bloque al ·rea de trabajo
+        //Depuraci√≥n: verificar estructura correcta del JSON
+
+        if (categoryData.blocks == null || categoryData.blocks.Count == 0)
+        {
+            Debug.LogError($"El archivo JSON est√° vac√≠o o mal estructurado: {jsonFilePath}");
+            return;
+        }
+
+        Debug.Log($"Bloques encontrados: {categoryData.blocks.Count}");
+
+
+
+        if (categoryData == null || categoryData.blocks == null)
+        {
+            Debug.LogError($"No se pudieron cargar los bloques para la categor√≠a: {categoryName}");
+            return;
+        }
+
+        // Crear y agregar cada bloque al √°rea de trabajo
         foreach (var blockData in categoryData.blocks)
         {
-            var block = CreateBlock(blockData.text, blockData.iconPath);
+            // Depuraci√≥n: Asegurar que el JSON contiene los datos necesarios
+            if (string.IsNullOrEmpty(blockData.spriteName) || string.IsNullOrEmpty(blockData.type))
+            {
+                Debug.LogError($"Faltan datos en blockData: {blockData}");
+                continue;
+            }
+
+            // Ajustar la ruta correcta de carga de sprites
+            string spritePath = $"Icons/{blockData.spriteName}";
+
+            //Depuraci√≥n
+
+            Debug.Log($"Ruta de carga {spritePath} ");
+
+            Texture2D spriteTexture = Resources.Load<Texture2D>(spritePath);
+
+            if (spriteTexture == null)
+            {
+                Debug.LogError($"No se encontr√≥ el sprite en {spritePath}");
+                continue;
+            }
+            
+            var block = BlockUIFactory.CreateBlockElement(blockData.type,blockData.text, spritePath);
             scrollBlocks.Add(block);
         }
     }
 
 
-    // MÈtodo para crear un bloque genÈrico
+    // M√©todo para crear un bloque gen√©rico
     private VisualElement CreateBlock(string text, string iconPath)
     {
         var block = new VisualElement();
@@ -130,30 +171,5 @@ public class ScrollBlocks : MonoBehaviour
         return block;
     }
 
-
-    VisualElement CreateHatBlock(string label, string iconPath)
-    {
-        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/HatBlock.uxml");
-        if (visualTree != null)
-        {
-            var hatBlock = visualTree.CloneTree();
-            var labelElement = hatBlock.Q<Label>("HatBlockLabel");
-            labelElement.text = label;
-
-            var iconElement = hatBlock.Q<VisualElement>("hat-block-icon");
-            if (!string.IsNullOrEmpty(iconPath))
-            {
-                var iconTexture = Resources.Load<Texture2D>(iconPath);
-                iconElement.style.backgroundImage = new StyleBackground(iconTexture);
-            }
-
-            return hatBlock;
-        }
-        else
-        {
-            Debug.LogError("No se encontrÛ el archivo HatBlock.uxml.");
-            return null;
-        }
-    }
 
 }

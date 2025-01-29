@@ -102,22 +102,7 @@ public class ScratchUI : MonoBehaviour
                 Debug.Log($"Categoría seleccionada: {categoryName}");
                 scrollBlocks.ShowBlocksByCategory(categoryName);
             });
-            /*  categoryButton.RegisterCallback<ClickEvent>(evt =>
-              {
-                  Debug.Log($"Categoría seleccionada: {categoryName}");
-
-                  if (categoryName == "Eventos")
-                  {
-                      var scrollBlocksComponent = Object.FindFirstObjectByType<ScrollBlocks>();                if (scrollBlocksComponent != null)
-                      {
-                          scrollBlocksComponent.ShowEventBlocks();
-                      }
-                      else
-                      {
-                          Debug.LogError("No se encontró el componente ScrollBlocks.");
-                      }
-                  }
-              });*/
+           
 
             // Agregar el botón a la toolbox
             toolbox.Add(categoryButton);

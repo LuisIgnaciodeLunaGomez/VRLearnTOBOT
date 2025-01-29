@@ -19,32 +19,48 @@ using UnityEngine.UIElements;
 
 public class BlockUIFactory
 {
-    public static VisualElement CreateBlockElement(Block block)
+    public static VisualElement CreateBlockElement(string blockType, string textContent, string spritePath)
     {
+        // Crear el contenedor principal del bloque
         var blockElement = new VisualElement();
         blockElement.AddToClassList("block");
 
-        // Añade las conexiones visuales
-        if (block.OutputConnection != null)
+        // Cargar el sprite desde Resources
+        Texture2D sprite = Resources.Load<Texture2D>(spritePath);
+        if (sprite == null)
         {
-            var output = new VisualElement();
-            output.AddToClassList("output-connection");
-            blockElement.Add(output);
+            Debug.LogError($"BlockUIFactory: No se pudo cargar el sprite en {spritePath}");
+            return blockElement; // Retorna un bloque vacío si no encuentra el sprite
         }
 
-        if (block.NextConnection != null)
-        {
-            var next = new VisualElement();
-            next.AddToClassList("next-connection");
-            blockElement.Add(next);
-        }
+        Debug.Log($"Sprite cargado: {spritePath}");
 
-        if (block.PreviousConnection != null)
-        {
-            var prev = new VisualElement();
-            prev.AddToClassList("previous-connection");
-            blockElement.Add(prev);
-        }
+        // Crear la imagen de fondo del bloque
+        var backgroundImage = new VisualElement();
+       
+        backgroundImage.style.backgroundImage = new StyleBackground(sprite);
+        backgroundImage.style.width = sprite.width;
+        backgroundImage.style.height = sprite.height;
+        backgroundImage.style.position = Position.Absolute;
+        backgroundImage.AddToClassList("block-icon");
+
+        // Agregar la imagen de fondo
+        blockElement.Add(backgroundImage);
+
+        // Crear la parte editable (Texto u otros elementos)
+        var content = new VisualElement();
+        content.AddToClassList("block-content");
+
+        // Etiqueta con el texto del bloque
+        var label = new Label(textContent);
+        label.AddToClassList("block-label");
+        content.Add(label);
+
+        // Añadir el contenido por encima de la imagen de fondo
+       // content.Add(icon);
+        content.Add(label);
+        content.Add(backgroundImage);
+        blockElement.Add(content);
 
         return blockElement;
     }

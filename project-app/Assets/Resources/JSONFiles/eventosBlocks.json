@@ -2,16 +2,22 @@
   "category": "Eventos",
   "blocks": [
     {
-      "text": "al hacer clic en",
-      "iconPath": "Icons/click_icon"
+		"type": "evento",
+		"text": "al hacer clic en",
+		"iconPath": "Icons/click_icon",
+		"spriteName": "Hat_block_grey"
+    },
+    { 
+		"type": "evento",
+		"text": "al presionar tecla",
+		"iconPath": "Icons/key_icon",
+		"spriteName": "Hat_block_grey"
     },
     {
-      "text": "al presionar tecla",
-      "iconPath": "Icons/key_icon"
-    },
-    {
-      "text": "cuando el fondo cambie a",
-      "iconPath": "Icons/background_change_icon"
+		"type": "evento",
+		"text": "cuando el fondo cambie a",
+		"iconPath": "Icons/background_change_icon",
+		"spriteName": "Hat_block_grey"
     }
   ]
 }
