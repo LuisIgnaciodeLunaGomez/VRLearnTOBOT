@@ -14,6 +14,7 @@
 
 
 
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -21,6 +22,20 @@ using UnityEngine.UIElements;
 public class ScrollBlocks : MonoBehaviour
 {
     private VisualElement scrollBlocks; // Zona donde se mostrarán los bloques
+
+    // Se definen  colores por categoría
+    Dictionary<string, Color> categoryColors = new Dictionary<string, Color>
+{
+    { "Movimiento", new Color(0.2f, 0.4f, 1f) },    // Azul
+    { "Apariencia", new Color(0.6f, 0.4f, 1f) },   // Morado
+    { "Sonido", new Color(1f, 0.4f, 0.6f) },       // Rosa
+    { "Eventos", new Color(1f, 0.8f, 0f) },        // Amarillo
+    { "Control", new Color(1f, 0.6f, 0f) },        // Naranja
+    { "Sensores", new Color(0.4f, 0.8f, 1f) },     // Celeste
+    { "Operadores", new Color(0.4f, 0.8f, 0.4f) }, // Verde
+    { "Variables", new Color(1f, 0.6f, 0.2f) }     // Naranja oscuro
+};
+
 
     void OnEnable()
     {
@@ -131,8 +146,15 @@ public class ScrollBlocks : MonoBehaviour
                 Debug.LogError($"No se encontró el sprite en {spritePath}");
                 continue;
             }
-            
+
+            // Obtener el color de la categoría
+            Color blockColor = categoryColors.ContainsKey(categoryName) ? categoryColors[categoryName] : Color.gray;
+
+            // Crear bloque con color de fondo dinámico
+
             var block = BlockUIFactory.CreateBlockElement(blockData.type,blockData.text, spritePath);
+            block.style.backgroundColor = blockColor;  // Aplicar color al fondo
+
             scrollBlocks.Add(block);
         }
     }
