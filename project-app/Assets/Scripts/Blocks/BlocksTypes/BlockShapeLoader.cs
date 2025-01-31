@@ -62,7 +62,6 @@ public class BlockShapeLoader : EditorWindow
     private static string jsonFilePath = Path.Combine(Application.dataPath, "Resources/block_shapes.json"); //Archvo con las formas de los bloques para calcular donde introducir las partes dinámicas.
     private static string categoryJsonPath = Path.Combine(Application.dataPath, "Resources/JSONFiles/EventosBlocks.json");  // Archivo con categorías
 
-
     private static Dictionary<string, BlockShapeData> blockShapes;
 
     static BlockShapeLoader()

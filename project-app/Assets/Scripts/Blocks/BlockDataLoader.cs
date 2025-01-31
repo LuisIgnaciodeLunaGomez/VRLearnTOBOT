@@ -10,6 +10,8 @@
  * Fecha: 27/01/2025
  * 
  * Versión: 1.0.0
+ * 
+ * Descripción: Clase que se encarga de cargar los datos de los bloques desde un archivo JSON
  */
 
 

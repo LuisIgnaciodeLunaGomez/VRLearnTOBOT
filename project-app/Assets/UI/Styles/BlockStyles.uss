@@ -3,7 +3,6 @@ VisualElement {}
 .block {
     width: auto;
     min-height: 40px;
-    background-color: #ffcc00; /* Color amarillo (eventos) */
     border-radius: 10px; /* Bordes redondeados */
     margin: 5px 0;
     display: flex;

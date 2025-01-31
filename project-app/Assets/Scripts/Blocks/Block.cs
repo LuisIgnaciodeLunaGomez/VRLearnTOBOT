@@ -10,6 +10,8 @@
  * Fecha: 21/01/2025
  * 
  * Versión: 1.0.0
+ * 
+ * Descripción: Clase que representa un bloque de código
  */
 
 

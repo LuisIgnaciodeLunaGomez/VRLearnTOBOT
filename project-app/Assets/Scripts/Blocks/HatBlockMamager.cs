@@ -3,47 +3,47 @@ using UnityEngine.UIElements;
 
 public class HatBlockMamager : MonoBehaviour
 {
-  
-    private VisualElement workspace;
 
-    void OnEnable()
-    {
-        var uiDocument = GetComponent<UIDocument>();
-        var root = uiDocument.rootVisualElement;
+    /* private VisualElement workspace;
 
-        // Referencia al Workspace
-        workspace = root.Q<VisualElement>("Workspace");
+     void OnEnable()
+     {
+         var uiDocument = GetComponent<UIDocument>();
+         var root = uiDocument.rootVisualElement;
 
-        // Crear y añadir el Hat_Block al Workspace
-        var newBlock = CreateHatBlock("al hacer clic en", "Icons/green_flag.png");
-        workspace.Add(newBlock);
-    }
+         // Referencia al Workspace
+         workspace = root.Q<VisualElement>("Workspace");
 
-    VisualElement CreateHatBlock(string text, string iconPath)
-    {
-        // Crear el bloque principal
-        var block = new VisualElement();
-        block.AddToClassList("hat-block");
+         // Crear y añadir el Hat_Block al Workspace
+         var newBlock = CreateHatBlock("al hacer clic en", "Icons/green_flag.png");
+         workspace.Add(newBlock);
+     }
 
-        // Contenedor del contenido
-        var content = new VisualElement();
-        content.AddToClassList("hat-block-content");
+     VisualElement CreateHatBlock(string text, string iconPath)
+     {
+         // Crear el bloque principal
+         var block = new VisualElement();
+         block.AddToClassList("hat-block");
 
-        // Texto del bloque
-        var label = new Label(text);
-        label.AddToClassList("hat-block-label");
+         // Contenedor del contenido
+         var content = new VisualElement();
+         content.AddToClassList("hat-block-content");
 
-        // Icono
-        var icon = new VisualElement();
-        icon.AddToClassList("hat-block-icon");
-        icon.style.backgroundImage = new StyleBackground(Resources.Load<Texture2D>(iconPath));
+         // Texto del bloque
+         var label = new Label(text);
+         label.AddToClassList("hat-block-label");
 
-        // Añadir elementos al contenedor
-        content.Add(label);
-        content.Add(icon);
-        block.Add(content);
+         // Icono
+         var icon = new VisualElement();
+         icon.AddToClassList("hat-block-icon");
+         icon.style.backgroundImage = new StyleBackground(Resources.Load<Texture2D>(iconPath));
 
-        return block;
-    }
+         // Añadir elementos al contenedor
+         content.Add(label);
+         content.Add(icon);
+         block.Add(content);
+
+         return block;
+     }*/
 }
 

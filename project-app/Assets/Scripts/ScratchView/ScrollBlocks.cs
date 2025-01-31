@@ -49,37 +49,6 @@ public class ScrollBlocks : MonoBehaviour
         }
     }
 
-    public void ShowEventBlocks()
-
-    {
-        Debug.Log("Cargando bloques de eventos...");
-
-        // Limpia los bloques existentes
-        scrollBlocks.Clear();
-        var eventBlock = gameObject.AddComponent<EventBlockMutator>();
-
-        // Ejemplo de bloque "al hacer clic en"
-        var block1 = eventBlock.CreateEventBlock("al hacer clic en", " ");
-        
-        //Ojo los bloques se crean en evetBlocks.css o en json
-        
-        block1.AddToClassList("hat-block");
-
-        scrollBlocks.Add(block1);
-
-        // Agregar un menú desplegable al bloque
-       // eventBlock.AddDropdown("Tecla:");
-
-        // Ejemplo de bloque con número
-       // var block2 = eventBlock.CreateEventBlock("cuando volumen del sonido
-        // Añade los bloques de eventos
-      /*  foreach (var blockData in EventBlocks.Blocks)
-        {
-            Debug.Log($"Creando bloque: {blockData.text}");
-            var block = CreateBlock(blockData.text, blockData.iconPath);
-            scrollBlocks.Add(block);
-        }*/
-    }
 
     // Método para mostrar bloques de una categoría específica
     public void ShowBlocksByCategory(string categoryName)
@@ -152,45 +121,12 @@ public class ScrollBlocks : MonoBehaviour
             // Crear bloque con color de fondo dinámico
 
             var block = BlockUIFactory.CreateBlockElement(blockData.spriteName, categoryColor);
-            block.style.backgroundColor = blockColor;  // Aplicar color al fondo
+           // block.style.backgroundColor = blockColor;  // Aplicar color al fondo
 
             scrollBlocks.Add(block);
         }
     }
 
-
-    // Método para crear un bloque genérico
-    private VisualElement CreateBlock(string text, string iconPath)
-    {
-        var block = new VisualElement();
-        block.AddToClassList("block");
-
-        // Contenido del bloque
-        var content = new VisualElement();
-        content.AddToClassList("block-content");
-
-        // Texto
-        var label = new Label(text);
-        label.AddToClassList("block-label");
-
-        // Icono (si corresponde)
-        if (!string.IsNullOrEmpty(iconPath))
-        {
-            var icon = new VisualElement();
-            icon.AddToClassList("block-icon");
-            var iconTexture = Resources.Load<Texture2D>(iconPath);
-            if (iconTexture != null)
-            {
-                icon.style.backgroundImage = new StyleBackground(iconTexture);
-            }
-            content.Add(icon);
-        }
-
-        content.Add(label);
-        block.Add(content);
-
-        return block;
-    }
 
     // Método para obtener el color de la categoría
     private Color GetCategoryColor(string categoryName)

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.Scripts.Blocks.BlocksTypes
-{
+
+
     public static class EventBlocks
     {
         // Lista estática de bloques de eventos
@@ -15,4 +15,4 @@ namespace Assets.Scripts.Blocks.BlocksTypes
 
     };
     }
-}
+

@@ -10,9 +10,9 @@
  * Fecha: 27/01/2025
  * 
  * Versión: 1.0.0
+ * 
+ * Descripción: Clase que se encarga de crear los elementos visuales de los bloques
  */
-
-
 
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -24,7 +24,7 @@ public class BlockUIFactory
         // Crear el contenedor principal del bloque
         var blockElement = new VisualElement();
         blockElement.AddToClassList("block");
-        blockElement.style.backgroundColor = categoryColor; // 🔹 Aplicamos el color de la categoría
+        //blockElement.style.backgroundColor = categoryColor; // 🔹 Aplicamos el color de la categoría
 
         // Obtener los datos del bloque (texto, icono, sprite)
         BlockShapeLoader.BlockShapeData blockData = BlockShapeLoader.GetBlockData(blockType);
@@ -55,10 +55,13 @@ public class BlockUIFactory
 
 
         var backgroundImage = new VisualElement();
-        backgroundImage.AddToClassList("block-icon");
+       // backgroundImage.AddToClassList("block-icon");
         backgroundImage.style.backgroundImage = new StyleBackground(sprite);
+        
         backgroundImage.style.width = shapeData.width;
         backgroundImage.style.height = shapeData.height;
+
+        Debug.Log($"Background color {blockElement.style.backgroundColor}");
 
         //Icono del bloque (si existe)
         if (!string.IsNullOrEmpty(blockData.iconPath))

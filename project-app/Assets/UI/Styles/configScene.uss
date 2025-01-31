@@ -65,7 +65,7 @@ VisualElement {}
     color: #333;
 }
 
-    #ToolBar {
+#ToolBar {
     height: 60px; /* Altura fija */
     background-color:  #9966FF; /* Color violeta (como Scratch) */
     display: flex; /* Alinea los iconos horizontalmente */
@@ -78,7 +78,7 @@ VisualElement {}
     border-bottom-style: solid;
 }
 
-    .icon-button {
+.icon-button {
     width: 40px; /* Tamaño del ícono */
     height: 40px;
     background-color: #ffffff; /* Fondo blanco */
