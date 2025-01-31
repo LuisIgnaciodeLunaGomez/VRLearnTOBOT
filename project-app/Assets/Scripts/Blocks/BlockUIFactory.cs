@@ -1,15 +1,15 @@
-/*
+ï»¿/*
  * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
  *
- * Grado en Ingeniería Informática - Universidad de Burgos
+ * Grado en IngenierÃ­a InformÃ¡tica - Universidad de Burgos
  *
- * Autor: Luis Ignacio de Luna Gómez
+ * Autor: Luis Ignacio de Luna GÃ³mez
  * 
  * email: ldg1008@alu.ubu.es
  * 
  * Fecha: 27/01/2025
  * 
- * Versión: 1.0.0
+ * VersiÃ³n: 1.0.0
  */
 
 
@@ -19,62 +19,74 @@ using UnityEngine.UIElements;
 
 public class BlockUIFactory
 {
-    public static VisualElement CreateBlockElement(string blockType, string textContent, string spritePath)
+    public static VisualElement CreateBlockElement(string blockType, Color categoryColor)
     {
         // Crear el contenedor principal del bloque
         var blockElement = new VisualElement();
         blockElement.AddToClassList("block");
+        blockElement.style.backgroundColor = categoryColor; // ðŸ”¹ Aplicamos el color de la categorÃ­a
 
-        // Cargar el sprite desde Resources
+        // Obtener los datos del bloque (texto, icono, sprite)
+        BlockShapeLoader.BlockShapeData blockData = BlockShapeLoader.GetBlockData(blockType);
+
+        if (blockData == null)
+        {
+            Debug.LogError($"No se encontraron datos para el bloque: {blockType}");
+            return blockElement;
+        }
+
+        Debug.Log($"InformaciÃ³n cargada desde el JSON para {blockType}: {blockData}");
+
+        // Obtener la forma del bloque
+        BlockShapeLoader.BlockShapeData shapeData = BlockShapeLoader.GetBlockShape(blockData.spriteName);
+        if (shapeData == null) return blockElement;
+
+        // Cargar el sprite correspondiente
+        string spritePath = $"Icons/{blockData.spriteName}";
+
         Texture2D sprite = Resources.Load<Texture2D>(spritePath);
         if (sprite == null)
         {
             Debug.LogError($"BlockUIFactory: No se pudo cargar el sprite en {spritePath}");
-            return blockElement; // Retorna un bloque vacío si no encuentra el sprite
+            return blockElement; // Retorna un bloque vacÃ­o si no encuentra el sprite
         }
 
         Debug.Log($"Sprite cargado: {spritePath}");
 
-        // Crear la imagen de fondo del bloque
+
         var backgroundImage = new VisualElement();
         backgroundImage.AddToClassList("block-icon");
         backgroundImage.style.backgroundImage = new StyleBackground(sprite);
-        backgroundImage.style.width = Length.Percent(100);
-        backgroundImage.style.height = Length.Percent(100);
-        backgroundImage.style.position = Position.Absolute;
+        backgroundImage.style.width = shapeData.width;
+        backgroundImage.style.height = shapeData.height;
 
-        // Posición relativa para que no cubra el texto
-        backgroundImage.style.position = Position.Absolute;
-        backgroundImage.style.left = 0;
-        backgroundImage.style.top = 0;
+        //Icono del bloque (si existe)
+        if (!string.IsNullOrEmpty(blockData.iconPath))
+        {
+            string iconPath = blockData.iconPath;
+            Texture2D iconTexture = Resources.Load<Texture2D>(iconPath);
 
-        // Agregar la imagen de fondo
+            if (iconTexture != null)
+            {
+                var icon = new VisualElement();
+                icon.style.backgroundImage = new StyleBackground(iconTexture);
+                icon.style.width = 24;
+                icon.style.height = 24;
+                backgroundImage.Add(icon);
+            }
+        }
+
+        // Texto del bloque
+        var textLabel = new Label(blockData.text);
+        textLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+        textLabel.style.color = Color.black;
+        textLabel.style.marginLeft = 10;
+
+        // Ajustar posiciones
+        blockElement.style.flexDirection = FlexDirection.Row;
+        blockElement.style.alignItems = Align.Center;
         blockElement.Add(backgroundImage);
-
-        // Crear la parte editable (Texto u otros elementos)
-        var content = new VisualElement();
-        content.AddToClassList("block-content");
-
-        // Ajustar posición para que quede sobre la imagen
-        content.style.position = Position.Relative;
-        content.style.alignItems = Align.Center;
-        content.style.justifyContent = Justify.Center;
-        content.style.paddingLeft = 10;  // Ajustar espaciado si es necesario
-
-        // Etiqueta con el texto del bloque
-        var label = new Label(textContent);
-        label.AddToClassList("block-label");
-
-        // Ajustar tamaño y alineación del texto
-        label.style.unityTextAlign = TextAnchor.MiddleCenter;
-        label.style.fontSize = 12; // Ajustar el tamaño si es necesario
-        label.style.color = Color.white; // Asegurar buena visibilida
-
-        // Añadir el contenido por encima de la imagen de fondo
-       // content.Add(icon);
-        content.Add(label);
-       // content.Add(backgroundImage);
-        blockElement.Add(content);
+        blockElement.Add(textLabel);
 
         return blockElement;
     }

@@ -12,8 +12,6 @@
  * Versión: 1.0.0
  */
 
-
-
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -75,12 +73,12 @@ public class ScrollBlocks : MonoBehaviour
         // Ejemplo de bloque con número
        // var block2 = eventBlock.CreateEventBlock("cuando volumen del sonido
         // Añade los bloques de eventos
-        foreach (var blockData in EventBlocks.Blocks)
+      /*  foreach (var blockData in EventBlocks.Blocks)
         {
             Debug.Log($"Creando bloque: {blockData.text}");
             var block = CreateBlock(blockData.text, blockData.iconPath);
             scrollBlocks.Add(block);
-        }
+        }*/
     }
 
     // Método para mostrar bloques de una categoría específica
@@ -98,7 +96,7 @@ public class ScrollBlocks : MonoBehaviour
 
         var categoryData = BlockDataLoader.LoadCategoryData(jsonFilePath);
         // Depuración: verificar si se cargó correctamente el JSON
-        if (categoryData == null)
+        if (categoryData == null || categoryData.blocks ==null)
         {
             Debug.LogError($"No se pudo cargar el archivo JSON: {jsonFilePath}");
             return;
@@ -114,13 +112,14 @@ public class ScrollBlocks : MonoBehaviour
 
         Debug.Log($"Bloques encontrados: {categoryData.blocks.Count}");
 
-
-
         if (categoryData == null || categoryData.blocks == null)
         {
             Debug.LogError($"No se pudieron cargar los bloques para la categoría: {categoryName}");
             return;
         }
+
+        Color categoryColor = GetCategoryColor(categoryName);
+
 
         // Crear y agregar cada bloque al área de trabajo
         foreach (var blockData in categoryData.blocks)
@@ -133,7 +132,7 @@ public class ScrollBlocks : MonoBehaviour
             }
 
             // Ajustar la ruta correcta de carga de sprites
-            string spritePath = $"Icons/{blockData.spriteName}";
+            string spritePath = $"Icons/Textures/{blockData.spriteName}";
 
             //Depuración
 
@@ -152,7 +151,7 @@ public class ScrollBlocks : MonoBehaviour
 
             // Crear bloque con color de fondo dinámico
 
-            var block = BlockUIFactory.CreateBlockElement(blockData.type,blockData.text, spritePath);
+            var block = BlockUIFactory.CreateBlockElement(blockData.spriteName, categoryColor);
             block.style.backgroundColor = blockColor;  // Aplicar color al fondo
 
             scrollBlocks.Add(block);
@@ -193,5 +192,17 @@ public class ScrollBlocks : MonoBehaviour
         return block;
     }
 
-
+    // Método para obtener el color de la categoría
+    private Color GetCategoryColor(string categoryName)
+    {
+        switch (categoryName.ToLower())
+        {
+            case "eventos": return new Color(1f, 0.8f, 0f); // Amarillo
+            case "movimiento": return new Color(0.2f, 0.4f, 1f); // Azul
+            case "apariencia": return new Color(0.6f, 0.4f, 1f); // Morado
+            case "sonido": return new Color(1f, 0.4f, 0.6f); // Rosa
+            case "control": return new Color(1f, 0.6f, 0f); // Naranja
+            default: return Color.gray; // Color por defecto
+        }
+    }
 }
