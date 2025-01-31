@@ -42,7 +42,7 @@ public class BlockUIFactory
         if (shapeData == null) return blockElement;
 
         // Cargar el sprite correspondiente
-        string spritePath = $"Icons/{blockData.spriteName}";
+        string spritePath = $"Icons/Textures/{blockData.spriteName}";
 
         Texture2D sprite = Resources.Load<Texture2D>(spritePath);
         if (sprite == null)
