@@ -86,6 +86,7 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
  <li>TypeScript</li>
   <li>C#</li>
   <li>Angular</li>
+  <li>AnPython</li>
  
 </ul>
 
