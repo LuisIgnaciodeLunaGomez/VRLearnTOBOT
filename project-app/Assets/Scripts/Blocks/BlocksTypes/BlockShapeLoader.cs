@@ -18,37 +18,26 @@ using UnityEditor;
 using System.IO;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 
 [System.Serializable]
 public class BlockShapeData
 {
-    public int width;
-    public int height;
-    public int rect_x;
-    public int rect_y;
-    public int rect_width;
-    public int rect_height;
     public string spriteName;
-    public string iconPath;
-    public string text;
+    public float width;
+    public float height;
+    public float rect_x;
+    public float rect_y;
+    public float rect_width;
+    public float rect_height;
+
+    public static explicit operator BlockShapeData(BlockShapeLoader.BlockShapeCollection.BlockShapeData v)
+    {
+        throw new NotImplementedException();
+    }
+    //public bool hasHat;
 }
 
-[System.Serializable]
-public class BlockData
-{
-    public string type;
-    public string text;
-    public string iconPath;
-    public string spriteName;
- 
-}
-
-[System.Serializable]
-public class BlockCategory
-{
-    public string category;
-    public List<BlockData> blocks;
-}
 
 [System.Serializable]
 public class BlockShapeCollection
@@ -60,12 +49,14 @@ public class BlockShapeCollection
 public class BlockShapeLoader : EditorWindow
 {
     private static string jsonFilePath = Path.Combine(Application.dataPath, "Resources/block_shapes.json"); //Archvo con las formas de los bloques para calcular donde introducir las partes dinámicas.
-    private static string categoryJsonPath = Path.Combine(Application.dataPath, "Resources/JSONFiles/EventosBlocks.json");  // Archivo con categorías
 
-    private static Dictionary<string, BlockShapeData> blockShapes;
+
+    private static Dictionary<string, BlockShapeData> blockShapes = new Dictionary<string, BlockShapeData>();
+
 
     static BlockShapeLoader()
     {
+        Debug.Log("Iniciando carga de bloques...");
         LoadBlockShapes();  // Se ejecutará automáticamente al iniciar Unity
     }
 
@@ -81,6 +72,7 @@ public class BlockShapeLoader : EditorWindow
         // Cargar los datos del JSON generado por Python
         string shapeJson = File.ReadAllText(jsonFilePath);
 
+        Debug.Log($"Cargando JSON de formas desde: {jsonFilePath}");
 
         try
         {
@@ -89,7 +81,19 @@ public class BlockShapeLoader : EditorWindow
 
             if (shapeCollection != null && shapeCollection.blocks != null)
             {
-                blockShapes = shapeCollection.blocks;
+                blockShapes.Clear();
+                blockShapes = shapeCollection.blocks.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => new BlockShapeData
+                    {
+                        spriteName = kvp.Value.spriteName,
+                        width = kvp.Value.width,
+                        height = kvp.Value.height,
+                        rect_x = kvp.Value.rect_x,
+                        rect_y = kvp.Value.rect_y,
+                        rect_width = kvp.Value.rect_width,
+                        rect_height = kvp.Value.rect_height
+                    });
                 Debug.Log($"Bloques cargados correctamente: {blockShapes.Count}");
 
                 // Imprimir nombres de los bloques cargados
@@ -107,96 +111,73 @@ public class BlockShapeLoader : EditorWindow
         {
             Debug.LogError($"Error al leer el JSON de formas: {e.Message}");
         }
-
-        // Cargar los datos de la estructura de bloques (eventos, etc.)
-        string categoryJson = File.ReadAllText(categoryJsonPath);
-
-        try
-        {
-            BlockCategory categoryData = JsonConvert.DeserializeObject<BlockCategory>(categoryJson);
-
-            if (categoryData != null && categoryData.blocks != null)
-            {
-                Debug.Log($"Categoría cargada correctamente: {categoryData.category}");
-            }
-            else
-            {
-                Debug.LogError("La estructura del JSON no es válida o está vacía.");
-            }
-
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error al leer el JSON de blqoues: {e.Message}");
-
-        }
+      
     }
-	
-	 //**Método para obtener datos de un bloque específico**
-    public static BlockShapeData GetBlockData(string blockName)
-    {
-        if (blockShapes == null )
-        {
-            Debug.LogError("BlockShapeLoader: blockShapes no ha sido inicializado.");
-            // return null;
-            LoadBlockShapes();  // Forzar la carga de bloques
 
-        }
-
-        if (blockShapes == null || blockShapes.Count == 0)
-        {
-            Debug.LogError("Error: blockShapes sigue vacío después de LoadBlockShapes.");
-            return null;
-        }
-
-        if (!blockShapes.ContainsKey(blockName))
-        {
-            Debug.LogError($"No se encontraron datos para el bloque: {blockName}");
-
-            // Imprimir todas las claves disponibles para depuración
-            Debug.Log("Bloques disponibles en blockShapes:");
-            foreach (var key in blockShapes.Keys)
-            {
-                Debug.Log($" - {key}");
-            }
-
-            return null;
-        }
-
-
-        return blockShapes[blockName];
-    }
     /* Método para obtener la forma de un bloque específico */
     public static BlockShapeData GetBlockShape(string spriteName)
     {
-        if (blockShapes == null || !blockShapes.ContainsKey(spriteName))
+        spriteName = spriteName.Trim();
+        Debug.Log($"Buscando forma del bloque para: {spriteName}");
+
+        // Verificar si el spriteName contiene un "_", lo cual indica que es una clave única
+        if (spriteName.Contains("_"))
         {
-            Debug.LogError($"❌ No se encontró la forma del bloque para: {spriteName}");
-            return null;
+            spriteName = spriteName.Split('_')[0];  // Recuperar solo el spriteName original
         }
-        return blockShapes[spriteName];
+        if (blockShapes.ContainsKey(spriteName))
+        {
+            Debug.Log($"Forma obtenida para {spriteName}: {blockShapes[spriteName].spriteName}");
+            return blockShapes[spriteName];
+        }
+
+        // Intentar encontrar una clave similar si no existe exactamente
+        string foundKey = blockShapes.Keys.FirstOrDefault(k => k.Contains(spriteName) || spriteName.Contains(k));
+
+        /* if (blockShapes == null || !blockShapes.ContainsKey(spriteName))
+         {
+             Debug.LogError($" No se encontró la forma del bloque para: {spriteName}");
+             foreach (var key in blockShapes.Keys)
+             {
+                 Debug.Log($" - {key}");
+             }
+             return null;
+         }*/
+
+        if (foundKey != null)
+        {
+            Debug.Log($"Usando clave alternativa encontrada: {foundKey}");
+            return blockShapes[foundKey];
+        }
+
+        //Debug.Log($"Forma obtenida para {spriteName}: {blockShapes[spriteName].spriteName}");
+
+        //return blockShapes[spriteName];
+
+        Debug.LogError($"No se encontró la forma del bloque para: {spriteName}");
+        return null;
     }
 
     [Serializable]
     public class BlockShapeCollection
     {
-        public Dictionary<string, BlockShapeData> blocks { get; set; }  // Asegurar que la propiedad tenga "set;"
-    }
+        public Dictionary<string, BlockShapeData> blocks { get; set; }
 
-    [Serializable]
-    public class BlockShapeData
-    {
-        public int width { get; set; }
-        public int height { get; set; }
-        public int rect_x { get; set; }
-        public int rect_y { get; set; }
-        public int rect_width { get; set; }
-        public int rect_height { get; set; }
+        [Serializable]
+        public class BlockShapeData
+        {
+            public int width { get; set; }
+            public int height { get; set; }
+            public int rect_x { get; set; }
+            public int rect_y { get; set; }
+            public int rect_width { get; set; }
+            public int rect_height { get; set; }
 
-        public string spriteName { get; set; }
+            public string spriteName { get; set; }
 
-        public string iconPath { get; set; }
+            public string iconPath { get; set; }
 
-        public string text { get; set; }
+            public string text { get; set; }
+        }
     }
 }

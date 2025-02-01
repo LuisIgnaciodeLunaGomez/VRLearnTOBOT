@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Connection\ConnectionTypes.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockConnection.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockRenderere.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableData.cs" />
     <Compile Include="Assets\Scripts\Blocks\HatBlockMamager.cs" />
     <Compile Include="Assets\Scripts\Blocks\Block.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Assets\Scripts\ScratchView\ScrollBlocks.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockInput.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockLayout.cs" />
     <Compile Include="Assets\Scripts\Code\Interpreter.cs" />
     <Compile Include="Assets\Scripts\Configuration\ConfigCode.cs" />
     <Compile Include="Assets\Scripts\Variables\VariableNames.cs" />
