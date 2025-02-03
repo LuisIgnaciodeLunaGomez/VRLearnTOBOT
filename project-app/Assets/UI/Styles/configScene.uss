@@ -4,7 +4,11 @@ VisualElement {}
     display: flex;
     flex-direction: row; /* Organiza los elementos en fila */
     height: 100%; /* Ocupa toda la altura de la ventana */
-    width: 100%; /* Asegúrate de ocupar todo el ancho de la ventana */
+    width: 20%; 
+    left: 0;
+    top: 0px;
+    position: relative;
+   
 }
 
 #Toolbox {
@@ -18,26 +22,6 @@ VisualElement {}
     overflow-y: auto; /* Scroll si es necesario */
 }
 
-#ScrollBlocks {
-    flex-grow: 2; /* Ocupa el resto del espacio */
-    background-color: #F9F9F9; /* Fondo blanco */
-    padding: 10px; /* Espaciado interno */
-    overflow-y: scroll; /* Habilita el scroll vertical */
-    height: 100%; /* Altura total */
-    border-right-width: 2px;
-    border-right-color: #CCC;
-    border-right-style: solid; /* Línea divisoria */
-}
-
-#Workspace {
-    flex-grow: 4; /* Ocupa el espacio restante */
-    background-color: #F9F9F9;
-   
-  
-   
-    overflow: scroll;
-
-}/* Botón contenedor */
 .category-button {
     width: 100%; /* Ocupa todo el ancho del Toolbox */
     height: 100px; /* Altura del botón */
@@ -67,6 +51,7 @@ VisualElement {}
 
 #ToolBar {
     height: 60px; /* Altura fija */
+    width: 100%; /* Ocupa todo el ancho */
     background-color:  #9966FF; /* Color violeta (como Scratch) */
     display: flex; /* Alinea los iconos horizontalmente */
     flex-direction: row; /* Orden horizontal */
@@ -88,7 +73,6 @@ VisualElement {}
     align-items: center; /* Centrado vertical */
     justify-content: center; /* Centrado horizontal */
     cursor: pointer; /* Cambiar el cursor al pasar sobre el ícono */
-   
     transition: background-color 0.2s; /* Efecto de hover */
 }
 
@@ -100,7 +84,7 @@ VisualElement {}
     display: flex;
     flex-direction: row; /* Elementos en fila */
     align-items: center; /* Centrar verticalmente */
-    gap: 10px; /* Espaciado entre elementos */
+    
 }
 
 .logo {

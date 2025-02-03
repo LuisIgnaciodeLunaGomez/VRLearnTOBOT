@@ -9,7 +9,9 @@
  * 
  * Fecha: 26/01/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
+ * 
+ * Descripción. Genera la barra lateral con las categorías y colores de los bloques de Scratch. Permitirá seleccionar una categoría y mostrar los bloques correspondientes en el Canvas.
  */
 
 using UnityEngine;
@@ -18,43 +20,44 @@ using UnityEngine.UIElements;
 public class ScratchUI : MonoBehaviour
 {
     private ScrollView toolbox;
-    private VisualElement workspace;
-    private ScrollBlocks scrollBlocks; // Referencia al componente ScrollBlocks
-
+    private VisualElement root;
+    //private ScrollBlocks scrollBlocks; // Referencia al componente ScrollBlocks
+    //private BlockMangerCanvas blockManagerCanvas; // Referencia al script de Canvas
 
     void OnEnable()
     {
         // Cargar el archivo UXML
         var uiDocument = GetComponent<UIDocument>();
+
+        if (uiDocument == null)
+        {
+            Debug.LogError("UIDocument no encontrado en la escena - Scratch UI.");
+            return;
+        }
+        
         var root = uiDocument.rootVisualElement;
 
-        // Referencias a la caja de herramientas y el workspace
-        toolbox = root.Q<ScrollView>("Toolbox");
-        workspace = root.Q<VisualElement>("Workspace");
-        // Cargar y aplicar el archivo USS
+        if (root == null)
+        {
+            Debug.LogError("RootVisualElement es NULL. ScratchUI");
+            return;
+        }
 
-        // Buscar el componente ScrollBlocks en la jerarquía
-        scrollBlocks = Object.FindFirstObjectByType<ScrollBlocks>();
-        // Asegúrate de que toolbox no es null
+        // Buscar la Toolbox
+        toolbox = root.Q<ScrollView>("Toolbox");
         if (toolbox == null)
         {
-            Debug.LogError("No se encontró el Toolbox. Verifica el ID en el UXML.");
-            return;
-        }
-        //  var styleSheet = Resources.Load<StyleSheet>("../../UI/Styles/BlockStyles");
-        if (workspace == null)
-        {
-            Debug.LogError("No se encontró el Workspace. Verifica el ID en el UXML.");
-            return;
-        }
-        if (scrollBlocks == null)
-        {
-            Debug.LogError("No se encontró el componente ScrollBlocks. Asegúrate de que está agregado a un objeto de la escena.");
+            Debug.LogError("No se encontró Toolbox en el UXML. Verifica el nombre en el UXML.");
             return;
         }
 
+        // Evitar el blqueo de los eventos de clic en los bloques
+        toolbox.pickingMode = PickingMode.Ignore;
 
-        // Lista de categorías con sus colores
+
+        Debug.Log("Toolbox encontrado correctamente.");
+        
+        // Lista de categorías con colores
         var categories = new (string name, Color color)[]
         {
             ("Movimiento", new Color(0.2f, 0.4f, 1f)),     // Azul
@@ -68,44 +71,61 @@ public class ScratchUI : MonoBehaviour
             ("Mis bloques", new Color(1f, 0.4f, 0.4f))    // Rojo
         };
 
-
-
-        // Crear los botones
+        // Crear los botones de categorías
         foreach (var category in categories)
         {
             AddCategory(category.name, category.color);
         }
+        
+        this.AdjustCanvasPanels();
 
-        void AddCategory(string categoryName, Color color)
-        {
-            // Crear botón de categoría
-            var categoryButton = new VisualElement();
-            categoryButton.AddToClassList("category-button");
-
-            // Icono redondo
-            var categoryIcon = new VisualElement();
-            categoryIcon.AddToClassList("category-icon");
-            categoryIcon.style.backgroundColor = color; // Aplica color dinámico
-
-            // Texto debajo
-            var categoryLabel = new Label(categoryName);
-            categoryLabel.AddToClassList("category-label");
-
-            // Añadir ícono y texto al botón
-            categoryButton.Add(categoryIcon);
-            categoryButton.Add(categoryLabel);
-
-            
-            // Evento de clic
-            categoryButton.RegisterCallback<ClickEvent>(evt =>
-            {
-                Debug.Log($"Categoría seleccionada: {categoryName}");
-                scrollBlocks.ShowBlocksByCategory(categoryName);
-            });
-           
-
-            // Agregar el botón a la toolbox
-            toolbox.Add(categoryButton);
-        }
     }
+
+    private void AddCategory(string categoryName, Color color)
+    {
+        if (toolbox == null)
+        {
+            Debug.LogError("Toolbox es NULL. No se pueden agregar categorías.");
+            return;
+        }
+        // Crear botón de categoría
+        var categoryButton = new VisualElement();
+        categoryButton.AddToClassList("category-button");
+
+        // Círculo de color
+        var categoryIcon = new VisualElement();
+        categoryIcon.AddToClassList("category-icon");
+        categoryIcon.style.backgroundColor = color;
+
+        // Texto debajo
+        var categoryLabel = new Label(categoryName);
+        categoryLabel.AddToClassList("category-label");
+
+        // Añadir ícono y texto al botón
+        categoryButton.Add(categoryIcon);
+        categoryButton.Add(categoryLabel);
+
+        // Evento de clic
+        categoryButton.RegisterCallback<ClickEvent>(evt =>
+        {
+            Debug.Log($"Categoría seleccionada: {categoryName}");
+        });
+
+        // Agregar el botón a la toolbox
+        toolbox.Add(categoryButton);
+    }
+
+    void AdjustCanvasPanels()
+    {
+        RectTransform zonaDeBloques = GameObject.Find("BlockZone").GetComponent<RectTransform>();
+        RectTransform espacioDeTrabajo = GameObject.Find("WorkSpace").GetComponent<RectTransform>();
+
+        // Obtiene el ancho de la Toolbox desde UI Toolkit
+        float toolboxWidth = toolbox.resolvedStyle.width;
+
+        // Ajustar posiciones
+        zonaDeBloques.offsetMin = new Vector2(toolboxWidth, 0);
+        espacioDeTrabajo.offsetMin = new Vector2(toolboxWidth + zonaDeBloques.rect.width, 0);
+    }
+
 }

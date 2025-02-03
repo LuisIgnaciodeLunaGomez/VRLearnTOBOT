@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8744695908802620329}
   - component: {fileID: 5519004346894084805}
   - component: {fileID: 5240121493500181665}
-  - component: {fileID: 5809194543047511100}
   m_Layer: 5
   m_Name: UIVIew
   m_TagString: Untagged
@@ -76,17 +75,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6b36d4353083bc4e8ad151d4fffc4aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &5809194543047511100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4775745848455032134}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a2514414bfcc1c4d80da75b4c5547db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

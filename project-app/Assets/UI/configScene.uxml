@@ -4,25 +4,17 @@
     xmlns:engine="UnityEngine.UIElements"
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
-
-    
+<engine:Style src="Styles/configScene.uss" />
    <!-- Barra de herramientas -->
    <engine:VisualElement name="ToolBar" class="toolbar">
-   <engine:VisualElement name="ScratchLogo" class="logo" />
-    <!-- Contenedor izquierdo -->
-    <engine:VisualElement name="toolbar-center" class="toolbar-center">  
-    </engine:VisualElement>
-    
-    <!-- Contenedor derecho -->
-    <engine:VisualElement name="toolbar-right" class="toolbar-right">
-        <!-- Botón de bandera verde --> 
-    </engine:VisualElement>
-</engine:VisualElement>
+       <engine:VisualElement name="ScratchLogo" class="logo" />
+       <engine:VisualElement name="toolbar-center" class="toolbar-center" />
+       <engine:VisualElement name="toolbar-right" class="toolbar-right" />
+   </engine:VisualElement>
+
     <!-- Contenedor principal -->
-  <engine:Style src="Styles/configScene.uss" />
-     <engine:VisualElement name="MainContainer" >
+    
+    <engine:VisualElement name="MainContainer" >
         <engine:ScrollView name="Toolbox"  />
-        <engine:ScrollView name="ScrollBlocks" />
-        <engine:VisualElement name="Workspace" />
     </engine:VisualElement>
 </engine:UXML>

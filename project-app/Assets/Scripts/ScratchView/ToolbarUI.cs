@@ -9,7 +9,7 @@
  * 
  * Fecha: 30/01/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
  * Descripción: Clase que representa la barra de herramientas de la interfaz de usuario
  */
@@ -26,7 +26,20 @@ public class ToolbarUI : MonoBehaviour
     {
         // Cargar el UXML
         var uiDocument = GetComponent<UIDocument>();
+  
+        if (uiDocument == null)
+        {
+            Debug.LogError("UIDocument no encontrado en la escena.");
+            return;
+        }
+      
         var root = uiDocument.rootVisualElement;
+        if (root == null)
+
+        { 
+            Debug.LogError("RootVisualElement es NULL.");
+            return;
+        }
 
         // Configurar el logo de Scratch
         var logoElement = root.Q<VisualElement>("ScratchLogo");
@@ -45,13 +58,18 @@ public class ToolbarUI : MonoBehaviour
         // Referencia a la barra de herramientas
         toolbar = root.Q<VisualElement>("ToolBar");
 
+
         // Asegúrate de que la barra de herramientas está inicializada
         if (toolbar == null)
         {
             Debug.LogError("No se encontró la barra de herramientas (ToolBar) en el UXML.");
+            Debug.Log($"Elementos disponibles en el UXML: {root.hierarchy.childCount}");
+
             return;
         }
-
+        // Evitar el blqueo de los eventos de clic en los bloques
+        toolbar.pickingMode = PickingMode.Ignore;
+        Debug.Log(" ToolBar encontrado correctamente en el UXML.");
         // Buscar los contenedores de botones
         var toolbarCenter = root.Q<VisualElement>("toolbar-center");
         var toolbarRight = root.Q<VisualElement>("toolbar-right");
