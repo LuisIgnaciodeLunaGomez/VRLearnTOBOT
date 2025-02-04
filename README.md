@@ -30,20 +30,6 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
  <li>Realidad Virtual (RV)</li>
 </ul>
 
-# Conceptos Técnicos:
-
-<ul>
- <li><strong>Entorno de desarrollo:</strong> Implementación del laboratorio virtual mediante Unity, integrando prefabs (bloques y piezas lego) y simulaciones en tiempo real.</li>
-<li><strong>Modelado 3D:</strong> Diseño y exportación de componentes robóticos con Blender para integrarlos en Unity, teniendo en cuenta la optimización de texturas y mallas.</li>
-<li><strong>Programación orientada a bloques: </strong>Recreación de un motor de programación visual basado en Blockly/Scratch, integrando funcionalidades específicas para la simulación y control de robots.</li>
-<li><strong>Control de versiones:</strong> Integración de Plastic SCM para gestión de cambios y sincronización con repositorios en Unity Cloud y GitHub, asegurando la trazabilidad del desarrollo.</li>
-<li><strong>Bases de datos en tiempo real:</strong> Uso de Firebase para gestionar y sincronizar datos entre usuarios, permitiendo almacenar información sobre proyectos, configuraciones y resultados en tiempo real.</li>
-<li><strong>Diseño y modelado UML:</strong> Creación de diagramas UML para representar las interacciones del sistema, el flujo de datos y los componentes clave del software.</li>
-<li><strong>WebGL y A-Frame:</strong> Exploración de A-Frame para crear experiencias 3D que puedan ejecutarse en navegadores mediante WebGL, ofreciendo una opción accesible y multiplataforma.</li>
-<li><strong>Compatibilidad con dispositivos VR:</strong> Diseño del entorno 3D para garantizar una experiencia fluida en gafas de RV como Oculus, considerando el rendimiento y la optimización para hardware específico.</li>
-<li><strong>Validación y pruebas de software:</strong> Metodologías para garantizar la calidad del software, incluyendo pruebas unitarias para validar módulos individuales, pruebas de integración para garantizar la interoperabilidad de los componentes, y pruebas de usabilidad para evaluar la experiencia del usuario objetivo.</li>
-</ul>
-
 # Herramientas utilizadas:
 
  <ul>
