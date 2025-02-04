@@ -30,16 +30,6 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
  <li>Realidad Virtual (RV)</li>
 </ul>
 
-# Conceptos Teóricos
-
-<ul>
-<li><strong>Gamificación y pedagogía de la programación:</strong> Aplicación de principios de gamificación y métodos pedagógicos soportados por algoritmos inteligentes para facilitar el aprendizaje de programación en laboratorios virtuales.</li>
-<li><strong>Técnicas de simulación virtual:</strong> Uso de motores gráficos (como Unity) y bibliotecas de físicas para crear experiencias de aprendizaje inmersivas y realistas.</li>
-<li><strong>Transformación de bloques visuales a código ejecutable:</strong> Análisis de cómo los bloques de programación visuales (Scratch) se traducen en instrucciones ejecutables y su impacto en la optimización del aprendizaje.</li>
-<li><strong>Optimización de modelos 3D en entornos interactivos:</strong> Uso de herramientas como Blender para crear y optimizar modelos 3D que soporten simulaciones en tiempo real con un balance adecuado entre detalle visual y rendimiento.</li>
- <li><strong>Realidad Virtual (RV) y Realidad Aumentada (RA):</strong> Integración de RV y RA para mejorar la interacción y la experiencia educativa en aplicaciones 3D.</li>
-</ul>
-
 # Conceptos Técnicos:
 
 <ul>
