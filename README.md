@@ -9,12 +9,6 @@ Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Bu
 <p>Contacto:  <a href="mailto:clopezno@ubu.es">clopezno@ubu.es</a></p>
 
 # Resumen del trabajo
-Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicación educativa para fomentar el aprendizaje de la programación y la robótica en niños y adolescentes de entre 6 y 18 años. La aplicación se implementa en un laboratorio virtual que simula un espacio académico, permitiendo superar barreras económicas y formativas mediante el acceso a herramientas avanzadas. Estas herramientas facilitarán tanto la construcción guiada de robots físicos basados en LEGO® Wedo como la simulación virtual de su ensamblaje y programación en un laboratorio visual similar a Scratch muy utilizado en entornos educativos.
-
-# Inspiración y relevancia educativa
-
-<p>En el contexto educativo actual, las plataformas interactivas como CodeSpark, Code.org y CodeLabs han demostrado ser herramientas efectivas para enseñar programación a través de actividades prácticas e inmersivas.</p>
-<p>Estos enfoques hacen que el aprendizaje sea más accesible y atractivo, permitiendo a los estudiantes interactuar directamente con los conceptos mientras construyen y experimentan. Este trabajo sigue esa misma línea, al ofrecer un laboratorio virtual donde los alumnos no solo construyen y programan robots, sino que también desarrollan habilidades críticas como la resolución de problemas y el pensamiento lógico.</p>
 
 # Palabras clave
 
@@ -57,7 +51,6 @@ Este Trabajo Fin de Grado tiene como objetivo principal desarrollar una aplicaci
 # Lenguajes de programación:
 
  <ul>
-  
   <li>Javascript</li>
  <li>TypeScript</li>
   <li>C#</li>
