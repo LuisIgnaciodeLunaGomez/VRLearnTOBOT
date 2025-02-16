@@ -362,6 +362,9 @@
 	\tutor{\nombreTutor}
 	\date{\today}
 	
+	\newcommand{\cabecera}{cabecera.pdf}
+	\newcommand{\escudoInfor}{escudoInfor.pdf}
+	
 	\begin{document}
 		
 		\maketitle
@@ -374,7 +377,7 @@
 		\thispagestyle{empty}
 		
 		
-		\noindent\includegraphics[width=\textwidth]{cabecera}\vspace{1cm}
+		\noindent\includegraphics[width=\textwidth]{\cabecera}\vspace{1cm}
 		
 		\noindent D. nombre tutor, profesor del departamento de nombre departamento, área de nombre área.
 		
@@ -391,27 +394,27 @@
 		\vfill\vfill\vfill
 		
 		% Author and supervisor
-		\begin{minipage}{0.45\textwidth}
-			\begin{flushleft} %\large
-				Vº. Bº. del Tutor:\\[2cm]
-				D. {\nombreTutor}
-			\end{flushleft}
-		\end{minipage}
-		\hfill
-		\begin{minipage}{0.45\textwidth}
-			\begin{flushleft} %\large
-				Vº. Bº. del co-tutor:\\[2cm]
-				D. nombre co-tutor
-			\end{flushleft}
-		\end{minipage}
-		\hfill
+		%\begin{minipage}{0.45\textwidth}
+		%	\begin{flushleft} %\large
+		%		Vº. Bº. del Tutor:\\[2cm]
+		%		D. {\nombreTutor}
+		%	\end{flushleft}
+		%\end{minipage}
+		%\hfill
+		%\begin{minipage}{0.45\textwidth}
+		%	\begin{flushleft} %\large
+		%		Vº. Bº. del co-tutor:\\[2cm]
+		%		D. nombre co-tutor
+		%	\end{flushleft}
+		%\end{minipage}
+		%\hfill
 		
 		\vfill
 		
 		% para casos con solo un tutor comentar lo anterior
 		% y descomentar lo siguiente
 		%Vº. Bº. del Tutor:\\[2cm]
-		%D. nombre tutor
+		%D. nombre tutor D. {\nombreTutor}
 		
 		
 		\newpage\null\thispagestyle{empty}\newpage
