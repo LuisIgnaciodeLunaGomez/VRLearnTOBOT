@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Categories>
+	<Category>
+		<Name>Movimiento</Name>
+		<Color>#4C97FF</Color>
+	</Category>
+	<Category>
+		<Name>Apariencia</Name>
+		<Color>#9966FF</Color>
+	</Category>
+	<Category>
+		<Name>Sonido</Name>
+		<Color>#CF63CF</Color>
+	</Category>
+	<Category>
+		<Name>Eventos</Name>
+		<Color>#FFBF00</Color>
+	</Category>
+	<Category>
+		<Name>Control</Name>
+		<Color>#FFAB19</Color>
+	</Category>
+	<Category>
+		<Name>Sensores</Name>
+		<Color>#5CB1D6</Color>
+	</Category>
+	<Category>
+		<Name>Operadores</Name>
+		<Color>#59C059</Color>
+	</Category>
+	<Category>
+		<Name>Variables</Name>
+		<Color>#FF8C1A</Color>
+	</Category>
+</Categories>
+
