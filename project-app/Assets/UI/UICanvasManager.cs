@@ -38,7 +38,10 @@ public class UICanvasManager : MonoBehaviour
         canvasGO.transform.SetParent(uiManager.transform);
         UnityEngine.Canvas canvas = canvasGO.AddComponent<UnityEngine.Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasGO.AddComponent<CanvasScaler>();
+        CanvasScaler canvasScaler = canvasGO.AddComponent<CanvasScaler>();
+        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        canvasScaler.referenceResolution = new Vector2(1280, 720);
+        canvasScaler.matchWidthOrHeight = 1f;
         canvasGO.AddComponent<GraphicRaycaster>();
 
         // Creo el panel superior
