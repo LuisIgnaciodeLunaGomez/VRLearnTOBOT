@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.2.12)  20 FEB 2025 10:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.2.12)  20 FEB 2025 11:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -775,7 +775,16 @@ LaTeX Font Info:    Trying to load font information for T1+lmr on input line 36
  (C:\Users\Luis\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmr.fd
 File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-(memoria.aux)
+(memoria.aux
+LaTeX Info: Redefining \. on input line 12.
+LaTeX Info: Redefining \% on input line 12.
+LaTeX Info: Redefining \. on input line 13.
+LaTeX Info: Redefining \% on input line 13.
+ (tex/1_Introduccion.aux) (tex/2_Objetivos_del_proyecto.aux)
+(tex/3_Conceptos_teoricos.aux) (tex/4_Tecnicas_y_herramientas.aux)
+(tex/5_Aspectos_relevantes_del_desarrollo_del_proyecto.aux)
+(tex/6_Trabajos_relacionados.aux)
+(tex/7_Conclusiones_Lineas_de_trabajo_futuras.aux))
 \openout1 = `memoria.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 368.
@@ -850,7 +859,7 @@ Package hyperref Info: Link coloring ON on input line 368.
 \@outlinefile=\write4
 \openout4 = `memoria.out'.
 
-<cabecera.pdf, id=75, 617.67549pt x 135.51413pt>
+<cabecera.pdf, id=87, 617.67549pt x 135.51413pt>
 File: cabecera.pdf Graphic file (type pdf)
 <use cabecera.pdf>
 Package pdftex.def Info: cabecera.pdf  used on input line 370.
@@ -885,7 +894,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 370.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <6> on input line 370.
-<escudoInfor.pdf, id=76, 618.11432pt x 737.07487pt>
+<escudoInfor.pdf, id=88, 618.11432pt x 737.07487pt>
 File: escudoInfor.pdf Graphic file (type pdf)
 <use escudoInfor.pdf>
 Package pdftex.def Info: escudoInfor.pdf  used on input line 370.
@@ -940,24 +949,35 @@ LaTeX Info: Redefining \% on input line 2.
 LaTeX Font Warning: Font shape `T1/lmr/bx/sc' undefined
 (Font)              using `T1/lmr/bx/n' instead on input line 3.
 
-) [3
+[3
 
-] (memoria.lof
-LaTeX Info: Redefining \. on input line 1.
-LaTeX Info: Redefining \% on input line 1.
-LaTeX Info: Redefining \. on input line 2.
-LaTeX Info: Redefining \% on input line 2.
-) [4
+])
+LaTeX Info: Redefining \. on input line 456.
+LaTeX Info: Redefining \% on input line 456.
 
-] (memoria.lot
+
+Class memoir Warning: The material used in the headers is too large
+(15.35403pt) for the given head height (14.5pt), it is recommended to
+either increase the head height or redesign the header
+(in both cases you will find help in the memoir manual). on input line 456.
+
+
+Overfull \vbox (0.85403pt too high) has occurred while \output is active []
+
+
+[4] (memoria.lof
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 LaTeX Info: Redefining \. on input line 2.
 LaTeX Info: Redefining \% on input line 2.
 ) [5
 
-] [6
-
+] (memoria.lot
+LaTeX Info: Redefining \. on input line 1.
+LaTeX Info: Redefining \% on input line 1.
+LaTeX Info: Redefining \. on input line 2.
+LaTeX Info: Redefining \% on input line 2.
+) [6
 
 ]
 \openout2 = `./tex/1_Introduccion.aux'.
@@ -976,228 +996,38 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.4 ... la complejidad de la sintaxis textual [​
-                                                  JENUI_2022_044.pdf]
+l.16 ...su accesibilidad y eficacia pedagógica​
+                                                    \cite{Paredes2023}
 You may provide a definition with
 \DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.4 ...mplejidad de la sintaxis textual [​JENUI_
-                                                  2022_044.pdf]
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.5 
-    
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-! LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.6 ... su accesibilidad y eficacia pedagógica​
-                                                   [JENUI_2015_038.pdf]
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.6 ...sibilidad y eficacia pedagógica​ [JENUI_
-                                                  2015_038.pdf]
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-LaTeX Warning: Command \~ invalid in math mode on input line 7.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 7.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 7.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 7.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 7.
-
-
-! LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.7 ...as de introducción a la programación [​
-                                                  JENUI_2015_038.pdf]
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.8 
-    
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-Overfull \hbox (1061.27972pt too wide) in paragraph at lines 6--8
-\T1/lmr/m/n/12 (-20) dad y efi-ca-cia pe-da-g�-gi-ca [JENUI$[]\OT1/lmr/m/n/12 (
--20) 015[]38\OML/lmm/m/it/12 :pdf\OT1/lmr/m/n/12 (-20) ]\OML/lmm/m/it/12 Estudi
-osprevioshandemostradoqueherramientascomoScratchyLegoMindstormsfavorecenlaense\
-OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/12 anzadefundamentosdeprogramaci\OT1/lmr/m/
-n/12 (-20) �\OML/lmm/m/it/12 nyaumentanlatasadeaprobaci\OT1/lmr/m/n/12 (-20) �\
-OML/lmm/m/it/12 nenasignaturasdeintroducci\OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/
-12 nalaprogramaci\OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/12 n\OT1/lmr/m/n/12 (-20)
- [\OML/lmm/m/it/12 JENUI[]\OT1/lmr/m/n/12 (-20) 015[]38\OML/lmm/m/it/12 :pdf\OT
-1/lmr/m/n/12 (-20) ]$ 
- []
-
-
-! LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.9 ...tivación y el compromiso del estudiante​
-                                                   [JENUI_2016_038.pdf]
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.9 ...n y el compromiso del estudiante​ [JENUI_
-                                                  2016_038.pdf]
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.10 
-     
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-! LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.11 ...rales o con restricciones económicas [​
-                                                  JENUI_2022_044.pdf]
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.11 ...o con restricciones económicas [​JENUI_
-                                                  2022_044.pdf]
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \~ invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-
-LaTeX Warning: Command \' invalid in math mode on input line 12.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.13 
-     
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-Overfull \hbox (602.72646pt too wide) in paragraph at lines 11--13
-\T1/lmr/m/n/12 (-20) [JENUI$[]\OT1/lmr/m/n/12 (-20) 022[]44\OML/lmm/m/it/12 :pd
-f\OT1/lmr/m/n/12 (-20) ]\OML/lmm/m/it/12 Frenteaestaproblem\OT1/lmr/m/n/12 (-20
-) �\OML/lmm/m/it/12 tica; losentornosdesimulaci\OT1/lmr/m/n/12 (-20) �\OML/lmm/
-m/it/12 nvirtualsepresentancomounasoluci\OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/12
- nviableparademocratizarelaccesoalaense\OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/12 
-anzadelaprogramaci\OT1/lmr/m/n/12 (-20) �\OML/lmm/m/it/12 nyrob\OT1/lmr/m/n/12 
-(-20) �\OML/lmm/m/it/12 tica\OT1/lmr/m/n/12 (-20) [410191 \OMS/lmsy/m/n/12 ^^@
- []
-
-
-! LaTeX Error: Unicode character ​ (U+200B)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.14 ... todas las funcionalidades necesarias [​
-                                                  JENUI_2023_034.pdf]
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.14 ... las funcionalidades necesarias [​JENUI_
-                                                  2023_034.pdf]
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.15 
-     
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
 
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.15 
-      [1
+l.18 E
+      studios previos han demostrado que herramientas como Scratch y Lego Mi...
+[1
 
 
-{C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/U
-sers/Luis/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Us
-ers/Luis/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}])
+
+
+]
+
+! LaTeX Error: Unicode character ​ (U+200B)
+               not set up for use with LaTeX.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.20 ...ivación y el compromiso del estudiante​
+                                                   \cite{Campana2016}
+You may provide a definition with
+\DeclareUnicodeCharacter 
+
+)
 LaTeX Info: Redefining \. on input line 466.
 LaTeX Info: Redefining \% on input line 466.
 
@@ -1286,7 +1116,8 @@ been already used, duplicate ignored
 <to be read again> 
                    \relax 
 l.467 		\include{./tex/2_Objetivos_del_proyecto}
-                                                 [5]
+                                                 [5{C:/Users/Luis/AppData/Local
+/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}]
 \openout2 = `./tex/3_Conceptos_teoricos.aux'.
 
 
@@ -1416,13 +1247,6 @@ LaTeX Info: Redefining \% on input line 38.
 LaTeX Info: Redefining \. on input line 60.
 LaTeX Info: Redefining \% on input line 60.
 
-
-Class memoir Warning: The material used in the headers is too large
-(15.35403pt) for the given head height (14.5pt), it is recommended to
-either increase the head height or redesign the header
-(in both cases you will find help in the memoir manual). on input line 60.
-
-
 Overfull \vbox (0.85403pt too high) has occurred while \output is active []
 
 
@@ -1431,9 +1255,6 @@ LaTeX Info: Redefining \. on input line 472.
 LaTeX Info: Redefining \% on input line 472.
  [20] (memoria.bbl
 bibitemlist
-
-LaTeX Warning: Empty `thebibliography' environment on input line 3.
-
 )
 
 Class memoir Warning: The material used in the headers is too large
@@ -1493,14 +1314,8 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-
-Package rerunfilecheck Warning: File `memoria.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `memoria.out':
-(rerunfilecheck)             Before: 8DB34A423DCCA38C757F0B23D8C39240;2801
-(rerunfilecheck)             After:  96E4501A3D8981FDBE56B78583E08AF1;3255.
+Package rerunfilecheck Info: File `memoria.out' has not changed.
+(rerunfilecheck)             Checksum: 96E4501A3D8981FDBE56B78583E08AF1;3255.
  )
 (\end occurred inside a group at level 2)
 
@@ -1508,33 +1323,29 @@ Package rerunfilecheck Info: Checksums for `memoria.out':
 ### semi simple group (level 1) entered at line 11 (\begingroup)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 17849 strings out of 474486
- 289307 string characters out of 5744227
+ 17900 strings out of 474486
+ 290894 string characters out of 5744227
  1943542 words of memory out of 5000000
- 39587 multiletter control sequences out of 15000+600000
- 655465 words of font info for 176 fonts, out of 8000000 for 9000
+ 39610 multiletter control sequences out of 15000+600000
+ 656099 words of font info for 182 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 85i,12n,93p,1007b,942s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 85i,12n,93p,1007b,941s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/lm/lmbx10.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/
+lm/lmbx12.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/l
+m/lmcsc10.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/l
+m/lmr10.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/
+lmr12.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lm
+r17.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7
+.pfb><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pf
+b><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb
+><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmro12.pfb>
+<C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb
+><C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb>
 
-pdfTeX warning (dest): name{chapter*.13} has been referenced but does not exist
-, replaced by a fixed one
-
-<C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><
-C:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C
-:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pfb><C
-:/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:
-/Users/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/U
-sers/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Use
-rs/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users
-/Luis/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Lu
-is/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Luis/
-AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/Luis/A
-ppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmro12.pfb><C:/Users/Luis/Ap
-pData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Luis/A
-ppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb>
-Output written on memoria.pdf (33 pages, 715296 bytes).
+Output written on memoria.pdf (33 pages, 709818 bytes).
 PDF statistics:
- 712 PDF objects out of 1000 (max. 8388607)
- 67 named destinations out of 1000 (max. 500000)
- 57499 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 726 PDF objects out of 1000 (max. 8388607)
+ 71 named destinations out of 1000 (max. 500000)
+ 57523 words of extra memory for PDF output out of 61914 (max. 10000000)
 
