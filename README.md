@@ -2,7 +2,7 @@
 
 <h1>VRLearnTOBOT</h1>
 
-## Laboratorio virtual  de programación y robótica mediante programación de bloques con Scratch y simulación de robots lego Wedo 2.0.
+🚀## Laboratorio virtual  de programación y robótica mediante programación de bloques con Scratch y simulación de robots lego Wedo 2.0.
 Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Burgos desarrollado por Luis Ignacio de Luna Gómez
 
 ### Tutor del trabajo
@@ -10,42 +10,29 @@ Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Bu
 <p>Departamento de Ingeniería Informática, Universidad de Burgos</p>
 <p>Contacto:  <a href="mailto:clopezno@ubu.es">clopezno@ubu.es</a></p>
 
-# Resumen del trabajo
+📌 #Descripción del proyecto
 
-# Palabras clave
+Este proyecto tiene como objetivo el desarrollo de un laboratorio virtual de programación y robótica utilizando Unity.
+La plataforma permitirá a los usuarios interactuar con bloques de programación visual, similares a Scratch, para simular y programar el robot LEGO WeDo 2.0.
 
-<ul>
- <li>Programación educativa</li>
- <li>Robótica</li>
- <li>Laboratorio virtual</li>
- <li>Simulación</li>
- <li>Scratch</li>
- <li>LEGO® Wedo</li>
- <li>STEAM</li>
- <li>Gamificación</li>
- <li>Realidad Virtual (RV)</li>
-</ul>
+El laboratorio busca ser una herramienta educativa innovadora que facilite la enseñanza de la programación en entornos visuales, brindando una alternativa accesible y didáctica para estudiantes de distintas edades.
 
-# Herramientas utilizadas:
+🎯 #Características Principales
+✔ Simulación de bloques de Scratch: Adaptación de un entorno gráfico basado en bloques de palabra  para la interacción con bloques de programación.
+✔ Compatibilidad con el robot LEGO WeDo 2.0: Simulación del hardware, incluyendo sensores de movimiento, distancia y motores.
+✔ Desarrollo en Unity: Implementación de un sistema de interacción intuitivo y visualmente atractivo.
+✔ Laboratorio educativo: Enfoque en la enseñanza de la lógica de programación y robótica de manera accesible.
 
- <ul>
-  <li>Visual Studio 2022</li>
-  <li>Unity 6.0</li>
-  <li>Blender 4.3 </li>
-  <li>Firebase</li>
- <li>Unity Cloud (anteriormente Plastic SCM</li>
- <li>Github</li>
- <li>Zube</li>
-  <li>A-Frame</li> 
-  <li>Boostrap</li>
-  <li>Ionic</li>
- </ul>
+🛠# Herramientas utilizadas:
+Unity (Motor de desarrollo para la simulación).
+C# (Lógica y programación de los bloques interactivos).
+Firebase (Para almacenamiento de datos y configuración de usuario).
+Scratch (Base conceptual para los bloques de programación).
   
 # Control de versiones
 
 <p>Para gestionar el proyecto de manera eficiente, se utilizará:</p>
  <ou>
-  <li>Plastics SCM (Unity Cloud): Permite almacenar proyectos de gran dimensión para suplir las limitaciones de GitHub.</li>
   <li>Github: Para almacenar la documentación del proyecto y colaborar en aspectos fuera del entorno de Unity. </li>
   <li>Zube Para gestionar las tareas y el avance del proyecto utilizando metodología ágil.</li>
  </ul>
