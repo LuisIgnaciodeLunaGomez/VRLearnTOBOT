@@ -1,3 +1,5 @@
+![VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
+
 <h1>VRLearnTOBOT</h1>
 
 ## Laboratorio virtual  de programación y robótica mediante programación de bloques con Scratch y simulación de robots lego Wedo 2.0.
