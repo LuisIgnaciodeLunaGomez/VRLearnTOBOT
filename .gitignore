@@ -21,3 +21,10 @@ UserSettings/
 
 #ignorar archivos pdf
 .pdf/
+
+#ignorar archivos que no sean pdf, tex o bib
+project-docs/tex/*
+!project-docs/tex/*.pdf
+!project-docs/tex/*.tex
+!project-docs/tex/*.bib
+
