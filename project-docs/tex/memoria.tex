@@ -20,6 +20,17 @@
 	allcolors = {red}
 }
 
+\usepackage[acronym]{glossaries}
+\makenoidxglossaries
+
+\newacronym{}{}{\textit{}}
+
+\newglossaryentry{paleta-colores}
+{
+	name=Paleta de colores,
+	description={En el contexto de la programación por bloques, se refiere al esquema de colores utilizado para categorizar los diferentes tipos de bloques. Cada categoria de bloques esta asociada a un color en concreto}
+}
+
 % Ecuaciones
 \usepackage{amsmath}
 
@@ -450,6 +461,7 @@
 		
 		\clearpage
 		
+		
 		% Indices
 		\tableofcontents
 		
@@ -471,7 +483,8 @@
 		\include{./tex/6_Trabajos_relacionados}
 		\include{./tex/7_Conclusiones_Lineas_de_trabajo_futuras}
 		
-
+		\printnoidxglossary[type=\acronymtype]
+		
 		\bibliographystyle{plain}
 		\bibliography{bibliografia}
 		
