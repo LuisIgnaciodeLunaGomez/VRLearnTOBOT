@@ -68,6 +68,11 @@ public class BlockManager : MonoBehaviour
             string label = block.Element("Label").Value;
             string spriteName = block.Element("Sprite").Value;
 
+            // Compruebo si LabelStart y LabelEnd existen en el XML para generar los bloques provisionales
+            string labelStart = block.Element("LabelStart") != null ? block.Element("LabelStart").Value : label;
+            string labelEnd = block.Element("LabelEnd") != null ? block.Element("LabelEnd").Value : "";
+
+
             bool hasTopConnection = block.Element("connections")?.Element("top")?.Value == "true";
             bool hasBottomConeection = block.Element("connections")?.Element("bottom")?.Value == "true";
 
@@ -80,7 +85,11 @@ public class BlockManager : MonoBehaviour
                 return;
             }
 
-            CreateBlock(type, label, categoryColor, blockSprite, hasTopConnection, hasBottomConeection);
+           // CreateBlock(type, label, categoryColor, blockSprite, hasTopConnection, hasBottomConeection);
+
+            // Crear el bloque
+            BlockFactory.CreateBlock(blockContainer, type, labelStart, labelEnd, blockSprite, categoryColor);
+
         }
     }
     /**
@@ -102,10 +111,9 @@ public class BlockManager : MonoBehaviour
 
         RectTransform rect = newBlock.GetComponent<RectTransform>();
 
-
         if (rect == null)
         {
-            rect = newBlock.AddComponent<RectTransform>(); 
+            rect = newBlock.AddComponent<RectTransform>();
         }
 
         // Configuro anclajes y posición para que los bloques aparezcan en la zona correcta
@@ -119,31 +127,23 @@ public class BlockManager : MonoBehaviour
         //Configuro el tamaño y el color del bloque
         Image blockImage = newBlock.GetComponent<Image>();
         blockImage.sprite = blockSprite;
+        blockImage.type = Image.Type.Sliced; // 9-Slice para que pueda expandirse
         // Configuro el tamaño de la imagen
         blockImage.rectTransform.localScale = new Vector3(0.2f, 0.2f, 1f);
         blockImage.color = categoryColor;
 
-        GameObject textObject = new GameObject("BlockText");
+        // Crear un contenedor para el contenido del bloque
+        GameObject content = new GameObject("Content", typeof(RectTransform));
+        content.transform.SetParent(newBlock.transform, false);
 
-        textObject.transform.SetParent(newBlock.transform);
+        // Texto inicial ("mover")
+        GameObject textStartGO = CreateTextElement(label, content.transform, new Vector2(10, 0));
 
-        //Configuro el texto del bloque
-        TextMeshProUGUI blockText = newBlock.GetComponentInChildren<TextMeshProUGUI>();
-        if (blockText != null)
-        {
-            blockText.text = label;
-            blockText.alignment = TextAlignmentOptions.Center;
-            blockText.fontSize = 18;
-            blockText.color = Color.black;
+        // Campo numérico
+        GameObject numberGO = CreateInputField(content.transform, new Vector2(90, 0));
 
-            // Configuración del RectTransform del texto
-            RectTransform textRect = textObject.GetComponent<RectTransform>();
-            textRect.anchorMin = new Vector2(0, 0);
-            textRect.anchorMax = new Vector2(1, 1);
-            textRect.pivot = new Vector2(0.5f, 0.5f);
-            textRect.sizeDelta = new Vector2(100, 60);
-            textRect.anchoredPosition = Vector2.zero;
-        }
+        // Texto final ("pasos")
+        GameObject textEndGO = CreateTextElement("pasos", content.transform, new Vector2(150, 0));
 
         //Configuración de conexiones visuales
         Transform topConnection = newBlock.transform.Find("TopConnection");
@@ -154,6 +154,57 @@ public class BlockManager : MonoBehaviour
 
         if (bottomConnection != null)
             bottomConnection.gameObject.SetActive(hasBottomConnection);
+    }
+
+    private GameObject CreateTextElement(string text, Transform parent, Vector2 position)
+    {
+        GameObject textGO = new GameObject("Text", typeof(TextMeshProUGUI));
+        textGO.transform.SetParent(parent, false);
+
+        TextMeshProUGUI textComponent = textGO.GetComponent<TextMeshProUGUI>();
+        textComponent.text = text;
+        textComponent.fontSize = 24;
+        textComponent.color = Color.white;
+        textComponent.alignment = TextAlignmentOptions.Center;
+
+        RectTransform rect = textGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(60, 40);
+        rect.anchoredPosition = position;
+
+        return textGO;
+    }
+
+    private GameObject CreateInputField(Transform parent, Vector2 position)
+    {
+        GameObject inputGO = new GameObject("InputField", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
+        inputGO.transform.SetParent(parent, false);
+
+        RectTransform rect = inputGO.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(40, 40);
+        rect.anchoredPosition = position;
+
+        Image bgImage = inputGO.GetComponent<Image>();
+        bgImage.color = Color.white;
+
+        TMP_InputField inputField = inputGO.GetComponent<TMP_InputField>();
+        inputField.text = "10";
+        inputField.textComponent = CreateTextElement("10", inputGO.transform, Vector2.zero).GetComponent<TextMeshProUGUI>();
+        inputField.textComponent.fontSize = 24; // Mover la configuración del tamaño de fuente aquí
+
+        return inputGO;
+    }
+
+    private void CreateConnection(GameObject block, string connectionName, Vector2 position)
+    {
+        GameObject connection = new GameObject(connectionName, typeof(RectTransform), typeof(Image));
+        connection.transform.SetParent(block.transform, false);
+
+        RectTransform rect = connection.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(20, 10);
+        rect.anchoredPosition = position;
+
+        Image image = connection.GetComponent<Image>();
+        image.color = Color.gray;
     }
 }
 

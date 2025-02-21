@@ -8,20 +8,4 @@
 			<bottom>true</bottom>
 		</connections>
 	</Block>
-	<Block>
-		<Type>Screen_Flag_Green_2</Type>
-		<Label>event_whenflagclicked_again</Label>
-		<Sprite>Hat_block_grey</Sprite>
-		<connections>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
-	<Block>
-		<Type>Screen_Flag_Green_3</Type>
-		<Label>event_whenflagclicked_again</Label>
-		<Sprite>Stack_block_grey</Sprite>
-		<connections>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
 </Blocks>

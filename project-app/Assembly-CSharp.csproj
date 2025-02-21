@@ -59,16 +59,18 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.26f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.26f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.26f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
-    <Analyzer Include="C:\Users\Luis\Documents\GitHub\VRLearnTOBOT\project-app\Library\PackageCache\com.unity.dt.app-ui\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
-    <Analyzer Include="C:\Users\Luis\Documents\GitHub\VRLearnTOBOT\project-app\Library\PackageCache\com.unity.muse.common\ThirdParty\AppUI\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
+    <Analyzer Include="C:\Users\ldelu\Documents\GitHub\VRLearnTOBOT\project-app\Library\PackageCache\com.unity.dt.app-ui\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
+    <Analyzer Include="C:\Users\ldelu\Documents\GitHub\VRLearnTOBOT\project-app\Library\PackageCache\com.unity.muse.common\ThirdParty\AppUI\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Blocks\BlockManager.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockView.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
     <Compile Include="Assets\Scripts\ResourcesDebugger.cs" />
     <Compile Include="Assets\UI\UICanvasManager.cs" />
     <Compile Include="Assets\Scripts\ScratchView\PanelColorManager.cs" />
     <Compile Include="Assets\UI\CategoryLoader.cs" />
+    <Compile Include="Assets\Scripts\Blocks\BlockFactory.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockDataLoader.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ScratchUI.cs" />

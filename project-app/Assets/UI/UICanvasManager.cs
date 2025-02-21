@@ -88,12 +88,13 @@ public class UICanvasManager : MonoBehaviour
         textRect.anchoredPosition = new Vector2(0, 30);
         textRect.sizeDelta = new Vector2(400, 100);
 
-        // Crear el panel derecho 
+        // Creo el panel derecho 
         GameObject rightPanel = this.CreatePanel("RightPanel", canvasGO.transform, new Vector2(0.5f, 0), new Vector2(1, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
+
+        // Creo un contenedor de bloques en el panel medio
         //GameObject blockContainer = this.CreatePanel("BlockContainer", middlePanel.transform, new Vector2(0, 0), new Vector2(1, 0.9f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), Color.clear);
         RectTransform blockContainer = this.CreateBlockContainer(middlePanel.transform);// Creo el blockContainer
-
 
         blockManager = gameObject.AddComponent<BlockManager>();
         blockManager.blockContainer = blockContainer.transform; 
@@ -171,7 +172,7 @@ public class UICanvasManager : MonoBehaviour
             logoRect.anchorMax = new Vector2(0, 0.5f);
             logoRect.pivot = new Vector2(0, 0.5f);
             logoRect.sizeDelta = new Vector2(panel.GetComponent<RectTransform>().rect.width * 0.05f, panel.GetComponent<RectTransform>().rect.height * 0.5f);
-            logoRect.anchoredPosition = new Vector2(20, -5); // Desplazamiento de 10px a la izquierda
+            logoRect.anchoredPosition = new Vector2(50, 0); // Desplazamiento de 10px a la izquierda
 
             Debug.Log("Logo agregado correctamente en el Panel");
         }
@@ -183,9 +184,27 @@ public class UICanvasManager : MonoBehaviour
 
     void AddIconsToPanel(GameObject panel, string[] iconNames)
     {
-        float iconSize = panel.GetComponent<RectTransform>().rect.height * 0.6f;
+        float iconSize = panel.GetComponent<RectTransform>().rect.height * 0.5f;
         float padding = 10f;
         float startX = panel.GetComponent<RectTransform>().rect.width - (iconSize + padding) * iconNames.Length;
+
+        // Contenedor de los iconos (para distribuirlos correctamente)
+        GameObject iconContainer = new GameObject("IconContainer");
+        iconContainer.transform.SetParent(panel.transform, false);
+        
+        RectTransform containerRect = iconContainer.AddComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(1, 0.5f);  // Anclar a la derecha, centrado verticalmente
+        containerRect.anchorMax = new Vector2(1, 0.5f);
+        containerRect.pivot = new Vector2(1, 0.5f);
+        containerRect.anchoredPosition = new Vector2(-20, 0); // Ajuste de margen derecho
+        containerRect.sizeDelta = new Vector2(iconSize * iconNames.Length + (padding * (iconNames.Length - 1)), iconSize);
+        
+        // Agregar un `HorizontalLayoutGroup` para distribuir los iconos automáticamente
+        HorizontalLayoutGroup layoutGroup = iconContainer.AddComponent<HorizontalLayoutGroup>();
+        layoutGroup.childAlignment = TextAnchor.MiddleRight;
+        layoutGroup.spacing = padding;
+        layoutGroup.childForceExpandWidth = false;
+        layoutGroup.childForceExpandHeight = false;
 
         for (int i = 0; i < iconNames.Length; i++)
         {
@@ -222,7 +241,6 @@ public class UICanvasManager : MonoBehaviour
             }
         }
     }
-
     private void OnIconButtonClick(string iconName)
     {
         var actions = new System.Collections.Generic.Dictionary<string, System.Action>
@@ -403,7 +421,6 @@ public class UICanvasManager : MonoBehaviour
         contentRect.pivot = new Vector2(0, 1);
         contentRect.anchoredPosition = new Vector2(0, 0);
         contentRect.sizeDelta = new Vector2(0, 500);
-
 
         // Me Aseguro que los bloques se distribuyan verticalmente
         VerticalLayoutGroup layoutGroup = blockContent.AddComponent<VerticalLayoutGroup>();
