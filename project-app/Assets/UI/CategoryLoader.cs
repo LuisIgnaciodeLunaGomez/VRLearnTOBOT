@@ -27,7 +27,7 @@ public class CategoryLoader : MonoBehaviour
     public GameObject contentPanel; // Referencia al panel donde se colocarán las categorías
     public string xmlFileName = "XML/Categories"; // Ruta en Resources
     public GameObject categoryPrefab; // Prefab de la categoría
-
+    public UICanvasManager uiCanvasManager; // Referencia al gestor de la interfaz de usuario
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -111,6 +111,7 @@ public class CategoryLoader : MonoBehaviour
             //rect.sizeDelta = new Vector2(200, 50);  // Ajusta el tamaño si es necesario
         }
 
+       
         LayoutElement layoutElement = newCategory.GetComponent<LayoutElement>();
         if (layoutElement == null)
         {
@@ -162,7 +163,7 @@ public class CategoryLoader : MonoBehaviour
             }
 
             UnityEngine.UI.Button iconButton = icon.AddComponent<UnityEngine.UI.Button>();
-            iconButton.onClick.AddListener(() => OnCategoryButtonClick(name));
+            iconButton.onClick.AddListener(() => OnCategoryButtonClick(name, color));
         }
         // Configurar el texto
         //TextMeshProUGUI text = newCategory.transform.Find("CategoryText").GetComponent<TextMeshProUGUI>();
@@ -194,10 +195,17 @@ public class CategoryLoader : MonoBehaviour
     }
 
     // Función que se ejecuta cuando un botón de categoría es presionado
-    void OnCategoryButtonClick(string categoryName)
+    void OnCategoryButtonClick(string categoryName, Color categoryColor)
     {
         Debug.Log("Se presionó la categoría: " + categoryName);
-        // Aquí puedes agregar la lógica que deseas ejecutar al hacer clic en una categoría.
+        if (uiCanvasManager != null)
+        {
+            uiCanvasManager.UpdateMiddlePanel(categoryName, categoryColor);
+        }
+        else
+        {
+            Debug.LogError("uiCanvasManager es nulo. Asegúrate de que se ha asignado correctamente.");
+        }
     }
 
 }

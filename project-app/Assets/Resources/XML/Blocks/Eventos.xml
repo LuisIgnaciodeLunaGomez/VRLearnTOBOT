@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Blocks>
+	<Block>
+		<Type>Screen_Flag_Green</Type>
+		<Label>event_whenflagclicked</Label>
+		<Sprite>Hat_block_grey</Sprite>
+		<connections>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+	<Block>
+		<Type>Screen_Flag_Green_2</Type>
+		<Label>event_whenflagclicked_again</Label>
+		<Sprite>Hat_block_grey</Sprite>
+		<connections>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+	<Block>
+		<Type>Screen_Flag_Green_3</Type>
+		<Label>event_whenflagclicked_again</Label>
+		<Sprite>Stack_block_grey</Sprite>
+		<connections>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+</Blocks>

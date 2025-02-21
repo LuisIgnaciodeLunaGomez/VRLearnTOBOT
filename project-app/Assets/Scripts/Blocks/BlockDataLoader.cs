@@ -48,7 +48,7 @@ public class BlockDataLoader
     // Método para cargar los datos de bloques desde un archivo JSON
     public static BlockCategoryData LoadCategoryData(string jsonFilePath)
     {
-        var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargar desde la carpeta Resources
+        var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargo desde la carpeta Resources
 
         if (jsonText == null)
         {

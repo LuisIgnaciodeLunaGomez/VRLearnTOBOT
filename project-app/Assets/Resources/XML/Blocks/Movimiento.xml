@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Blocks>
+	<Block>
+		<Type>motion_movesteps</Type>
+		<Label>Mover %1 pasos</Label>
+		<Sprite>Stack_block_grey</Sprite>
+		<connections>
+			<top>true</top>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+</Blocks>

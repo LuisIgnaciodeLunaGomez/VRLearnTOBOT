@@ -14,6 +14,7 @@
  * Descripción: Clase que genera la vista de la interfaz de usuario de scratch
  */
 
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,8 +22,9 @@ public class UICanvasManager : MonoBehaviour
 {
     public string logo;
     public string[] iconNames;
+    private TextMeshProUGUI categoryText;
+    private BlockManager blockManager;
 
-   
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -69,10 +71,33 @@ public class UICanvasManager : MonoBehaviour
         // Creo el panel medio 
         GameObject middlePanel = this.CreatePanel("MiddlePanel", canvasGO.transform, new Vector2(0.15f, 0), new Vector2(0.5f, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
+        //Creo un objeto de texto en el panel medio
+        GameObject categoryTextGO = new GameObject("CategoryText");
+        categoryTextGO.transform.SetParent(middlePanel.transform, false);
+        categoryText = categoryTextGO.AddComponent<TextMeshProUGUI>();
+
+        //Configuro las propiedades del texto a mostrar en el MiddlePanel
+        categoryText.alignment = TextAlignmentOptions.Left;
+        categoryText.fontSize = 24;
+        categoryText.color = Color.black;
+
+        RectTransform textRect = categoryText.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0, 1);
+        textRect.anchorMax = new Vector2(0, 1);
+        textRect.pivot = new Vector2(0, 1);
+        textRect.anchoredPosition = new Vector2(0, 30);
+        textRect.sizeDelta = new Vector2(400, 100);
+
         // Crear el panel derecho 
         GameObject rightPanel = this.CreatePanel("RightPanel", canvasGO.transform, new Vector2(0.5f, 0), new Vector2(1, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
-      
+        //GameObject blockContainer = this.CreatePanel("BlockContainer", middlePanel.transform, new Vector2(0, 0), new Vector2(1, 0.9f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), Color.clear);
+        RectTransform blockContainer = this.CreateBlockContainer(middlePanel.transform);// Creo el blockContainer
+
+
+        blockManager = gameObject.AddComponent<BlockManager>();
+        blockManager.blockContainer = blockContainer.transform; 
+       // blockManager.blockPrefab = Resources.Load<GameObject>("Prefabs/BlockPrefab");
     }
 
     /**
@@ -247,7 +272,8 @@ public class UICanvasManager : MonoBehaviour
         CategoryLoader categoryLoader = gameObject.AddComponent<CategoryLoader>();
         categoryLoader.contentPanel = contentPanel;
         categoryLoader.xmlFileName = "XML/Categories";
-        categoryLoader.categoryPrefab = Resources.Load<GameObject>("Prefabs/CategoryPrefab");
+        categoryLoader.categoryPrefab = Resources.Load<GameObject>("Prefabs/CategoryPrefab"); //Prefab que muestra el circulo y texto de la categoría
+        categoryLoader.uiCanvasManager = this;
         categoryLoader.LoadCategoriesFromXML();
     }
 
@@ -270,7 +296,7 @@ public class UICanvasManager : MonoBehaviour
         contentRect.pivot = new Vector2(0.5f, 1);
         contentRect.offsetMin = Vector2.zero;
         contentRect.offsetMax = Vector2.zero;
-        contentRect.sizeDelta = new Vector2(0, 500);
+        contentRect.sizeDelta = new Vector2(0, 0);
 
         VerticalLayoutGroup layoutGroup = contentPanel.AddComponent<VerticalLayoutGroup>();
         if (layoutGroup == null)
@@ -293,6 +319,110 @@ public class UICanvasManager : MonoBehaviour
         return contentPanel;
     }
 
+    /**
+     * Actualiza el panel central con el nombre de la categoría seleccionada
+     * @param categoryName Nombre de la categoría seleccionada
+     */
+    public void UpdateMiddlePanel(string categoryName, Color CategoryColor)
+    {
+        if (categoryText != null)
+        {
+            categoryText.text =  categoryName; //Muestro el nombre de la categoría en el MiddlePanel
+        }
 
+        if (blockManager != null)
+        {
+            blockManager.LoadBlocks(categoryName, CategoryColor);
+        }
+    }
+
+    /**
+     * Crea un contenedor de bloques
+     * @param parentPanel Transform del panel padre
+     * @return RectTransform del contenedor de bloques
+     */
+    RectTransform CreateBlockContainer(Transform parentPanel)
+    {
+        // Creo el contenedor de los bloques
+        GameObject blockContainer = new GameObject("BlockContainer");
+        blockContainer.transform.SetParent(parentPanel, false);
+        blockContainer.AddComponent<CanvasRenderer>();
+
+        // Me aseguro que tenga un RectTransform
+        RectTransform blockRect = blockContainer.AddComponent<RectTransform>();
+        blockRect.anchorMin = new Vector2(0, 0);
+        blockRect.anchorMax = new Vector2(1, 0.9f);
+        blockRect.pivot = new Vector2(0, 1);
+
+        /*blockRect.sizeDelta = new Vector2(0, 500);
+        blockRect.anchoredPosition = new Vector2(0, -50);
+        */
+
+        blockRect.sizeDelta =  Vector2.zero;
+        blockRect.anchoredPosition = Vector2.zero;
+
+
+        // Agrego un ScrollRect para manejar muchos bloques
+        ScrollRect scrollRect = blockContainer.AddComponent<ScrollRect>();
+        scrollRect.vertical = true;
+        scrollRect.horizontal = false;
+
+
+        // Creo un Viewport dentro del contenedor
+        GameObject viewport = new GameObject("Viewport");
+        viewport.transform.SetParent(blockContainer.transform, false);
+       
+        //viewport.AddComponent<RectTransform>();
+        viewport.AddComponent<CanvasRenderer>();
+      
+        RectTransform viewportRect = viewport.AddComponent<RectTransform>();
+        viewportRect.anchorMin = new Vector2(0, 0);
+        viewportRect.anchorMax = new Vector2(1, 1);
+        viewportRect.pivot = new Vector2(0, 1);
+        viewportRect.sizeDelta = Vector2.zero;
+        viewportRect.anchoredPosition = Vector2.zero;
+        viewport.AddComponent<Image>().color = new Color(1,1,1,0); // Transparente
+
+        // Agreg0 componente Mask al Viewport
+        Mask mask = viewport.AddComponent<Mask>();
+        mask.showMaskGraphic = false;
+        scrollRect.viewport = viewport.GetComponent<RectTransform>();
+
+        //Image viewportImage = viewport.AddComponent<Image>();
+        //viewportImage.color = new Color(1, 1, 1, 0); // Transparente oculto elementos fuera del área de trabajo
+
+        //scrollRect.viewport = viewportRect;
+
+        // Creo un contenido dentro del ScrollRect donde se agreguen los bloques
+        GameObject blockContent = new GameObject("BlockContent");
+        //blockContent.transform.SetParent(blockContainer.transform, false);
+        blockContent.transform.SetParent(blockContainer.transform, false);
+        RectTransform contentRect = blockContent.AddComponent<RectTransform>();
+        contentRect.anchorMin = new Vector2(0, 1);
+        contentRect.anchorMax = new Vector2(1, 1);
+        contentRect.pivot = new Vector2(0, 1);
+        contentRect.anchoredPosition = new Vector2(0, 0);
+        contentRect.sizeDelta = new Vector2(0, 500);
+
+
+        // Me Aseguro que los bloques se distribuyan verticalmente
+        VerticalLayoutGroup layoutGroup = blockContent.AddComponent<VerticalLayoutGroup>();
+        layoutGroup.childAlignment = TextAnchor.UpperLeft;
+        layoutGroup.spacing = 10;
+        layoutGroup.padding = new RectOffset(10, 10, -20, 10);
+        // Activo control de escala para que los bloques se adapten
+        layoutGroup.childControlWidth = true;
+        layoutGroup.childControlHeight = true;
+        layoutGroup.childScaleWidth = true;  // Activo la escala en el ancho
+        layoutGroup.childScaleHeight = true; // Activo la escala en el alto
+
+        ContentSizeFitter contentFitter = blockContent.AddComponent<ContentSizeFitter>();
+        contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        // Permito que el ScrollRect use el contenido
+        //scrollRect.content = contentRect;
+
+        return contentRect; // Retorno la referencia al contenedor real de bloques
+    }
 }
 
