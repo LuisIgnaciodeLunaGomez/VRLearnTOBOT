@@ -62,22 +62,167 @@ LEGO SPIKE Prime es una adaptación de Scratch hecha por LEGO, por lo que mantie
 
 LEGO WeDo 2.0 usa una interfaz más sencilla con bloques puramente icónicos (sin palabras), mientras que SPIKE Prime combina texto e íconos.
 
+\section{Implementación de UBlockly en Unity}
+	UBlockly es una librería basada en Blockly que permite la integración de bloques de programación en Unity. Si bien no está diseñada específicamente para replicar Scratch, su estructura modular y personalizable puede servir como base para desarrollar un entorno de programación similar. 
+	
+	\subsection{Arquitectura de uBlockly}
+	
+	La arquitectura de uBlockly se divide en tres capas principales:
+	
+	\begin{itemize}
+		\item \textbf{Modelo Core:} Gestiona la estructura lógica de los bloques, incluyendo el espacio de trabajo \textbf{Workspace}, la base de datos de bloques y las conexiones entre ellos.
+		\item \textbf{Interfaz de usuario (UI): }  Maneja la representación visual de los bloques y su interacción dentro del editor de Unity.
+		\item \textbf{Ejecución de código: } Se encarga de interpretar y ejecutar la lógica definida en los bloques.
 
+	\end{itemize}
+	
+	\subsection{Espacio de trabajo / Workspace}
+	
+	El Workspace es el contenedor principal donde se almacenan y organizan los bloques. Su principal función es gestionar la disposición y persistencia de los bloques dentro del entorno de programación.
+	
+	\begin{itemize}
+		\item Atributos principales del Workspace
+		\begin{itemize}
+			\item \textbf{Id:} Identificador único del espacio de trabajo.
+			\item \textbf{Options: } Configuraciones del tipo modo de solo lectura, ejecución sincrónica y dirección del texto.
+			\item \textbf{TopBlocks: } Lista de bloques que no están conectados a otros.
+			\item \textbf{BlockDB: } Diccionario con todos los bloques almacenados por su ID
+			\item \textbf{VariableMap: } Estructura para el manejo de variables en el workspace.
+			\item \textbf{ConnectionList: } Base de datos de conexiones entre bloques.
+			\item \textbf{ProcedureDB: } Base de datos de procedimientos definidos dentro del espacio de trabajo.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Creación y eliminación de bloques}
+	
+	El espacio de trabajo permite la creación de nuevos bloques mediante el uso de la clase BlockFactory y otros métodos para la eliminación y gestión de bloques existentes.
+	
+	\section{Bloques}
+	
+	Cada bloque representa una unidad funcional dentro del Workspace y pueden contener los siguientes elementos:
+	
+	\begin{itemize}
+		\item \textbf{Connection:} Conexiones de entrada y salida
+		\item \textbf{VariableMap: } Relación de variables
+		\item \textbf{Field: } Campos de texto o de selección
+		\item \textbf{Input: } Entradas anidadas
+		\item \textbf{ChildBlocks:} Bloques hijos
+	\end{itemize}
+	
+	\subsection{Jerarquía de un bloque}
+	
+	Cada bloque puede estar compuesto por diferentes elementos jerárquicos:
+	
+	\begin{itemize}
+		\item \textbf{Block: } Bloque superior en el espacio de trabajo 
+		\begin{itemize}
+		
+			\item\textbf{ConnectionOutput }  Conexión de salida
+			\item  \textbf{ConectionPrev }  Conexión previa
+			\item \textbf{ConnectionNext: } Conecta un bloque con el siguiente dentro de la secuencia de ejecución Block(Next)
+			
+		\end{itemize}
+		
+			\item \textbf{Input: } Este puede ser de varios tipos:
+			
+			\begin{itemize}
+				\item \textbf{Field: }
+				\item \textbf{ConnectonInput: } Conexión de entrada
+			\end{itemize} 
+	\end{itemize}
+	
+	
+	\section{Conexiones}
+	
+		Los bloques pueden unirse entre sí a través de un sistema de conexiones. Cada bloque puede tener tres tipos de conexiones principales:
+		
+		\begin{itemize}
+			\item \textbf{outputConnection: } Conecta la salida de un bloque con la entrada de otro
+			\item \textbf{NextConnection: } Conecta un bloque con su bloque superior
+			\item \textbf{PreviousConnection: } Enlaza un bloque con su bloque superior
+		\end{itemize}
+		
+		\subsection{Implementación de Connection en uBlockly}
+		
+			\textbf{Clase Connection }
+			
+			\begin{itemize}
+				\item Verifica la compatibilidad entre conexiones y proporciona funciones para conectar y desconectar bloques mediante código.
+				\item Determina que bloques son compatibles
+				\item Maneja eventos como conexiones, desconexiones y reorganización de bloques
+			\end{itemize}
+			
+			\textbf{Atributos principales} 
+			\begin{itemize}
+				\item \textbf{SourceBlock: } Bloque de origen de la conexión
+				\item \textbf{TargetConnection: } Conexión a la que se encuentra conectado el bloque
+				\item \textbf{IsConnected} Indica si la conexión está activa
+				\item \textbf{Check: } Lista de tipos de valores compatibles con la conexión
+				\item \textbf{Location: } Posición de la conexión en coordenadas del tipo Vector2<int>
+			\end{itemize}
+			
+	\section{Entradas o Inputs}
+		
+		Un Input representa una entrada dentro de un bloque, manejando la alineación y organización de los diferentes elementos visuales dentro del bloque y entre sus atributos principales están los siguientes:
+		
+		\begin{itemize}
+			\item \textbf{Connection: } La conexión que permite enlazar otro bloque dentro del actual
+			\item \textbf{FieldRow: } Lista de Fields que almacenan valores o etiquetas dentro del bloque.
+			\item \textbf{SourceBlock: } Bloque padre al que pertenece la entrada.
+			\item \textbf{ConnectedBlock: } Bloque que esta conectado a esta entrada, si es que existe esta.
+			\item \textbf{Input: } Son campos de datos que representan valores editables en el bloque
+		\end{itemize}	
+	
+	\section{Campos o Fields}
+	
+	Los Field datos dentro de un bloque entre los que se encontrarían etiquetas de texto, entradas editables o selecciones. Sus atributos principales son los siguientes
+	
+	\begin{itemize}
+		\item \textbf{Name: } Identificador único del campo dentro de un bloque
+		\item \textbf{SourceBlock: } Bloque al que se encuentra asociado el campo
+		\item \textbf{Validator: } Incluye funciones de validación para limitar los valores que se pueden ingresar.
+		\item \textbf{IsImage: } Indica si este campo contiene una image en lugar de un texto.
+		\item \textbf{PrefixField o SuffixField: } Son campos adicionales que nos indican que puede acompañar al campo principal dentro de un bloque.
+	\end{itemize} 
+	
+	\section{Variables o VariableMap}
+	
+	El variableMap gestionar la creación, eliminación y renombrado de variables dentro del workSpace y entres sus atributos claves están los siguientes:
+	
+	\begin{itemize}
+		\item \textbf{mVariableMap: } Diccionario de variables que esta agrupado por su tipo
+		\item \textbf{mWorkSpace: } Hace referencia al espacio de trabajo asociado.
+	\end{itemize}
+	
+	\section{Representación de bloques en Unity}
+	
+	Para adaptar uBlockly a Unity, es necesario traducir cada bloque en un objeto GameObject con elementos UI como:
+	
+	\begin{itemize}
+		\item \textbf{Image: } Representa la base del bloque.
+		\item \textbf{TextMeshPro: } Representan las etiquetas de tipo texto.
+		\item \textbf{Button: } Representan los botones para las interacciones.
+		\item \textbf{Anchor Points: } Se utilizan para definir donde se realizan las conexiones entre bloques
+		\item \textbf{LineRenderer: } Representación visual de las conexiones
+		\item \textbf{Bezier Curves: } Refleja la relación entre los bloques en la UI
+	\end{itemize}
+	
+	\section{Serialización y persistencia}
+	
+	Para guardar y cargar bloques utiliza archivos en formato XML y JSON que nos permite almacenar la estructura del WorkSpace y restaurarla cuando sea necesario.
+	
+	\section{Secciones}
 
-
+Notas del proyecto preconfigurados
 En aquellos proyectos que necesiten para su comprensión y desarrollo de unos conceptos teóricos de una determinada materia o de un determinado dominio de conocimiento, debe existir un apartado que sintetice dichos conceptos.
 
 Algunos conceptos teóricos de \LaTeX{} \footnote{Créditos a los proyectos de Álvaro López Cantero: Configurador de Presupuestos y Roberto Izquierdo Amo: PLQuiz}.
 
-\section{Secciones}
+
 
 Las secciones se incluyen con el comando section.
 
-Gamificación y pedagogía de la programación: Aplicación de principios de gamificación y métodos pedagógicos soportados por algoritmos inteligentes para facilitar el aprendizaje de programación en laboratorios virtuales.
-Técnicas de simulación virtual: Uso del motor gráficos Unity para crear experiencias de aprendizaje inmersivas y realistas.
-Programación a través de bloques visuales que generara código ejecutable: Análisis de cómo los bloques de programación visuales (Scratch) se traducen en instrucciones ejecutables y su impacto en la optimización del aprendizaje
-Optimización de modelos 3D en entornos interactivos y uso de herramientas como Blender para crear y optimizar modelos 3D que soporten simulaciones en tiempo real con un balance adecuado entre detalle visual y rendimiento.
-Realidad Virtual (RV) y Realidad Aumentada (RA):</strong> Integración de RV y RA para mejorar la interacción y la experiencia educativa en aplicaciones 3D.
+
 
 \subsection{Subsecciones}
 
