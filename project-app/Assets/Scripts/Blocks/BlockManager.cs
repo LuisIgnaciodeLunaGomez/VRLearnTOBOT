@@ -88,7 +88,7 @@ public class BlockManager : MonoBehaviour
            // CreateBlock(type, label, categoryColor, blockSprite, hasTopConnection, hasBottomConeection);
 
             // Crear el bloque
-            BlockFactory.CreateBlock(blockContainer, type, labelStart, labelEnd, blockSprite, categoryColor);
+          //  BlockFactory.CreateBlock(blockContainer, type, labelStart, labelEnd, blockSprite, categoryColor);
 
         }
     }

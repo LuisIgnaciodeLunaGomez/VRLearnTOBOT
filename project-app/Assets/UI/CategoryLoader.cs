@@ -145,7 +145,7 @@ public class CategoryLoader : MonoBehaviour
         }
         
         // Verificar el RectTransform después de crearlo
-        Debug.Log($"Categoría creada: {name} con tamaño {rect.sizeDelta} y posición {rect.anchoredPosition}");
+       // Debug.Log($"Categoría creada: {name} con tamaño {rect.sizeDelta} y posición {rect.anchoredPosition}");
 
         Transform iconTransform = newCategory.transform.Find("CategoryIcon");
 
@@ -181,7 +181,7 @@ public class CategoryLoader : MonoBehaviour
         newCategory.GetComponent<CanvasGroup>().alpha = 1f;
         newCategory.transform.localScale = Vector3.one;
 
-        Debug.Log($"Categoría creada: {name} con tamaño {rect.sizeDelta} y posición {rect.anchoredPosition}");
+       // Debug.Log($"Categoría creada: {name} con tamaño {rect.sizeDelta} y posición {rect.anchoredPosition}");
     }
 
     Color HexToColor(string hex)
@@ -204,7 +204,7 @@ public class CategoryLoader : MonoBehaviour
         }
         else
         {
-            Debug.LogError("uiCanvasManager es nulo. Asegúrate de que se ha asignado correctamente.");
+            Debug.LogError("uiCanvasManager es nulo. Revisar que se ha asignado correctamente.");
         }
     }
 

@@ -22,84 +22,119 @@ public class UICanvasManager : MonoBehaviour
 {
     public string logo;
     public string[] iconNames;
-    private TextMeshProUGUI categoryText;
-    private BlockManager blockManager;
-
+    private WorkSpace m_workSpace; // Espacio de trabajo
+    private BlockScrollList m_blockScrollList;
+    private GameObject m_CanvasGO; //Canvas principal que incluye a todos los paneles
+    private GameObject m_UIManager; //UIManager que contiene el Canvas principal y todos los paneles de la interfaz
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Busco el UIManager y lo asigno como padre
-        GameObject uiManager = GameObject.Find("UIManager");
-        if (uiManager == null)
-        {
-            uiManager = new GameObject("UIManager");
-        }
+        this.InitializeUIManager();
+        this.InitializeCanvas();
+        this.CreateTopPanel();
+        GameObject leftPanel = SetupLeftPanel(m_CanvasGO);
+        this.LoadCategories(leftPanel);
+        this.CreateWorkspace();
 
-        // Creo el Canvas principal que contendrá los paneles
-        GameObject canvasGO = new GameObject("Canvas");
-        canvasGO.transform.SetParent(uiManager.transform);
-        UnityEngine.Canvas canvas = canvasGO.AddComponent<UnityEngine.Canvas>();
+
+    }
+
+    private void InitializeUIManager()
+    {
+        this.m_UIManager = GameObject.Find("UIManager");
+        if (this.m_UIManager == null)
+        {
+            this.m_UIManager = new GameObject("UIManager");
+        }
+    }
+
+    private void InitializeCanvas()
+    {
+        this.m_CanvasGO = new GameObject("Canvas");
+        this.m_CanvasGO.transform.SetParent(m_UIManager.transform);
+
+        Canvas canvas = this.m_CanvasGO.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        CanvasScaler canvasScaler = canvasGO.AddComponent<CanvasScaler>();
+        CanvasScaler canvasScaler = this.m_CanvasGO.AddComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         canvasScaler.referenceResolution = new Vector2(1280, 720);
         canvasScaler.matchWidthOrHeight = 1f;
-        canvasGO.AddComponent<GraphicRaycaster>();
+        this.m_CanvasGO.AddComponent<GraphicRaycaster>();
+    }
 
-        // Creo el panel superior
-        GameObject topPanel = this.CreatePanel("TopPanel", canvasGO.transform, new Vector2(0, 0.95f), new Vector2(1, 1), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Color(0.6f, 0.4f, 1f, 1f));
+    private void CreateTopPanel()
+    {
+        GameObject topPanel = CreatePanel("TopPanel", m_CanvasGO.transform,
+            new Vector2(0, 0.95f), new Vector2(1, 1), Vector2.zero, Vector2.zero,
+            new Vector2(0, 0), new Color(0.6f, 0.4f, 1f, 1f));
+
         Canvas topCanvas = topPanel.AddComponent<Canvas>();
         topCanvas.overrideSorting = true;
         topCanvas.sortingOrder = 1000;
 
-        //Agregar el logo a la izquierda del panel superior
         if (!string.IsNullOrEmpty(logo))
         {
             this.AddLogoToPanel(topPanel, logo);
         }
 
-        // Agregar iconos a la derecha
         if (iconNames != null && iconNames.Length > 0)
         {
-           this.AddIconsToPanel(topPanel, iconNames);
+            this.AddIconsToPanel(topPanel, iconNames);
         }
-        // Creo el panel izquierdo 
-        GameObject leftPanel = this.SetupLeftPanel(canvasGO);
-        //Cargar las categorias en el LeftPanel
-        this.LoadCategories(leftPanel);
-
-        // Creo el panel medio 
-        GameObject middlePanel = this.CreatePanel("MiddlePanel", canvasGO.transform, new Vector2(0.15f, 0), new Vector2(0.5f, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
-
-        //Creo un objeto de texto en el panel medio
-        GameObject categoryTextGO = new GameObject("CategoryText");
-        categoryTextGO.transform.SetParent(middlePanel.transform, false);
-        categoryText = categoryTextGO.AddComponent<TextMeshProUGUI>();
-
-        //Configuro las propiedades del texto a mostrar en el MiddlePanel
-        categoryText.alignment = TextAlignmentOptions.Left;
-        categoryText.fontSize = 24;
-        categoryText.color = Color.black;
-
-        RectTransform textRect = categoryText.GetComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0, 1);
-        textRect.anchorMax = new Vector2(0, 1);
-        textRect.pivot = new Vector2(0, 1);
-        textRect.anchoredPosition = new Vector2(0, 30);
-        textRect.sizeDelta = new Vector2(400, 100);
-
-        // Creo el panel derecho 
-        GameObject rightPanel = this.CreatePanel("RightPanel", canvasGO.transform, new Vector2(0.5f, 0), new Vector2(1, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
-
-
-        // Creo un contenedor de bloques en el panel medio
-        //GameObject blockContainer = this.CreatePanel("BlockContainer", middlePanel.transform, new Vector2(0, 0), new Vector2(1, 0.9f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), Color.clear);
-        RectTransform blockContainer = this.CreateBlockContainer(middlePanel.transform);// Creo el blockContainer
-
-        blockManager = gameObject.AddComponent<BlockManager>();
-        blockManager.blockContainer = blockContainer.transform; 
-       // blockManager.blockPrefab = Resources.Load<GameObject>("Prefabs/BlockPrefab");
     }
+
+    private void CreateWorkspace()
+    {
+        GameObject workSpaceGO = new GameObject("WorkSpace");
+        workSpaceGO.transform.SetParent(m_CanvasGO.transform, false);
+        workSpaceGO.AddComponent<CanvasRenderer>();
+
+        RectTransform workSpaceRect = workSpaceGO.AddComponent<RectTransform>();
+        workSpaceRect.anchorMin = new Vector2(0.15f, 0);
+        workSpaceRect.anchorMax = new Vector2(1, 0.95f);
+        workSpaceRect.offsetMin = Vector2.zero;
+        workSpaceRect.offsetMax = Vector2.zero;
+        workSpaceRect.pivot = new Vector2(0.5f, 0.5f);
+
+        this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>();
+
+        GameObject middlePanel = CreatePanel(
+            "MiddlePanel", 
+            workSpaceGO.transform,
+            new Vector2(0.0f, 0), 
+            new Vector2(0.4f, 1), 
+            Vector2.zero, 
+            Vector2.zero,
+            new Vector2(0.5f, 0.5f), 
+            new Color(0.976f, 0.976f, 0.976f, 1f));
+
+        RectTransform middlePanelRect = middlePanel.GetComponent<RectTransform>();
+
+        Debug.Log($"MiddlePanel size: {middlePanelRect.sizeDelta}");
+
+        if (middlePanel != null)
+        {
+            Debug.Log($"MiddlePanel tamaño: {middlePanelRect.sizeDelta}");
+        }
+        else
+        {
+            Debug.LogError("MiddlePanel no tiene un RectTransform asignado");
+        }
+
+        GameObject rightPanel = CreatePanel("RightPanel", workSpaceGO.transform,
+            new Vector2(0.4f, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero,
+            new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
+
+        this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();
+
+        this.m_blockScrollList.Initialized(Resources.Load<GameObject>("Prefabs/BlockPrefab"), middlePanel.transform);
+
+        WorkSpace wsComponent = m_workSpace.GetComponent<WorkSpace>();
+        wsComponent.Initizalized(middlePanel, rightPanel);
+
+        CreateBlockContainer(middlePanel, m_blockScrollList);
+    }
+
 
     /**
      * Crea un panel con los parámetros indicados
@@ -130,6 +165,40 @@ public class UICanvasManager : MonoBehaviour
         return panel;
     }
 
+    public void CreateBlockContainer(GameObject panel, BlockScrollList m_blockScrollList)
+    {
+        GameObject blockContainer = new GameObject("BlockContainer");
+        blockContainer.transform.SetParent(panel.transform, false);
+        blockContainer.AddComponent<CanvasRenderer>();
+
+        RectTransform contentRect = blockContainer.AddComponent<RectTransform>();
+        contentRect.anchorMin = new Vector2(0, 0);
+        contentRect.anchorMax = new Vector2(1, 1);
+        contentRect.offsetMin = Vector2.zero;
+        contentRect.offsetMax = Vector2.zero;
+        contentRect.pivot = new Vector2(0, 1);
+
+        VerticalLayoutGroup layoutGroup = blockContainer.AddComponent<VerticalLayoutGroup>();
+        layoutGroup.childAlignment = TextAnchor.UpperLeft;
+        layoutGroup.spacing = 0.16f; // Espacio entre bloques
+        layoutGroup.childForceExpandWidth = false;
+        layoutGroup.childForceExpandHeight = false;
+        layoutGroup.childControlWidth = true;
+        layoutGroup.childControlHeight = true;
+        layoutGroup.childScaleWidth = true;
+        layoutGroup.childScaleHeight = true;
+
+
+       // ContentSizeFitter fitter = blockContainer.AddComponent<ContentSizeFitter>();
+        //fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        if (m_blockScrollList != null)
+        {
+            m_blockScrollList.AssignBlockContainer(blockContainer.transform);
+        }
+
+        Debug.Log($"BlockContainer size: {contentRect.sizeDelta}");
+
+    }
     /**
      * Añade un borde al panel indicado
      * @param panel GameObject al que se le añadirá el borde
@@ -149,6 +218,10 @@ public class UICanvasManager : MonoBehaviour
         img.color = Color.gray;
     }
 
+    /** Añade un logo al panel indicado
+     * @param panel GameObject al que se le añadirá el logo
+     * @param spriteName Nombre del sprite a añadir
+     */
     void AddLogoToPanel(GameObject panel, string spriteName)
     {
         Debug.Log("Cargando sprite desde Resources: " + spriteName);
@@ -181,7 +254,11 @@ public class UICanvasManager : MonoBehaviour
             Debug.LogError("No se encontró el sprite en Resources: " + spriteName);
         }
     }
-
+    /**
+     * Añade iconos al panel indicado
+     * @param panel GameObject al que se le añadirán los iconos
+     * @param iconNames Nombres de los iconos a añadir
+     */
     void AddIconsToPanel(GameObject panel, string[] iconNames)
     {
         float iconSize = panel.GetComponent<RectTransform>().rect.height * 0.5f;
@@ -191,14 +268,14 @@ public class UICanvasManager : MonoBehaviour
         // Contenedor de los iconos (para distribuirlos correctamente)
         GameObject iconContainer = new GameObject("IconContainer");
         iconContainer.transform.SetParent(panel.transform, false);
-        
+
         RectTransform containerRect = iconContainer.AddComponent<RectTransform>();
         containerRect.anchorMin = new Vector2(1, 0.5f);  // Anclar a la derecha, centrado verticalmente
         containerRect.anchorMax = new Vector2(1, 0.5f);
         containerRect.pivot = new Vector2(1, 0.5f);
         containerRect.anchoredPosition = new Vector2(-20, 0); // Ajuste de margen derecho
         containerRect.sizeDelta = new Vector2(iconSize * iconNames.Length + (padding * (iconNames.Length - 1)), iconSize);
-        
+
         // Agregar un `HorizontalLayoutGroup` para distribuir los iconos automáticamente
         HorizontalLayoutGroup layoutGroup = iconContainer.AddComponent<HorizontalLayoutGroup>();
         layoutGroup.childAlignment = TextAnchor.MiddleRight;
@@ -231,7 +308,7 @@ public class UICanvasManager : MonoBehaviour
                 iconRect.anchorMax = new Vector2(1, 0.5f);
                 iconRect.pivot = new Vector2(1, 0.5f);
                 iconRect.sizeDelta = new Vector2(iconSize, iconSize);
-               // iconRect.anchoredPosition = new Vector2(startX + (i * (iconSize + padding)), 0);
+                // iconRect.anchoredPosition = new Vector2(startX + (i * (iconSize + padding)), 0);
                 iconRect.anchoredPosition = new Vector2(-((iconSize + padding) * (iconNames.Length - i)), 0);
 
             }
@@ -241,6 +318,11 @@ public class UICanvasManager : MonoBehaviour
             }
         }
     }
+
+    /**
+     * Método que se ejecuta al hacer clic en un icono de la interfaz
+     * @param iconName Nombre del icono pulsado
+     */
     private void OnIconButtonClick(string iconName)
     {
         var actions = new System.Collections.Generic.Dictionary<string, System.Action>
@@ -256,7 +338,7 @@ public class UICanvasManager : MonoBehaviour
             }},
             { "stopFlag", () => {
                 Debug.Log("Detener ejecución");
-            
+
             }}
         };
 
@@ -268,15 +350,6 @@ public class UICanvasManager : MonoBehaviour
         {
             Debug.Log("Acción no definida para: " + iconName);
         }
-    }
-
-    private void adaptScreenToMobile(CanvasScaler canvas)
-    {
-        CanvasScaler canvasScaler = canvas.GetComponent<CanvasScaler>();
-        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        canvasScaler.referenceResolution = new Vector2(1080, 1920); // Resolución base
-        canvasScaler.matchWidthOrHeight = 0.5f; // Ajuste equilibrado entre ancho y alto
-
     }
 
     void LoadCategories(GameObject contentPanel)
@@ -322,7 +395,7 @@ public class UICanvasManager : MonoBehaviour
             layoutGroup = contentPanel.AddComponent<VerticalLayoutGroup>();
         }
         layoutGroup.childAlignment = TextAnchor.MiddleLeft;
-        layoutGroup.spacing = 5; //Espacio entre elementos
+        layoutGroup.spacing = 10f; //Espacio entre elementos
         layoutGroup.padding = new RectOffset(5, 5, 5, 5); // Ajusto espaciado superior
 
         ContentSizeFitter contentFitter = contentPanel.AddComponent<ContentSizeFitter>();
@@ -341,105 +414,16 @@ public class UICanvasManager : MonoBehaviour
      * Actualiza el panel central con el nombre de la categoría seleccionada
      * @param categoryName Nombre de la categoría seleccionada
      */
-    public void UpdateMiddlePanel(string categoryName, Color CategoryColor)
+    public void UpdateMiddlePanel(string categoryName, Color categoryColor)
     {
-        if (categoryText != null)
-        {
-            categoryText.text =  categoryName; //Muestro el nombre de la categoría en el MiddlePanel
-        }
-
-        if (blockManager != null)
-        {
-            blockManager.LoadBlocks(categoryName, CategoryColor);
-        }
-    }
-
-    /**
-     * Crea un contenedor de bloques
-     * @param parentPanel Transform del panel padre
-     * @return RectTransform del contenedor de bloques
-     */
-    RectTransform CreateBlockContainer(Transform parentPanel)
-    {
-        // Creo el contenedor de los bloques
-        GameObject blockContainer = new GameObject("BlockContainer");
-        blockContainer.transform.SetParent(parentPanel, false);
-        blockContainer.AddComponent<CanvasRenderer>();
-
-        // Me aseguro que tenga un RectTransform
-        RectTransform blockRect = blockContainer.AddComponent<RectTransform>();
-        blockRect.anchorMin = new Vector2(0, 0);
-        blockRect.anchorMax = new Vector2(1, 0.9f);
-        blockRect.pivot = new Vector2(0, 1);
-
-        /*blockRect.sizeDelta = new Vector2(0, 500);
-        blockRect.anchoredPosition = new Vector2(0, -50);
-        */
-
-        blockRect.sizeDelta =  Vector2.zero;
-        blockRect.anchoredPosition = Vector2.zero;
-
-
-        // Agrego un ScrollRect para manejar muchos bloques
-        ScrollRect scrollRect = blockContainer.AddComponent<ScrollRect>();
-        scrollRect.vertical = true;
-        scrollRect.horizontal = false;
-
-
-        // Creo un Viewport dentro del contenedor
-        GameObject viewport = new GameObject("Viewport");
-        viewport.transform.SetParent(blockContainer.transform, false);
        
-        //viewport.AddComponent<RectTransform>();
-        viewport.AddComponent<CanvasRenderer>();
-      
-        RectTransform viewportRect = viewport.AddComponent<RectTransform>();
-        viewportRect.anchorMin = new Vector2(0, 0);
-        viewportRect.anchorMax = new Vector2(1, 1);
-        viewportRect.pivot = new Vector2(0, 1);
-        viewportRect.sizeDelta = Vector2.zero;
-        viewportRect.anchoredPosition = Vector2.zero;
-        viewport.AddComponent<Image>().color = new Color(1,1,1,0); // Transparente
+        if (this.m_blockScrollList != null)
+        {
+            this.m_blockScrollList.ShowBlockCategory(categoryName, categoryColor);
+        }
 
-        // Agreg0 componente Mask al Viewport
-        Mask mask = viewport.AddComponent<Mask>();
-        mask.showMaskGraphic = false;
-        scrollRect.viewport = viewport.GetComponent<RectTransform>();
-
-        //Image viewportImage = viewport.AddComponent<Image>();
-        //viewportImage.color = new Color(1, 1, 1, 0); // Transparente oculto elementos fuera del área de trabajo
-
-        //scrollRect.viewport = viewportRect;
-
-        // Creo un contenido dentro del ScrollRect donde se agreguen los bloques
-        GameObject blockContent = new GameObject("BlockContent");
-        //blockContent.transform.SetParent(blockContainer.transform, false);
-        blockContent.transform.SetParent(blockContainer.transform, false);
-        RectTransform contentRect = blockContent.AddComponent<RectTransform>();
-        contentRect.anchorMin = new Vector2(0, 1);
-        contentRect.anchorMax = new Vector2(1, 1);
-        contentRect.pivot = new Vector2(0, 1);
-        contentRect.anchoredPosition = new Vector2(0, 0);
-        contentRect.sizeDelta = new Vector2(0, 500);
-
-        // Me Aseguro que los bloques se distribuyan verticalmente
-        VerticalLayoutGroup layoutGroup = blockContent.AddComponent<VerticalLayoutGroup>();
-        layoutGroup.childAlignment = TextAnchor.UpperLeft;
-        layoutGroup.spacing = 10;
-        layoutGroup.padding = new RectOffset(10, 10, -20, 10);
-        // Activo control de escala para que los bloques se adapten
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childControlHeight = true;
-        layoutGroup.childScaleWidth = true;  // Activo la escala en el ancho
-        layoutGroup.childScaleHeight = true; // Activo la escala en el alto
-
-        ContentSizeFitter contentFitter = blockContent.AddComponent<ContentSizeFitter>();
-        contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        // Permito que el ScrollRect use el contenido
-        //scrollRect.content = contentRect;
-
-        return contentRect; // Retorno la referencia al contenedor real de bloques
+     
     }
+
 }
 

@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using Unity.VisualScripting;
 using UnityEngine;
 public class BlockDataLoader
 {
@@ -40,40 +42,112 @@ public class BlockDataLoader
     }
 
     // Diccionario para almacenar los datos de los bloques
-    private static Dictionary<string, BlockData> blockData = new Dictionary<string, BlockData>();
+    private static Dictionary<string, BlockData> m_blockData = new Dictionary<string, BlockData>();
+    private static Dictionary<string, Vector2> m_blockSizes = new Dictionary<string, Vector2>();
 
     // Método para cargar los datos de bloques desde un archivo JSON
-    public static BlockCategoryData LoadCategoryData(string jsonFilePath)
+    public static BlockCategoryData LoadCategoryData(string categoryName)
     {
-        var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargo desde la carpeta Resources
+        Debug.Log($"Intentando cargar XML: {categoryName}");
 
-        if (jsonText == null)
+        // var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargo desde la carpeta Resources
+        string xmlFilePath = $"{categoryName}";
+
+        TextAsset xmlFile = Resources.Load<TextAsset>(xmlFilePath);
+        if (xmlFile == null)
         {
-            Debug.LogError($"No se pudo cargar el archivo JSON: {jsonFilePath}");
+            Debug.LogError($"No se pudo cargar el archivo JSON: {xmlFilePath}");
             return null;
         }
 
-        Debug.Log($"JSON encontrado: {jsonFilePath}, contenido: {jsonText.text}");
+        Debug.Log($"XML encontrado: {xmlFilePath}, contenido: {xmlFile.text}");
+
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml(xmlFile.text); // Cargo el archivo XML
+
+        if (xmlDoc.DocumentElement == null)
+        {
+            Debug.LogError(" Error: `DocumentElement` es NULL. El XML podría estar mal formateado o no se está leyendo correctamente.");
+            return null;
+        }
 
         try
         {
-            BlockCategoryData categoryData = JsonUtility.FromJson<BlockCategoryData>(jsonText.text);
-            if (categoryData != null && categoryData.blocks != null)
+                     
+            BlockCategoryData categoryData = new BlockCategoryData
             {
-                blockData.Clear();
-                foreach (var block in categoryData.blocks)
-                {
-                    string uniqueKey = block.spriteName + "_" + block.type; // Clave única para evitar sobrescritura
-                    blockData[uniqueKey] = block;
-                    Debug.Log($"Bloque cargado: {block.type} - {block.text} con clave {uniqueKey}");
+                category = categoryName,
+                blocks = new List<BlockData>()
+            };
+            
 
-                }
+            foreach (var block in categoryData.blocks)
+            {
+                Debug.Log($"Tipo: {block.type}, Label: {block.text}, SpriteName: {block.spriteName}");
             }
+
+            XmlNodeList blockNodes = xmlDoc.SelectNodes("/Blocks/Block");
+
+            if(blockNodes == null || blockNodes.Count == 0)
+            {
+                Debug.LogWarning($"No se encontraron bloques en el archivo XML: {xmlFilePath}");
+                return null;
+            }
+
+            Debug.Log($" Bloques encontrados en {xmlFilePath}: {blockNodes.Count}");
+
+            foreach (XmlNode blockNode in blockNodes)
+            {
+                Debug.Log($" Bloque encontrado: {blockNode.InnerXml}");
+            }
+
+            foreach (XmlNode blockNode in blockNodes)
+            {
+                BlockData blockData = new BlockData
+                {
+                    type = blockNode.SelectSingleNode("Type").Value,
+                    text = blockNode.SelectSingleNode("Label").Value,
+                    spriteName = blockNode.SelectSingleNode("SpriteName")?.InnerText.Trim()
+                };
+
+                // Almacena el bloque en m_blockData usando el type como clave
+                if (!string.IsNullOrEmpty(blockData.type))
+                {
+                    m_blockData[blockData.type] = blockData;
+                }
+
+                if (string.IsNullOrEmpty(blockData.spriteName))
+                {
+                    Debug.LogWarning($"El bloque {blockData.type} no tiene un spriteName definido en el XML");
+                }
+
+                XmlNode spriteNode = blockNode.SelectSingleNode("SpriteName");
+
+                if (spriteNode != null)
+                {
+                    blockData.spriteName = spriteNode.InnerText.Trim();
+                    Debug.Log($" SpriteName encontrado para `{blockData.type}`: {blockData.spriteName}");
+                }
+                else
+                {
+                    Debug.LogWarning($" El bloque `{blockData.type}` no tiene un SpriteName definido en el XML.");
+                }
+
+                if (string.IsNullOrEmpty(blockData.spriteName))
+                {
+                    Debug.LogWarning($"El bloque {blockData.type} no tiene un spriteName definido en el XML");
+                }
+
+
+                categoryData.blocks.Add(blockData);
+            }
+
+
             return categoryData;
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Error al parsear JSON {jsonFilePath}: {e.Message}");
+            Debug.LogError($"Error al parsear JSON {xmlFilePath}: {e.Message}");
             return null;
         }
     }
@@ -85,16 +159,16 @@ public class BlockDataLoader
 
         // Verificar qué claves están en el diccionario
         Debug.Log("Claves disponibles en blockData:");
-        foreach (var key in blockData.Keys)
+        foreach (var key in m_blockData.Keys)
         {
             Debug.Log($" - {key}");
         }
 
-        string foundKey = blockData.Keys.FirstOrDefault(k => k.Contains(blockName));
+        string foundKey = m_blockData.Keys.FirstOrDefault(k => k.Contains(blockName));
 
         Debug.Log($"Clave encontrada: {foundKey}");
 
-        if (blockData.Count == 0)
+        if (m_blockData.Count == 0)
         {
             Debug.LogError("Error: blockData sigue vacío.");
             return null;
@@ -112,7 +186,48 @@ public class BlockDataLoader
             return null;
         }
 
-        Debug.Log($"Datos obtenidos para {foundKey}: {blockData[foundKey].text}");
-        return blockData[foundKey];
+        Debug.Log($"Datos obtenidos para {foundKey}: {m_blockData[foundKey].text}");
+        return m_blockData[foundKey];
+    }
+
+
+    // Método para obtener el tamaño de un bloque específico
+    public static void LoadBlockSizes()
+    {
+        string xmlFilePath = "XML/BlockSizes"; 
+        TextAsset xmlFile = Resources.Load<TextAsset>(xmlFilePath);
+
+        if (xmlFile == null)
+        {
+            Debug.LogError($"No se pudo cargar el archivo XML de tamaños de bloques: {xmlFilePath}");
+            return;
+        }
+
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml(xmlFile.text);
+
+        XmlNodeList sizeNodes = xmlDoc.SelectNodes("/BlockSizes/BlockType");
+
+        foreach (XmlNode sizeNode in sizeNodes)
+        {
+            string type = sizeNode.SelectSingleNode("Type")?.InnerText.Trim();
+            float width = float.Parse(sizeNode.SelectSingleNode("Width")?.InnerText.Trim() ?? "316");
+            float height = float.Parse(sizeNode.SelectSingleNode("Height")?.InnerText.Trim() ?? "175");
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                m_blockSizes[type] = new Vector2(width, height);
+            }
+        }
+
+        Debug.Log("Tamaños de bloques cargados correctamente.");
+    }
+
+    public static Vector2 GetBlockSize(string type)
+    {
+        return m_blockSizes.ContainsKey(type) ? m_blockSizes[type] : new Vector2(316, 175); // Tamaño por defecto
+       /* return m_blockSizes.ContainsKey(type) ?
+        new Vector2(m_blockSizes[type].x * 0.16f, m_blockSizes[type].y * 0.16f) :
+        new Vector2(316 * 0.16f, 175 * 0.16f);*/
     }
 }

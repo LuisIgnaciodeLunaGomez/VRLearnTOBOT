@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BlockSizes>
+	<BlockType>
+		<Type>Stack_block_grey</Type>
+		<Width>316</Width>
+		<Height>175</Height>
+	</BlockType>
+	<BlockType>
+		<Type>Hat_block_grey</Type>
+		<Width>350</Width>
+		<Height>200</Height>
+	</BlockType>
+</BlockSizes>

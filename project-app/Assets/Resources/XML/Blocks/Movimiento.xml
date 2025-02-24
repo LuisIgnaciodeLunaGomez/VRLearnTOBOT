@@ -3,9 +3,35 @@
 	<Block>
 		<Type>motion_movesteps</Type>
 		<Label>Mover %1 pasos</Label>
-		<Sprite>Stack_block_grey</Sprite>
+		<SpriteName>Stack_block_grey</SpriteName>
 		<connections>
 			<top>true</top>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+	<Block>
+		<Type>add_to_x</Type>
+		<Label>Sumar a x %1</Label>
+		<SpriteName>Stack_block_grey</SpriteName>
+		<connections>
+			<top>true</top>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+	<Block>
+		<Type>add_to_x</Type>
+		<Label>Sumar a x %1</Label>
+		<SpriteName>Stack_block_grey</SpriteName>
+		<connections>
+			<top>true</top>
+			<bottom>true</bottom>
+		</connections>
+	</Block>
+	<Block>
+		<Type>Screen_Flag_Green</Type>
+		<Label>event_whenflagclicked</Label>
+		<SpriteName>Hat_block_grey</SpriteName>
+		<connections>
 			<bottom>true</bottom>
 		</connections>
 	</Block>
