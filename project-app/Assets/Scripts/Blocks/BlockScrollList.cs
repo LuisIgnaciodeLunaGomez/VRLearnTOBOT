@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class BlockScrollList : MonoBehaviour
@@ -28,6 +29,7 @@ public class BlockScrollList : MonoBehaviour
 
     private Dictionary<string, GameObject> blockLists = new Dictionary<string, GameObject>(); // Diccionario de bloques
     private string activeCategory;
+    private Transform rightPanelTransform;
 
     private TextMeshProUGUI m_categoryText; //Texto para mostrar el nombre de la categoría antes de los bloques
 
@@ -112,90 +114,8 @@ public class BlockScrollList : MonoBehaviour
         foreach (var block in categoryData.blocks)
         {
 
-            // Cargar el prefab basado en el nombre del sprite en el XML
-            GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{block.spriteName}");
+            NewBlockView(block, categoryColor, categoryContainer, categoryName, categoryData);
 
-            //Revisar si BlockPrefab esta inicializado
-
-            if (blockPrefab == null)
-            {
-                Debug.LogWarning($"No se encontró el prefab '{block.spriteName}' en Resources/Prefabs/BlocksPrefab/");
-                continue;
-            }
-
-            GameObject blockGO = Instantiate(blockPrefab, categoryContainer.transform);
-
-            //Obtener el tamaño del prefab desde el XML de tamaños
-            Vector2 blockSize = BlockDataLoader.GetBlockSize(block.spriteName);
-            //blockGO.transform.localScale = new Vector3(0.16f, 0.16f, 1f);
-            Vector2 scaledBlockSize = new Vector2(blockSize.x * 0.16f, blockSize.y * 0.16f); // Tamaño reducido (51x28)
-           
-            RectTransform blockRect = blockGO.GetComponent<RectTransform>();
-
-            if (blockRect != null)
-            {
-                blockRect.sizeDelta = blockSize; //Tamaño original del bloque
-                blockRect.anchorMin = new Vector2(0, 1); // Ancla arriba a la izquierda
-                blockRect.anchorMax = new Vector2(0, 1);
-                blockRect.pivot = new Vector2(0, 1); // Pivote arriba a la izquierda
-                blockRect.anchoredPosition = Vector2.zero; // Posición inicial (ajustada por VerticalLayoutGroup)
-            }
-            else
-            {
-                Debug.LogWarning($"El prefab {block.spriteName} no tiene un RectTransform");
-            }
-
-
-            BlockBehaviour blockBehaviour = blockGO.GetComponent<BlockBehaviour>();
-
-            if (blockBehaviour != null)
-            {
-                blockBehaviour.Initialize(block);
-            }
-            else
-            {
-                Debug.LogWarning($"El prefab {block.spriteName} no tiene el componente BlockBehaviour, se lo añado");
-                blockGO.AddComponent<BlockBehaviour>();
-            }
-            
-            LayoutElement layoutElement = blockGO.AddComponent<LayoutElement>();
-
-            if (layoutElement == null)
-            {
-                layoutElement = blockGO.AddComponent<LayoutElement>();
-            }
-            layoutElement.preferredHeight = blockSize.y;
-            layoutElement.preferredWidth = blockSize.x;
-            
-           
-            layoutElement.flexibleWidth = 0;
-            layoutElement.flexibleHeight = 0;
-
-            blockGO.transform.localScale = new Vector3(0.16f, 0.16f, 1f); // Escala reducida visualmente
-            //blockGO.transform.localScale = Vector3.one;
-            
-            // Aplicar localScale para reducir visualmente el bloque
-            
-            //Asignar el color de la categoria
-
-            Image blockImage = blockGO.GetComponent<Image>();
-            if (blockImage != null)
-            {
-                blockImage.color = categoryColor;
-                blockImage.type = Image.Type.Sliced; // Asegúrate de que sea Sliced para mantener los recortes
-                RectTransform imageRect = blockImage.GetComponent<RectTransform>();
-
-                if (imageRect != null)
-                {
-                    imageRect.sizeDelta = blockSize; // Tamaño reducido visualmente (51x28)
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"El prefab {block.spriteName} no tiene un componente Image");
-            }
-
-            Debug.Log($"Categoría de bloques {categoryName} cargada correctamente con {categoryData.blocks.Count} bloques");
         }
     }
 
@@ -232,7 +152,7 @@ public class BlockScrollList : MonoBehaviour
         }
     }
 
-   
+
     public GameObject CreateCategoryContainer(string categoryName)
     {
         // Crear contenedor para la categoría dentro de BlockContainer que contendrá sus bloquees
@@ -259,9 +179,9 @@ public class BlockScrollList : MonoBehaviour
         layoutGroup.childControlHeight = true;
         layoutGroup.padding = new RectOffset(0, 0, 10, 0); // Sin padding adicional
 
-       //  ContentSizeFitter fitter = categoryContainer.AddComponent<ContentSizeFitter>();
-       // fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-       // fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        //  ContentSizeFitter fitter = categoryContainer.AddComponent<ContentSizeFitter>();
+        // fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        // fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         return categoryContainer;
     }
@@ -286,6 +206,154 @@ public class BlockScrollList : MonoBehaviour
 
         m_blockContainer = container;
         Debug.Log("Contenedor de bloques asignado correctamente.");
+    }
+
+    /**
+     * Método para instanciar un bloque en el panel de bloques
+     * @param blockData Datos del bloque a instanciar
+     * @param categoryColor Color de la categoría de bloques
+     * @param categoryContainer Contenedor de la categoría de bloques
+     * @param categoryName Nombre de la categoría de bloques
+     * @param categoryData Datos de la categoría de bloques
+     * @return GameObject Instancia del bloque creado
+     */
+    private GameObject NewBlockView(BlockDataLoader.BlockData blockData, Color categoryColor, GameObject categoryContainer, string categoryName, BlockDataLoader.BlockCategoryData categoryData)
+    {
+        // Cargar el prefab basado en el nombre del sprite en el XML
+        GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
+
+        //Revisar si BlockPrefab esta inicializado
+        if (blockPrefab == null)
+        {
+            Debug.LogWarning($"No se encontró el prefab '{blockData.spriteName}' en Resources/Prefabs/BlocksPrefab/");
+            return null;
+        }
+
+        GameObject blockGO = Instantiate(blockPrefab, categoryContainer.transform);
+
+        //Obtener el tamaño del prefab desde el XML de tamaños
+        Vector2 blockSize = BlockDataLoader.GetBlockSize(blockData.spriteName);
+        Vector2 scaledBlockSize = new Vector2(blockSize.x * 0.16f, blockSize.y * 0.16f); // Tamaño reducido (51x28)
+
+        RectTransform blockRect = blockGO.GetComponent<RectTransform>();
+
+        if (blockRect != null)
+        {
+            blockRect.sizeDelta = blockSize; //Tamaño original del bloque
+            blockRect.anchorMin = new Vector2(0, 1); // Ancla arriba a la izquierda
+            blockRect.anchorMax = new Vector2(0, 1);
+            blockRect.pivot = new Vector2(0, 1); // Pivote arriba a la izquierda
+            blockRect.anchoredPosition = Vector2.zero; // Posición inicial (ajustada por VerticalLayoutGroup)
+        }
+        else
+        {
+            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene un RectTransform");
+        }
+
+        BlockBehaviour blockBehaviour = blockGO.GetComponent<BlockBehaviour>();
+
+        if (blockBehaviour != null)
+        {
+            blockBehaviour.Initialize(blockData);
+        }
+        else
+        {
+            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene el componente BlockBehaviour, se lo añado");
+            blockGO.AddComponent<BlockBehaviour>();
+        }
+
+        LayoutElement layoutElement = blockGO.AddComponent<LayoutElement>();
+
+        if (layoutElement == null)
+        {
+            layoutElement = blockGO.AddComponent<LayoutElement>();
+        }
+        layoutElement.preferredHeight = blockSize.y;
+        layoutElement.preferredWidth = blockSize.x;
+
+        layoutElement.flexibleWidth = 0;
+        layoutElement.flexibleHeight = 0;
+
+        blockGO.transform.localScale = new Vector3(0.16f, 0.16f, 1f); // Escala reducida visualmente
+
+        //Asignar el color de la categoria
+        UnityEngine.UI.Image blockImage = blockGO.GetComponent<UnityEngine.UI.Image>();
+        if (blockImage != null)
+        {
+            blockImage.color = categoryColor;
+            blockImage.type = UnityEngine.UI.Image.Type.Sliced; // Asegúrate de que sea Sliced para mantener los recortes
+            RectTransform imageRect = blockImage.GetComponent<RectTransform>();
+
+            if (imageRect != null)
+            {
+                imageRect.sizeDelta = blockSize; // Tamaño reducido visualmente (51x28)
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene un componente Image");
+        }
+
+        // Agregar máscara transparente para manejar eventos de arrastre
+        GameObject maskObj = new GameObject("BlockMask");
+        maskObj.transform.SetParent(blockGO.transform, false);
+        RectTransform maskTrans = maskObj.AddComponent<RectTransform>();
+        maskTrans.sizeDelta = blockSize;
+        UnityEngine.UI.Image maskImage = maskObj.AddComponent<UnityEngine.UI.Image>();
+        maskImage.color = new Color(1, 1, 1, 0); // Transparente
+
+        // Manejar eventos de arrastre
+   
+        UIEventListener.Get(maskObj).onBeginDrag = data => PickBlockView(data, blockGO, rightPanelTransform);
+
+        Debug.Log($"Categoría de bloques {categoryName} cargada correctamente con {categoryData.blocks.Count} bloques");
+
+        return blockGO;
+    }
+
+    public void SetWorkspaceTransform(Transform workspaceTransform)
+    {
+        this.rightPanelTransform = workspaceTransform;
+        Debug.Log("RightPanel Transform asignado correctamente en BlockScrollList");
+    }
+
+    private void PickBlockView(PointerEventData eventData, GameObject blockGO, Transform workspaceTransform)
+    {
+        Debug.Log($"Iniciando arrastre del bloque {blockGO.name}");
+
+        // Calcular la posición local en el RightPanel
+        Vector3 localPos = workspaceTransform.InverseTransformPoint(blockGO.transform.position);
+
+        // Clonar el bloque en el RightPanel
+        GameObject newBlockGO = CloneBlockView(blockGO, new Vector2(localPos.x, localPos.y), workspaceTransform);
+
+        // Activar el evento de arrastre en el bloque clonado
+        newBlockGO.GetComponent<BlockBehaviour>().OnBeginDrag(eventData);
+
+        BlockBehaviour blockBehaviour = newBlockGO.GetComponent<BlockBehaviour>();
+        if (blockBehaviour != null)
+        {
+            // 🔹 Llamar a OnBeginDrag()
+            blockBehaviour.OnBeginDrag(eventData);
+
+            // 🔹 Llamar a OnPickBlockView() correctamente
+            blockBehaviour.OnPickBlockView();
+        }
+        else
+        {
+            Debug.LogError("El bloque clonado no tiene el componente BlockBehaviour.");
+        }
+        // Asegurar que el bloque clonado sea el que se arrastra
+        eventData.pointerDrag = newBlockGO;
+   
+    }
+
+    private GameObject CloneBlockView(GameObject originalBlock, Vector2 position, Transform workspaceTransform)
+    {
+        GameObject clonedBlock = Instantiate(originalBlock, workspaceTransform); // Lo instanciamos dentro del RightPanel
+        clonedBlock.transform.localPosition = position;
+        clonedBlock.GetComponent<BlockBehaviour>().SetDraggable(true);
+        return clonedBlock;
     }
 
 }

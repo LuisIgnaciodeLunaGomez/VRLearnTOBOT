@@ -14,7 +14,7 @@
  * Descripción: Clase que genera la vista de la interfaz de usuario de scratch
  */
 
-using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,6 +26,9 @@ public class UICanvasManager : MonoBehaviour
     private BlockScrollList m_blockScrollList;
     private GameObject m_CanvasGO; //Canvas principal que incluye a todos los paneles
     private GameObject m_UIManager; //UIManager que contiene el Canvas principal y todos los paneles de la interfaz
+    private Transform m_rightPanelTransform; // Referencia al RightPanel
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -125,9 +128,13 @@ public class UICanvasManager : MonoBehaviour
             new Vector2(0.4f, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero,
             new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
+        m_rightPanelTransform = rightPanel.transform; // Guardamos la referencia al Transform del RightPanel
+
         this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();
 
         this.m_blockScrollList.Initialized(Resources.Load<GameObject>("Prefabs/BlockPrefab"), middlePanel.transform);
+
+        this.m_blockScrollList.SetWorkspaceTransform(m_rightPanelTransform);
 
         WorkSpace wsComponent = m_workSpace.GetComponent<WorkSpace>();
         wsComponent.Initizalized(middlePanel, rightPanel);

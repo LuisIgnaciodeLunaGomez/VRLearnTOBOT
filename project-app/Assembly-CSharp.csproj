@@ -67,11 +67,13 @@
     <Compile Include="Assets\UI\View\BlockView.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockManager.cs" />
     <Compile Include="Assets\Interfaces\IBlockView.cs" />
+    <Compile Include="Assets\Scripts\Blocks\Elements\Input.cs" />
     <Compile Include="Assets\Scripts\Blocks\Block.cs" />
     <Compile Include="Assets\UI\View\WorkSpaceView.cs" />
     <Compile Include="Assets\Scripts\Core\IsExternalInit.cs" />
     <Compile Include="Assets\Interfaces\IBlockFactory.cs" />
     <Compile Include="Assets\UI\ScratchUI.cs" />
+    <Compile Include="Assets\Enumerators\UpdateState.cs" />
     <Compile Include="Assets\UI\GeneradorUI.cs" />
     <Compile Include="Assets\Scripts\ResourcesDebugger.cs" />
     <Compile Include="Assets\UI\UICanvasManager.cs" />
@@ -79,14 +81,17 @@
     <Compile Include="Assets\Scripts\ScratchView\PanelColorManager.cs" />
     <Compile Include="Assets\Scripts\Settings\BlockViewSettings.cs" />
     <Compile Include="Assets\UI\CategoryLoader.cs" />
+    <Compile Include="Assets\UI\Extensions\UIEventListener.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockFactory.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ToolbarUI.cs" />
+    <Compile Include="Assets\Scripts\Blocks\Elements\Field.cs" />
     <Compile Include="Assets\Scripts\Utilidades.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockDataLoader.cs" />
     <Compile Include="Assets\Scripts\WorkSpace.cs" />
     <Compile Include="Assets\Interfaces\IBlockElement.cs" />
     <Compile Include="Assets\UI\Factory\BlockViewFactory.cs" />
     <Compile Include="Assets\Scripts\ScratchView\ScratchUI.cs" />
+    <Compile Include="Assets\Scripts\Obsevables\BlockConnection.cs" />
     <Compile Include="Assets\IWorkSpaceView.cs" />
     <Compile Include="Assets\Scripts\Blocks\BlockBehaviour.cs" />
   </ItemGroup>
