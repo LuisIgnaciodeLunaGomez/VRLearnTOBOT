@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción:
+ * Descripción: Esta clase se encarga de generar las imagenes de los bloques para su representación correcta
  * 
  */
 
@@ -230,6 +230,25 @@ public class BlockScrollList : MonoBehaviour
         }
 
         GameObject blockGO = Instantiate(blockPrefab, categoryContainer.transform);
+
+        // Crear el Label como un nuevo objeto hijo
+        GameObject labelGO = new GameObject("BlockLabel");
+        labelGO.transform.SetParent(blockGO.transform, false);
+
+        TextMeshProUGUI labelText = labelGO.AddComponent<TextMeshProUGUI>();
+        labelText.text = "mover";  // Asignar nombre del bloque
+        labelText.alignment = TextAlignmentOptions.Center;
+        labelText.fontSize = 50;
+        labelText.color = Color.white;
+        labelText.fontStyle = FontStyles.Bold;
+
+        RectTransform labelRect = labelGO.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0, 0.5f); // Anclado a la izquierda y centrado verticalmente
+        labelRect.anchorMax = new Vector2(0, 0.5f);
+        labelRect.pivot = new Vector2(0, 0.5f); // El pivote está en la izquierda y centro del texto
+        labelRect.anchoredPosition = new Vector2(10, 0); // Ajuste de posición con respecto al bloque
+        labelRect.sizeDelta = new Vector2(200, 50); // Tamaño adecuado del texto
+
 
         //Obtener el tamaño del prefab desde el XML de tamaños
         Vector2 blockSize = BlockDataLoader.GetBlockSize(blockData.spriteName);
