@@ -35,3 +35,5 @@ project-docs/tex/*
 project-app/ProjectSettings/ProjectSettings.asset
 project-app/Assembly-CSharp.csproj
 project-app/Assembly-CSharp.csproj
+project-app/ProjectSettings/Packages/com.unity.muse.common/Settings.json
+project-app/Assembly-CSharp.csproj
