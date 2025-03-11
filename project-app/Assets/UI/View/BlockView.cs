@@ -75,6 +75,32 @@ public class BlockView : BaseView
             // Agregar el componente InLineGroup para que se reconozca como tal
             groupObject.AddComponent<InLineGroup>();
         }
+
+        // Configurar el HorizontalLayoutGroup (existente o recién creado)
+        HorizontalLayoutGroup hLayout = inLineGroup.GetComponent<HorizontalLayoutGroup>();
+        if (hLayout == null)
+        {
+            hLayout = inLineGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
+        }
+
+        // Configurar según la imagen esperada
+        hLayout.padding = new RectOffset(0, 0, 0, 0); // Padding 0 en todos los lados
+        hLayout.spacing = 0; // Espaciado 0
+        //hLayout.childAlignment = TextAnchor.; // Alineación Upper Left
+        hLayout.childForceExpandWidth = false; // No forzar expansión
+        hLayout.childForceExpandHeight = false;
+        hLayout.childControlWidth = false;
+        hLayout.childControlHeight = false;
+
+        // Configurar el RectTransform del InLineGroup
+        RectTransform lineGroupRect = inLineGroup.GetComponent<RectTransform>();
+        lineGroupRect.sizeDelta = Vector2.zero; // Tamaño del bloque original
+        lineGroupRect.localScale = Vector3.one; // Mantener escala 1:1 dentro del bloque
+        lineGroupRect.anchorMin = new Vector2(0, 0f); // Centrar verticalmente
+        lineGroupRect.anchorMax = new Vector2(0, 0.7f);
+        lineGroupRect.pivot = new Vector2(0.5f, 0.5f);
+        lineGroupRect.anchoredPosition = Vector2.zero;
+
         // Crear elementos para los argumentos basados en los datos del XML
         foreach (var arg in m_Block.BlockData.args)
         {
@@ -86,7 +112,8 @@ public class BlockView : BaseView
                 //argumentObject = new GameObject(arg.value);
                 TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
                 textComponent.text = arg.value;
-                textComponent.fontSize = 14;
+                textComponent.fontSize = 48;
+                textComponent.color = Color.white;
                 textComponent.alignment = TextAlignmentOptions.Center;
             }
             else if (arg.type == "input")
@@ -94,6 +121,21 @@ public class BlockView : BaseView
                // argumentObject = new GameObject(arg.name);
                 TMP_InputField inputField = argumentObject.AddComponent<TMP_InputField>();
                 inputField.text = arg.defaultValue;
+
+                // Configurar el RectTransform del input
+                RectTransform inputRect = argumentObject.AddComponent<RectTransform>();
+                inputRect.sizeDelta = Vector2.zero; // Tamaño ajustado
+                inputRect.anchorMin = new Vector2(0, 0.5f); // Centrar verticalmente
+                inputRect.anchorMax = new Vector2(0, 0.5f);
+                inputRect.pivot = new Vector2(0, 0.5f);
+
+                // Configurar el texto dentro del input
+                TextMeshProUGUI inputText = (TextMeshProUGUI)inputField.textComponent;
+                if (inputText != null)
+                {
+                    inputText.fontSize = 48;
+                    inputText.alignment = TextAlignmentOptions.MidlineLeft;
+                }
             }
 
             if (argumentObject != null)
@@ -211,16 +253,21 @@ public class BlockView : BaseView
     }
 
     /**
-     * Añade una image de fondo al bloque, si esta no ha sido agregada antes
-     * @param image Imagen de fondo a añadir
+     * Añade un color de fondo a la imagen del prefab
+     * @param color Color de fondo a añadir
      */
 
     public void ChangeBgColor(Color color)
     {
-        m_BgImages.RemoveAll(bg => bg == null); //Elimina las imágenes de fondo que sean null
-        foreach (Image bg in m_BgImages)
+
+        Image bgImage = GetComponent<Image>();
+        if (bgImage != null)
         {
-            bg.color = color;   //Cambia el color de las imágenes de fondo
+            bgImage.color = color;
+        }
+        else
+        {
+            Debug.LogWarning($"No se encontró Image en {gameObject.name} para cambiar el color.");
         }
     }
 
@@ -237,7 +284,7 @@ public class BlockView : BaseView
         InLineGroup lineGroup = GetLineGroup(0);
         if (lineGroup == null)
         {
-            Debug.LogWarning($"No se encontró un InLineGroup en el bloque {BlockType}. Asegúrate de que el prefab tenga la estructura correcta.");
+            Debug.LogWarning($"No se encontró un InLineGroup en el bloque {BlockType}.");
             return;
         }
 

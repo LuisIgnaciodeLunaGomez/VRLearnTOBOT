@@ -11,19 +11,20 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Crea la vista del espacio de trabajo
  */
 
 
 
 using System.Collections.Generic;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WorkSpaceView : MonoBehaviour
 {
 
     [SerializeField] private RectTransform m_codingArea; //Panel donde se van a mostrar los bloques
+    [SerializeField] private BlockStatusView m_StatusView; //Vista de estado de los bloques
     private Dictionary<string, BlockView> m_blockViews = new Dictionary<string, BlockView>(); // Diccionario de bloques en la vista
     private WorkSpace m_workSpace; // Espacio de trabajo
     private BlockDataLoader.BlockData m_blockDataLoader; // Cargador de datos de bloques
@@ -96,6 +97,25 @@ public class WorkSpaceView : MonoBehaviour
         // Asegurarme que el bloque se coloca en `m_codingArea`
         view.transform.SetParent(m_codingArea, false);
 
+        // Obtener el tamaño original del prefab
+        Vector2 originalSize = BlockDataLoader.GetBlockSize(blockData.spriteName);
+        if (originalSize == Vector2.zero)
+        {
+            originalSize = new Vector2(316, 175); // Valor por defecto
+            Debug.LogWarning($"Tamaño no encontrado para {blockData.spriteName}, usando 316x175 como predeterminado.");
+        }
+
+        RectTransform blockRect = view.GetComponent<RectTransform>();
+        blockRect.sizeDelta = originalSize; // Establecer tamaño original
+        blockRect.localScale = Vector3.one; // Restablecer escala a 1 para evitar distorsión
+
+        // Añadir LayoutElement para controlar el tamaño
+        LayoutElement layoutElement = blockRect.GetComponent<LayoutElement>() ?? blockRect.gameObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = originalSize.x;
+        layoutElement.preferredHeight = originalSize.y;
+        layoutElement.flexibleWidth = 0;
+        layoutElement.flexibleHeight = 0;
+
         // Agregar los argumentos (inputs, labels)
         foreach (var arg in blockData.args)
         {
@@ -118,6 +138,24 @@ public class WorkSpaceView : MonoBehaviour
             Debug.LogWarning($"Añadiendo InLineGroup a {block.Type} porque no estaba presente.");
             lineGroup = view.gameObject.AddComponent<InLineGroup>(); // Agrega el componente
         }
+
+        // Configurar el HorizontalLayoutGroup dentro de InLineGroup
+        HorizontalLayoutGroup hLayout = lineGroup.GetComponent<HorizontalLayoutGroup>();
+        if (hLayout == null)
+        {
+            hLayout = lineGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
+        }
+        hLayout.childAlignment = TextAnchor.MiddleLeft; // Centrar verticalmente
+        hLayout.childForceExpandWidth = false; // No forzar expansión
+        hLayout.childForceExpandHeight = false;
+        hLayout.spacing = 5; // Espacio entre elementos
+        hLayout.padding = new RectOffset(10, 10, 0, 0); // Padding para centrar el contenido
+
+        // Configurar el RectTransform del InLineGroup
+        RectTransform lineGroupRect = lineGroup.GetComponent<RectTransform>();
+        lineGroupRect.sizeDelta = originalSize; // Ajustar al tamaño del bloque
+        lineGroupRect.localScale = new Vector3(1, 1, 1); // Mantener escala 1:1 dentro del bloque
+
 
         // Verificar la posición antes de asignarla
         Debug.Log($"Posición inicial del bloque {block.Type}: {block.XY}");
@@ -155,6 +193,10 @@ public class WorkSpaceView : MonoBehaviour
             connectionInput.transform.SetParent(inputView.transform, false);
             inputView.Childs.Add(connectionInput);
         }
+
+        // Posicionar el bloque
+        view.XY = block.XY;
+        view.UpdatePosition(block.XY);
 
         // Si el bloque tiene hijos, asegurarse de crearlos y conectarlos
         foreach (Block childBlock in block.ChildBlocks)

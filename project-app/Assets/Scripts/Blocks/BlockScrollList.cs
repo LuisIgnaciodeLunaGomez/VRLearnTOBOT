@@ -189,17 +189,17 @@ public class BlockScrollList : MonoBehaviour
             categoryTextGO.transform.SetParent(m_blockContainer, false);
             m_categoryText = categoryTextGO.AddComponent<TextMeshProUGUI>();
 
-            // Configurar RectTransform del texto
+            // Configurar RectTransform del texto para CategoryText
             RectTransform categoryTextRect = categoryTextGO.GetComponent<RectTransform>();
-            categoryTextRect.anchorMin = new Vector2(0.5f, 1);
-            categoryTextRect.anchorMax = new Vector2(0.5f, 1);
-            categoryTextRect.pivot = new Vector2(0.5f, 1);
-            categoryTextRect.anchoredPosition = new Vector2(0, -20); // Espacio debajo del borde superior
+            categoryTextRect.anchorMin = new Vector2(0f, 1);
+            categoryTextRect.anchorMax = new Vector2(0f, 1);
+            categoryTextRect.pivot = new Vector2(0f, 1);
+            categoryTextRect.anchoredPosition = Vector2.zero; // Espacio debajo del borde superior
 
             // Configurar texto
-            m_categoryText.text = "Categoría"; // Placeholder inicial
+            m_categoryText.text = "Categoría"; // Placeholder inicial quitar después
             m_categoryText.alignment = TextAlignmentOptions.Center;
-            m_categoryText.fontSize = 36;
+            m_categoryText.fontSize = 24;
             m_categoryText.color = Color.black;
         }
     }
@@ -207,7 +207,7 @@ public class BlockScrollList : MonoBehaviour
 
     public GameObject CreateCategoryContainer(string categoryName)
     {
-        // Crear contenedor para la categoría dentro de BlockContainer que contendrá sus bloquees
+        // Crear contenedor para la categoría dentro de BlockContainer que contendrá sus bloques por ejemplo Movimiento, Eventos, etc.
         GameObject categoryContainer = new GameObject(categoryName);
         categoryContainer.transform.SetParent(m_blockContainer, false);
 
@@ -224,28 +224,20 @@ public class BlockScrollList : MonoBehaviour
         VerticalLayoutGroup layoutGroup = categoryContainer.AddComponent<VerticalLayoutGroup>();
         layoutGroup.childAlignment = TextAnchor.UpperLeft; // Alinear los bloques a la izquierda
         //layoutGroup.spacing = 0; // Espacio entre bloques
-        layoutGroup.spacing = -140f;
+        layoutGroup.spacing = 5f;
         layoutGroup.childForceExpandWidth = false;
         layoutGroup.childForceExpandHeight = false;
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childControlHeight = true;
+        layoutGroup.childControlWidth = false;
+        layoutGroup.childControlHeight = false;
+        layoutGroup.childScaleHeight = true;
+        layoutGroup.childScaleWidth = true;
         layoutGroup.padding = new RectOffset(10, 10, 10, 10); // Sin padding adicional
 
-        ContentSizeFitter fitter = categoryContainer.AddComponent<ContentSizeFitter>();
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        //ContentSizeFitter fitter = categoryContainer.AddComponent<ContentSizeFitter>();
+        //fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+       // fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         return categoryContainer;
-    }
-
-    private float CalculateSpacing()
-    {
-        // Calcula un espaciado proporcional al tamaño reducido de los bloques (51x28 con localScale 0.16f)
-        Vector2 originalBlockSize = new Vector2(316, 175); // Tamaño original del prefab
-        float scaleFactor = 0.16f; // Factor de escala usado en localScale
-        float scaledHeight = originalBlockSize.y * scaleFactor; // Altura reducida (28 píxeles)
-        // Usa un espaciado proporcional, por ejemplo, 1.6 píxeles (10 * 0.16f) o ajusta según necesites
-        return 1.6f; // Espaciado compacto, ajusta si es necesario para Scratch
     }
 
     public void AssignBlockContainer(Transform container)
@@ -269,201 +261,7 @@ public class BlockScrollList : MonoBehaviour
      * @param categoryData Datos de la categoría de bloques
      * @return GameObject Instancia del bloque creado
      */
-    private GameObject NewBlockView2(BlockDataLoader.BlockData blockData, Color categoryColor, GameObject categoryContainer, string categoryName, BlockDataLoader.BlockCategoryData categoryData)
-    {
-        // Cargar el prefab basado en el nombre del sprite en el XML
-        GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
-
-        //Revisar si BlockPrefab esta inicializado
-        if (blockPrefab == null)
-        {
-            Debug.LogWarning($"No se encontró el prefab '{blockData.spriteName}' en Resources/Prefabs/BlocksPrefab/");
-            return null;
-        }
-
-        GameObject blockGO = Instantiate(blockPrefab, categoryContainer.transform);
-        
-        // Crear el Label como un nuevo objeto hijo
-        GameObject labelGO = new GameObject("BlockLabel");
-        labelGO.transform.SetParent(blockGO.transform, false);
-
-
-        HorizontalLayoutGroup lineGroup = labelGO.AddComponent<HorizontalLayoutGroup>();
-        lineGroup.childForceExpandWidth = false;  // Evita expansión forzada
-        lineGroup.childForceExpandHeight = false;
-        lineGroup.childAlignment = TextAnchor.MiddleLeft;
-        lineGroup.spacing = 10; // Espaciado entre elementos
-
-        RectTransform lineGroupRect = lineGroup.GetComponent<RectTransform>();
-        lineGroupRect.anchorMin = new Vector2(0, 0.5f); // Alineado a la izquierda
-        lineGroupRect.anchorMax = new Vector2(0, 0.5f);
-        lineGroupRect.pivot = new Vector2(0, 0.5f); // Pivot al centro-izquierda
-        lineGroupRect.anchoredPosition = new Vector2(10, 0); // Separación desde el borde izquierdo
-        lineGroupRect.sizeDelta = new Vector2(10, 50); // El ancho crecerá dinámicamente
-
-        /* TextMeshProUGUI labelText = labelGO.AddComponent<TextMeshProUGUI>();
-         labelText.text = "mover";  // Asignar nombre del bloque
-         labelText.alignment = TextAlignmentOptions.Center;
-         labelText.fontSize = 50;
-         labelText.color = Color.white;
-         labelText.fontStyle = FontStyles.Bold;
-
-         RectTransform labelRect = labelGO.GetComponent<RectTransform>();
-         labelRect.anchorMin = new Vector2(0, 0.5f); // Anclado a la izquierda y centrado verticalmente
-         labelRect.anchorMax = new Vector2(0, 0.5f);
-         labelRect.pivot = new Vector2(0, 0.5f); // El pivote está en la izquierda y centro del texto
-         labelRect.anchoredPosition = new Vector2(10, 0); // Ajuste de posición con respecto al bloque
-         labelRect.sizeDelta = new Vector2(200, 50); // Tamaño adecuado del texto*/
-
-        if (string.IsNullOrEmpty(blockData.label))
-        {
-            Debug.LogError($"Error: El Label del bloque '{blockData.type}' es nulo o vacío.");
-            return null;
-        }
-
-
-        Debug.Log($"Bloque {blockData.spriteName} cargado correctamente con {blockData.label}");
-
-        // Dividir el Label en partes (texto y placeholders)
-        string[] parts = blockData.label.Split(new string[] { "%1", "%2", "%3" }, System.StringSplitOptions.None);
-        int inputCount = blockData.label.Split(new string[] { "%1", "%2", "%3" }, System.StringSplitOptions.None).Length - 1;
-
-        float offsetX = 0f;
-
-        for (int i = 0; i < parts.Length; i++)
-        {
-            if (!string.IsNullOrEmpty(parts[i]))
-            {
-                GameObject textGO = new GameObject($"LabelText_{i}");
-                textGO.transform.SetParent(labelGO.transform, false);
-
-                TextMeshProUGUI textComponent = textGO.AddComponent<TextMeshProUGUI>();
-                textComponent.text = parts[i];
-                textComponent.fontSize = 40;
-                textComponent.color = Color.white;
-                textComponent.fontStyle = FontStyles.Bold;
-
-                RectTransform textRect = textGO.GetComponent<RectTransform>();
-                textRect.anchorMin = new Vector2(0, 0.5f);
-                textRect.anchorMax = new Vector2(0, 0.5f);
-                textRect.pivot = new Vector2(0, 0.5f);
-                textRect.anchoredPosition = new Vector2(offsetX, 0);
-                textRect.sizeDelta = new Vector2(100, 50);
-
-                offsetX += textRect.sizeDelta.x; // Mover la posición hacia la derecha
-            }
-
-            if (i < inputCount)
-            {
-                GameObject inputGO = new GameObject($"InputField_{i}");
-                inputGO.transform.SetParent(labelGO.transform, false);
-
-                TMP_InputField inputField = inputGO.AddComponent<TMP_InputField>();
-                TextMeshProUGUI inputText = inputGO.AddComponent<TextMeshProUGUI>();
-
-                inputText.text = "10"; // Valor por defecto
-                inputText.fontSize = 40;
-                inputText.color = Color.black;
-                inputText.fontStyle = FontStyles.Bold;
-
-                RectTransform inputRect = inputGO.GetComponent<RectTransform>();
-                inputRect.anchorMin = new Vector2(0, 0.5f);
-                inputRect.anchorMax = new Vector2(0, 0.5f);
-                inputRect.pivot = new Vector2(0, 0.5f);
-                inputRect.anchoredPosition = new Vector2(offsetX, 0);
-                inputRect.sizeDelta = new Vector2(60, 50);
-
-                inputField.textComponent = inputText;
-                inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
-                inputField.interactable = true;
-
-                offsetX += inputRect.sizeDelta.x + 10; // Espaciado entre el input y el siguiente texto
-            }
-        }
-
-        //Obtener el tamaño del prefab desde el XML de tamaños
-        Vector2 blockSize = BlockDataLoader.GetBlockSize(blockData.spriteName);
-        Vector2 scaledBlockSize = new Vector2(blockSize.x * 0.16f, blockSize.y * 0.16f); // Tamaño reducido (51x28)
-
-        RectTransform blockRect = blockGO.GetComponent<RectTransform>();
-        blockRect.sizeDelta = new Vector2(offsetX + 20, blockRect.sizeDelta.y); // +20 para un pequeño margen
-
-
-        if (blockRect != null)
-        {
-            blockRect.sizeDelta = blockSize; //Tamaño original del bloque
-            blockRect.anchorMin = new Vector2(0, 1); // Ancla arriba a la izquierda
-            blockRect.anchorMax = new Vector2(0, 1);
-            blockRect.pivot = new Vector2(0, 1); // Pivote arriba a la izquierda
-            blockRect.anchoredPosition = Vector2.zero; // Posición inicial (ajustada por VerticalLayoutGroup)
-        }
-        else
-        {
-            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene un RectTransform");
-        }
-
-        BlockBehaviour blockBehaviour = blockGO.GetComponent<BlockBehaviour>();
-
-        if (blockBehaviour != null)
-        {
-            blockBehaviour.Initialize(blockData);
-        }
-        else
-        {
-            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene el componente BlockBehaviour, se lo añado");
-            blockGO.AddComponent<BlockBehaviour>();
-        }
-
-        LayoutElement layoutElement = blockGO.AddComponent<LayoutElement>();
-
-        if (layoutElement == null)
-        {
-            layoutElement = blockGO.AddComponent<LayoutElement>();
-        }
-        layoutElement.preferredHeight = blockSize.y;
-        layoutElement.preferredWidth = blockSize.x;
-
-        layoutElement.flexibleWidth = 0;
-        layoutElement.flexibleHeight = 0;
-
-        blockGO.transform.localScale = new Vector3(0.16f, 0.16f, 1f); // Escala reducida visualmente
-
-        //Asignar el color de la categoria
-        UnityEngine.UI.Image blockImage = blockGO.GetComponent<UnityEngine.UI.Image>();
-        if (blockImage != null)
-        {
-            blockImage.color = categoryColor;
-            blockImage.type = UnityEngine.UI.Image.Type.Sliced; // Asegúrar de que sea Sliced para mantener los recortes
-            RectTransform imageRect = blockImage.GetComponent<RectTransform>();
-
-            if (imageRect != null)
-            {
-                imageRect.sizeDelta = blockSize; // Tamaño reducido visualmente (51x28)
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"El prefab {blockData.spriteName} no tiene un componente Image");
-        }
-
-        // Agregar máscara transparente para manejar eventos de arrastre
-        GameObject maskObj = new GameObject("BlockMask");
-        maskObj.transform.SetParent(blockGO.transform, false);
-        RectTransform maskTrans = maskObj.AddComponent<RectTransform>();
-        maskTrans.sizeDelta = blockSize;
-        UnityEngine.UI.Image maskImage = maskObj.AddComponent<UnityEngine.UI.Image>();
-        maskImage.color = new Color(1, 1, 1, 0); // Transparente
-
-        // Manejar eventos de arrastre
    
-        UIEventListener.Get(maskObj).onBeginDrag = data => PickBlockView(data, blockGO, rightPanelTransform);
-
-        Debug.Log($"Categoría de bloques {categoryName} cargada correctamente con {categoryData.blocks.Count} bloques");
-
-        return blockGO;
-    }
-
-
     private GameObject NewBlockView(BlockDataLoader.BlockData blockData, BlockDataLoader.BlockCategoryData categoryData, string categoryName, GameObject categoryContainer, Color categoryColor)
     {
 
@@ -487,21 +285,32 @@ public class BlockScrollList : MonoBehaviour
         GameObject blockGO = blockView.gameObject;
         blockGO.transform.SetParent(categoryContainer.transform, false); // Añadir al contenedor de la categoría
 
-       
-        RectTransform blockRect = blockGO.AddComponent<RectTransform>();
+        // Obtener el tamaño original del prefab desde BlockDataLoader o el RectTransform
+        Vector2 originalSize = BlockDataLoader.GetBlockSize(blockData.spriteName); // Asegúrate de que este método devuelva 316x175
+
+        Debug.Log($"Tamaño original del bloque {blockData.spriteName}: {originalSize}");
+        if (originalSize == Vector2.zero)
+        {
+            originalSize = new Vector2(316, 175); // Valor por defecto si no se encuentra
+            Debug.LogWarning($"Tamaño no encontrado para {blockData.spriteName}, usando 316x175 como predeterminado.");
+        }
+
+        RectTransform blockRect = blockGO.GetComponent<RectTransform>();
         //Vector2 blockSize = BlockDataLoader.GetBlockSize(blockData.spriteName); // Obtener tamaño desde XML
 
         //blockRect.sizeDelta = blockSize;
-        blockRect.sizeDelta = new Vector2(200, 50);
+        blockRect.sizeDelta = originalSize; // new Vector2(316, 175);
         blockRect.anchorMin = new Vector2(0, 1); // Anclar arriba a la izquierda
         blockRect.anchorMax = new Vector2(0, 1);
         blockRect.pivot = new Vector2(0, 1);
         blockRect.anchoredPosition = Vector2.zero;
 
         //Se añade una Image para el fondo del bloque
-        Image blockImage = blockGO.AddComponent<Image>();
+        Image blockImage = blockGO.GetComponent<Image>();
         blockImage.color = categoryColor; // Usar el color de la categoría
         blockImage.type = Image.Type.Sliced; // Para que se adapte al tamaño
+        RectTransform imageRect = blockImage.GetComponent<RectTransform>();
+        imageRect.sizeDelta = originalSize;
 
         //Se añade el BlockView al GameObject
         blockView.transform.SetParent(blockGO.transform, false);
@@ -512,15 +321,17 @@ public class BlockScrollList : MonoBehaviour
 
         //Se añade un LayoutElement para que el VerticalLayoutGroup lo maneje
         LayoutElement layoutElement = blockGO.AddComponent<LayoutElement>();
-       // layoutElement.preferredWidth = blockSize.x;
-       // layoutElement.preferredHeight = blockSize.y;
-        layoutElement.preferredWidth = 200;
-        layoutElement.preferredHeight = 50;
+        float scaleFactor = 0.32f; // Factor de escala que usaste originalmente
+        layoutElement.preferredWidth = originalSize.x * scaleFactor;
+        layoutElement.preferredHeight = originalSize.y * scaleFactor;
+        //layoutElement.preferredWidth = 200;
+       // layoutElement.preferredHeight = 50;
         layoutElement.flexibleWidth = 0;
         layoutElement.flexibleHeight = 0;
 
         //Se escala el bloque (similar a Scratch)
-        blockGO.transform.localScale = Vector2.one;
+        
+        blockGO.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1); // Escalar a 0.16
 
         //Se añade comportamiento
         BlockBehaviour blockBehaviour = blockGO.AddComponent<BlockBehaviour>();

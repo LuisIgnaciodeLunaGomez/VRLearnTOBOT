@@ -15,8 +15,6 @@
  */
 
 
-
-using System;
 using UnityEngine;
 
 public static class BlockViewFactory
@@ -47,7 +45,7 @@ public static class BlockViewFactory
               if (blockView == null)
               {
                   Debug.LogError($"Prefab '{blockData.spriteName}' at 'Prefabs/BlocksPrefab/{blockData.spriteName}' lacks a BlockView component. Adding one.");
-                  blockView = blockObj.AddComponent<BlockView>(); // Add it if missing
+                  blockView = blockObj.AddComponent<BlockView>();
               }
 
               blockView.BindModel(block, blockData);

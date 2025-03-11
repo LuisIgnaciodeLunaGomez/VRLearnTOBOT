@@ -71,16 +71,13 @@ using UnityEngine;
 
     public Vector2 GetDrawSize()
     {
-        //I know it is a little bit awkward here...
-        //but to make it seem prettier...maybe refactor later
+        
         Vector2 size = Size;
         ConnectionInputView conView = ((InputView)LastChild).GetConnectionView();
         if (conView != null && !conView.IsSlot)
             size.x -= conView.Width;
         return size;
     }
-
-
 
 }
 

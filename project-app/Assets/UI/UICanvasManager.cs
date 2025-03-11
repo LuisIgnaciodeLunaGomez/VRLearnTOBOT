@@ -110,6 +110,8 @@ public class UICanvasManager : MonoBehaviour
         this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>();
         this.m_workSpaceView = workSpaceGO.AddComponent<WorkSpaceView>();
 
+
+        BlockStatusView statusView = workSpaceGO.AddComponent<BlockStatusView>(); //Añado el script BlockStatusView al WorkSpace
         //Panel para la lista de bloques y su representación en el espacio de trabajo al seleccionar una categoría
         GameObject middlePanel = CreatePanel(
             "BlockListPanel", 
@@ -208,16 +210,17 @@ public class UICanvasManager : MonoBehaviour
 
         VerticalLayoutGroup layoutGroup = blockContainer.AddComponent<VerticalLayoutGroup>();
         layoutGroup.childAlignment = TextAnchor.UpperLeft;
-        layoutGroup.spacing = 0.16f; // Espacio entre bloques
+        layoutGroup.spacing = 0.0f; // Espacio entre bloques
         layoutGroup.childForceExpandWidth = false;
         layoutGroup.childForceExpandHeight = false;
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childControlHeight = true;
-        layoutGroup.childScaleWidth = true;
-        layoutGroup.childScaleHeight = true;
+        layoutGroup.childControlWidth = false;
+        layoutGroup.childControlHeight = false;
+        layoutGroup.childScaleWidth = false;
+        layoutGroup.childScaleHeight = false;
+        layoutGroup.padding = new RectOffset(0, 0, 50, 0); // Ajuste de margen
 
 
-       // ContentSizeFitter fitter = blockContainer.AddComponent<ContentSizeFitter>();
+        // ContentSizeFitter fitter = blockContainer.AddComponent<ContentSizeFitter>();
         //fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         if (m_blockScrollList != null)
         {

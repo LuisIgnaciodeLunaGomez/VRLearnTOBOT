@@ -47,7 +47,7 @@
     <Block>
         <Type>motion_goto</Type>
         <Label>ir a x:%1 y:%2</Label>
-        <SpriteName>Hat_block_grey</SpriteName>
+        <SpriteName>Stack_block_grey</SpriteName>
         <connections>
             <top>true</top>
             <bottom>true</bottom>
