@@ -16,7 +16,7 @@ public static class GeneradorUI
 
         WorkSpace workspace = new WorkSpace(); //Se crea un nuevo espacio de trabajo con sus opciones
         workSpaceView = Object.FindFirstObjectByType<WorkSpaceView>(); //Se busca el área de trabajo en la escena
-        workSpaceView.BindModel(workspace); //Se enlaza el modelo lógico con la vista
+        //workSpaceView.BindModel(workspace); //Se enlaza el modelo lógico con la vista
         UICanvas = workSpaceView.GetComponentInParent<Canvas>(); //Se obtiene el canvas de la interfaz de usuario
 
     }

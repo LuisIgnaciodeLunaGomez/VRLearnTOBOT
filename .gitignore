@@ -32,3 +32,6 @@ project-docs/tex/*
 .release/
 .utmp/
 
+project-app/ProjectSettings/ProjectSettings.asset
+project-app/Assembly-CSharp.csproj
+project-app/Assembly-CSharp.csproj

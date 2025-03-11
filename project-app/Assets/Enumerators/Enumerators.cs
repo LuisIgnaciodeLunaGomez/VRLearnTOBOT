@@ -22,3 +22,35 @@ public enum UpdateState
     Highlight, // Bloque que ha sido conectado y se ha resaltado
     UnHighlight //Bloque que ha sido desconectado 
 }
+
+public enum ViewType
+{
+    Block,
+    LineGroup,    
+    Input,
+    Field,
+    Connection,       
+    ConnectionInput,
+}
+
+public enum ConnectionInputViewType
+{
+    Value = 0,    
+    ValueSlot,    
+    Statement,    
+}
+
+public enum UpdateStates
+{
+    Inputs = 0,
+    //Fields = 1,
+    Connections = 2,
+    IsDisabled = 3,
+    IsCollapsed = 4,
+    IsEditable = 5,
+    IsDeletable = 6,
+    IsMovable = 7,
+    IsInputInline = 8,
+    IsShadow = 9
+
+}

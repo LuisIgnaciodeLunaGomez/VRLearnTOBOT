@@ -1,38 +1,63 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+
 <Blocks>
-	<Block>
-		<Type>motion_movesteps</Type>
-		<Label>Mover %1 pasos</Label>
-		<SpriteName>Stack_block_grey</SpriteName>
-		<connections>
-			<top>true</top>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
-	<Block>
-		<Type>add_to_x</Type>
-		<Label>Sumar a x %1</Label>
-		<SpriteName>Stack_block_grey</SpriteName>
-		<connections>
-			<top>true</top>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
-	<Block>
-		<Type>add_to_x</Type>
-		<Label>Sumar a x %1</Label>
-		<SpriteName>Stack_block_grey</SpriteName>
-		<connections>
-			<top>true</top>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
-	<Block>
-		<Type>Screen_Flag_Green</Type>
-		<Label>event_whenflagclicked</Label>
-		<SpriteName>Hat_block_grey</SpriteName>
-		<connections>
-			<bottom>true</bottom>
-		</connections>
-	</Block>
+    <Block>
+        <Type>motion_movesteps</Type>
+        <Label>mover %1 pasos</Label>
+        <SpriteName>Stack_block_grey</SpriteName>
+        <connections>
+            <top>true</top>
+            <bottom>true</bottom>
+        </connections>
+        <args>
+            <arg type="label" value="mover" />
+            <arg type="input" name="STEPS" inputType="number" default="10" />
+            <arg type="label" value="pasos" />
+        </args>
+    </Block>
+
+    <Block>
+        <Type>add_to_x</Type>
+        <Label>sumar a x %1</Label>
+        <SpriteName>Stack_block_grey</SpriteName>
+        <connections>
+            <top>true</top>
+            <bottom>true</bottom>
+        </connections>
+        <args>
+            <arg type="label" value="sumar a x" />
+            <arg type="input" name="VALUE" inputType="number" default="5" />
+        </args>
+    </Block>
+
+    <Block>
+        <Type>substract_to_x</Type>
+        <Label>restar a x %1</Label>
+        <SpriteName>Stack_block_grey</SpriteName>
+        <connections>
+            <top>true</top>
+            <bottom>true</bottom>
+        </connections>
+        <args>
+            <arg type="label" value="restar a x" />
+            <arg type="input" name="VALUE" inputType="number" default="5" />
+        </args>
+    </Block>
+
+    <Block>
+        <Type>motion_goto</Type>
+        <Label>ir a x:%1 y:%2</Label>
+        <SpriteName>Hat_block_grey</SpriteName>
+        <connections>
+            <top>true</top>
+            <bottom>true</bottom>
+        </connections>
+        <args>
+            <arg type="label" value="ir a x:" />
+            <arg type="input" name="X" inputType="number" default="0" />
+            <arg type="label" value="y:" />
+            <arg type="input" name="Y" inputType="number" default="0" />
+        </args>
+    </Block>
 </Blocks>
+

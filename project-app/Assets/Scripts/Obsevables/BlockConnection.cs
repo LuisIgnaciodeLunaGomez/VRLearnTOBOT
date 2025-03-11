@@ -14,7 +14,10 @@
  * Descripción: 
  */
 
+using LiteDB;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class BlockConnection
@@ -26,6 +29,8 @@ public class BlockConnection
     public List<string> Check { get; protected set; } //Lista de tipos de bloques que se pueden conectar
 
     public BlockConnection() { }
+    public ConnectionType Type { get; private set; }
+    private UpdateState State { get; set; }
 
     public bool IsConnected
     {
@@ -54,6 +59,9 @@ public class BlockConnection
             Debug.LogWarning("Target connection not connected to source connection.");
             return;
         }
+
+        TargetConnection = null;
+        otherConnection.TargetConnection = null;
     }
 
     public bool CheckType(BlockConnection otherConnection)
@@ -85,12 +93,25 @@ public class BlockConnection
 
     public void CheckConnection(BlockConnection otherConnection)
     {
-        //TODO
+        if (otherConnection == null)
+            throw new Exception("Target connection is null.");
+
+        if (this.m_SourceBlock == otherConnection.m_SourceBlock)
+            throw new Exception("Attempted to connect a block to itself.");
+
+        if (!this.CheckType(otherConnection))
+            throw new Exception("Block types are incompatible.");
     }
 
     private void ConnectInternal(BlockConnection childConnection)
     {
-        //TODO
+        var parentConnection = this;
+        var childBlock = childConnection.m_SourceBlock;
+
+        // Asegurar que el bloque hijo se coloque correctamente
+        childBlock.XY = parentConnection.m_SourceBlock.XY + new Vector2(0, -30);
+
+        ConnectReciprocally(parentConnection, childConnection);
     }
 
     public bool IsSuperior()
@@ -106,7 +127,20 @@ public class BlockConnection
         {
             Disconnect();
         }
+    }
 
+    public void FireUpdate(UpdateState State)
+    {
+        Debug.Log($"BlockConnection updated: {State}");
+    }
+
+
+    public void ConnectReciprocally(BlockConnection first, BlockConnection second)
+    {
+        if (first == null || second == null)
+            throw new Exception("Cannot connect null connections.");
+        first.TargetConnection = second;
+        second.TargetConnection = first;
     }
 }
 

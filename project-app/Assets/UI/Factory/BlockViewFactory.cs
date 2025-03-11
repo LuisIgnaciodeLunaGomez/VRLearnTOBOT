@@ -19,11 +19,49 @@
 using System;
 using UnityEngine;
 
-public class BlockViewFactory
+public static class BlockViewFactory
 {
-    internal static BlockView CreateView(Block block)
-    {
-        throw new NotImplementedException();
-    }
+     public static BlockView CreateView(Block block, BlockDataLoader.BlockData blockData, WorkSpaceView workSpaceView)
+      {
+          BlockView blockView = null;
+      
 
+          GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
+
+         if (blockPrefab == null)
+          {
+              Debug.LogError($"No se encontró el prefab en 'Prefabs/BlocksPrefab/{blockData.spriteName}'. Verifica la ruta y existencia del archivo.");
+              GameObject fallbackObj = new GameObject(blockData.type);
+              blockView = fallbackObj.AddComponent<BlockView>();
+              blockView.SetWorkSpaceView(workSpaceView); // Asignar WorkSpaceView
+              blockView.BindModel(block, blockData);
+              return blockView;
+          }
+
+          if (blockPrefab != null)
+          {
+              GameObject blockObj = GameObject.Instantiate(blockPrefab);
+              blockObj.name = blockData.type;
+
+              blockView = blockObj.GetComponent<BlockView>();
+              if (blockView == null)
+              {
+                  Debug.LogError($"Prefab '{blockData.spriteName}' at 'Prefabs/BlocksPrefab/{blockData.spriteName}' lacks a BlockView component. Adding one.");
+                  blockView = blockObj.AddComponent<BlockView>(); // Add it if missing
+              }
+
+              blockView.BindModel(block, blockData);
+              blockView.BuildLayout();
+          }
+          else
+          {
+              Debug.LogWarning($"Prefab not found at 'Prefabs/BlocksPrefab/{blockData.spriteName}'. Falling back to default BlockView creation.");
+
+              GameObject fallbackObj = new GameObject(blockData.type);
+              blockView = fallbackObj.AddComponent<BlockView>();
+              blockView.BindModel(block, blockData);
+          }
+
+          return blockView;
+      }
 }

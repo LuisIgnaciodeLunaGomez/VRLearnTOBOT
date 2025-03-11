@@ -1,47 +1,163 @@
-/*
+Ôªø/*
  * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
  *
- * Grado en IngenierÌa Inform·tica - Universidad de Burgos
+ * Grado en Ingenier√≠a Inform√°tica - Universidad de Burgos
  *
- * Autor: Luis Ignacio de Luna GÛmez
+ * Autor: Luis Ignacio de Luna G√≥mez
  * 
  * email: ldg1008@alu.ubu.es
  * 
  * Fecha: 22/02/2025
  * 
- * VersiÛn: 1.0.0
+ * Versi√≥n: 1.0.0
  * 
- * DescripciÛn: 
+ * Descripci√≥n: 
  */
 
 
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-public class BlockView : MonoBehaviour, IBlockView
+using UBlockly.UGUI;
+using TMPro;
+
+public class BlockView : BaseView
 {
 
     [SerializeField] private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
-    private Block m_Block; //Referencia al modelo lÛgico del bloque
-        
+
+    [SerializeField] private Dictionary<string, BlockView> mBlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
+
+    public List<BaseView> GetChildren() => base.Childs;
+
+    private Block m_Block; //Referencia al modelo l√≥gico del bloque
+
+    private WorkSpaceView m_WorkSpaceView; //Referencia al gestor de la interfaz de usuario
+
+    public override ViewType Type { get; }
+
     public bool inToolBox { get; set; }
     public Vector2 Position { get; set; }
-    public RectTransform ViewRectransform { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-    string IBlockView.BlockType => m_Block?.Type ?? "Unknown";
+    public RectTransform ViewRectransform { get; set; }
+    string BlockType => m_Block?.Type ?? "Unknown";
     public Block Block => m_Block;
 
-    public void BindModel(Block block)
+    public void BindModel(Block block, BlockDataLoader.BlockData blockData)
     {
-        if (m_Block == block) return; //Si el modelo lÛgico del bloque es el mismo que el modelo lÛgico del bloque actual, no se hace nada
+        if (m_Block == block) return; //Si el modelo l√≥gico del bloque es el mismo que el modelo l√≥gico del bloque actual, no se hace nada
 
-        if (m_Block == block) return;
+
         unBindModel(); // Si hay un bloque anterior, desvincularlo
 
         m_Block = block;
-        UpdatePosition(m_Block.XY); // Posiciona el bloque en el ·rea de trabajo
+        m_Block.Initialize(blockData);
+        Debug.Log($"Vinculando modelo de bloque: {BlockType} en {m_Block.XY}");
 
-        // Agregar el bloque al espacio de trabajo
-       // GeneradorUI.workSpaceView.AddBlockView(this);
+        Childs.Clear(); // Limpia hijos anteriores
+
+        Transform inLineGroup = transform.Find("InLineGroup");
+
+        if (inLineGroup == null)
+        {
+            Debug.LogWarning($"El bloque `{BlockType}` no tiene un InLineGroup. Creando uno.");
+            GameObject groupObject = new GameObject("InLineGroup", typeof(RectTransform));
+            groupObject.transform.SetParent(transform);
+            groupObject.transform.localPosition = Vector3.zero;
+            groupObject.transform.localScale = Vector3.one;
+
+            //Agregar un LayoutGroup para organizar los elementos detnro
+            var layout = groupObject.AddComponent<HorizontalLayoutGroup>();
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+
+            inLineGroup = groupObject.transform;
+
+            // Agregar el componente InLineGroup para que se reconozca como tal
+            groupObject.AddComponent<InLineGroup>();
+        }
+        // Crear elementos para los argumentos basados en los datos del XML
+        foreach (var arg in m_Block.BlockData.args)
+        {
+            GameObject argumentObject = new GameObject(arg.type == "label" ? arg.value : arg.name);         
+            // BlockView blockViewComponent = argumentObject.AddComponent<BlockView>();
+
+            if (arg.type == "label")
+            {
+                //argumentObject = new GameObject(arg.value);
+                TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
+                textComponent.text = arg.value;
+                textComponent.fontSize = 14;
+                textComponent.alignment = TextAlignmentOptions.Center;
+            }
+            else if (arg.type == "input")
+            {
+               // argumentObject = new GameObject(arg.name);
+                TMP_InputField inputField = argumentObject.AddComponent<TMP_InputField>();
+                inputField.text = arg.defaultValue;
+            }
+
+            if (argumentObject != null)
+            {
+                // Agrego el componente BaseView para que pueda a√±adirse a Childs
+                // BaseView baseViewComponent = argumentObject.AddComponent<BaseView>();
+                //BlockView childBlockView = argumentObject.AddComponent<BlockView>();
+                argumentObject.transform.SetParent(inLineGroup, false);
+                argumentObject.transform.localScale = Vector3.one;
+
+               // Childs.Add(argumentObject);
+                Debug.Log($" Argumento a√±adido y agregado a Childs: {arg.type} - {arg.value}");
+
+            }
+            else
+            {
+                Debug.LogWarning($"El objeto `{argumentObject?.name}` no tiene el componente BaseView y no se puede a√±adir a Childs.");
+            }
+
+            // Verificar si se crearon hijos
+            if (inLineGroup.childCount == 0)
+            {
+                Debug.LogError($"No se crearon hijos en el bloque `{BlockType}`. Verifica que el XML est√° bien definido.");
+            }
+            else
+            {
+                Debug.Log($"Se a√±adieron {inLineGroup.childCount} hijos al bloque `{BlockType}`.");
+            }
+            Canvas.ForceUpdateCanvases();
+
+
+            // Agregar el bloque al espacio de trabajo
+            if (m_WorkSpaceView != null)
+            {
+                Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
+                m_WorkSpaceView.AddBlockView(this);
+            }
+            else
+            {
+                Debug.LogError($"m_WorkSpaceView no est√° asignado para el bloque {BlockType}.");
+            }
+
+            Debug.Log($"Total de hijos en InLineGroup: {inLineGroup.childCount}");
+           // Debug.Log($"Total de hijos en Childs: {Childs.Count}");
+
+           /* if (Childs.Count == 0)
+            {
+                Debug.LogError($" No se encontraron hijos en el bloque {BlockType}. Aseg√∫rate de que el prefab tenga hijos.");
+            }*/
+
+            // Agregar el bloque al espacio de trabajo
+            if (m_WorkSpaceView != null)
+            {
+                Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
+                m_WorkSpaceView.AddBlockView(this);
+            }
+
+            else
+            {
+                Debug.LogError($"m_WorkSpaceView no est√° asignado para el bloque {BlockType}.");
+            }
+
+        }
+        
     }
 
     public void Dispose()
@@ -59,7 +175,19 @@ public class BlockView : MonoBehaviour, IBlockView
     {
         if (ViewRectransform != null)
         {
-            ViewRectransform.anchoredPosition = position; // Actualiza la posiciÛn del bloque en la interfaz
+            ViewRectransform.anchoredPosition = position; // Actualiza la posici√≥n del bloque en la interfaz
+
+            Debug.Log($" Bloque {BlockType} movido a: {position}");
+            // Notificar al bloque que su posici√≥n ha cambiado
+            if (m_Block != null)
+            {
+                m_Block.XY = position;
+            }
+            else
+            {
+                Debug.LogError($" No se puede actualizar la posici√≥n del bloque {BlockType} porque ViewRectransform es nulo.");
+
+            }
         }
     }
 
@@ -73,27 +201,163 @@ public class BlockView : MonoBehaviour, IBlockView
     }
 
     /**
-     * AÒade una imagen de fondo al bloque
-     * @param image Imagen de fondo a aÒadir
+     * A√±ade una imagen de fondo al bloque
+     * @param image Imagen de fondo a a√±adir
      */
     public void AddBgImage(Image image)
     {
-        if (image != null && !m_BgImages.Contains(image)) //Si la imagen de fondo no es nula y no ha sido aÒadida antes
-            m_BgImages.Add(image); //AÒade la imagen de fondo a la lista de im·genes de fondo del bloque
+        if (image != null && !m_BgImages.Contains(image)) //Si la imagen de fondo no es nula y no ha sido a√±adida antes
+            m_BgImages.Add(image); //A√±ade la imagen de fondo a la lista de im√°genes de fondo del bloque
     }
 
     /**
-     * AÒade una image de fondo al bloque, si esta no ha sido agregada antes
-     * @param image Imagen de fondo a aÒadir
+     * A√±ade una image de fondo al bloque, si esta no ha sido agregada antes
+     * @param image Imagen de fondo a a√±adir
      */
 
     public void ChangeBgColor(Color color)
     {
-        m_BgImages.RemoveAll(bg => bg == null); //Elimina las im·genes de fondo que sean null
+        m_BgImages.RemoveAll(bg => bg == null); //Elimina las im√°genes de fondo que sean null
         foreach (Image bg in m_BgImages)
         {
-            bg.color = color;   //Cambia el color de las im·genes de fondo
+            bg.color = color;   //Cambia el color de las im√°genes de fondo
         }
     }
 
+    public void AddBlockView(BlockView blockView)
+    {
+        mBlockViews[blockView.Block.ID] = blockView;
+    }
+
+    public void BuildLayout()
+    {
+        // BaseView startView = this.GetLineGroup(0).GetTopmostChild();
+        //startView.UpdateLayout(startView.HeaderXY);
+
+        InLineGroup lineGroup = GetLineGroup(0);
+        if (lineGroup == null)
+        {
+            Debug.LogWarning($"No se encontr√≥ un InLineGroup en el bloque {BlockType}. Aseg√∫rate de que el prefab tenga la estructura correcta.");
+            return;
+        }
+
+        BlockView startView = lineGroup.GetComponentInChildren<BlockView>();
+        if (startView != null)
+        {
+            startView.UpdateLayout(startView.HeaderXY);
+        }
+        else
+        {
+            Debug.LogWarning($"No se encontr√≥ un TopmostChild en el InLineGroup del bloque {BlockType}.");
+        }
+    }
+
+    public InLineGroup GetLineGroup(int index)
+    {
+        int count = 0;
+
+        Debug.Log($"Buscando el {index}th InLineGroup en {BlockType}, Total de hijos en transform: {transform.childCount}");
+
+        foreach (Transform child in transform)
+        {
+            Debug.Log($" Recorriendo hijo: {child.GetType().Name}");
+            InLineGroup view = child.GetComponent<InLineGroup>();
+            if (view != null)
+            {
+                if (count == index)
+                {
+                    Debug.Log($"Encontrado InLineGroup en {BlockType}.");
+                    return view;
+                }
+                count++;
+            }
+        }
+        Debug.LogErrorFormat("<color=red>Can't find the {0}th lineGroup in block view of {1}.</color>", index, this.GetType().Name);
+        return null;
+    }
+
+    protected override Vector2 CalculateSize()
+    {
+        bool alignRight = false;
+
+        //accumulate all child lineGroups' size
+        Vector2 size = Vector2.zero;
+        for (int i = 0; i < Childs.Count; i++)
+        {
+            InLineGroup groupView = Childs[i] as InLineGroup;
+            if (groupView != null)
+            {
+                size.x = Mathf.Max(size.x, groupView.Size.x);
+                size.y += groupView.Size.y;
+                if (i < Childs.Count - 1)
+                    size.y += BlockViewSettings.Get().ContentSpace.y;
+
+                InputView lastChildInputView = groupView.LastChild as InputView;
+
+                if(lastChildInputView != null && lastChildInputView.AlignRight)
+                {
+
+                    alignRight = true;
+                }
+            }
+        }
+
+        Debug.Log($"Calculando tama√±o del bloque {BlockType}: {size}");
+
+        if (size.x == 0 || size.y == 0)
+        {
+            Debug.LogError($"Tama√±o inv√°lido para el bloque {BlockType}, puede que no se renderice correctamente.");
+        }
+
+        List<Vector4> dimensions = new List<Vector4>();
+        for (int i = 0; i < Childs.Count; i++)
+        {
+            InLineGroup groupView = Childs[i] as InLineGroup;
+            if (groupView != null)
+            {
+                if (alignRight)
+                    groupView.UpdateAlignRight(size.x);
+
+                //linegroup's anchor and pivot both are top-left
+                Vector2 drawSize = groupView.GetDrawSize();
+                dimensions.Add(new Vector4(groupView.XY.x, groupView.XY.y - drawSize.y, groupView.XY.x + drawSize.x, groupView.XY.y));
+            }
+        }
+
+           
+           ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
+        return size;
+    }
+   
+      void Awake()
+    {
+        // Find or set m_WorkSpaceView (adjust based on your hierarchy or setup)
+        m_WorkSpaceView = FindFirstObjectByType<WorkSpaceView>(); // Example: Find in scene
+        if (m_WorkSpaceView == null)
+        {
+            Debug.LogError("No WorkSpaceView found in the scene for BlockView initialization.");
+        }
+    }
+    public void SetWorkSpaceView(WorkSpaceView workSpaceView)
+    {
+        m_WorkSpaceView = workSpaceView;
+    }
+
+    public void AddLabel(string text)
+    {
+        GameObject labelObj = new GameObject("Label");
+        Text label = labelObj.AddComponent<Text>();
+        label.text = text;
+        label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        label.alignment = TextAnchor.MiddleCenter;
+        label.transform.SetParent(this.transform, false);
+    }
+
+    public void AddInput(string name, string type, string defaultValue)
+    {
+        GameObject inputObj = new GameObject(name);
+        InputField input = inputObj.AddComponent<InputField>();
+        input.text = defaultValue;
+        input.transform.SetParent(this.transform, false);
+    }
 }

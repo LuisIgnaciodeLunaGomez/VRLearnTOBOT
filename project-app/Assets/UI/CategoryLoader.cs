@@ -73,7 +73,7 @@ public class CategoryLoader : MonoBehaviour
             string name = category.Element("Name").Value;
             string colorHex = category.Element("Color").Value;
             Color categoryColor = HexToColor(colorHex);
-            Debug.Log("Categoría: " + name + " Color: " + categoryColor);
+           // Debug.Log("Categoría: " + name + " Color: " + categoryColor);
             CreateCategoryUI(name, categoryColor);
 
         }
@@ -197,7 +197,7 @@ public class CategoryLoader : MonoBehaviour
     // Función que se ejecuta cuando un botón de categoría es presionado
     void OnCategoryButtonClick(string categoryName, Color categoryColor)
     {
-        Debug.Log("Se presionó la categoría: " + categoryName);
+        //Debug.Log("Se presionó la categoría: " + categoryName);
         if (uiCanvasManager != null)
         {
             uiCanvasManager.UpdateMiddlePanel(categoryName, categoryColor);

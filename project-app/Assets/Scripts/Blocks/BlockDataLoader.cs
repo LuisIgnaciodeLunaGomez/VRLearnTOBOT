@@ -15,13 +15,9 @@
  */
 
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using Unity.VisualScripting;
 using UnityEngine;
 public class BlockDataLoader
 {
@@ -32,6 +28,17 @@ public class BlockDataLoader
         public string text;      // Texto del bloque
         public string iconPath;   // Ruta al icono del bloque
         public string spriteName; // Nombre del sprite
+        public string label;      // Etiqueta del bloque
+        public List<BlockArg> args = new List<BlockArg>(); // Lista de argumentos
+    }
+    [System.Serializable]
+    public class BlockArg
+    {
+        public string type;      // Tipo de argumento (label, input, etc.)
+        public string value;     // Texto del label (si aplica)
+        public string name;      // Nombre del input (si aplica)
+        public string inputType; // Tipo del input (number, text, etc.)
+        public string defaultValue; // Valor por defecto (si aplica)
     }
 
     [System.Serializable]
@@ -48,7 +55,7 @@ public class BlockDataLoader
     // Método para cargar los datos de bloques desde un archivo JSON
     public static BlockCategoryData LoadCategoryData(string categoryName)
     {
-        Debug.Log($"Intentando cargar XML: {categoryName}");
+        //Debug.Log($"Intentando cargar XML: {categoryName}");
 
         // var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargo desde la carpeta Resources
         string xmlFilePath = $"{categoryName}";
@@ -60,7 +67,8 @@ public class BlockDataLoader
             return null;
         }
 
-        Debug.Log($"XML encontrado: {xmlFilePath}, contenido: {xmlFile.text}");
+        // Valido para depurar el xml
+        //Debug.Log($"XML encontrado: {xmlFilePath}, contenido: {xmlFile.text}"); 
 
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.LoadXml(xmlFile.text); // Cargo el archivo XML
@@ -83,10 +91,11 @@ public class BlockDataLoader
 
             foreach (var block in categoryData.blocks)
             {
-                Debug.Log($"Tipo: {block.type}, Label: {block.text}, SpriteName: {block.spriteName}");
+                Debug.Log($"Tipo: {block.type}, Label: {block.label}, SpriteName: {block.spriteName}");
             }
 
             XmlNodeList blockNodes = xmlDoc.SelectNodes("/Blocks/Block");
+
 
             if(blockNodes == null || blockNodes.Count == 0)
             {
@@ -94,26 +103,93 @@ public class BlockDataLoader
                 return null;
             }
 
-            Debug.Log($" Bloques encontrados en {xmlFilePath}: {blockNodes.Count}");
+            //Debug.Log($" Bloques encontrados en {xmlFilePath}: {blockNodes.Count}");
 
-            foreach (XmlNode blockNode in blockNodes)
+            /*foreach (XmlNode blockNode in blockNodes)
             {
                 Debug.Log($" Bloque encontrado: {blockNode.InnerXml}");
-            }
+            }*/
 
             foreach (XmlNode blockNode in blockNodes)
             {
+                XmlNode typeNode = blockNode.SelectSingleNode("Type");
+                XmlNode labelNode = blockNode.SelectSingleNode("Label");
+                XmlNode spriteNode = blockNode.SelectSingleNode("SpriteName");
+
                 BlockData blockData = new BlockData
                 {
-                    type = blockNode.SelectSingleNode("Type").Value,
-                    text = blockNode.SelectSingleNode("Label").Value,
-                    spriteName = blockNode.SelectSingleNode("SpriteName")?.InnerText.Trim()
+                    /* type = blockNode.SelectSingleNode("Type").Value,
+                     label = blockNode.SelectSingleNode("Label").InnerText.Trim(),
+                     spriteName = blockNode.SelectSingleNode("SpriteName")?.InnerText.Trim()*/
+
+                    type = typeNode?.InnerText?.Trim() ?? "Unknown",
+                    label = labelNode?.InnerText?.Trim() ?? "Unnamed",
+                    spriteName = spriteNode?.InnerText?.Trim() ?? "NoSprite",
+                    args = new List<BlockArg>() // Inicializa la lista de argumentos
                 };
+
+                // Leer los <args>
+                /* XmlNodeList argsNodes = blockNode.SelectNodes("args/arg");
+
+                 if (argsNodes == null)
+                 {
+                     Debug.LogError($"No se encontró el nodo <args> en el bloque {blockData.type}");
+                 }
+                 else
+                 {
+
+                     Debug.Log($" Bloque {blockData.type} tiene {argsNodes.Count} argumentos");
+
+                 }*/
+
+                // Comprobamos si existe el nodo <args>
+                XmlNode argsNode = blockNode.SelectSingleNode("args");
+                if (argsNode == null)
+                {
+                    Debug.LogWarning($"No se encontró el nodo <args> en el bloque `{blockData.type}`. XML del bloque: {blockNode.OuterXml}");
+                }
+                else
+                {
+                    Debug.Log($"Nodo <args> encontrado en `{blockData.type}`: {argsNode.OuterXml}");
+                }
+
+                XmlNodeList argsNodes = blockNode.SelectNodes("args/arg");
+
+                if (argsNodes != null && argsNodes.Count > 0)
+                {
+
+                    foreach (XmlNode argNode in argsNodes)
+                    {
+                        BlockArg arg = new BlockArg
+                        {
+                            type = argNode.Attributes["type"]?.Value,
+                            value = argNode.Attributes["value"]?.Value,
+                            name = argNode.Attributes["name"]?.Value,
+                            inputType = argNode.Attributes["inputType"]?.Value,
+                            defaultValue = argNode.Attributes["default"]?.Value
+                        };
+
+                        blockData.args.Add(arg);
+                        //Debug.Log($"Arg: type={arg.type}, value={arg.value}, name={arg.name}, inputType={arg.inputType}, default={arg.defaultValue}");
+                    }
+
+                }
+                else
+                {
+                    Debug.LogWarning($"El bloque `{blockData.type}` no tiene argumentos definidos.");
+                }            
+                
+                
+
 
                 // Almacena el bloque en m_blockData usando el type como clave
                 if (!string.IsNullOrEmpty(blockData.type))
                 {
-                    m_blockData[blockData.type] = blockData;
+                    m_blockData[blockData.type] = blockData; //Se guarda la información del bloque en el diccionario
+                }
+                else
+                {
+                    Debug.LogError($"El bloque {blockData.type} tiene un `type` nulo o vacío. Verifica el XML.");
                 }
 
                 if (string.IsNullOrEmpty(blockData.spriteName))
@@ -121,7 +197,7 @@ public class BlockDataLoader
                     Debug.LogWarning($"El bloque {blockData.type} no tiene un spriteName definido en el XML");
                 }
 
-                XmlNode spriteNode = blockNode.SelectSingleNode("SpriteName");
+               
 
                 if (spriteNode != null)
                 {
@@ -150,77 +226,6 @@ public class BlockDataLoader
             Debug.LogError($"Error al parsear JSON {xmlFilePath}: {e.Message}");
             return null;
         }
-    }
-
-    // Método para obtener los datos de un bloque específico
-    public static BlockData GetBlockData(string blockName)
-    {
-        Debug.Log($"Buscando datos del bloque: {blockName}");
-
-        // Verificar qué claves están en el diccionario
-        Debug.Log("Claves disponibles en blockData:");
-        foreach (var key in m_blockData.Keys)
-        {
-            Debug.Log($" - {key}");
-        }
-
-        string foundKey = m_blockData.Keys.FirstOrDefault(k => k.Contains(blockName));
-
-        Debug.Log($"Clave encontrada: {foundKey}");
-
-        if (m_blockData.Count == 0)
-        {
-            Debug.LogError("Error: blockData sigue vacío.");
-            return null;
-        }
-
-        /*if (!blockData.ContainsKey(blockName))
-        {
-            Debug.LogError($"No se encontraron datos para el bloque: {blockName}");
-            return null;
-        }*/
-
-        if (foundKey == null)
-        {
-            Debug.LogError($"No se encontraron datos para el bloque: {blockName}");
-            return null;
-        }
-
-        Debug.Log($"Datos obtenidos para {foundKey}: {m_blockData[foundKey].text}");
-        return m_blockData[foundKey];
-    }
-
-
-    // Método para obtener el tamaño de un bloque específico
-    public static void LoadBlockSizes()
-    {
-        string xmlFilePath = "XML/BlockSizes"; 
-        TextAsset xmlFile = Resources.Load<TextAsset>(xmlFilePath);
-
-        if (xmlFile == null)
-        {
-            Debug.LogError($"No se pudo cargar el archivo XML de tamaños de bloques: {xmlFilePath}");
-            return;
-        }
-
-        XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.LoadXml(xmlFile.text);
-
-        XmlNodeList sizeNodes = xmlDoc.SelectNodes("/BlockSizes/BlockType");
-
-        foreach (XmlNode sizeNode in sizeNodes)
-        {
-            string type = sizeNode.SelectSingleNode("Type")?.InnerText.Trim();
-            float width = float.Parse(sizeNode.SelectSingleNode("Width")?.InnerText.Trim() ?? "316");
-            float height = float.Parse(sizeNode.SelectSingleNode("Height")?.InnerText.Trim() ?? "175");
-
-            if (!string.IsNullOrEmpty(type))
-            {
-                m_blockSizes[type] = new Vector2(width, height);
-            }
-        }
-
-        Debug.Log("Tamaños de bloques cargados correctamente.");
     }
 
     public static Vector2 GetBlockSize(string type)

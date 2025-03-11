@@ -15,7 +15,7 @@
  */
 
 
-using System;
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -58,17 +58,21 @@ public class WorkSpace : MonoBehaviour
 
         while (TopBlocks.Count > 0)
         {
-            
+
             Block block = TopBlocks[TopBlocks.Count - 1];
             TopBlocks.RemoveAt(TopBlocks.Count - 1);
             block = null; // Libera memoria
+
+
         }
+
+        TopBlocks.Clear();
 
         BlockDB.Clear();
     }
 
-   //Obtener un blooque por su ID
-   public Block GetBlockByID(string ID)
+    //Obtener un blooque por su ID
+    public Block GetBlockByID(string ID)
     {
         Block block = null; //Crea un bloque
         BlockDB.TryGetValue(ID, out block); //Conecta con la base de datos para obtener el valor
@@ -86,11 +90,13 @@ public class WorkSpace : MonoBehaviour
     //Agrega un bloque principal al espacio de trabajo
     public void AddTopBlocks(Block block)
     {
-        if(!TopBlocks.Contains(block))
+        if (block == null) return;
+
+        if (!TopBlocks.Contains(block))
         {
             TopBlocks.Add(block);
         }
-        if(BlockDB.ContainsKey(block.ID))
+        if (BlockDB.ContainsKey(block.ID))
         {
             BlockDB[block.ID] = block;
         }
@@ -126,13 +132,31 @@ public class WorkSpace : MonoBehaviour
         Clear();
     }
 
-    public void Initizalized(GameObject middle, GameObject right)
+    public void Initialized(GameObject middle, GameObject right)
     {
-        
+
         this.m_MiddlePanel = middle;
         this.m_RightPanel = right;
-        Debug.Log("WorksPace inizializado con MiddlePanel y RightPanel");
+        //Debug.Log("WorksPace inizializado con MiddlePanel y RightPanel");
     }
 
-   
+    void Awake()
+    {
+    
+        Id = Utilidades.GenUid();
+        TopBlocks = new List<Block>();
+        BlockDB = new Dictionary<string, Block>();
+
+        if (m_WorkspaceDB.ContainsKey(Id))
+        {
+            m_WorkspaceDB[Id] = this;
+            Debug.LogWarning("Ya existe un espacio de trabajo con el ID " + Id);
+        }
+        else
+        {
+            m_WorkspaceDB.Add(Id, this);
+        }
+
+    }
+
 }

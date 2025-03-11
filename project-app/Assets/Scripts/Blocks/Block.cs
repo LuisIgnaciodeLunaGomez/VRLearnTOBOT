@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Block
@@ -23,14 +24,21 @@ public class Block
     public string ID { get; private set; }
     public string Type { get; private set; }
 
+    public BlockDataLoader.BlockData BlockData { get; private set; }
+
+    public void Initialize(BlockDataLoader.BlockData blockData)
+    {
+        this.BlockData = blockData;
+    }
+
     public Vector2 XY { get; set; }
-    private bool m_Disabled = false;
+    //private bool m_Disabled = false;
 
     //Espacio de trabajo al que pertenece el bloque
     public WorkSpace workSpace { get; set; }
 
     //Conexiones de los bloques
-    public BlockConnection Outputconnection { get; set; }
+    public BlockConnection OutputConnection { get; set; }
     public BlockConnection PreviousConnection { get; set; }
     public BlockConnection NextConnection { get; set; }
 
@@ -56,13 +64,18 @@ public class Block
         this.workSpace = workSpace;
 
         //Añadido el 24/02/2025 para crear las conexiones entre bloques
-        this.Outputconnection = null;
+        this.OutputConnection = null;
         this.PreviousConnection = null;
         this.NextConnection = null;
         this.InputList = new List<Input>();
 
         workSpace.AddTopBlocks(this); //Añade el bloque a la lista de bloques principales del espacio de trabajo 24/02/2025
 
+    }
+
+    public bool HasInput(string name)
+    {
+        return InputList.Any(t => name.Equals(t.Name));
     }
 
     public Block Clone()
@@ -83,10 +96,10 @@ public class Block
 
     public void UnPlug(bool optHealStack = false)
     {
-        if (this.Outputconnection != null)
+        if (this.OutputConnection != null)
         {
-            if (this.Outputconnection.IsConnected)
-                this.Outputconnection.Disconnect();
+            if (this.OutputConnection.IsConnected)
+                this.OutputConnection.Disconnect();
         }
         else if (this.PreviousConnection != null)
         {
@@ -114,9 +127,9 @@ public class Block
     {
 
         List<BlockConnection> connections = new List<BlockConnection>();
-        if (Outputconnection != null)
+        if (OutputConnection != null)
         {
-            connections.Add(Outputconnection);
+            connections.Add(OutputConnection);
         }
         if (PreviousConnection != null)
         {
