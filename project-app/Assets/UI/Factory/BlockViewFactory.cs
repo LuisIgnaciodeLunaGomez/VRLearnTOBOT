@@ -32,33 +32,30 @@ public static class BlockViewFactory
               GameObject fallbackObj = new GameObject(blockData.type);
               blockView = fallbackObj.AddComponent<BlockView>();
               blockView.SetWorkSpaceView(workSpaceView); // Asignar WorkSpaceView
-              blockView.BindModel(block, blockData);
+              blockView.BindModel(block, blockData); //Vincula datos del bloque (block y blockData)
               return blockView;
           }
 
-          if (blockPrefab != null)
-          {
-              GameObject blockObj = GameObject.Instantiate(blockPrefab);
-              blockObj.name = blockData.type;
+        if (blockPrefab != null)
+        {
+            GameObject blockObj = GameObject.Instantiate(blockPrefab);
+            blockObj.name = blockData.type;
 
-              blockView = blockObj.GetComponent<BlockView>();
-              if (blockView == null)
-              {
-                  Debug.LogError($"Prefab '{blockData.spriteName}' at 'Prefabs/BlocksPrefab/{blockData.spriteName}' lacks a BlockView component. Adding one.");
-                  blockView = blockObj.AddComponent<BlockView>();
-              }
+            blockView = blockObj.GetComponent<BlockView>();
+            if (blockView == null)
+            {
+                Debug.LogError($"Prefab '{blockData.spriteName}' en 'Prefabs/BlocksPrefab/{blockData.spriteName}' No stenía el componente BlockView creado, se le añade uno.");
+                blockView = blockObj.AddComponent<BlockView>();
+            }
 
-              blockView.BindModel(block, blockData);
-              blockView.BuildLayout();
-          }
-          else
-          {
-              Debug.LogWarning($"Prefab not found at 'Prefabs/BlocksPrefab/{blockData.spriteName}'. Falling back to default BlockView creation.");
+            blockView.BindModel(block, blockData);
+            blockView.BuildLayout();
+        }
+        else
+        {
+            Debug.LogWarning($"Prefab no encontrado en 'Prefabs/BlocksPrefab/{blockData.spriteName}'.");
 
-              GameObject fallbackObj = new GameObject(blockData.type);
-              blockView = fallbackObj.AddComponent<BlockView>();
-              blockView.BindModel(block, blockData);
-          }
+        }
 
           return blockView;
       }

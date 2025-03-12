@@ -112,7 +112,7 @@ public class BlockView : BaseView
                 //argumentObject = new GameObject(arg.value);
                 TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
                 textComponent.text = arg.value;
-                textComponent.fontSize = 48;
+                textComponent.fontSize = 32;
                 textComponent.color = Color.white;
                 textComponent.alignment = TextAlignmentOptions.Center;
             }
@@ -133,7 +133,7 @@ public class BlockView : BaseView
                 TextMeshProUGUI inputText = (TextMeshProUGUI)inputField.textComponent;
                 if (inputText != null)
                 {
-                    inputText.fontSize = 48;
+                    inputText.fontSize = 24;
                     inputText.alignment = TextAlignmentOptions.MidlineLeft;
                 }
             }
