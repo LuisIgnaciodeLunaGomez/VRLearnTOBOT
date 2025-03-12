@@ -286,7 +286,7 @@ public class BlockScrollList : MonoBehaviour
         blockGO.transform.SetParent(categoryContainer.transform, false); // Añadir al contenedor de la categoría
 
         // Obtener el tamaño original del prefab desde BlockDataLoader o el RectTransform
-        Vector2 originalSize = BlockDataLoader.GetBlockSize(blockData.spriteName); // Asegúrate de que este método devuelva 316x175
+       Vector2 originalSize = BlockDataLoader.GetBlockSize(blockData.spriteName); // Asegúrate de que este método devuelva 316x175
 
         Debug.Log($"Tamaño original del bloque {blockData.spriteName}: {originalSize}");
         if (originalSize == Vector2.zero)
@@ -304,13 +304,15 @@ public class BlockScrollList : MonoBehaviour
         blockRect.anchorMax = new Vector2(0, 1);
         blockRect.pivot = new Vector2(0, 1);
         blockRect.anchoredPosition = Vector2.zero;
+        //blockRect.sizeDelta = new Vector2(100f, 50f);
 
         //Se añade una Image para el fondo del bloque
         Image blockImage = blockGO.GetComponent<Image>();
         blockImage.color = categoryColor; // Usar el color de la categoría
         blockImage.type = Image.Type.Sliced; // Para que se adapte al tamaño
         RectTransform imageRect = blockImage.GetComponent<RectTransform>();
-        imageRect.sizeDelta = originalSize;
+        imageRect.sizeDelta = blockRect.sizeDelta;
+        //imageRect.sizeDelta = Vector2.zero;
 
         //Se añade el BlockView al GameObject
         blockView.transform.SetParent(blockGO.transform, false);
@@ -319,11 +321,22 @@ public class BlockScrollList : MonoBehaviour
         blockView.ChangeBgColor(categoryColor);
         blockView.UpdatePosition(Vector2.zero); // Posición inicial
 
+        // Actualizar el RectTransform con el CalculatedSize del BlockView
+        Vector2 calculatedSize = blockView.CalculatedSize;
+        if (calculatedSize.x <= 0 )
+        {
+            Debug.LogWarning($"CalculatedSize inválido para {blockData.type}: {calculatedSize}. Usando tamaño mínimo.");
+            calculatedSize.x = 100f;
+        }
+        float currentHeight = blockRect.sizeDelta.y;
+        blockRect.sizeDelta = new Vector2(calculatedSize.x, currentHeight); // Actualizar solo el ancho
+        imageRect.sizeDelta = new Vector2(calculatedSize.x, currentHeight); // Sincronizar el tamaño de la imagen
         //Se añade un LayoutElement para que el VerticalLayoutGroup lo maneje
         LayoutElement layoutElement = blockGO.AddComponent<LayoutElement>();
+        //Vector2 calculatedSize = blockView.CalculatedSize;
         float scaleFactor = 0.32f; // Factor de escala que usaste originalmente
-        layoutElement.preferredWidth = originalSize.x * scaleFactor;
-        layoutElement.preferredHeight = originalSize.y * scaleFactor;
+        layoutElement.preferredWidth = calculatedSize.x;// * scaleFactor;
+        layoutElement.preferredHeight = currentHeight;// * scaleFactor;
         //layoutElement.preferredWidth = 200;
        // layoutElement.preferredHeight = 50;
         layoutElement.flexibleWidth = 0;

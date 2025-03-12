@@ -30,6 +30,7 @@ public abstract class BaseView : MonoBehaviour
     public abstract ViewType Type { get; }
     protected internal virtual void OnSizeUpdated() { }
 
+    public virtual Vector2 CalculatedSize => CalculateSize();
     protected abstract Vector2 CalculateSize();
 
     public float Width
@@ -192,6 +193,15 @@ public abstract class BaseView : MonoBehaviour
                     m_Parent.UpdateLayout(m_Parent.SiblingIndex == 0 ? m_Parent.HeaderXY : m_Parent.XY);
                 }
                 break;
+        }
+    }
+
+    void Awake()
+    {
+        m_ViewTransform = GetComponent<RectTransform>();
+        if (m_ViewTransform == null)
+        {
+            Debug.LogError("No RectTransform found in BaseView.");
         }
     }
 }

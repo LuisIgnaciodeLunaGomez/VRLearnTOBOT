@@ -15,50 +15,22 @@
  * 
  */
 
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InputView : BaseView
 {
-    [SerializeField] private InputField m_InputField; // Campo de entrada de usuario
-    [SerializeField] private bool m_AlignRight = false;
-    public override ViewType Type
-    {
-        get { return ViewType.Input; }
-    }
+    [SerializeField] private TMP_InputField m_InputField; // Campo de entrada de usuario
 
-   
-    public bool AlignRight
-    {
-        get { return m_AlignRight; }
-        set { m_AlignRight = value; }
-    }
+    public override ViewType Type => ViewType.Input;
     protected override Vector2 CalculateSize()
     {
-        if (m_InputField == null)
-            return new Vector2(80, 25); // Tamaño predeterminado para inputs
-
-        return new Vector2(m_InputField.preferredWidth + 10, m_InputField.preferredHeight + 5);
+        if (m_InputField == null) m_InputField = GetComponent<TMP_InputField>();
+        Vector2 preferredSize = m_InputField.textComponent.GetPreferredValues();
+        return new Vector2(Mathf.Max(preferredSize.x, 50f), preferredSize.y); // Mínimo de 50 para inputs
     }
 
-    public void BindInput(string placeholderText = "")
-    {
-        if (m_InputField == null)
-        {
-            GameObject inputGO = new GameObject("InputField");
-            inputGO.transform.SetParent(this.transform, false);
-            m_InputField = inputGO.AddComponent<InputField>();
-
-            Text placeholder = new GameObject("Placeholder").AddComponent<Text>();
-            placeholder.transform.SetParent(m_InputField.transform, false);
-            placeholder.text = placeholderText;
-            placeholder.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            placeholder.color = Color.gray;
-
-            m_InputField.placeholder = placeholder;
-            m_InputField.textComponent = placeholder;
-        }
-    }
 
     public ConnectionInputView GetConnectionView()
     {

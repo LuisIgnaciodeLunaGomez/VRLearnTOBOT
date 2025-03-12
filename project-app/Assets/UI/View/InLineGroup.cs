@@ -17,6 +17,7 @@
 
 
 using UnityEngine;
+using UnityEngine.UI;
 
     public class InLineGroup : BaseView 
     {
@@ -24,23 +25,60 @@ using UnityEngine;
     [SerializeField] private float m_ReservedStartX;
     [SerializeField] private RectTransform m_ViewTransform; //Transform de la vista
 
-    public override ViewType Type
+    public override ViewType Type => ViewType.LineGroup;
+    
+    public override Vector2 CalculatedSize
     {
-        get { return ViewType.LineGroup; }
+
+        get
+        {
+            Vector2 size = Vector2.zero;
+            HorizontalLayoutGroup layout = GetComponent<HorizontalLayoutGroup>();
+            /*for (int i = 0; i < Childs.Count; i++)
+            {
+                size.x = Mathf.Max(size.x, Childs[i].Size.x);
+                size.y += Childs[i].Size.y;
+            }*/
+
+            // Iterar sobre los transform hijos del HorizontalLayoutGroup
+            foreach (Transform child in transform)
+            {
+                RectTransform childRect = child.GetComponent<RectTransform>();
+                if (childRect != null)
+                {
+                    Vector2 childSize = childRect.sizeDelta;
+                    if (childSize == Vector2.zero)
+                    {
+                        // Si sizeDelta es cero, intentar obtener el tamaño preferido del contenido
+                        LayoutElement layoutElement = child.GetComponent<LayoutElement>();
+                        if (layoutElement != null)
+                        {
+                            childSize = new Vector2(layoutElement.preferredWidth, layoutElement.preferredHeight);
+                        }
+                    }
+                    size.x += childSize.x;
+                    size.y = Mathf.Max(size.y, childSize.y);
+                    Debug.Log($"Child {child.name} size: {childSize}");
+                }
+            }
+            if (layout != null)
+            {
+                size.x += layout.padding.left + layout.padding.right;
+                size.x += (Childs.Count - 1) * layout.spacing;
+                size.y += layout.padding.top + layout.padding.bottom;
+            }
+
+            if (size.x == 0) size.x = 100f; // Tamaño mínimo
+            if (size.y == 0) size.y = 50f; // Tamaño mínimo
+            Debug.Log($"InLineGroup CalculateSize: {size}");
+            return size;
+        }
     }
 
     protected override Vector2 CalculateSize()
     {
-        Vector2 size = Vector2.zero;
-        for (int i = 0; i < Childs.Count; i++)
-        {
-            size.x = Mathf.Max(size.x, Childs[i].Size.x);
-            size.y += Childs[i].Size.y;
-        }
-        return size;
+        return CalculatedSize;
     }
-  
-
     public void UpdateAlignRight(float width)
     {
         if (Mathf.Approximately(this.Width, width))
