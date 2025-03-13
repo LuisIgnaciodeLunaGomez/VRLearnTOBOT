@@ -45,13 +45,13 @@ public class BlockView : BaseView
 
     public void BindModel(Block block, BlockDataLoader.BlockData blockData)
     {
-        if (m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
+        if (this.m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
 
         unBindModel(); // Si hay un bloque anterior, desvincularlo
 
-        m_Block = block;
-        m_Block.Initialize(blockData);
-        Debug.Log($"Vinculando modelo de bloque: {BlockType} en {m_Block.XY}");
+        this.m_Block = block;
+        this.m_Block.Initialize(blockData);
+       //Debug.Log($"Vinculando modelo de bloque: {BlockType} en {this.m_Block.XY}");
 
         Childs.Clear(); // Limpia hijos anteriores
 
@@ -59,7 +59,7 @@ public class BlockView : BaseView
 
         if (inLineGroup == null)
         {
-            Debug.LogWarning($"El bloque `{BlockType}` no tiene un InLineGroup. Creando uno.");
+            //Debug.LogWarning($"El bloque `{BlockType}` no tiene un InLineGroup. Creando uno.");
             GameObject groupObject = new GameObject("InLineGroup", typeof(RectTransform));
             groupObject.transform.SetParent(transform);
             groupObject.transform.localPosition = Vector3.zero;
@@ -113,6 +113,7 @@ public class BlockView : BaseView
 
         InLineGroup inLineGroupComponent = inLineGroup.GetComponent<InLineGroup>();
         inLineGroupComponent.Childs.Clear();
+
         // Crear elementos para los argumentos basados en los datos del XML
         foreach (var arg in m_Block.BlockData.args)
         {
@@ -142,10 +143,11 @@ public class BlockView : BaseView
 
                 // Configurar el RectTransform del input
                 RectTransform inputRect = argumentObject.AddComponent<RectTransform>();
-                inputRect.sizeDelta = Vector2.zero; // Tamaño ajustado
+                inputRect.sizeDelta = new Vector2(50f, 50f); // Tamaño ajustado
                 inputRect.anchorMin = new Vector2(0, 0.5f); // Centrar verticalmente
                 inputRect.anchorMax = new Vector2(0, 0.5f);
                 inputRect.pivot = new Vector2(0, 0.5f);
+                Debug.Log($"BlockView.BindModel: Configurado RectTransform de InputView con sizeDelta {inputRect.sizeDelta}");
 
                 // Configurar el texto dentro del input
                 TextMeshProUGUI inputText = (TextMeshProUGUI)inputField.textComponent;
@@ -155,7 +157,23 @@ public class BlockView : BaseView
                     inputText.alignment = TextAlignmentOptions.MidlineLeft;
                 }
 
+                // Añadir imagen de fondo 9-slice
+               /* Image backgroundImage = argumentObject.AddComponent<Image>();
+                backgroundImage.type = Image.Type.Sliced;
+                backgroundImage.sprite = Resources.Load<Sprite>("Icons/Input_Field"); // Asegúrate de tener este sprite
+                RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
+                bgRect.anchorMin = Vector2.zero;
+                bgRect.anchorMax = Vector2.one;
+                bgRect.pivot = new Vector2(0.5f, 0.5f);
+                bgRect.sizeDelta = Vector2.zero;*/
+
+                // Añadir LayoutElement
+                LayoutElement layoutElement = argumentObject.AddComponent<LayoutElement>();
+                layoutElement.preferredWidth = 50f; // Mínimo inicial
+                layoutElement.preferredHeight = 50f;
+
                 InputView inputView = argumentObject.AddComponent<InputView>();
+                //inputView.SetBackgroundSprite(backgroundImage.sprite);
                 inLineGroupComponent.Childs.Add(inputView);
                 Debug.Log($"Añadido InputView: {arg.name}, Total Childs: {inLineGroupComponent.Childs.Count}");
             }

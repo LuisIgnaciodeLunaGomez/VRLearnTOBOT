@@ -146,11 +146,11 @@ public class BlockDataLoader
                 XmlNode argsNode = blockNode.SelectSingleNode("args");
                 if (argsNode == null)
                 {
-                    Debug.LogWarning($"No se encontró el nodo <args> en el bloque `{blockData.type}`. XML del bloque: {blockNode.OuterXml}");
+                   // Debug.LogWarning($"No se encontró el nodo <args> en el bloque `{blockData.type}`. XML del bloque: {blockNode.OuterXml}");
                 }
                 else
                 {
-                    Debug.Log($"Nodo <args> encontrado en `{blockData.type}`: {argsNode.OuterXml}");
+                   // Debug.Log($"Nodo <args> encontrado en `{blockData.type}`: {argsNode.OuterXml}");
                 }
 
                 XmlNodeList argsNodes = blockNode.SelectNodes("args/arg");
