@@ -7,14 +7,41 @@
 		<connections>
 			<bottom>true</bottom>
 		</connections>
+		<args>
+			<arg type="label" value="al hacer" />
+			<arg type="label" value="click en" />
+			<arg type="image" name="FlagIcon"/>
+			
+		</args>
 	</Block>
 	<Block>
-		<Type>motion_movesteps</Type>
-		<Label>Mover %1 pasos</Label>
+		<Type>Screen_message</Type>
+		<Label>enviar</Label>
 		<SpriteName>Stack_block_grey</SpriteName>
 		<connections>
 			<top>true</top>
 			<bottom>true</bottom>
 		</connections>
+		<args>
+			<arg type="label" value="enviar" />
+			<arg type="select" name="LABEL"  />
+			<arg type="label" value="pasos" />
+		</args>
+		
+	</Block>
+	<Block>
+		<Type>Screen_message_and_wait</Type>
+		<Label>enviar y esperar</Label>
+		<SpriteName>Stack_block_grey</SpriteName>
+		<connections>
+			<top>true</top>
+			<bottom>true</bottom>
+		</connections>
+		<args>
+			<arg type="label" value="enviar" />
+			<arg type="select" name="LABEL"  />
+			<arg type="label" value="y esperar" />
+		</args>
+
 	</Block>
 </Blocks>
