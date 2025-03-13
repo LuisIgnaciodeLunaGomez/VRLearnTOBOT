@@ -54,6 +54,7 @@ public class InputView : BaseView
         }
         this.SetupInputField();
         this.SetUpBackgroundImage();
+        this.UpdateSize();
         Debug.Log($"InputView.Awake: Configuración completada para {gameObject.name}");
     }
 
@@ -215,7 +216,14 @@ public class InputView : BaseView
             return size;
     }
 
-
+    public void UpdateSize()
+    {
+        Vector2 size = CalculateSize();
+        RectTransform rect = GetComponent<RectTransform>();
+        rect.sizeDelta = size;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+        Debug.Log($"InputView.UpdateSize: Tamaño aplicado = {size}");
+    }
 
     public ConnectionInputView GetConnectionView()
     {
