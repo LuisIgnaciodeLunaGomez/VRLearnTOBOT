@@ -16,6 +16,7 @@
  */
 
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,7 +25,7 @@ public class InputView : BaseView
     [SerializeField] private TMP_InputField m_inputField; // Campo de entrada de usuario
     [SerializeField] private Image m_backGroundImage; // Imagen de fondo 9-Slice
     [SerializeField] private Sprite m_DefaultBackgroundSprite;
-
+    [SerializeField] private BlockView m_BlockView; // Referencia al bloque padre
     public override ViewType Type => ViewType.Input;
 
     public void Awake()
@@ -43,19 +44,34 @@ public class InputView : BaseView
             }
         }
 
-        if (this.m_backGroundImage == null)
+        if (this.m_inputField != null)
         {
-            this.m_backGroundImage = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
-            Debug.Log($"InputView.Awake: Añadida Image a {gameObject.name}");
+            this.m_inputField.onValueChanged.AddListener(delegate { this.OnInputValueChanged(); });
+
+            if (this.m_backGroundImage == null)
+            {
+                this.m_backGroundImage = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+                Debug.Log($"InputView.Awake: Añadida Image a {gameObject.name}");
+            }
         }
         else
         {
             Debug.Log($"InputView.Awake: Usando Image existente en {gameObject.name}");
         }
+
+        // Añado LayoutElement si no existe
+        LayoutElement layoutElement = gameObject.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+        {
+            layoutElement = gameObject.AddComponent<LayoutElement>();
+        }
+
         this.SetupInputField();
         this.SetUpBackgroundImage();
         this.UpdateSize();
         Debug.Log($"InputView.Awake: Configuración completada para {gameObject.name}");
+
+        m_BlockView = GetComponentInParent<BlockView>();
     }
 
     public void SetupInputField()
@@ -79,7 +95,7 @@ public class InputView : BaseView
             GameObject textObject = new GameObject("Text", typeof(TextMeshProUGUI));
             textObject.transform.SetParent(viewport.transform, false);
             TextMeshProUGUI textComponent = textObject.GetComponent<TextMeshProUGUI>();
-            textComponent.fontSize = 24;
+            textComponent.fontSize = 36;
             textComponent.color = Color.black;
             textComponent.alignment = TextAlignmentOptions.MidlineLeft;
 
@@ -89,9 +105,17 @@ public class InputView : BaseView
             textRect.sizeDelta = Vector2.zero;
             textRect.anchoredPosition = Vector2.zero;
 
+            // Se añade contentSizeFitter
+            ContentSizeFitter fitter = textObject.AddComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
             Debug.Log($"InputView.SetupInputField: Configurado TextComponent RectTransform");
             this.m_inputField.textViewport = viewportRect;
             this.m_inputField.textComponent = textComponent;
+
+            this.m_inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+            if (string.IsNullOrEmpty(this.m_inputField.text)) this.m_inputField.text = "10";
         }
         else
         {
@@ -124,6 +148,13 @@ public class InputView : BaseView
         else
         {
             Debug.Log($"InputView.SetupInputField: Usando Placeholder existente con texto '{((TextMeshProUGUI)this.m_inputField.placeholder).text}'");
+        }
+
+        Debug.Log($"[SetupInputField] {gameObject.name} - Viewport SizeDelta: {this.m_inputField.textViewport.sizeDelta}");
+
+        if (this.m_inputField.textComponent != null)
+        {
+            Debug.Log($"[SetupInputField] {gameObject.name} - Text Preferred Width: {this.m_inputField.textComponent.preferredWidth}, Preferred Height: {this.m_inputField.textComponent.preferredHeight}");
         }
 
         this.m_inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
@@ -175,19 +206,21 @@ public class InputView : BaseView
     protected override Vector2 CalculateSize()
     {
         Debug.Log($"InputView.CalculateSize: Calculando tamaño para {gameObject.name}");
+
         if (this.m_inputField == null || this.m_inputField.textComponent == null)
         {
             SetupInputField();
             Debug.Log($"InputView.CalculateSize: Reconfigurado InputField y TextComponent");
         }
-        
 
+        // Se fuerza la actualización del texto para asegurar que se renderice
+        this.m_inputField.textComponent.ForceMeshUpdate();
         //Tamaño preferido del texto
         Vector2 textSize = this.m_inputField.textComponent.GetPreferredValues();
         Vector2 minSize = new Vector2(50f, 50f); // Tamaño mínimo
         Debug.Log($"InputView.CalculateSize: TextSize = {textSize}");
 
-        // Tamaño mínimo de la imagen de fondo (si tiene un tamaño intrínseco)
+        // Tamaño mínimo de la imagen de fondo 
         Vector2 imageMinSize = this.m_backGroundImage.sprite != null
             ? new Vector2(this.m_backGroundImage.sprite.rect.width, this.m_backGroundImage.sprite.rect.height)
             : minSize;
@@ -198,7 +231,9 @@ public class InputView : BaseView
         Vector2 size = new Vector2(
             Mathf.Max(textSize.x, imageMinSize.x, minSize.x),
             Mathf.Max(textSize.y, imageMinSize.y, minSize.y)
-        );// Actualizar el LayoutElement
+        );
+        
+        // Actualizar el LayoutElement
 
         LayoutElement layoutElement = GetComponent<LayoutElement>();
         if (layoutElement != null)
@@ -212,8 +247,22 @@ public class InputView : BaseView
             Debug.LogWarning($"InputView.CalculateSize: No se encontró LayoutElement en {gameObject.name}");
         }
 
-        Debug.Log($"InputView.CalculateSize: Tamaño calculado = {size}");    
-            return size;
+        // Actualizar el RectTransform del InputView
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        rectTransform.sizeDelta = size;
+        Debug.Log($"InputView.CalculateSize: Actualizado RectTransform a {size}");
+
+        // Actualizar el RectTransform de la imagen de fondo para que coincida con el tamaño calculado
+        RectTransform imageRect = this.m_backGroundImage.GetComponent<RectTransform>();
+        imageRect.sizeDelta = size;
+        //Debug.Log($"InputView.CalculateSize: Actualizado RectTransform de la imagen de fondo a {size}");
+
+     //   Debug.Log($"InputView.CalculateSize: Tamaño calculado = {size}");
+
+        Debug.Log($"[CalculateSize] {gameObject.name} - Text Preferred Values: {this.m_inputField.textComponent.GetPreferredValues()} Min Size: {minSize}, Image Min Size: {imageMinSize} Final Calculated Size: {size} ");
+
+      
+        return size;
     }
 
     public void UpdateSize()
@@ -221,8 +270,19 @@ public class InputView : BaseView
         Vector2 size = CalculateSize();
         RectTransform rect = GetComponent<RectTransform>();
         rect.sizeDelta = size;
+
+        // Notificar a BlockView que el tamaño del Input ha cambiado
+        if (m_BlockView != null)
+        {
+            Debug.Log($"InputView.UpdateSize: Notificando a BlockView para actualizarse.");
+            m_BlockView.NotifyBlockView();
+        }
+
         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-        Debug.Log($"InputView.UpdateSize: Tamaño aplicado = {size}");
+       // Debug.Log($"InputView.UpdateSize: Tamaño aplicado = {size}");
+
+        Debug.Log($"[UpdateSize] {gameObject.name} - Final SizeDelta: {GetComponent<RectTransform>().sizeDelta}");
+
     }
 
     public ConnectionInputView GetConnectionView()
@@ -230,6 +290,13 @@ public class InputView : BaseView
         return Childs.Count > 0 ? Childs[Childs.Count - 1] as ConnectionInputView : null;
     }
 
+    private void OnInputValueChanged()
+    {
+        this.UpdateSize();
 
-
+        if (m_BlockView != null)
+        {
+            m_BlockView.NotifyBlockView();
+        }
+    }
 }

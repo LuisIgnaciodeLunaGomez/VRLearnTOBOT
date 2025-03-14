@@ -28,6 +28,8 @@ public class BlockView : BaseView
     [SerializeField] private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
 
     [SerializeField] private Dictionary<string, BlockView> mBlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
+    [SerializeField] private HorizontalLayoutGroup m_inLineGroup;
+
 
     public List<BaseView> GetChildren() => base.Childs;
 
@@ -84,7 +86,6 @@ public class BlockView : BaseView
         }
 
 
-
         // Configurar el HorizontalLayoutGroup (existente o recién creado)
         HorizontalLayoutGroup hLayout = inLineGroup.GetComponent<HorizontalLayoutGroup>();
  
@@ -92,16 +93,6 @@ public class BlockView : BaseView
         {
             hLayout = inLineGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
         }
-
-        // Configurar según la imagen esperada
-       /* hLayout.padding = new RectOffset(0, 0, 0, 0); // Padding 0 en todos los lados
-        hLayout.spacing = 0; // Espaciado 0
-        //hLayout.childAlignment = TextAnchor.; // Alineación Upper Left
-        hLayout.childForceExpandWidth = false; // No forzar expansión
-        hLayout.childForceExpandHeight = false;
-        hLayout.childControlWidth = false;
-        hLayout.childControlHeight = false;*/
-
         // Configurar el RectTransform del InLineGroup
         RectTransform lineGroupRect = inLineGroup.GetComponent<RectTransform>();
         lineGroupRect.sizeDelta = Vector2.zero; // Tamaño del bloque original
@@ -118,11 +109,10 @@ public class BlockView : BaseView
         foreach (var arg in m_Block.BlockData.args)
         {
             GameObject argumentObject = new GameObject(arg.type == "label" ? arg.value : arg.name);         
-            // BlockView blockViewComponent = argumentObject.AddComponent<BlockView>();
 
             if (arg.type == "label")
             {
-                //argumentObject = new GameObject(arg.value);
+                
                 TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
                 textComponent.text = arg.value;
                 textComponent.fontSize = 32;
@@ -132,45 +122,14 @@ public class BlockView : BaseView
                 LabelView labelView = argumentObject.AddComponent<LabelView>();
                 inLineGroupComponent.Childs.Add(labelView);
 
-                Debug.Log($"Añadido LabelView: {arg.value}, Total Childs: {inLineGroupComponent.Childs.Count}");
+                //Debug.Log($"Añadido LabelView: {arg.value}, Total Childs: {inLineGroupComponent.Childs.Count}");
             }
             else if (arg.type == "input")
             {
-               // argumentObject = new GameObject(arg.name);
+              ;
                 TMP_InputField inputField = argumentObject.AddComponent<TMP_InputField>();
-                inputField.text = arg.defaultValue;
+                inputField.text = arg.defaultValue ?? "10";
                 inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
-
-                // Configurar el RectTransform del input
-                RectTransform inputRect = argumentObject.AddComponent<RectTransform>();
-                inputRect.sizeDelta = new Vector2(50f, 50f); // Tamaño ajustado
-                inputRect.anchorMin = new Vector2(0, 0.5f); // Centrar verticalmente
-                inputRect.anchorMax = new Vector2(0, 0.5f);
-                inputRect.pivot = new Vector2(0, 0.5f);
-                Debug.Log($"BlockView.BindModel: Configurado RectTransform de InputView con sizeDelta {inputRect.sizeDelta}");
-
-                // Configurar el texto dentro del input
-                TextMeshProUGUI inputText = (TextMeshProUGUI)inputField.textComponent;
-                if (inputText != null)
-                {
-                    inputText.fontSize = 24;
-                    inputText.alignment = TextAlignmentOptions.MidlineLeft;
-                }
-
-                // Añadir imagen de fondo 9-slice
-               /* Image backgroundImage = argumentObject.AddComponent<Image>();
-                backgroundImage.type = Image.Type.Sliced;
-                backgroundImage.sprite = Resources.Load<Sprite>("Icons/Input_Field"); // Asegúrate de tener este sprite
-                RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
-                bgRect.anchorMin = Vector2.zero;
-                bgRect.anchorMax = Vector2.one;
-                bgRect.pivot = new Vector2(0.5f, 0.5f);
-                bgRect.sizeDelta = Vector2.zero;*/
-
-                // Añadir LayoutElement
-                LayoutElement layoutElement = argumentObject.AddComponent<LayoutElement>();
-                layoutElement.preferredWidth = 50f; // Mínimo inicial
-                layoutElement.preferredHeight = 50f;
 
                 InputView inputView = argumentObject.AddComponent<InputView>();
                 //inputView.SetBackgroundSprite(backgroundImage.sprite);
@@ -180,14 +139,12 @@ public class BlockView : BaseView
 
             if (argumentObject != null)
             {
-                // Agrego el componente BaseView para que pueda añadirse a Childs
-                // BaseView baseViewComponent = argumentObject.AddComponent<BaseView>();
-                //BlockView childBlockView = argumentObject.AddComponent<BlockView>();
+         
                 argumentObject.transform.SetParent(inLineGroup, false);
                 argumentObject.transform.localScale = Vector3.one;
 
                // Childs.Add(argumentObject);
-                Debug.Log($" Argumento añadido y agregado a Childs: {arg.type} - {arg.value}");
+               // Debug.Log($" Argumento añadido y agregado a Childs: {arg.type} - {arg.value}");
 
             }
             else
@@ -381,28 +338,27 @@ public class BlockView : BaseView
         {
             size = lineGroup.CalculatedSize;
 
-            Debug.Log($"Tamaño calculado desde InLineGroup: {size}");        }
+            Debug.Log($"Tamaño calculado desde InLineGroup: {size}"); 
+        
+        }
 
-        Debug.Log($"Calculando tamaño del bloque {BlockType}: {size}");
-        /*for (int i = 0; i < Childs.Count; i++)
+
+        // Ajustar el tamaño basado en los InputView
+        foreach (var child in Childs)
         {
-            InLineGroup groupView = Childs[i] as InLineGroup;
-            if (groupView != null)
+            if (child is InputView inputView)
             {
-                size.x = Mathf.Max(size.x, groupView.Size.x);
-                size.y += groupView.Size.y;
-                if (i < Childs.Count - 1)
-                    size.y += BlockViewSettings.Get().ContentSpace.y;
+               // Vector2 inputSize = inputView.UpdateSize();
 
-                InputView lastChildInputView = groupView.LastChild as InputView;
+                inputView.UpdateSize(); // Forzar la actualización antes de obtener el tamaño
+                Vector2 inputSize = inputView.GetComponent<RectTransform>().sizeDelta; // Obtener el tamaño actualizado
 
-                if(lastChildInputView != null)
-                {
-
-                    alignRight = true;
-                }
+                size.x = Mathf.Max(size.x, inputSize.x + 20); // Añadir margen para evitar cortes
+                size.y = Mathf.Max(size.y, inputSize.y);
+                Debug.Log($"BlockView.CalculateSize: Considerando InputView tamaño: {inputSize}");
             }
-        }*/
+        }
+        //Debug.Log($"Calculando tamaño del bloque {BlockType}: {size}");
 
 
         if (size.x == 0 || size.y == 0)
@@ -410,27 +366,20 @@ public class BlockView : BaseView
             Debug.LogError($"Tamaño inválido para el bloque {BlockType}, puede que no se renderice correctamente.");
         }
 
-        /*List<Vector4> dimensions = new List<Vector4>();
-        for (int i = 0; i < Childs.Count; i++)
-        {
-            InLineGroup groupView = Childs[i] as InLineGroup;
-            if (groupView != null)
-            {
-                if (alignRight)
-                    groupView.UpdateAlignRight(size.x);
 
-                //linegroup's anchor and pivot both are top-left
-                Vector2 drawSize = groupView.GetDrawSize();
-                dimensions.Add(new Vector4(groupView.XY.x, groupView.XY.y - drawSize.y, groupView.XY.x + drawSize.x, groupView.XY.y));
-            }
-        }*/
+        Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - InLineGroup Size: {size}");
+
+
         if (m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customMeshImage)
         {
             List<Vector4> dimensions = new List<Vector4>
-        {
+            {
             new Vector4(0, 0, size.x, size.y)
-        };
+            };
             customMeshImage.SetDrawDimensions(dimensions.ToArray());
+
+            Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - Background Image SizeDelta: {m_BgImages[0].rectTransform.sizeDelta}");
+
         }
 
         //   ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
@@ -480,8 +429,69 @@ public class BlockView : BaseView
             {
                 bgImage.GetComponent<RectTransform>().sizeDelta = size;
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(ViewRectransform); // Forzar actualización
+            LayoutRebuilder.ForceRebuildLayoutImmediate(ViewRectransform); // Fuerzo la actualización
         }
         Debug.Log($"Actualizando tamaño del bloque {BlockType} a: {size}");
     }
+
+    public void NotifyBlockView()
+    {
+        //this.UpdateSize();
+
+        // LayoutRebuilder.ForceRebuildLayoutImmediate(ViewRectransform);
+
+        if (this.m_inLineGroup != null) { 
+        
+            LayoutRebuilder.ForceRebuildLayoutImmediate(this.m_inLineGroup.GetComponent<RectTransform>());
+        }
+
+        // Calcular el tamaño total del contenido (basado en el InLineGroup)
+        Vector2 contentSize = CalculateContentSize();
+        ViewRectransform.sizeDelta = contentSize;
+
+        // Ajustar la imagen de fondo
+        UpdateBackgroundSize();
+
+        // Forzar la actualización del canvas para reflejar los cambios inmediatamente
+        Canvas.ForceUpdateCanvases();
+
+        Debug.Log($"BlockView actualizado a: {contentSize}");
+    }
+
+    void Start()
+{
+    HorizontalLayoutGroup hLayout = GetComponent<HorizontalLayoutGroup>();
+    if (hLayout != null)
+    {
+        hLayout.childForceExpandWidth = true;  // Forzar expansión del ancho
+        hLayout.childControlWidth = true;
+    }
+}
+    private Vector2 CalculateContentSize()
+    {
+        if (this.m_inLineGroup == null) return ViewRectransform.sizeDelta; // Valor por defecto si no hay InLineGroup
+
+        RectTransform groupRect = this.m_inLineGroup.GetComponent<RectTransform>();
+        Vector2 size = groupRect.sizeDelta;
+
+        // Agregar márgenes o padding si es necesario
+        size.x += this.m_inLineGroup.padding.left + this.m_inLineGroup.padding.right;
+        size.y += this.m_inLineGroup.padding.top + this.m_inLineGroup.padding.bottom;
+
+        // Asegurar un tamaño mínimo
+        if (size.x < 100f) size.x = 100f;
+        if (size.y < 50f) size.y = 50f;
+
+        return size;
+    }
+
+    private void UpdateBackgroundSize()
+    {
+        Image bgImage = GetComponent<Image>();
+        if (bgImage != null)
+        {
+            bgImage.GetComponent<RectTransform>().sizeDelta = ViewRectransform.sizeDelta;
+        }
+    }
+
 }
