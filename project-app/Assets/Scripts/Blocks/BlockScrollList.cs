@@ -36,6 +36,13 @@ public class BlockScrollList : MonoBehaviour
 
     private TextMeshProUGUI m_categoryText; //Texto para mostrar el nombre de la categoría antes de los bloques
 
+    /**
+     * Descripción: Configura el prefab y el contenedor de bloques 
+     * @param: GameObject prefab
+     * @param: Transform container
+     * 
+     */
+
     public void Initialized(GameObject prefab, Transform container)
     {
        /* if (prefab == null)
@@ -87,6 +94,12 @@ public class BlockScrollList : MonoBehaviour
       //  Debug.Log("WorkSpaceView asignado correctamente a BlockScrollList.");
     }
 
+    /**
+     * Descripcion: Muestra los bloques de una categoría específica
+     * @param: string categoryName
+     * @param: Color categoryColor
+     * 
+     */
     public void ShowBlockCategory(string categoryName, Color categoryColor)
     {
 
@@ -364,6 +377,9 @@ public class BlockScrollList : MonoBehaviour
 
         //Se añade comportamiento
         BlockBehaviour blockBehaviour = blockGO.AddComponent<BlockBehaviour>();
+        blockBehaviour.SetBlock(newBlock);
+        blockBehaviour.SetAsTemplate(true);  // Es una plantilla
+       // blockBehaviour.SetDraggable(false);  // No arrastrable directamente
         if (blockBehaviour != null)
         {
             blockBehaviour.Initialize(blockData);
@@ -377,43 +393,5 @@ public class BlockScrollList : MonoBehaviour
         //Debug.Log("RightPanel Transform asignado correctamente en BlockScrollList");
     }
 
-    private void PickBlockView(PointerEventData eventData, GameObject blockGO, Transform workspaceTransform)
-    {
-        Debug.Log($"Iniciando arrastre del bloque {blockGO.name}");
-
-        // Calcular la posición local en el RightPanel
-        Vector3 localPos = workspaceTransform.InverseTransformPoint(blockGO.transform.position);
-
-        // Clonar el bloque en el RightPanel
-        GameObject newBlockGO = CloneBlockView(blockGO, new Vector2(localPos.x, localPos.y), workspaceTransform);
-
-        // Activar el evento de arrastre en el bloque clonado
-        newBlockGO.GetComponent<BlockBehaviour>().OnBeginDrag(eventData);
-
-        BlockBehaviour blockBehaviour = newBlockGO.GetComponent<BlockBehaviour>();
-        if (blockBehaviour != null)
-        {
-            // 🔹 Llamar a OnBeginDrag()
-            blockBehaviour.OnBeginDrag(eventData);
-
-            // 🔹 Llamar a OnPickBlockView() correctamente
-            blockBehaviour.OnPickBlockView();
-        }
-        else
-        {
-            Debug.LogError("El bloque clonado no tiene el componente BlockBehaviour.");
-        }
-        // Asegurar que el bloque clonado sea el que se arrastra
-        eventData.pointerDrag = newBlockGO;
-   
-    }
-
-    private GameObject CloneBlockView(GameObject originalBlock, Vector2 position, Transform workspaceTransform)
-    {
-        GameObject clonedBlock = Instantiate(originalBlock, workspaceTransform); // Lo instanciamos dentro del RightPanel
-        clonedBlock.transform.localPosition = position;
-        clonedBlock.GetComponent<BlockBehaviour>().SetDraggable(true);
-        return clonedBlock;
-    }
 
 }

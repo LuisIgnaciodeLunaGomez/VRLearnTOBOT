@@ -22,12 +22,18 @@ public class UICanvasManager : MonoBehaviour
 {
     public string logo;
     public string[] iconNames;
+
     private WorkSpace m_workSpace; // Espacio de trabajo
     private BlockScrollList m_blockScrollList;
-    private GameObject m_CanvasGO; //Canvas principal que incluye a todos los paneles
-    private GameObject m_UIManager; //UIManager que contiene el Canvas principal y todos los paneles de la interfaz
+    private GameObject m_canvasGO; //Canvas principal que incluye a todos los paneles
+    private GameObject m_uiManager; //UIManager que contiene el Canvas principal y todos los paneles de la interfaz
     private Transform m_rightPanelTransform; // Referencia al RightPanel
-    private WorkSpaceView m_workSpaceView;
+  
+  
+
+    //Defino las medidas de la pantalla para que se ajuste a cualquier resolución
+    private int m_screenWidth =1200;
+    private int m_screenHeight =720;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -35,46 +41,49 @@ public class UICanvasManager : MonoBehaviour
         this.InitializeUIManager();
         this.InitializeCanvas();
         this.CreateTopPanel();
-        GameObject leftPanel = SetupLeftPanel(m_CanvasGO);
+        GameObject leftPanel = this.SetupLeftPanel(this.m_canvasGO);
         this.LoadCategories(leftPanel);
         this.CreateWorkspace();
-
 
     }
 
     public WorkSpace WorkSpace()
     {
-        return m_workSpace;
+        return this.m_workSpace;
     }
 
     private void InitializeUIManager()
     {
-        this.m_UIManager = GameObject.Find("UIManager");
-        if (this.m_UIManager == null)
+        this.m_uiManager = GameObject.Find("UIManager");
+        if (this.m_uiManager == null)
         {
-            this.m_UIManager = new GameObject("UIManager");
+            this.m_uiManager = new GameObject("UIManager");
         }
     }
 
     private void InitializeCanvas()
     {
         //Creación del canvas donde se van a presentar todos los paneles
-        this.m_CanvasGO = new GameObject("Canvas");
-        this.m_CanvasGO.transform.SetParent(m_UIManager.transform);
+        this.m_canvasGO = new GameObject("Canvas");
+        this.m_canvasGO.transform.SetParent(this.m_uiManager.transform);
 
-        Canvas canvas = this.m_CanvasGO.AddComponent<Canvas>();
+        Canvas canvas = this.m_canvasGO.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        CanvasScaler canvasScaler = this.m_CanvasGO.AddComponent<CanvasScaler>();
+
+        CanvasScaler canvasScaler = this.m_canvasGO.AddComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        canvasScaler.referenceResolution = new Vector2(1280, 720);
+        canvasScaler.referenceResolution = new Vector2(m_screenWidth, m_screenHeight);
         canvasScaler.matchWidthOrHeight = 1f;
-        this.m_CanvasGO.AddComponent<GraphicRaycaster>();
+        
+        //Detección de eventos de UI en el canvas necesario para el Drag and Drop
+        this.m_canvasGO.AddComponent<GraphicRaycaster>();
+
     }
 
     private void CreateTopPanel()
     {
         //Creación del panel de herramientas superior
-        GameObject topPanel = CreatePanel("Tools Panel", m_CanvasGO.transform,
+        GameObject topPanel = CreatePanel("Tools Panel", this.m_canvasGO.transform,
             new Vector2(0, 0.95f), new Vector2(1, 1), Vector2.zero, Vector2.zero,
             new Vector2(0, 0), new Color(0.6f, 0.4f, 1f, 1f));
 
@@ -97,9 +106,10 @@ public class UICanvasManager : MonoBehaviour
     {
         //Creación del panel de trabajo donde se van a mostrar el resto de paneles
         GameObject workSpaceGO = new GameObject("WorkSpace");
-        workSpaceGO.transform.SetParent(m_CanvasGO.transform, false);
+        workSpaceGO.transform.SetParent(this.m_canvasGO.transform, false); //es hijo del CanvasGo principal
         workSpaceGO.AddComponent<CanvasRenderer>();
 
+        //Creo el rectángulo contenedor del espacio de trabajo
         RectTransform workSpaceRect = workSpaceGO.AddComponent<RectTransform>();
         workSpaceRect.anchorMin = new Vector2(0.15f, 0);
         workSpaceRect.anchorMax = new Vector2(1, 0.95f);
@@ -107,11 +117,11 @@ public class UICanvasManager : MonoBehaviour
         workSpaceRect.offsetMax = Vector2.zero;
         workSpaceRect.pivot = new Vector2(0.5f, 0.5f);
 
-        this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>();
-        this.m_workSpaceView = workSpaceGO.AddComponent<WorkSpaceView>();
-
+        this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>(); //Añado el script
+        WorkSpaceView workSpaceView = workSpaceGO.AddComponent<WorkSpaceView>(); //Añado el script
 
         BlockStatusView statusView = workSpaceGO.AddComponent<BlockStatusView>(); //Añado el script BlockStatusView al WorkSpace
+
         //Panel para la lista de bloques y su representación en el espacio de trabajo al seleccionar una categoría
         GameObject middlePanel = CreatePanel(
             "BlockListPanel", 
@@ -123,18 +133,7 @@ public class UICanvasManager : MonoBehaviour
             new Vector2(0.5f, 0.5f), 
             new Color(0.976f, 0.976f, 0.976f, 1f));
 
-        RectTransform middlePanelRect = middlePanel.GetComponent<RectTransform>();
-
-      //  Debug.Log($"MiddlePanel size: {middlePanelRect.sizeDelta}");
-      /*
-        if (middlePanel != null)
-        {
-            Debug.Log($"MiddlePanel tamaño: {middlePanelRect.sizeDelta}");
-        }
-        else
-        {
-            Debug.LogError("MiddlePanel no tiene un RectTransform asignado");
-        }*/
+        //RectTransform middlePanelRect = middlePanel.GetComponent<RectTransform>();
 
         //área de codificación donde se arrastran los bloques para su conexión y posterior ejecución
         GameObject rightPanel = CreatePanel("CodingArea", workSpaceGO.transform,
@@ -145,18 +144,8 @@ public class UICanvasManager : MonoBehaviour
 
         this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();
 
-       /* GameObject blockPrefab = Resources.Load<GameObject>("Prefabs/BlocksPrefab");
-        if (blockPrefab == null)
-        {
-            Debug.LogError("No se pudo cargar el prefab en 'Prefabs/BlocksPrefab'. Verifica la ruta y existencia del archivo.");
-            blockPrefab = new GameObject("FallbackBlockPrefab");
-            blockPrefab.AddComponent<RectTransform>();
-            blockPrefab.AddComponent<Image>();
-        }
-       */
         this.m_blockScrollList.Initialized(Resources.Load<GameObject>("Prefabs/BlockPrefab"), middlePanel.transform);
-
-        this.m_blockScrollList.SetWorkspaceTransform(m_rightPanelTransform);
+                this.m_blockScrollList.SetWorkspaceTransform(m_rightPanelTransform);
         this.m_blockScrollList.SetWorkSpace(m_workSpace);
 
         WorkSpace wsComponent = m_workSpace.GetComponent<WorkSpace>();
@@ -402,7 +391,7 @@ public class UICanvasManager : MonoBehaviour
     GameObject SetupLeftPanel(GameObject parent)
     {
         //Creación del panel de categorías
-        GameObject leftPanel = CreatePanel("CateogiesPanel", parent.transform, new Vector2(0, 0), new Vector2(0.15f, 0.95f), Vector2.zero, Vector2.zero, new Vector2(0, 1), Color.white);
+        GameObject leftPanel = CreatePanel("CategoriesPanel", parent.transform, new Vector2(0, 0), new Vector2(0.15f, 0.95f), Vector2.zero, Vector2.zero, new Vector2(0, 1), Color.white);
 
         // Agregar ScrollRect al LeftPanel
         ScrollRect scrollRect = leftPanel.AddComponent<ScrollRect>();

@@ -238,7 +238,7 @@ public class WorkSpaceView : MonoBehaviour
 
         if (connection != null)
         {
-            Debug.Log($"🔗 Conexión establecida entre {parent.Type} y {child.Type}");
+            Debug.Log($"Conexión establecida entre {parent.Type} y {child.Type}");
 
             connection.FireUpdate(UpdateState.Connected);
         }
@@ -257,15 +257,6 @@ public class WorkSpaceView : MonoBehaviour
         m_blockViews.Clear();
     }
 
-    /* public void AddBlockView(BlockView blockView)
-     {
-         BlockView view = blockView as BlockView;
-         if (view != null && !m_blockViews.ContainsKey(view.Block.ID))
-         {
-             view.transform.SetParent(m_CodingArea, false);
-             m_blockViews[view.Block.ID] = view;
-         }
-     }*/
 
     public void AddBlockView(BlockView blockView)
     {
