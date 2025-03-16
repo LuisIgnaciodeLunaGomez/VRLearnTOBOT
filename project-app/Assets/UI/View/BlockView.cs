@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: Clase que representa un bloque visual en la interfaz de usuario
+ * Descripción: Clase que representa un bloque visual en la interfaz de usuario premite la vinculación del modelo lógico con la UI
  * 
  */
 
@@ -19,14 +19,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using UBlockly.UGUI;
+
 using TMPro;
 
 public class BlockView : BaseView
 {
 
     [SerializeField] private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
-
     [SerializeField] private Dictionary<string, BlockView> mBlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
     [SerializeField] private HorizontalLayoutGroup m_inLineGroup;
 
@@ -42,9 +41,14 @@ public class BlockView : BaseView
     public bool inToolBox { get; set; }
     public Vector2 Position { get; set; }
     public RectTransform ViewRectransform { get; set; }
-    string BlockType => m_Block?.Type ?? "Unknown";
-    public Block Block => m_Block;
+    string BlockType => this.m_Block?.Type ?? "Unknown";
+    public Block Block =>this.m_Block;
 
+    /**
+     * Descripción: Víncula el modelo lógico y los datos a la vista
+     * @param: Block block
+     * @param: BlockDataLoader.BlockData blockData
+     */
     public void BindModel(Block block, BlockDataLoader.BlockData blockData)
     {
         if (this.m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
@@ -370,7 +374,7 @@ public class BlockView : BaseView
         Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - InLineGroup Size: {size}");
 
 
-        if (m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customMeshImage)
+      /*  if (m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customMeshImage)
         {
             List<Vector4> dimensions = new List<Vector4>
             {
@@ -380,7 +384,7 @@ public class BlockView : BaseView
 
             Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - Background Image SizeDelta: {m_BgImages[0].rectTransform.sizeDelta}");
 
-        }
+        }*/
 
         //   ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
         return size;
