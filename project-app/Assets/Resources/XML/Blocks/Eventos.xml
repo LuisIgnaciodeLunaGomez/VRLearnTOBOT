@@ -10,7 +10,7 @@
 		<args>
 			<arg type="label" value="al hacer" />
 			<arg type="label" value="click en" />
-			<arg type="image" name="FlagIcon"/>
+			<arg type="image" name="GreenFlag"/>
 			
 		</args>
 	</Block>

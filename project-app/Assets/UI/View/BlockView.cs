@@ -141,6 +141,31 @@ public class BlockView : BaseView
                 Debug.Log($"Añadido InputView: {arg.name}, Total Childs: {inLineGroupComponent.Childs.Count}");
             }
 
+            else if (arg.type == "image")
+            {
+                // Creo un objeto Image para el ícono
+                Image imageComponent = argumentObject.AddComponent<Image>();
+                Debug.Log($"Valor de arg.name: '{arg.name}'");
+                // Cargo el sprite desde Resources 
+                Sprite sprite = Resources.Load<Sprite>($"Icons/{arg.name}");
+
+                if (sprite != null)
+                {
+                    imageComponent.sprite = sprite;
+                    imageComponent.preserveAspect = true; // Mantengo la proporción de la imagen
+                                                          // Ajusto el tamaño del RectTransform para que se vea bien (puedes personalizarlo)
+                    RectTransform rectTransform = argumentObject.GetComponent<RectTransform>();
+                    //rectTransform.sizeDelta = new Vector2(sprite.rect.width , sprite.rect.height);
+                    rectTransform.sizeDelta = new Vector2(80f, 80f);
+                    Debug.Log($"Sprite {arg.name} cargado correctamente. Tamaño: {sprite.rect.width}x{sprite.rect.height}");
+                }
+
+
+                // Añadir al InLineGroup
+                argumentObject.transform.SetParent(inLineGroup, false);
+                argumentObject.transform.localScale = Vector3.one;
+            }
+
             if (argumentObject != null)
             {
          
