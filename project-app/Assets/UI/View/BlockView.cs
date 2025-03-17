@@ -147,7 +147,9 @@ public class BlockView : BaseView
                 Image imageComponent = argumentObject.AddComponent<Image>();
                 Debug.Log($"Valor de arg.name: '{arg.name}'");
                 // Cargo el sprite desde Resources 
+
                 Sprite sprite = Resources.Load<Sprite>($"Icons/{arg.name}"); 
+
 
                 if (sprite != null)
                 {
@@ -156,10 +158,12 @@ public class BlockView : BaseView
                                                           // Ajusto el tamaño del RectTransform para que se vea bien (puedes personalizarlo)
                     RectTransform rectTransform = argumentObject.GetComponent<RectTransform>();
                     //rectTransform.sizeDelta = new Vector2(sprite.rect.width , sprite.rect.height);
-                    rectTransform.sizeDelta = new Vector2(50f, 50f);
+
+                    rectTransform.sizeDelta = new Vector2(80f, 80f);
                     Debug.Log($"Sprite {arg.name} cargado correctamente. Tamaño: {sprite.rect.width}x{sprite.rect.height}");
                 }
-                
+
+
 
                 // Añadir al InLineGroup
                 argumentObject.transform.SetParent(inLineGroup, false);
