@@ -117,6 +117,12 @@ public class BlockScrollList : MonoBehaviour
 
         activeCategory = categoryName;
 
+        if (m_blockContainer == null)
+        {
+            Debug.LogWarning("No se ha asignado un contenedor de bloques");
+            return;
+        }
+
         //Si la categoría ya ha sido cargada, la activamos con esto se evita tener que volver a cargarla
         if (blockLists.ContainsKey(activeCategory))
         {
@@ -150,7 +156,7 @@ public class BlockScrollList : MonoBehaviour
 
         if (categoryData == null || categoryData.blocks == null || categoryData.blocks.Count == 0)
         {
-            Debug.LogWarning($"No hay bloques para mostrar para la categoría: ´{categoryName}");
+            Debug.LogWarning($"No hay bloques para mostrar para la categoría: ´{categoryName}´");
             return;
         }
 
@@ -330,7 +336,7 @@ public class BlockScrollList : MonoBehaviour
         //Se añade el BlockView al GameObject
         blockView.transform.SetParent(blockGO.transform, false);
         blockView.SetWorkSpaceView(m_workSpaceView);
-        blockView.BindModel(newBlock, blockData);
+        blockView.BindModel(newBlock, blockData,m_workSpaceView);
         blockView.ChangeBgColor(categoryColor);
         blockView.UpdatePosition(Vector2.zero); // Posición inicial
 
@@ -374,7 +380,7 @@ public class BlockScrollList : MonoBehaviour
         //Se escala el bloque (similar a Scratch)
         
         blockGO.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1); // Escalar a 0.16
-
+       // blockRect.sizeDelta *= scaleFactor;
         //Se añade comportamiento
         BlockBehaviour blockBehaviour = blockGO.AddComponent<BlockBehaviour>();
         blockBehaviour.SetBlock(newBlock);
@@ -382,7 +388,7 @@ public class BlockScrollList : MonoBehaviour
        // blockBehaviour.SetDraggable(false);  // No arrastrable directamente
         if (blockBehaviour != null)
         {
-            blockBehaviour.Initialize(blockData);
+            blockBehaviour.Initialize(blockData, m_workSpace);
         }
 
         return blockGO;
