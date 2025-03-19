@@ -9,11 +9,10 @@
  * 
  * Fecha: 22/02/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
- * Descripción: 
+ * Descripción: Gestor lógico del área de trabajo de la aplicación 
  */
-
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,10 +25,17 @@ public class WorkSpace : MonoBehaviour
     public Dictionary<string, Block> BlockDB { get; private set; }//Diccionario de bloques en el espacio de trabajo
     private GameObject m_MiddlePanel;
     private GameObject m_RightPanel;
-    private List<BlockBehaviour> m_blocks = new List<BlockBehaviour>();
+    private List<BlockBehaviour> m_blocks = new List<BlockBehaviour>(); //Componentes que representan bloques
+    private List<BlockConnection> pendingConnections = new List<BlockConnection>(); // Lista de conexiones pendientes
 
-    private Dictionary<EConnection, ConnectionDB> ConnectionDBs;
+    public List<BlockBehaviour> blocksInWorkspace => new List<BlockBehaviour>(FindObjectsOfType<BlockBehaviour>());
 
+    private Dictionary<EConnection, ConnectionDB> ConnectionDBs; //Almacena las conexiones organizadas por tipo de conexión
+
+    /**
+     * Descripción: Constructor de la clase
+     * @param: optId: Identificador del espacio de trabajo
+     */
     public WorkSpace(string optId = null)
     {
         Id = optId ?? Utilidades.GenUid();
@@ -37,7 +43,8 @@ public class WorkSpace : MonoBehaviour
         if (m_WorkspaceDB.ContainsKey(Id))
         {
             m_WorkspaceDB[Id] = this;
-            Debug.LogWarning("Ya existe un espacio de trabajo con el ID" + Id);
+            //Debug.LogWarning("Ya existe un espacio de trabajo con el ID" + Id);
+            return;
         }
 
         else
@@ -49,13 +56,18 @@ public class WorkSpace : MonoBehaviour
     }
 
 
-    // Obtiene todos los bloques principales
+    /**
+     * Descripción: Obtiene todos los bloques principales
+     * return: Lista de bloques
+     * */
     public List<Block> GetTopBlocks()
     {
         return new List<Block>(TopBlocks);
     }
 
-    // Limpia el espacio de trabajo
+    /**
+     * Descripción:Limpia el espacio de trabajo
+     */
     public void Clear()
     {
 
@@ -63,18 +75,19 @@ public class WorkSpace : MonoBehaviour
         {
 
             Block block = TopBlocks[TopBlocks.Count - 1];
-            TopBlocks.RemoveAt(TopBlocks.Count - 1);
+              TopBlocks.RemoveAt(TopBlocks.Count - 1);
             block = null; // Libera memoria
-
 
         }
 
         TopBlocks.Clear();
-
         BlockDB.Clear();
     }
 
-    //Obtener un blooque por su ID
+    /** 
+     * Descripción: Obtener un blooque por su ID
+     * return: Bloque
+     */
     public Block GetBlockByID(string ID)
     {
         Block block = null; //Crea un bloque
@@ -82,15 +95,20 @@ public class WorkSpace : MonoBehaviour
         return block; //Devuelve el bloque
     }
 
-
-    //Obtiene todos los bloques en el espacio de trabajo
+    /**
+     * Descripción: Obtiene todos los bloques en el espacio de trabajo
+     * return: Lista de bloques
+     */
     public List<Block> GetAllBlocks()
     {
         return new List<Block>(BlockDB.Values);
 
     }
 
-    //Agrega un bloque principal al espacio de trabajo
+    /**
+     * Descripción: Agrega un bloque principal al espacio de trabajo
+     * @param: block: Bloque a añadir
+     */
     public void AddTopBlocks(Block block)
     {
         if (block == null) return;
@@ -99,17 +117,14 @@ public class WorkSpace : MonoBehaviour
         {
             TopBlocks.Add(block);
         }
-        if (BlockDB.ContainsKey(block.ID))
-        {
-            BlockDB[block.ID] = block;
-        }
-        else
-        {
-            BlockDB.Add(block.ID, block);
-        }
+        BlockDB[block.ID] = block;
+
     }
 
-    //Elimna un bloque principal del espacio de trabajo
+    /**
+     * Descripción: Elimna un bloque principal del espacio de trabajo
+     * @param: block: Bloque a eliminar
+     */
     public void RemoveTopBlock(Block block)
     {
         if (TopBlocks.Contains(block))
@@ -122,19 +137,29 @@ public class WorkSpace : MonoBehaviour
         }
     }
 
-    //Recupera un espacio de trabajo por su ID
+    /**
+     * Descripción: Método que recupera un espacio de trabajo por su ID
+     * @param: ID: Identificador del espacio de trabajo
+     */
     public static WorkSpace GetWorkSpace(string ID)
     {
         return m_WorkspaceDB.TryGetValue(ID, out var workspace) ? workspace : null;
     }
 
-    //Elimina un espacio de trabajo
+    /**
+     * Descripción: Método que elimina un espacio de trabajo
+     */
     public void Dispose()
     {
         m_WorkspaceDB.Remove(Id);
         Clear();
     }
 
+    /**
+     * Descripción: Inicializa el espacio de trabajo con los paneles Middle y Right
+     * @param middle: Panel central para mostrar los bloques por categorías
+     * @param right: Panel derecho - área de codificación y conexión de bloques
+     */
     public void Initialized(GameObject middle, GameObject right)
     {
 
@@ -142,6 +167,7 @@ public class WorkSpace : MonoBehaviour
         this.m_RightPanel = right;
         //Debug.Log("WorksPace inizializado con MiddlePanel y RightPanel");
 
+        //Inicializo la base de datos de conexiones
         ConnectionDBs = new Dictionary<EConnection, ConnectionDB>
         {
             { EConnection.NextStatement, new ConnectionDB() },
@@ -172,7 +198,13 @@ public class WorkSpace : MonoBehaviour
     }
 
     #region conexiones
-
+    /**
+     * Descripción: Método que busca la conexión más cercana a una conexión dada
+     * @param: connection: Conexión de referencia
+     * @param : maxRadius: Radio máximo de búsqueda
+     * @param : dxy: Vector de desplazamiento
+     * @return: Conexión más cercana
+     */
     public BlockConnection FindClosest(BlockConnection connection, float maxRadius, Vector2 dxy = default)
     {
         if (connection == null) return null;
@@ -189,9 +221,21 @@ public class WorkSpace : MonoBehaviour
         ConnectionDB db = ConnectionDBs.ContainsKey(oppositeType) ? ConnectionDBs[oppositeType] : null;
         if (db == null) return null;
 
-        return db.FindClosest(connection, maxRadius, dxy);
+        //return db.FindClosest(connection, maxRadius, dxy);
+        BlockConnection closest = db.FindClosest(connection, maxRadius, dxy);
+        if (closest == null)
+        {
+            Debug.LogWarning($"FindClosest: No se encontró una conexión en el radio {maxRadius}. Buscando la más cercana.");
+            closest = db.FindClosest(connection, maxRadius * 2, dxy); // Busca en un radio mayor
+        }
+
+        return closest;
     }
 
+    /**
+     * Descripción: Método que registra un bloque y sus conexiones en la BBDD
+     * @param: block: Bloque a registrar
+     */
     public void AddBlock(BlockBehaviour block)
     {
         if (block == null)
@@ -207,26 +251,14 @@ public class WorkSpace : MonoBehaviour
         }
         if (block != null && !block.isATemplate)
         {
-
-            // Registrar nextConnection
-            /*if (block.nextConnection != null && block.nextConnection.sourceBlock != null)
-            {
-                ConnectionDBs[EConnection.NextStatement].AddConnection(block.nextConnection);//Añade la conexión a la base de datos
-                Debug.Log($"AddBlock: WorkSpace: Registrada nextConnection para {block.blockType} en NextStatement DB, SourceBlock: {block.nextConnection.sourceBlock.gameObject.name}");
-                
-            }
-            else
-            {
-                Debug.LogWarning($"AddBlock: WorkSpace: nextConnection para {block.blockType} es null o SourceBlock es null.");
-                return;
-            }*/
-
+        
             if (block.nextConnection != null)
             {
                 if (block.nextConnection.sourceBlock == null)
                 {
                     Debug.LogWarning($"El bloque {block.blockType} tiene nextConnection pero no tiene sourceBlock.");
-                    return;
+                    //return;
+                    pendingConnections.Add(block.nextConnection);
                 }
                 else
                 {
@@ -277,6 +309,10 @@ public class WorkSpace : MonoBehaviour
         }
     }
 
+    /**
+     * Descrición: Método que elimina un bloque y sus conexiones de la BBDD
+     * @param: block: Bloque a eliminar
+     */
     public void RemoveBlock(BlockBehaviour block)
     {
         if (block != null && !block.isATemplate)
@@ -299,9 +335,13 @@ public class WorkSpace : MonoBehaviour
     }
     #endregion
 
-    public bool HasOtherBlocks(BlockBehaviour currentBlock)
-    {
-        return m_blocks.Count > 1; // Retorna true si hay más de un bloque (excluyendo el actual)
-    }
+/**
+ * Descripción: Método que verifica si hay otros bloques en el área de trabajo
+*@param: currentBlock: Bloque actual
+*/
+public bool HasOtherBlocks(BlockBehaviour currentBlock)
+{
+    return m_blocks.Count > 1; // Retorna true si hay más de un bloque (excluyendo el actual)
+}
 
 }

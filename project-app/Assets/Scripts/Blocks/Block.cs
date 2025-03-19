@@ -277,12 +277,12 @@ public class Block
             {
                 previousConnection.position = rect.anchoredPosition + new Vector2(0, rect.rect.height); // Parte superior
 
-                Debug.Log($"UpdateConnectionPosition: Block: PreviousConnection position updated to {previousConnection.position} for block {type}");
+               // Debug.Log($"UpdateConnectionPosition: Block: PreviousConnection position updated to {previousConnection.position} for block {type}");
             }
             else
             {
                 previousConnection.position = XY;
-                Debug.LogWarning($"UpdateConnectionPosition: Block:No RectTransform found for block {type}, using XY: {XY}");
+               // Debug.LogWarning($"UpdateConnectionPosition: Block:No RectTransform found for block {type}, using XY: {XY}");
             }
         }
         if (nextConnection != null)
@@ -291,13 +291,13 @@ public class Block
             if (rect != null)
             {
                 nextConnection.position = rect.anchoredPosition; // Parte inferior
-                Debug.Log($"UpdateConnectionPosition: Block: NextConnection position updated to {nextConnection.position} for block {type}");
+              //  Debug.Log($"UpdateConnectionPosition: Block: NextConnection position updated to {nextConnection.position} for block {type}");
             }
             else
             {
                 nextConnection.position = XY + new Vector2(0, behaviour != null ? behaviour.GetComponent<RectTransform>().rect.height : 30f);
 
-                Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
+               // Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
 
             }
         }
@@ -310,12 +310,12 @@ public class Block
                 if (rect != null)
                 {
                     input.Connection.position = rect.anchoredPosition;
-                    Debug.Log($"UpdateConnectionPosition: Block: InputConnection position updated to {input.Connection.position} for block {type}");
+                //    Debug.Log($"UpdateConnectionPosition: Block: InputConnection position updated to {input.Connection.position} for block {type}");
                 }
                 else
                 {
                     input.Connection.position = XY;
-                    Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
+                //    Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
                 }
             }
         }

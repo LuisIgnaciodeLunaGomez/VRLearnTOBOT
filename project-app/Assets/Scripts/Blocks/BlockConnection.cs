@@ -9,7 +9,7 @@
  * 
  * Fecha: 24/02/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
  * Descripción: Clase que gestiona las conexiones entre bloques
  */

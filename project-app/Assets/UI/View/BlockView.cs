@@ -500,7 +500,7 @@ public class BlockView : BaseView
         }
     }
 
-    private void ConnectBlocks(BlockView parent, BlockView child)
+   /* public void ConnectBlocks(BlockView parent, BlockView child)
     {
         if (parent == null || child == null) return;
 
@@ -514,6 +514,6 @@ public class BlockView : BaseView
         {
             connection.FireUpdate(UpdateState.Connected);
         }
-    }
+    }*/
 
 }
