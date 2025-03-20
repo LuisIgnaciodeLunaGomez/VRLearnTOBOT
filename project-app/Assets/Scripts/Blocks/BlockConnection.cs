@@ -105,7 +105,7 @@ public class BlockConnection
     {
        if(this.Check==null || otherConnection.Check == null) return true;
 
-        Debug.Log($"CheckType: BlockConnection:  this.Check={string.Join(",", this.Check)}, other.Check={string.Join(",", otherConnection.Check)}");
+      //  Debug.Log($"CheckType: BlockConnection:  this.Check={string.Join(",", this.Check)}, other.Check={string.Join(",", otherConnection.Check)}");
 
         foreach (var i in this.Check)
         {
@@ -150,7 +150,7 @@ public class BlockConnection
         if(firstConnection == null || secondConnection ==null ) 
         {
 
-            Debug.LogWarning("No se pueden llevar a cabo conexiones nulas.");
+           // Debug.LogWarning("No se pueden llevar a cabo conexiones nulas.");
             return;
         }
         firstConnection.targetConnection = secondConnection;
@@ -180,7 +180,7 @@ public class BlockConnection
     {
 
         if(otherConnection == null) return false;
-        Debug.Log($"CanConnect: BlockConnection: this.type={this.type}, other.type={otherConnection.type}, CheckType={CheckType(otherConnection)}");
+     //   Debug.Log($"CanConnect: BlockConnection: this.type={this.type}, other.type={otherConnection.type}, CheckType={CheckType(otherConnection)}");
         if (this.type == EConnection.NextStatement && otherConnection.type == EConnection.PrevStatement) return true;
         if (this.type == EConnection.PrevStatement && otherConnection.type == EConnection.NextStatement) return true;
          if (this.type == EConnection.InputValue && otherConnection.type == EConnection.OutputValue) return true;

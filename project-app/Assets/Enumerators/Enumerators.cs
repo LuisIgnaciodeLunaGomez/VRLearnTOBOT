@@ -62,3 +62,8 @@ public enum EConnection
     NextStatement, // Conexión para el siguiente bloque en una secuencia
     PrevStatement  // Conexión para el bloque anterior en una secuencia
 }
+
+public enum ConnectionZone { 
+    None, 
+    Top, 
+    Bottom }

@@ -30,8 +30,12 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     private bool isTemplate = false; //Indica si el bloque es una plantilla de la ToolBox de scratch
     private Block m_block; //Referencia al bloque lógico
     private WorkSpace workSpace;
+
+    private BlockBehaviour topShadowCollision;    // Bloque colisionando con la sombra superior
+    private BlockBehaviour bottomShadowCollision; // Bloque colisionando con la sombra inferior
+
     //Gestionar las conexiones
-    [SerializeField] public BlockConnection nextConnection { get; private set; }
+    [SerializeField] public BlockConnection NextConnection { get; private set; }
     [SerializeField] public BlockConnection previousConnection { get; private set; }
     [SerializeField] private BlockConnection closestConnection;
     [SerializeField] private BlockConnection previousClosestConnection;
@@ -52,7 +56,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     * @param: BlockDataLoader.BlockData blockData
     */
 
-    public void Initialize(BlockDataLoader.BlockData blockData, WorkSpace workspace )
+    public void Initialize(BlockDataLoader.BlockData blockData, WorkSpace workspace)
     {
         this.m_BlockType = blockData.type;
         this.m_BlockText = GetComponentInChildren<Text>();
@@ -68,20 +72,20 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         this.m_block.Initialize(blockData);
         this.m_block.SetBlockBehaviour(this);
 
-        this.nextConnection = this.m_block.nextConnection;
+        this.NextConnection = this.m_block.nextConnection;
         this.previousConnection = this.m_block.previousConnection;
-        this. inputConnections = this.m_block.inputList
+        this.inputConnections = this.m_block.inputList
             .Where(i => i.Connection != null)
             .Select(i => i.Connection)
             .ToList();
 
-        if (this.nextConnection == null || this.previousConnection == null)
+        if (this.NextConnection == null || this.previousConnection == null)
         {
             Debug.LogError($"Initialize: BlockBehaviour: Conexiones no inicializadas correctamente para {m_BlockType}.");
         }
         else
         {
-            Debug.Log($"Initialize: BlockBehaviour: Conexiones inicializadas: next={nextConnection.type}, previous={previousConnection.type}, SourceBlock={this.gameObject.name}");
+            Debug.Log($"Initialize: BlockBehaviour: Conexiones inicializadas: next={NextConnection.type}, previous={previousConnection.type}, SourceBlock={this.gameObject.name}");
         }
 
         // this.NextConnection = new BlockConnection(this, EConnection.NextStatement);
@@ -98,13 +102,13 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         }
         this.m_block = block;
         this.m_block.SetBlockBehaviour(this);
-        this.nextConnection = this.m_block.nextConnection;
+        this.NextConnection = this.m_block.nextConnection;
         this.previousConnection = this.m_block.previousConnection;
         this.inputConnections = this.m_block.inputList
             .Where(i => i.Connection != null)
             .Select(i => i.Connection)
             .ToList();
-        Debug.Log($"SetBlock: BlockBehaviour:  Bloque {m_BlockType} configurado con conexiones: next={nextConnection?.type}, previous={previousConnection?.type}");
+        Debug.Log($"SetBlock: BlockBehaviour:  Bloque {m_BlockType} configurado con conexiones: next={NextConnection?.type}, previous={previousConnection?.type}");
     }
 
     public Block GetBlock()
@@ -116,7 +120,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
      * Descripción: Método para establecer si el bloque es una plantilla
      * @param: bool is Template
      */
-    public void SetAsTemplate (bool isTemplate)
+    public void SetAsTemplate(bool isTemplate)
     {
         this.isTemplate = isTemplate;
     }
@@ -149,8 +153,8 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         if (isTemplate)
         {
-            
-            GameObject clonedBlock = OnPickBlockView(eventData);
+
+            GameObject clonedBlock = this.OnPickBlockView(eventData);
             if (clonedBlock != null)
             {
                 // clonedBlock.GetComponent<BlockBehaviour>().OnBeginDrag(eventData);
@@ -163,7 +167,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             return;
         }
 
-        if(!isDraggable) return; //Si no es arrastrable, no hacemos nada 
+        if (!isDraggable) return; //Si no es arrastrable, no hacemos nada 
 
         // Cambiar el padre del bloque al panel derecho
         transform.SetParent(GameObject.Find("CodingArea").transform, true);
@@ -194,7 +198,17 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             out localPos
         );
 
-        m_TouchOffset = (Vector2)transform.localPosition - localPos;
+       this.m_TouchOffset = (Vector2)transform.localPosition - localPos;
+
+        // Crear las sombras si no existen
+        if (this.shadowTop == null || this.shadowBottom == null)
+        {
+            this.CreateShadows(); // Método para crear las sombras
+        }
+
+        // Activar las sombras al comenzar el arrastre
+        if (this.shadowTop != null) this.shadowTop.SetActive(true);
+        if (this.shadowBottom != null) this.shadowBottom.SetActive(true);
 
         Debug.Log($"OnBeginDrag: BlockBehaviour: Offset del blooque calculado: {m_TouchOffset}");
     }
@@ -218,7 +232,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             // Debug.Log($"Bloque {m_BlockType} desconectado de su conexión superior.");
 
             Debug.LogWarning($"SetOrphan: El bloque {this.m_BlockType} sigue conectado. No se marcará como huérfano.");
-            this.m_block.previousConnection.Disconnect(); 
+            this.m_block.previousConnection.Disconnect();
             return;
         }
 
@@ -243,30 +257,56 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     /**
      * Descripción Método utilizado para clonar un bloque si este es una plantilla
-    */   
-    public  GameObject OnPickBlockView(PointerEventData eventData)
+    */
+    public GameObject OnPickBlockView(PointerEventData eventData)
     {
-         GameObject clonedBlock = Instantiate(gameObject, transform.parent);
-          
-         BlockBehaviour clonedBehaviour = clonedBlock.GetComponent<BlockBehaviour>();
-         clonedBehaviour.SetAsTemplate(false); //Desactiva la plantilla
-         clonedBehaviour.SetDraggable(true); //Activa el arrastre
+        GameObject clonedBlock = Instantiate(gameObject, transform.parent);
+        clonedBlock.tag = "Block";
+        BlockBehaviour clonedBehaviour = clonedBlock.GetComponent<BlockBehaviour>();
+        clonedBehaviour.SetAsTemplate(false); //Desactiva la plantilla
+        clonedBehaviour.SetDraggable(true); //Activa el arrastre
 
-            // Mover el clon al CodingArea
-         Transform codingArea = GameObject.Find("CodingArea").transform;
-         clonedBlock.transform.SetParent(codingArea, false);
+        // Asegurar que el bloque tenga un `BoxCollider2D`
+        if (clonedBlock.GetComponent<BoxCollider2D>() == null)
+        {
+            BoxCollider2D collider = clonedBlock.AddComponent<BoxCollider2D>();
+            collider.size = clonedBlock.GetComponent<RectTransform>().sizeDelta;
+        }
 
+        // Asegurar que el bloque tenga un `Rigidbody2D`
+        if (clonedBlock.GetComponent<Rigidbody2D>() == null)
+        {
+            Rigidbody2D rb = clonedBlock.AddComponent<Rigidbody2D>();
+            rb.bodyType = RigidbodyType2D.Kinematic; // Para que no sea afectado por la gravedad
+        }
+
+        //Me  aseguro que el bloque tenga un CanvasGroup en vez de Canvas
+        CanvasGroup canvasGroup = clonedBlock.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = clonedBlock.AddComponent<CanvasGroup>();
+        }
+
+        // Habilitar raycasts para que el bloque pueda seguir interactuando en la UI
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.interactable = true;
+        canvasGroup.alpha = 1f; // Asegura que el bloque sea visible
+
+        // Mover el clon al CodingArea
+        Transform codingArea = GameObject.Find("CodingArea").transform;
+        clonedBlock.transform.SetParent(codingArea, false);
+        clonedBlock.transform.SetAsLastSibling();
         //clonedBlock.transform.localScale = Vector3.one;
 
         // Calcular la posición inicial del clon basada en el cursor
         Vector2 localPos;
-         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            (RectTransform)codingArea,
-            eventData.position,
-            eventData.pressEventCamera,
-            out localPos
-         );
-            
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+           (RectTransform)codingArea,
+           eventData.position,
+           eventData.pressEventCamera,
+           out localPos
+        );
+
         clonedBlock.transform.localPosition = localPos;
 
         eventData.pointerDrag = clonedBlock;
@@ -282,7 +322,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         // Iniciar el arrastre en el clon
         clonedBehaviour.OnBeginDrag(eventData);
-         return clonedBlock; // Salir para no mover la plantilla
+        return clonedBlock; // Salir para no mover la plantilla
     }
 
 
@@ -292,12 +332,12 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
      */
     public void OnDrag(PointerEventData eventData)
     {
-    
+
         if (!isDraggable || isTemplate) return; //Si no es arrastrable, no hacemos nada
 
         if (this.m_block == null || this.workSpace == null)
         {
-            Debug.LogError("OnDrag: No se puede mover el bloque porque m_block o workSpace es null.");
+            //Debug.LogError("OnDrag: No se puede mover el bloque porque m_block o workSpace es null.");
             return;
         }
 
@@ -313,9 +353,12 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         //Actualizo la posición del bloque
 
         transform.localPosition = localPos + m_TouchOffset;
-
+        this.UpdateShadowPosition(); // Actualizo la sombra junto con el bloque
         this.m_block.XY = transform.localPosition;
         this.m_block.UpdateConnectionPositions();
+
+        //this.shadowTop.SetActive(true);
+       // this.shadowBottom.SetActive(true);
 
         // Los bloques en el área de codificación revisan si pueden recibir conexión
         foreach (BlockBehaviour block in workSpace.blocksInWorkspace)
@@ -403,8 +446,6 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         return RectTransformUtility.RectangleContainsScreenPoint(panelRect, blockTransform.position, null);
     }
 
-
-
     public void HideShadow()
     {
         if (shadowObject != null)
@@ -421,6 +462,21 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         if (!this.isDraggable || this.isTemplate) return; //Si no es arrastrable, no hacemos nada
 
         Debug.Log($"Bloque {gameObject.name} terminó de ser arrastrado");
+
+        // Ocultar las sombras al finalizar el arrastre
+        if (this.shadowTop != null)
+        {
+             // Destroy(shadowTop);
+
+            shadowTop.SetActive(false);
+        }
+        if (this.shadowBottom != null)
+        {
+
+           // Destroy(shadowBottom);
+            shadowBottom.SetActive(false);
+
+        }
 
         // Oculto la sombra al soltar
         //this.shadowObject.SetActive(false);
@@ -457,62 +513,92 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
             //Debug.Log($"OnEndDrag: Closest connection al soltar: {closestConnection?.type} at {closestConnection?.position}");
 
-            Debug.Log("OnEndDrag: Intentando conectar previousConnection: " + (this.previousConnection != null ? this.previousConnection.type.ToString() : "null"));
-            Debug.Log("OnEndDrag: Con closestConnection: " + (this.closestConnection != null ? this.closestConnection.type.ToString() : "null"));
+            //Debug.Log("OnEndDrag: Intentando conectar previousConnection: " + (this.previousConnection != null ? this.previousConnection.type.ToString() : "null"));
+            // Debug.Log("OnEndDrag: Con closestConnection: " + (this.closestConnection != null ? this.closestConnection.type.ToString() : "null"));
 
-            if (this.closestConnection != null && this.previousConnection.CanConnect(this.closestConnection))
+            /*   if (this.closestConnection != null && this.previousConnection.CanConnect(this.closestConnection))
+               {
+                  // Debug.Log($"Conectando {this.previousConnection.type} con {closestConnection.type}");
+                   this.previousConnection.Connect(this.closestConnection);
+                   transform.localPosition = closestConnection.position - new Vector2(0, GetComponent<RectTransform>().rect.height);
+                   this.closestConnection.Highlight(false);
+                   this.previousClosestConnection = null;
+                   this.closestConnection = null;
+               }
+               else
+               {
+                   // Intentar con nextConnection si previousConnection no conecta
+                   this.closestConnection = this.workSpace.FindClosest(this.NextConnection, MAXRADIUS, dxy);
+                   if (this.closestConnection != null && this.NextConnection.CanConnect(this.closestConnection))
+                   {
+                      // Debug.Log($"Conectando {this.NextConnection.type} con {closestConnection.type}");
+                       this.NextConnection.Connect(this.closestConnection);
+                       transform.localPosition = closestConnection.position + new Vector2(0, GetComponent<RectTransform>().rect.height);
+                       this.closestConnection.Highlight(false);
+                       this.previousClosestConnection = null;
+                       this.closestConnection = null;
+                   }
+                   else
+                   {
+                       //Debug.LogWarning("No se encontró una conexión válida al soltar.");
+                       foreach (var inputConnection in this.inputConnections)
+                       {
+                           this.closestConnection = this.workSpace.FindClosest(inputConnection, MAXRADIUS, dxy);
+                           if (this.closestConnection != null && inputConnection.CanConnect(this.closestConnection))
+                           {
+                               inputConnection.Connect(this.closestConnection);
+                               break;
+                           }
+                       }
+                   }
+
+                   // Si después de todo esto no se encontró conexión válida
+                   if (this.closestConnection == null)
+                   {
+                      // Debug.LogWarning($"OnEndDrag: No se encontró una conexión válida para {gameObject.name}. Se mantendrá como bloque independiente.");
+                       this.SetOrphan(); // Se deja en `WorkSpace`, pero sin conexión
+                   }
+               }
+           }*/
+            // Intentar conectar usando la colisión de la sombra superior
+            if (topShadowCollision != null && CanConnectTo(topShadowCollision, ConnectionZone.Top))
             {
-                Debug.Log($"Conectando {this.previousConnection.type} con {closestConnection.type}");
-                this.previousConnection.Connect(this.closestConnection);
-                transform.localPosition = closestConnection.position - new Vector2(0, GetComponent<RectTransform>().rect.height);
-                this.closestConnection.Highlight(false);
-                this.previousClosestConnection = null;
-                this.closestConnection = null;
+                ConnectTo(topShadowCollision, ConnectionZone.Top);
+            }
+            // Intentar conectar usando la colisión de la sombra inferior
+            else if (bottomShadowCollision != null && CanConnectTo(bottomShadowCollision, ConnectionZone.Bottom))
+            {
+                ConnectTo(bottomShadowCollision, ConnectionZone.Bottom);
             }
             else
             {
-                // Intentar con nextConnection si previousConnection no conecta
-                this.closestConnection = this.workSpace.FindClosest(this.nextConnection, MAXRADIUS, dxy);
-                if (this.closestConnection != null && this.nextConnection.CanConnect(this.closestConnection))
-                {
-                    Debug.Log($"Conectando {this.nextConnection.type} con {closestConnection.type}");
-                    this.nextConnection.Connect(this.closestConnection);
-                    transform.localPosition = closestConnection.position + new Vector2(0, GetComponent<RectTransform>().rect.height);
-                    this.closestConnection.Highlight(false);
-                    this.previousClosestConnection = null;
-                    this.closestConnection = null;
-                }
-                else
-                {
-                    //Debug.LogWarning("No se encontró una conexión válida al soltar.");
-                    foreach (var inputConnection in this.inputConnections)
-                    {
-                        this.closestConnection = this.workSpace.FindClosest(inputConnection, MAXRADIUS, dxy);
-                        if (this.closestConnection != null && inputConnection.CanConnect(this.closestConnection))
-                        {
-                            inputConnection.Connect(this.closestConnection);
-                            break;
-                        }
-                    }
-                }
-
-                // Si después de todo esto no se encontró conexión válida
-                if (this.closestConnection == null)
-                {
-                    Debug.LogWarning($"OnEndDrag: No se encontró una conexión válida para {gameObject.name}. Se mantendrá como bloque independiente.");
-                    this.SetOrphan(); // Se deja en `WorkSpace`, pero sin conexión
-                }
+                Debug.LogWarning($"OnEndDrag: No se encontró una conexión válida para {gameObject.name}. Se mantendrá como bloque independiente.");
+                this.SetOrphan(); // Sin colisión, queda independiente
             }
+
+            // Desactivar las sombras
+            if (shadowTop != null) shadowTop.SetActive(false);
+            if (shadowBottom != null) shadowBottom.SetActive(false);
         }
-      
         else
         {
+            // Antes de eliminar el bloque, destruir las sombras
+            if (shadowTop != null)
+            {
+                Destroy(shadowTop);
+                shadowTop = null;
+            }
+            if (shadowBottom != null)
+            {
+                Destroy(shadowBottom);
+                shadowBottom = null;
+            }
             this.workSpace.RemoveBlock(this);
             Destroy(gameObject);
             Debug.Log("Bloque descartado porque no está en el CodingArea.");
         }
     }
-  
+
     //Para la gestión de conexiones
 
     public void UpdateConnectionPosition()
@@ -523,22 +609,22 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         // La conexión "previous" está en la parte superior del bloque
         this.previousConnection.position = transform.localPosition + new Vector3(0, blockHeight, 0);
         // La conexión "next" está en la parte inferior del bloque
-        this.nextConnection.position = transform.localPosition;
+        this.NextConnection.position = transform.localPosition;
 
         //this.nextConnection.position = transform.localPosition;
         // this.previousConnection.position = transform.localPosition + new Vector3(0, GetComponent<RectTransform>().rect.height,0);
-        Debug.Log($"UpdateConnectionPosition: BlockBehaviour: PreviousConnection position updated to {previousConnection.position}, NextConnection position updated to {nextConnection.position}");
+        //Debug.Log($"UpdateConnectionPosition: BlockBehaviour: PreviousConnection position updated to {previousConnection.position}, NextConnection position updated to {NextConnection.position}");
     }
 
     private void HandleConnectionState(UpdateState state)
     {
 
-       /* this.m_blockImage.color = state switch
-        {
-            UpdateState.Highlight => Color.green,
-            UpdateState.UnHighlight => Color.white,
-            _ => this.m_blockImage.color // Mantiene el color actual si el estado no cambia el color
-        };*/
+        /* this.m_blockImage.color = state switch
+         {
+             UpdateState.Highlight => Color.green,
+             UpdateState.UnHighlight => Color.white,
+             _ => this.m_blockImage.color // Mantiene el color actual si el estado no cambia el color
+         };*/
 
         Debug.Log(state switch
         {
@@ -550,6 +636,7 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     void Start()
     {
+        gameObject.tag = "Block"; //Se añade el tag "Block" al bloque
         workSpace = FindFirstObjectByType<WorkSpace>();
 
         if (workSpace == null)
@@ -563,6 +650,14 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             this.m_blockImage.color = Color.white;
         }
 
+        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        if (collider == null)
+        {
+            collider = gameObject.AddComponent<BoxCollider2D>();
+            RectTransform rect = GetComponent<RectTransform>();
+            collider.size = rect.sizeDelta; // Ajustar al tamaño del bloque
+        }
+        collider.isTrigger = true; // Configurar como trigger
         //Creo la sombra de los bloques para resaltar la conexión más cercana
         this.CreateShadows();
 
@@ -574,84 +669,18 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
             Debug.Log($"Start: BlockBehavour: Bloque {m_BlockType} registrado en WorkSpace con isTemplate: {isTemplate}");
         }
 
-        this.nextConnection.onStateChanged += this.HandleConnectionState;
+        this.NextConnection.onStateChanged += this.HandleConnectionState;
         this.previousConnection.onStateChanged += this.HandleConnectionState;
         foreach (var inputConnection in this.inputConnections)
         {
             inputConnection.onStateChanged += this.HandleConnectionState;
         }
-    }
-    private void CreateShadow2()
-    {
-        if (this.shadowObject != null)
-        {
-            Destroy(this.shadowObject); // Evito duplicados
-        }
-        this.shadowObject = new GameObject("Shadow");
-        this.shadowObject.transform.SetParent(transform.parent, false);
-        Image shadowImage = this.shadowObject.AddComponent<Image>();
-        shadowImage.sprite = this.m_blockImage.sprite;
-        if (shadowImage.sprite == null)
-        {
-            Debug.LogError($"No se encontró sprite para la sombra en {gameObject.name}. Usando un color sólido.");
-            shadowImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gris translúcido sin sprite
-        }
-        else
-        {
-            shadowImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gris translúcido con sprite
-        }
-        //shadowImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gris translúcido
-        shadowImage.type = this.m_blockImage.type;
-        RectTransform shadowRect = this.shadowObject.GetComponent<RectTransform>();
-        shadowRect.sizeDelta = GetComponent<RectTransform>().sizeDelta;
-        shadowRect.localScale = transform.localScale;
-        this.shadowObject.SetActive(false); // Ocultar la sombra inicialmente
 
-        Debug.Log($"CreateShadow: BlockBehaviour: Sombra creada para {gameObject.name} con tamaño {shadowRect.sizeDelta}");
+        // Asegurarse de que las sombras estén ocultas al inicio
+        if (shadowTop != null) shadowTop.SetActive(false);
+        if (shadowBottom != null) shadowBottom.SetActive(false);
     }
 
-    private void CreateShadows()
-    {
-        RectTransform blockRect = GetComponent<RectTransform>();
-        float blockWidth = blockRect.rect.width;
-        float blockHeight = blockRect.rect.height;
-
-        // Sombra superior (ShadowTop)
-        shadowTop = new GameObject("ShadowTop");
-        shadowTop.transform.SetParent(transform);
-        shadowTop.transform.localScale = Vector3.one;
-        Image shadowTopImage = shadowTop.AddComponent<Image>();
-        shadowTopImage.sprite = this.m_blockImage.sprite;
-        shadowTopImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gris translúcido
-        RectTransform shadowTopRect = shadowTop.GetComponent<RectTransform>();
-        shadowTopRect.sizeDelta = blockRect.sizeDelta;
-        shadowTopRect.localScale = transform.localScale;
-        shadowTopRect.anchoredPosition = new Vector2(blockWidth / 2, blockWidth / 2);
-        shadowTopRect.anchorMin = new Vector2(0, 0); // Bottom-Left
-        shadowTopRect.anchorMax = new Vector2(0, 0);
-
-        Debug.Log(shadowTop.transform.localScale);
-
-        // Sombra inferior (ShadowBottom)
-        shadowBottom = new GameObject("ShadowBottom");
-        shadowBottom.transform.SetParent(transform);
-        shadowBottom.transform.localScale = Vector3.one;
-        Image shadowBottomImage = shadowBottom.AddComponent<Image>();
-        shadowBottomImage.sprite = this.m_blockImage.sprite;
-        shadowBottomImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gris translúcido
-        RectTransform shadowBottomRect = shadowBottom.GetComponent<RectTransform>();
-        shadowBottomRect.sizeDelta = blockRect.sizeDelta;
-        shadowBottomRect.localScale = transform.localScale;
-        shadowBottomRect.anchoredPosition = new Vector2(blockWidth/2, -blockWidth/2); // Ajuste para sombra inferior
-        shadowBottomRect.anchorMin = new Vector2(0, 1); // Top-Left
-        shadowBottomRect.anchorMax = new Vector2(0, 1);
-
-        Debug.Log(shadowTop.transform.localScale);
-
-        // Ocultar las sombras al inicio
-        shadowTop.SetActive(true);
-        shadowBottom.SetActive(true);
-    }
 
     /**
      * Descripción: Método que destaca un bloque al que se puede conectar
@@ -660,8 +689,171 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public void Highlight(bool dato)
     {
         if (dato) this.m_blockImage.color = Color.green;
-       
+
     }
 
+    private void CreateShadows()
+    {
+        // Destruir sombras existentes para evitar duplicados
+        if (shadowTop != null) Destroy(shadowTop);
+        if (shadowBottom != null) Destroy(shadowBottom);
+
+        if (isTemplate)
+        {
+            Debug.Log("CreateShadows: No se crean sombras para bloques en la toolbox");
+            return;
+        }
+
+        // Obtener la referencia al RightPanel
+        GameObject rightPanel = GameObject.Find("CodingArea");
+        if (rightPanel == null || this.transform.parent != rightPanel.transform)
+        {
+            Debug.LogError("$\"CreateShadows: El bloque {gameObject.name} NO está en CodingArea. No se crea la sombra");
+            return;
+        }
+        // Obtener el tamaño del bloque
+        RectTransform blockRect = GetComponent<RectTransform>();
+        float blockHeight = blockRect.rect.height;
+
+        // Verificar si el bloque está en el RightPanel antes de crear la sombra
+        if (transform.parent == rightPanel.transform)
+        {
+            Debug.LogWarning("CreateShadows: La sombra solo se muestra en el CodingArea.");
+            // Crear sombra superior
+            this.shadowTop = CreateShadowContainer("ShadowTopContainer", new Vector2(0, blockHeight / 2));
+
+            // Crear sombra inferior
+            this.shadowBottom = CreateShadowContainer("ShadowBottomContainer", new Vector2(0, -blockHeight / 2));
+            return;
+        }
+
+        // Configurar eventos para la sombra superior
+        ShadowCollision topShadowScript = shadowTop.GetComponent<ShadowCollision>();
+        topShadowScript.OnBlockEntered += (block) => topShadowCollision = block;
+        topShadowScript.OnBlockExited += (block) => { if (topShadowCollision == block) topShadowCollision = null; };
+
+        // Configurar eventos para la sombra inferior
+        ShadowCollision bottomShadowScript = shadowBottom.GetComponent<ShadowCollision>();
+        bottomShadowScript.OnBlockEntered += (block) => bottomShadowCollision = block;
+        bottomShadowScript.OnBlockExited += (block) => { if (bottomShadowCollision == block) bottomShadowCollision = null; };
+
+        // Asegurarse de que estén ocultas al crearse
+        shadowTop.SetActive(false);
+        shadowBottom.SetActive(false);
+
+    }
+
+    // Método auxiliar para crear contenedores de sombra
+    private GameObject CreateShadowContainer(string name, Vector2 offset)
+    {
+        // Obtener el RectTransform del bloque
+        RectTransform blockRect = GetComponent<RectTransform>();
+
+        //Creo el contenedor de la sombra
+        GameObject shadowContainer = new GameObject(name);
+        shadowContainer.transform.SetParent(transform.parent, false); // Hermano del bloque
+        shadowContainer.transform.SetSiblingIndex(transform.GetSiblingIndex()); // Detrás del bloque
+
+        //Configuro el RectTransform de la sombra
+        RectTransform shadowRect = shadowContainer.AddComponent<RectTransform>();
+        shadowRect.anchorMin = blockRect.anchorMin; // Copiar anchors mínimos
+        shadowRect.anchorMax = blockRect.anchorMax; // Copiar anchors máximos
+        shadowRect.pivot = blockRect.pivot; // Copiar pivot
+        shadowRect.sizeDelta = blockRect.sizeDelta; // Mismo tamaño que el bloque
+        //shadowRect.sizeDelta = GetComponent<RectTransform>().sizeDelta;
+        //shadowRect.localScale = Vector3.one; // Mismo tamaño que el bloque (ajusta si deseas escalado)
+
+
+        float scaleFactor = 0.32f;
+        shadowRect.localScale = new Vector3(scaleFactor, scaleFactor, 1); // Escala reducida
+        Image shadowImage = shadowContainer.AddComponent<Image>();
+        shadowImage.sprite = this.m_blockImage.sprite;
+        shadowImage.color = new Color(0, 0, 0, 0.3f); // Sombra oscura translúcida
+
+        // Añado BoxCollider2D para detectar la colisión
+        BoxCollider2D shadowCollider = shadowContainer.AddComponent<BoxCollider2D>();
+        shadowCollider.size = shadowRect.sizeDelta; // Tamaño igual a la sombra
+        shadowCollider.isTrigger = true; // No bloquea el movimiento del bloque
+        // Posición inicial
+        shadowRect.anchoredPosition = (Vector2)transform.localPosition + offset;
+
+        Canvas shadowCanvas = shadowContainer.AddComponent<Canvas>();
+        shadowCanvas.overrideSorting = false;
+
+        // Añadir script para gestionar colisiones
+        ShadowCollision shadowScript = shadowContainer.AddComponent<ShadowCollision>();
+        shadowScript.SetShadowImage(shadowImage);
+
+        return shadowContainer;
+    }
+    // Método para actualizar la posición de la sombra cuando el bloque se mueve
+    private void UpdateShadowPosition()
+    {
+        if (shadowTop == null || shadowBottom == null) return;
+
+        // Solo actualizar si las sombras están activas (durante el arrastre)
+        if (!shadowTop.activeSelf || !shadowBottom.activeSelf) return;
+
+        GameObject codingArea = GameObject.Find("CodingArea");
+        if (transform.parent != codingArea.transform)
+        {
+            this.shadowTop.SetActive(false);
+            this.shadowBottom.SetActive(false);
+            return;
+        }
+
+        RectTransform blockRect = GetComponent<RectTransform>();
+        float blockHeight = blockRect.rect.height;
+        float blockWidth = blockRect.rect.width;
+        float blockX = blockRect.anchoredPosition.x;
+        float blockY = blockRect.anchoredPosition.y;
+        float scaleFactor = 0.32f; // Ajusta este valor según tu configuración
+        float shadowHeight = blockHeight * scaleFactor;
+        float offset = 20f; // Espacio en píxeles entre la sombra y el bloque
+        // Posicionar sombra superior (arriba del bloque)
+        shadowTop.GetComponent<RectTransform>().anchoredPosition =
+             new Vector2(blockX, blockY + shadowHeight - offset);
+
+        // Posicionar sombra inferior (debajo del bloque)
+        shadowBottom.GetComponent<RectTransform>().anchoredPosition =
+            new Vector2(blockX, blockY - shadowHeight + offset);
+
+        //Debug.Log($"Bloque: X={blockX}, Y={blockY}, Altura={blockHeight}");
+       // Debug.Log($"Sombra Superior: Y={blockY + blockHeight * scaleFactor - offset}");
+       // Debug.Log($"Sombra Inferior: Y={blockY - blockHeight * scaleFactor + offset}");
+
+        shadowTop.SetActive(true);
+        shadowBottom.SetActive(true);
+    }
+
+    // Métodos auxiliares para la conexión
+    private bool CanConnectTo(BlockBehaviour otherBlock, ConnectionZone zone)
+    {
+        if (zone == ConnectionZone.Top)
+        {
+            return this.previousConnection.CanConnect(otherBlock.NextConnection);
+        }
+        else if (zone == ConnectionZone.Bottom)
+        {
+            return this.NextConnection.CanConnect(otherBlock.previousConnection);
+        }
+        return false;
+    }
+
+    private void ConnectTo(BlockBehaviour otherBlock, ConnectionZone zone)
+    {
+        RectTransform rect = GetComponent<RectTransform>();
+        if (zone == ConnectionZone.Top)
+        {
+            this.previousConnection.Connect(otherBlock.NextConnection);
+            transform.localPosition = otherBlock.NextConnection.position - new Vector2(0, rect.rect.height);
+        }
+        else if (zone == ConnectionZone.Bottom)
+        {
+            this.NextConnection.Connect(otherBlock.previousConnection);
+            transform.localPosition = otherBlock.previousConnection.position + new Vector2(0, rect.rect.height);
+        }
+        Debug.Log($"Conectado {m_BlockType} con {otherBlock.m_BlockType} en {zone}");
+    }
 
 }

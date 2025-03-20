@@ -163,6 +163,10 @@ public class UICanvasManager : MonoBehaviour
             new Vector2(0.4f, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero,
             new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
+        /*Canvas topCanvas = rightPanel.AddComponent<Canvas>();
+        topCanvas.overrideSorting = true;
+        topCanvas.sortingOrder = 3;*/
+
         m_rightPanelTransform = rightPanel.transform; // Guardamos la referencia al Transform del RightPanel
 
         this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();

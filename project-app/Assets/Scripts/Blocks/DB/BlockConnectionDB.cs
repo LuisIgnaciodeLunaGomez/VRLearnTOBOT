@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConnectionDB : List<BlockConnection>
+public class BlockConnectionDB : List<BlockConnection>
 {
     public void AddConnection(BlockConnection connection)
     {
@@ -31,7 +31,7 @@ public class ConnectionDB : List<BlockConnection>
 
         int position = FindPositionForConnection(connection);
         Insert(position, connection);
-        Debug.Log($"Connection {connection.type} added at position {position} with y={connection.position.y}");
+      //  Debug.Log($"Connection {connection.type} added at position {position} with y={connection.position.y}");
     }
 
     public void RemoveConnection(BlockConnection connection)
@@ -41,7 +41,7 @@ public class ConnectionDB : List<BlockConnection>
         if (index >= 0)
         {
             RemoveAt(index);
-            Debug.Log($"Connection {connection.type} removed from database.");
+           // Debug.Log($"Connection {connection.type} removed from database.");
         }
     }
 
@@ -68,13 +68,13 @@ public class ConnectionDB : List<BlockConnection>
         BlockConnection closest = null;
         float closestDistance = maxRadius;
 
-        Debug.Log($"FindCloset: BlockBehaviourDB: Buscando conexión más cercana. Total conexiones: {Count}, Posición: {connection.position}");
+       // Debug.Log($"FindCloset: BlockBehaviour: Buscando conexión más cercana. Total conexiones: {Count}, Posición: {connection.position}");
 
         for (int i = midIndex; i >= 0 && Mathf.Abs(this[i].position.y - connection.position.y) <= maxRadius; i--)
         {
             float distance = Vector2.Distance(this[i].position, connection.position);
 
-            Debug.Log($"FindCloset: BlockBehaviourDB: Revisando conexión {i}: {this[i].type} at {this[i].position}, distance: {distance}");
+           // Debug.Log($"FindCloset: BlockBehaviour: Revisando conexión {i}: {this[i].type} at {this[i].position}, distance: {distance}");
             if (distance < closestDistance && connection.CanConnect(this[i]))
             {
                 closest = this[i];
@@ -85,7 +85,7 @@ public class ConnectionDB : List<BlockConnection>
         for (int i = midIndex + 1; i < Count && Mathf.Abs(this[i].position.y - connection.position.y) <= maxRadius; i++)
         {
             float distance = Vector2.Distance(this[i].position, connection.position);
-            Debug.Log($"FindCloset: BlockBehaviourDB: Revisando conexión {i}: {this[i].type} at {this[i].position}, distance: {distance}");
+           // Debug.Log($"FindCloset: BlockBehaviourDB: Revisando conexión {i}: {this[i].type} at {this[i].position}, distance: {distance}");
             if (distance < closestDistance && connection.CanConnect(this[i]))
             {
                 closest = this[i];
@@ -94,7 +94,7 @@ public class ConnectionDB : List<BlockConnection>
         }
 
         connection.position = originalPosition;
-        Debug.Log($"FindCloset: BlockBehaviourDB: Closest connection found: {closest?.type} at {closest?.position}, distance: {closestDistance}");
+     //   Debug.Log($"FindCloset: BlockBehaviourDB: Closest connection found: {closest?.type} at {closest?.position}, distance: {closestDistance}");
         return closest;
     }
 

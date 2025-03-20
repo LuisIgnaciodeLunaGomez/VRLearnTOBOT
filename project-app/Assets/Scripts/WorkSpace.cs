@@ -30,7 +30,7 @@ public class WorkSpace : MonoBehaviour
 
     public List<BlockBehaviour> blocksInWorkspace => new List<BlockBehaviour>(FindObjectsOfType<BlockBehaviour>());
 
-    private Dictionary<EConnection, ConnectionDB> ConnectionDBs; //Almacena las conexiones organizadas por tipo de conexión
+    private Dictionary<EConnection, BlockConnectionDB> ConnectionDBs; //Almacena las conexiones organizadas por tipo de conexión
 
     /**
      * Descripción: Constructor de la clase
@@ -168,12 +168,12 @@ public class WorkSpace : MonoBehaviour
         //Debug.Log("WorksPace inizializado con MiddlePanel y RightPanel");
 
         //Inicializo la base de datos de conexiones
-        ConnectionDBs = new Dictionary<EConnection, ConnectionDB>
+        ConnectionDBs = new Dictionary<EConnection, BlockConnectionDB>
         {
-            { EConnection.NextStatement, new ConnectionDB() },
-            { EConnection.PrevStatement, new ConnectionDB() },
-            { EConnection.InputValue, new ConnectionDB() },
-            { EConnection.OutputValue, new ConnectionDB() }
+            { EConnection.NextStatement, new BlockConnectionDB() },
+            { EConnection.PrevStatement, new BlockConnectionDB() },
+            { EConnection.InputValue, new BlockConnectionDB() },
+            { EConnection.OutputValue, new BlockConnectionDB() }
         };
         Debug.Log(" bases de datos de conexiones configuradas.");
     }
@@ -218,14 +218,14 @@ public class WorkSpace : MonoBehaviour
             _ => connection.type
         };
 
-        ConnectionDB db = ConnectionDBs.ContainsKey(oppositeType) ? ConnectionDBs[oppositeType] : null;
+        BlockConnectionDB db = ConnectionDBs.ContainsKey(oppositeType) ? ConnectionDBs[oppositeType] : null;
         if (db == null) return null;
 
         //return db.FindClosest(connection, maxRadius, dxy);
         BlockConnection closest = db.FindClosest(connection, maxRadius, dxy);
         if (closest == null)
         {
-            Debug.LogWarning($"FindClosest: No se encontró una conexión en el radio {maxRadius}. Buscando la más cercana.");
+           // Debug.LogWarning($"FindClosest: No se encontró una conexión en el radio {maxRadius}. Buscando la más cercana.");
             closest = db.FindClosest(connection, maxRadius * 2, dxy); // Busca en un radio mayor
         }
 
@@ -240,29 +240,29 @@ public class WorkSpace : MonoBehaviour
     {
         if (block == null)
         {
-            Debug.LogError("AddBlock: BlockBehaviour es null.");
+           // Debug.LogError("AddBlock: BlockBehaviour es null.");
             return;
         }
 
         if (block.blockModel == null)
         {
-            Debug.LogError($"AddBlock: WorkSpace: blockModel es null para el bloque {block.blockType}.");
+            //Debug.LogError($"AddBlock: WorkSpace: blockModel es null para el bloque {block.blockType}.");
             return;
         }
         if (block != null && !block.isATemplate)
         {
         
-            if (block.nextConnection != null)
+            if (block.NextConnection != null)
             {
-                if (block.nextConnection.sourceBlock == null)
+                if (block.NextConnection.sourceBlock == null)
                 {
-                    Debug.LogWarning($"El bloque {block.blockType} tiene nextConnection pero no tiene sourceBlock.");
+                 //   Debug.LogWarning($"El bloque {block.blockType} tiene nextConnection pero no tiene sourceBlock.");
                     //return;
-                    pendingConnections.Add(block.nextConnection);
+                    pendingConnections.Add(block.NextConnection);
                 }
                 else
                 {
-                    ConnectionDBs[EConnection.NextStatement].AddConnection(block.nextConnection);
+                    ConnectionDBs[EConnection.NextStatement].AddConnection(block.NextConnection);
                 }
             }
 
@@ -270,11 +270,11 @@ public class WorkSpace : MonoBehaviour
             if (block.previousConnection != null && block.previousConnection.sourceBlock != null)
             {
                 ConnectionDBs[EConnection.PrevStatement].AddConnection(block.previousConnection); //Añade la conexión a la base de datos
-                Debug.Log($"AddBlock: WorkSpace: Registrada previousConnection para {block.blockType} en PrevStatement DB, SourceBlock: {block.previousConnection.sourceBlock.gameObject.name}");
+              //  Debug.Log($"AddBlock: WorkSpace: Registrada previousConnection para {block.blockType} en PrevStatement DB, SourceBlock: {block.previousConnection.sourceBlock.gameObject.name}");
             }
             else
             {
-                Debug.LogWarning($"AddBlock: WorkSpace: previousConnection para {block.blockType} es null o SourceBlock es null.");
+              //  Debug.LogWarning($"AddBlock: WorkSpace: previousConnection para {block.blockType} es null o SourceBlock es null.");
                 return;
             }
 
@@ -284,28 +284,28 @@ public class WorkSpace : MonoBehaviour
                 if (input.Connection != null && input.Connection.type == EConnection.InputValue && input.Connection.sourceBlock != null)
                 {
                     ConnectionDBs[EConnection.InputValue].AddConnection(input.Connection); //Añade la conexión a la base de datos
-                    Debug.Log($"AddBlock: WorkSpace:Registrada inputConnection para {block.blockType} en InputValue DB, SourceBlock: {input.Connection.sourceBlock.gameObject.name}");
+                 //   Debug.Log($"AddBlock: WorkSpace:Registrada inputConnection para {block.blockType} en InputValue DB, SourceBlock: {input.Connection.sourceBlock.gameObject.name}");
                 }
                 else
                 {
-                    Debug.LogWarning($"AddBlock: WorkSpace: inputConnection para {block.blockType} tiene SourceBlock null o tipo incorrecto, no se registra.");
+                  //  Debug.LogWarning($"AddBlock: WorkSpace: inputConnection para {block.blockType} tiene SourceBlock null o tipo incorrecto, no se registra.");
                 }
             }
 
             if (block.blockModel.outputConnection != null && block.blockModel.outputConnection.type == EConnection.OutputValue && block.blockModel.outputConnection.sourceBlock != null)
             {
                 ConnectionDBs[EConnection.OutputValue].AddConnection(block.blockModel.outputConnection); //Añade la conexión a la base de datos
-                Debug.Log($"AddBlock: WorkSpace: Registrada outputConnection para {block.blockType} en OutputValue DB, SourceBlock: {block.blockModel.outputConnection.sourceBlock.gameObject.name}");
+               // Debug.Log($"AddBlock: WorkSpace: Registrada outputConnection para {block.blockType} en OutputValue DB, SourceBlock: {block.blockModel.outputConnection.sourceBlock.gameObject.name}");
             }
             else
             {
-                Debug.LogWarning($"AddBlock: WorkSpace: outputConnection para {block.blockType} tiene SourceBlock null o tipo incorrecto, no se registra.");
+               // Debug.LogWarning($"AddBlock: WorkSpace: outputConnection para {block.blockType} tiene SourceBlock null o tipo incorrecto, no se registra.");
             }
 
 
-            Debug.Log($"Addblock: WorkSpace: Bloque {block.blockType} añadido al WorkSpace con conexiones registradas. " +
-                   $"NextStatement DB: {ConnectionDBs[EConnection.NextStatement].Count}, " +
-                   $"PrevStatement DB: {ConnectionDBs[EConnection.PrevStatement].Count}");
+          //  Debug.Log($"Addblock: WorkSpace: Bloque {block.blockType} añadido al WorkSpace con conexiones registradas. " +
+           //        $"NextStatement DB: {ConnectionDBs[EConnection.NextStatement].Count}, " +
+           //        $"PrevStatement DB: {ConnectionDBs[EConnection.PrevStatement].Count}");
         }
     }
 
@@ -317,7 +317,7 @@ public class WorkSpace : MonoBehaviour
     {
         if (block != null && !block.isATemplate)
         {
-            ConnectionDBs[EConnection.NextStatement].RemoveConnection(block.nextConnection);
+            ConnectionDBs[EConnection.NextStatement].RemoveConnection(block.NextConnection);
             ConnectionDBs[EConnection.PrevStatement].RemoveConnection(block.previousConnection);
             foreach (var input in block.blockModel.inputList)
             {
