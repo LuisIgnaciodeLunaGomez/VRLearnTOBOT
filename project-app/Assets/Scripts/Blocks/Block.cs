@@ -22,13 +22,26 @@ public class Block
 {
 
     public string ID { get; private set; }
-    public string Type { get; private set; }
+    public string type { get; private set; }
 
-    public BlockDataLoader.BlockData BlockData { get; private set; }
+    public BlockDataLoader.BlockData blockData { get; private set; }
 
     public void Initialize(BlockDataLoader.BlockData blockData)
     {
-        this.BlockData = blockData;
+        this.blockData = blockData;
+
+        if (blockData.args != null)
+        {
+            foreach (var arg in blockData.args)
+            {
+                if (arg.type == "input")
+                {
+                    Input input = new Input(arg.name, EConnection.InputValue, arg.defaultValue);
+                    input.sourceBlock = this;
+                    AppendInput(input);
+                }
+            }
+        }
     }
 
     public Vector2 XY { get; set; }
@@ -37,25 +50,29 @@ public class Block
     //Espacio de trabajo al que pertenece el bloque
     public WorkSpace workSpace { get; set; }
 
+    public BlockBehaviour behaviour { get; private set; }
+
     //Conexiones de los bloques
-    public BlockConnection OutputConnection { get; set; }
-    public BlockConnection PreviousConnection { get; set; }
-    public BlockConnection NextConnection { get; set; }
+    public BlockConnection outputConnection { get; set; }
+    public BlockConnection previousConnection { get; set; }
+    public BlockConnection nextConnection { get; set; }
+
+    private Block m_SourceBlock; //Bloque al que pertenece la conexión
 
     //Lista que contiene las entradas de los bloques donde podemos conectar otros bloques
-    public List<Input> InputList { get; protected set; }
+    public List<Input> inputList { get; protected set; }
 
     //Jearquía de bloques
 
-    public Block ParentBlock { get; protected set; }
-    public List<Block> ChildBlocks = new List<Block>();
+    public Block parentBlock { get; protected set; }
+    public List<Block> childBlocks = new List<Block>();
 
     //Faltaría crear el Mutator para los bloques que lo necesiten
 
     public Block(string type, Vector2 position, WorkSpace workSpace)
     {
         this.ID = Utilidades.GenUid();
-        this.Type = type;
+        this.type = type;
         this.XY = position;
 
         //Falta añadir el bloque a la base de datos de bloques
@@ -63,63 +80,87 @@ public class Block
 
         this.workSpace = workSpace;
 
-        //Añadido el 24/02/2025 para crear las conexiones entre bloques
-        this.OutputConnection = null;
-        this.PreviousConnection = null;
-        this.NextConnection = null;
-        this.InputList = new List<Input>();
+        //Crear  conexiones entre bloques
+        // Inicializar conexiones con tipos específicos
+        this.previousConnection = new BlockConnection(null, EConnection.PrevStatement);
+        this.nextConnection = new BlockConnection(null, EConnection.NextStatement);
+        this.outputConnection = new BlockConnection(null, EConnection.OutputValue);
+
+        this.inputList = new List<Input>();
+        this.childBlocks = new List<Block>();
 
         workSpace.AddTopBlocks(this); //Añade el bloque a la lista de bloques principales del espacio de trabajo 24/02/2025
 
     }
 
-    public bool HasInput(string name)
+
+    public void SetBlockBehaviour(BlockBehaviour behaviour)
     {
-        return InputList.Any(t => name.Equals(t.Name));
+        this.behaviour = behaviour;
+        if (this.previousConnection != null) this.previousConnection.sourceBlock = behaviour;
+        if (this.nextConnection != null) this.nextConnection.sourceBlock = behaviour;
+        if (this.outputConnection != null) this.outputConnection.sourceBlock = behaviour;
+       
+        foreach (var input in inputList)
+        {
+            if (input.Connection != null)
+            {
+                input.Connection.sourceBlock = behaviour;
+            }
+        }
     }
 
-    public Block Clone()
-    {
-        return new Block(this.Type, this.XY, this.workSpace);
-    }
+    /**
+     * Descripcion: Método que verifica si tiene un input con el nombre especificado
+     * @param: string name
+     * 
+     */
+    public bool HasInput(string name) =>this.inputList.Any(t => t.Name.Equals(name));
+
+    public Block Clone() => new Block(this.type, this.XY, this.workSpace);
+
+    // Obtiene el siguiente bloque en la secuencia de bloques
+    public Block NextBlock => nextConnection?.TargetBlock?.blockModel;
 
     public void Dispose()
     {
         workSpace.BlockDB.Remove(ID); //Elimina el bloque del diccionario de bloques del espacio de trabajo
     }
 
-    // Obtiene el siguiente bloque en la secuencia de bloques
-    public Block NextBlock
-    {
-        get { return null != NextConnection ? NextConnection.TargetBlock : null; }
-    }
 
     public void UnPlug(bool optHealStack = false)
     {
-        if (this.OutputConnection != null)
+        if (this.outputConnection != null)
         {
-            if (this.OutputConnection.IsConnected)
-                this.OutputConnection.Disconnect();
+            if (this.outputConnection.isConnected)
+                this.outputConnection.Disconnect();
         }
-        else if (this.PreviousConnection != null)
+        else if (this.previousConnection != null)
         {
             BlockConnection previousTarget = null;
-            if (this.PreviousConnection.IsConnected)
+            if (this.previousConnection.isConnected)
             {
-                previousTarget = PreviousConnection.TargetConnection;
-                PreviousConnection.Disconnect();
+                previousTarget = this.previousConnection.targetConnection;
+                this.previousConnection.Disconnect();
             }
             Block nextBlock = this.NextBlock;
             if (optHealStack && nextBlock != null)
             {
-                var nextTarget = this.NextConnection.TargetConnection;
-                nextTarget.Disconnect();
+                var nextTarget = this.nextConnection.targetConnection;
+                nextTarget?.Disconnect();
                 if (previousTarget != null && previousTarget.CheckType(nextTarget))
                 {
                     previousTarget.Connect(nextTarget);
                 }
             }
         }
+
+        if (parentBlock != null)
+        {
+            parentBlock.childBlocks.Remove(this);
+            parentBlock = null;
+        }
+        childBlocks.Clear();
     }
 
     // Obtiene todas las conexiones de un bloque
@@ -127,17 +168,17 @@ public class Block
     {
 
         List<BlockConnection> connections = new List<BlockConnection>();
-        if (OutputConnection != null)
+        if (this.outputConnection != null)
         {
-            connections.Add(OutputConnection);
+            connections.Add(this.outputConnection);
         }
-        if (PreviousConnection != null)
+        if (this.previousConnection != null)
         {
-            connections.Add(PreviousConnection);
+            connections.Add(this.previousConnection);
         }
-        if (NextConnection != null)
+        if (this.nextConnection != null)
         {
-            connections.Add(NextConnection);
+            connections.Add(this.nextConnection);
         }
         return connections;
 
@@ -148,11 +189,11 @@ public class Block
     //añade entradas a un bloque
     public void AppendInput(Input input, int index = -1)
     {
-        if (!InputList.Contains(input))
+        if (!this.inputList.Contains(input))
         {
             input.sourceBlock = this;
-            if (index > 0) InputList.Insert(index, input);
-            else InputList.Add(input);
+            if (index > 0) this.inputList.Insert(index, input);
+            else this.inputList.Add(input);
 
 
             //TOOD: Revisar si es necesario notificar una actualización del bloque
@@ -161,80 +202,128 @@ public class Block
 
     public void RemoveInput(Input input)
     {
-        if (InputList.Contains(input))
+        if (this.inputList.Contains(input))
         {
-            InputList.Remove(input);
+            this.inputList.Remove(input);
 
             //TOOD: Revisar si es necesario notificar una actualización del bloque
         }
     }
 
-    public Input GetInput(string name)
-    {
-        //TODO: Buscar en InputList por nombre y retornar la entrada correspondiente.
-        return null;
+    #region Métodos para manejar campos de bloques
 
-    }
+    public Input GetInput(string name) => this.inputList.FirstOrDefault(i => i.Name.Equals(name));
 
-    public Input GetInputWithBlock(Block block)
-    {
-        //TODO Recorrer InputList y encontrar si un bloque está conectado a alguna entrada
-        return null;
-    }
+    public Input GetInputWithBlock(Block block) => this.inputList.FirstOrDefault(i => i.Connection?.TargetBlock?.blockModel == block);
 
-    public Block GetInputTargetBlock(string name)
-    {
-        //TODO Buscar en InputList si hay una conexión con otro bloque.
-        return null;
-    }
+    public Block GetInputTargetBlock(string name) => GetInput(name)?.Connection?.TargetBlock?.blockModel;
 
     #endregion
 
-    public List<string> GetVar()
-    {
-        //TODO Recorrer los campos de tipo variable y devolver sus nombres
-        return null;
-    }
+    public List<string> GetVar() => new List<string>();
 
-    public void RenameVar(string oldName, string newName)
-    {
-        //TODO Buscar en los campos del bloque la variable con oldName y cambiarla a newName
-    }
-
-    #region Métodos para manejar campos de bloques
-    public string GetFiedlValue(string name)
-    {
-        //TODO: Recorrer la lista de campos del bloque y devolver el valor del campo con el nombre `name`
-
-        return null;
-    }
-
-    public void SetFieldValue(string name, string value)
-    {
-        //TODO Buscar el campo por nombre y asignarle el nuevo valor
-    }
+    public void RenameVar(string oldName, string newName) { }
+    
+    public string GetFieldValue(string name) => null; 
+    public void SetFieldValue(string name, string value) { }    
 
     #endregion
 
     #region Métodos para manejar jerarquía de bloques
-    public Block GetSurroundParen()
-    {
-        //TODO
-        return null;
-    }
+    public Block GetSurroundParent() => this.parentBlock; // Implementación básica
 
     public void SetParent(Block newParent)
     {
 
-        //TODO
+        if (this.parentBlock == newParent) return;
+
+        if (this.parentBlock != null)
+        {
+            this.parentBlock.childBlocks.Remove(this);
+        }
+        else
+        {
+            this.workSpace.RemoveTopBlock(this);
+        }
+
+        this.parentBlock = newParent;
+        if (this.parentBlock != null)
+        {
+            this.parentBlock.childBlocks.Add(this);
+        }
+        else
+        {
+            workSpace.AddTopBlocks(this);
+        }
 
     }
 
-    public List<Block> GetDescendants()
+    public void UpdateConnectionPositions()
     {
-        //TODO
-        return null;
+        /* if (previousConnection != null) previousConnection.position = XY;
+         if (nextConnection != null) nextConnection.position = XY + new Vector2(0, behaviour != null ? behaviour.GetComponent<RectTransform>().rect.height : 30f);
+         foreach (var input in inputList)
+         {
+             if (input.Connection != null)
+             {
+                 input.Connection.position = XY;
+             }
+         }*/
+
+        if (previousConnection != null)
+        {
+            RectTransform rect = behaviour?.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                previousConnection.position = rect.anchoredPosition + new Vector2(0, rect.rect.height); // Parte superior
+
+               // Debug.Log($"UpdateConnectionPosition: Block: PreviousConnection position updated to {previousConnection.position} for block {type}");
+            }
+            else
+            {
+                previousConnection.position = XY;
+               // Debug.LogWarning($"UpdateConnectionPosition: Block:No RectTransform found for block {type}, using XY: {XY}");
+            }
+        }
+        if (nextConnection != null)
+        {
+            RectTransform rect = behaviour?.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                nextConnection.position = rect.anchoredPosition; // Parte inferior
+              //  Debug.Log($"UpdateConnectionPosition: Block: NextConnection position updated to {nextConnection.position} for block {type}");
+            }
+            else
+            {
+                nextConnection.position = XY + new Vector2(0, behaviour != null ? behaviour.GetComponent<RectTransform>().rect.height : 30f);
+
+               // Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
+
+            }
+        }
+        foreach (var input in inputList)
+
+        {
+            if (input.Connection != null)
+            {
+                RectTransform rect = behaviour?.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    input.Connection.position = rect.anchoredPosition;
+                //    Debug.Log($"UpdateConnectionPosition: Block: InputConnection position updated to {input.Connection.position} for block {type}");
+                }
+                else
+                {
+                    input.Connection.position = XY;
+                //    Debug.LogWarning($"UpdateConnectionPosition: Block: No RectTransform found for block {type}, using XY: {XY}");
+                }
+            }
+        }
+
     }
+
+
+    public List<Block> GetDescendants() => new List<Block> { this }.Concat(this.childBlocks.SelectMany(c => c.GetDescendants())).ToList();
 
     #endregion
 }

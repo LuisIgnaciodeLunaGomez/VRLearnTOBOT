@@ -25,13 +25,21 @@ public class Input
 
     public string Name { get; private set; }
     public readonly BlockConnection Connection;
-
+    public object FieldValue { get; private set; }
     private Block m_SourceBlock; //Bloque al que pertenece la conexión
 
     public Block sourceBlock
     {
 
-        get; set; //TODO
+        get => m_SourceBlock;
+        set
+        {
+            m_SourceBlock = value;
+            if (Connection != null)
+            {
+                Connection.sourceBlock = value?.behaviour;
+            }
+        }
     }
 
     public void Dispose()
@@ -43,4 +51,12 @@ public class Input
         }
     }
 
+    public Input(string name, EConnection type = EConnection.InputValue, object defaultValue = null)
+    {
+        Name = name;
+        Connection = new BlockConnection(null, type);
+        FieldValue = defaultValue;
+    }
+
+  
 }

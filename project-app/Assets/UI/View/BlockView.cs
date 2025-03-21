@@ -19,8 +19,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-
 using TMPro;
+using System;
 
 public class BlockView : BaseView
 {
@@ -28,7 +28,6 @@ public class BlockView : BaseView
     [SerializeField] private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
     [SerializeField] private Dictionary<string, BlockView> mBlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
     [SerializeField] private HorizontalLayoutGroup m_inLineGroup;
-
 
     public List<BaseView> GetChildren() => base.Childs;
 
@@ -40,8 +39,8 @@ public class BlockView : BaseView
 
     public bool inToolBox { get; set; }
     public Vector2 Position { get; set; }
-    public RectTransform ViewRectransform { get; set; }
-    string BlockType => this.m_Block?.Type ?? "Unknown";
+    public RectTransform ViewRectransform{ get => GetComponent<RectTransform>(); set => throw new NotSupportedException(); }
+    string BlockType => this.m_Block?.type ?? "Unknown";
     public Block Block =>this.m_Block;
 
     /**
@@ -49,13 +48,14 @@ public class BlockView : BaseView
      * @param: Block block
      * @param: BlockDataLoader.BlockData blockData
      */
-    public void BindModel(Block block, BlockDataLoader.BlockData blockData)
+    public void BindModel(Block block, BlockDataLoader.BlockData blockData, WorkSpaceView workSpaceView)
     {
         if (this.m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
 
         unBindModel(); // Si hay un bloque anterior, desvincularlo
 
         this.m_Block = block;
+        this.m_WorkSpaceView = workSpaceView;
         this.m_Block.Initialize(blockData);
        //Debug.Log($"Vinculando modelo de bloque: {BlockType} en {this.m_Block.XY}");
 
@@ -110,7 +110,7 @@ public class BlockView : BaseView
         inLineGroupComponent.Childs.Clear();
 
         // Crear elementos para los argumentos basados en los datos del XML
-        foreach (var arg in m_Block.BlockData.args)
+        foreach (var arg in m_Block.blockData.args)
         {
             GameObject argumentObject = new GameObject(arg.type == "label" ? arg.value : arg.name);         
 
@@ -203,10 +203,10 @@ public class BlockView : BaseView
                 Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
                 m_WorkSpaceView.AddBlockView(this);
             }
-            else
+           /* else
             {
                 Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
-            }
+            }*/
 
             Debug.Log($"Total de hijos en InLineGroup: {inLineGroup.childCount}");
            // Debug.Log($"Total de hijos en Childs: {Childs.Count}");
@@ -225,7 +225,8 @@ public class BlockView : BaseView
 
             else
             {
-                Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
+               // Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
+                
             }
 
              //Debug.Log($"Nuevo sizeDelta aplicado: {ViewRectransform.sizeDelta}");
@@ -246,7 +247,8 @@ public class BlockView : BaseView
 
     public void unBindModel()
     {
-        m_Block = null; // Desvincula el bloque
+        this.m_Block = null; // Desvincula el bloque
+        this.m_WorkSpaceView.RemoveBlockView(this);
     }
 
     public void UpdatePosition(Vector2 position)
@@ -526,5 +528,21 @@ public class BlockView : BaseView
             bgImage.GetComponent<RectTransform>().sizeDelta = ViewRectransform.sizeDelta;
         }
     }
+
+   /* public void ConnectBlocks(BlockView parent, BlockView child)
+    {
+        if (parent == null || child == null) return;
+
+        BlockConnection connection = null;
+        if (child.Block.previousConnection != null)
+            connection = child.Block.previousConnection.targetConnection;
+        else if (child.Block.outputConnection != null)
+            connection = child.Block.outputConnection.targetConnection;
+
+        if (connection != null)
+        {
+            connection.FireUpdate(UpdateState.Connected);
+        }
+    }*/
 
 }

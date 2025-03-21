@@ -20,12 +20,14 @@ using UnityEngine;
 
 public class ConnectionView : BaseView
 {
+    public BlockConnection TargetConnection { get; private set; }
+    private UpdateState State { get; set; }
+
+
     public override ViewType Type
     {
         get { return ViewType.Connection; }
     }
-
-    public BlockConnection TargetConnection { get; private set; }
 
     protected override Vector2 CalculateSize()
     {

@@ -21,10 +21,12 @@ public static class BlockViewFactory
 {
      public static BlockView CreateView(Block block, BlockDataLoader.BlockData blockData, WorkSpaceView workSpaceView)
       {
-          BlockView blockView = null;
-      
+        
+        BlockView blockView = null;
+            Debug.Log($"CreateView: BlockView: Asignando WorkSpaceView: {workSpaceView != null}");
+            Debug.Log($"CreateView: BlockView: Creando BlockView para {blockData.spriteName}");
 
-          GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
+        GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
 
          if (blockPrefab == null)
           {
@@ -32,7 +34,25 @@ public static class BlockViewFactory
               GameObject fallbackObj = new GameObject(blockData.type);
               blockView = fallbackObj.AddComponent<BlockView>();
               blockView.SetWorkSpaceView(workSpaceView); // Asignar WorkSpaceView
-              blockView.BindModel(block, blockData); //Vincula datos del bloque (block y blockData)
+
+            if (block == null)
+            {
+                Debug.LogError("CreateView: BlockView: El objeto Block es nulo.");
+                return null;
+            }
+
+            if (workSpaceView == null)
+            {
+                Debug.LogError("CreateView: BlockView: El objeto WorkSpaceView es nulo.");
+                return null;
+            }
+
+            if (blockData == null)
+            {
+                Debug.LogError("CreateView: BlockView:  El objeto BlockData es nulo.");
+                return null;
+            }
+            blockView.BindModel(block, blockData, workSpaceView); //Vincula datos del bloque (block y blockData)
               return blockView;
           }
 
@@ -48,7 +68,7 @@ public static class BlockViewFactory
                 blockView = blockObj.AddComponent<BlockView>();
             }
 
-            blockView.BindModel(block, blockData);
+            blockView.BindModel(block, blockData, workSpaceView);
             blockView.BuildLayout();
         }
         else

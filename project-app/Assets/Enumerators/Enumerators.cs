@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Archivo que contiene los enumeradores utilizados en la aplicación
  */
 
 public enum UpdateState
@@ -54,3 +54,19 @@ public enum UpdateStates
     IsShadow = 9
 
 }
+
+public enum EConnection
+{
+    InputValue,    // Entrada para valores (ej. un número en "mover X pasos")
+    OutputValue,   // Salida de valores (ej. un bloque que genera un número)
+    NextStatement, // Conexión para el siguiente bloque en una secuencia
+    PrevStatement  // Conexión para el bloque anterior en una secuencia
+}
+
+public enum ConnectionZone { 
+    None, 
+    Top, 
+    Bottom }
+
+public enum ShadowZone { Top, Bottom }
+;

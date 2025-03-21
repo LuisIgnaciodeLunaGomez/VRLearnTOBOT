@@ -15,7 +15,6 @@
  */
 
 
-
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,7 +34,7 @@ public class WorkSpaceView : MonoBehaviour
     {
         if (this.m_workSpace != null)
         {
-            UnBindModel(); // Desvincular el modelo antes de vincular uno nuevo
+            this.UnBindModel(); // Desvincular el modelo antes de vincular uno nuevo
         }
 
         this.m_workSpace = workSpace;
@@ -49,35 +48,51 @@ public class WorkSpaceView : MonoBehaviour
 
         if (workSpace.GetAllBlocks().Count > 0)
         {
-            BuildViews();
+            this.BuildViews();
         }
+
+        Debug.Log("BindModel: WorkSpaceView: WorkSpaceView vinculado al modelo.");
     }
 
     public void UnBindModel()
     {
-        m_workSpace = null;
-        m_blockViews.Clear();
+        this.m_workSpace = null;
+        this.m_blockViews.Clear();
 
     }
 
     private void BuildViews()
     {
-        foreach (Block block in m_workSpace.GetAllBlocks())
+        foreach (Block block in this.m_workSpace.GetAllBlocks())
         {
-            CreateBlockView(block, m_blockDataLoader);
+            CreateBlockView(block, this.m_blockDataLoader);
 
         }
 
         //Asegurar que los bloques se alineen bien
-        foreach (BlockView view in m_blockViews.Values)
+        foreach (BlockView view in this.m_blockViews.Values)
         {
             view.BuildLayout();
+            BlockConnection connection = view.Block.previousConnection?.targetConnection ?? view.Block.outputConnection?.targetConnection;
+
+            if (connection != null)
+            {
+                if (connection.sourceBlock != null)
+                {
+                    Debug.Log($"Conectando {view.Block.type} a {connection.sourceBlock.blockModel.type}");
+                }
+                else
+                {
+                    Debug.Log($"Conectando {view.Block.type} a null");
+                }
+                connection.FireUpdate(UpdateState.Connected);
+            }
         }
     }
 
     private BlockView CreateBlockView(Block block, BlockDataLoader.BlockData blockData)
     {
-        Debug.Log($"Creando bloque: {block.Type} en la posición: {block.XY} con {blockData.args.Count} argumentos.");
+        Debug.Log($"Creando bloque: {block.type} en la posición: {block.XY} con {blockData.args.Count} argumentos.");
 
         if (block == null || blockData == null)
         {
@@ -88,7 +103,7 @@ public class WorkSpaceView : MonoBehaviour
 
         if (view == null)
         {
-            Debug.LogError($" Error: La fábrica de bloques devolvió null para el bloquee {block.Type}.");
+            Debug.LogError($" Error: La fábrica de bloques devolvió null para el bloquee {block.type}.");
             return null;
         }
 
@@ -135,7 +150,7 @@ public class WorkSpaceView : MonoBehaviour
         InLineGroup lineGroup = view.gameObject.GetComponent<InLineGroup>();
         if (lineGroup == null)
         {
-            Debug.LogWarning($"Añadiendo InLineGroup a {block.Type} porque no estaba presente.");
+            Debug.LogWarning($"Añadiendo InLineGroup a {block.type} porque no estaba presente.");
             lineGroup = view.gameObject.AddComponent<InLineGroup>(); // Agrega el componente
         }
 
@@ -158,7 +173,7 @@ public class WorkSpaceView : MonoBehaviour
 
 
         // Verificar la posición antes de asignarla
-        Debug.Log($"Posición inicial del bloque {block.Type}: {block.XY}");
+        Debug.Log($"Posición inicial del bloque {block.type}: {block.XY}");
         // Actualizar la posición correctamente
         view.XY = block.XY;  // Asegurar que la coordenada de bloque se respete
 
@@ -167,7 +182,7 @@ public class WorkSpaceView : MonoBehaviour
         // Me Aseguro que InLineGroup se registra en los hijos del bloque
         if (!view.Childs.Contains(lineGroup))
         {
-            Debug.Log($" Registrando InLineGroup en {block.Type}");
+            Debug.Log($" Registrando InLineGroup en {block.type}");
             view.Childs.Add(lineGroup);
         }
 
@@ -187,7 +202,7 @@ public class WorkSpaceView : MonoBehaviour
         view.Childs.Add(connectionOutput);
 
         //Agregar Connection_input (entrada del bloque si aplica)
-        if (block.InputList != null && block.InputList.Count > 0)
+        if (block.inputList != null && block.inputList.Count > 0)
         {
             ConnectionView connectionInput = new GameObject("Connection_input").AddComponent<ConnectionView>();
             connectionInput.transform.SetParent(inputView.transform, false);
@@ -198,21 +213,37 @@ public class WorkSpaceView : MonoBehaviour
         view.XY = block.XY;
         view.UpdatePosition(block.XY);
 
+        BlockBehaviour blockBehaviour = view.GetComponent<BlockBehaviour>();
+        blockBehaviour?.Initialize(blockData, m_workSpace);
+
         // Si el bloque tiene hijos, asegurarse de crearlos y conectarlos
-        foreach (Block childBlock in block.ChildBlocks)
+        foreach (Block childBlock in block.childBlocks)
         {
-            Debug.Log($"Buscando conectar {block.Type} con {childBlock.Type}");
+            Debug.Log($"[BuildBlockView] Conectando bloque hijo: {childBlock.type}");
             BlockView childView = CreateBlockView(childBlock, blockData);
+
             if (childView != null)
             {
-                Debug.Log($"Conectando {block.Type} con {childBlock.Type}");
+                Debug.Log($"Conectando {block.type} con {childBlock.type}");
                 ConnectBlocks(view, childView); // Crear la conexión visual
+            }
+            BlockConnection connection = childBlock.previousConnection?.targetConnection ??
+                          childBlock.outputConnection?.targetConnection;
+
+            if (connection != null)
+            {
+                Debug.Log($"Conexión establecida entre {block.type} y {childBlock.type}");
+                connection.FireUpdate(UpdateState.Connected);
+            }
+            else
+            {
+                Debug.LogWarning($"No se encontró conexión para el bloque {childBlock.type}");
             }
         }
 
         m_blockViews[block.ID] = view;
 
-        Debug.Log($"Bloque {block.Type} añadido a m_blockViews.");
+        Debug.Log($"Bloque {block.type} añadido at m_blockViews.");
 
         return view;
     }
@@ -229,47 +260,80 @@ public class WorkSpaceView : MonoBehaviour
 
         Debug.Log($"Conectando bloques: {parent.Type} -> {child.Type}");
 
-        BlockConnection connection = null;
+        /* BlockConnection connection = null;
 
-        if (child.Block.PreviousConnection != null)
-            connection = child.Block.PreviousConnection.TargetConnection;
-        else if (child.Block.OutputConnection != null)
-            connection = child.Block.OutputConnection.TargetConnection;
+         if (child.Block.previousConnection != null)
+             connection = child.Block.previousConnection.targetConnection;
+         else if (child.Block.outputConnection != null)
+             connection = child.Block.outputConnection.targetConnection;
 
-        if (connection != null)
+         if (connection != null)
+         {
+             Debug.Log($"Conexión establecida entre {parent.Type} y {child.Type}");
+
+             connection.FireUpdate(UpdateState.Connected);
+         }
+         else
+         {
+             Debug.LogWarning($"No se encontró conexión para {child.Type}");
+         }*/
+
+        BlockConnection parentConnection = parent.Block.nextConnection ?? parent.Block.outputConnection;
+        BlockConnection childConnection = child.Block.previousConnection ?? child.Block.inputList[0]?.Connection;
+
+        if (parentConnection != null && childConnection != null)
         {
-            Debug.Log($"Conexión establecida entre {parent.Type} y {child.Type}");
+            parentConnection.targetConnection = childConnection;
+            childConnection.targetConnection = parentConnection;
 
-            connection.FireUpdate(UpdateState.Connected);
+            Debug.Log($"Conexión establecida entre {parent.Block.type} y {child.Block.type}");
+
+            parentConnection.FireUpdate(UpdateState.Connected);
+            childConnection.FireUpdate(UpdateState.Connected);
         }
         else
         {
-            Debug.LogWarning($"No se encontró conexión para {child.Type}");
+            Debug.LogWarning($"No se encontró conexión válida para {child.Block.type}");
         }
     }
 
     public void CleanViews()
     {
-        foreach (BlockView view in m_blockViews.Values)
+        foreach (BlockView view in this.m_blockViews.Values)
         {
             Destroy(view.gameObject);
         }
-        m_blockViews.Clear();
+        this.m_blockViews.Clear();
     }
 
 
     public void AddBlockView(BlockView blockView)
     {
-        m_blockViews[blockView.Block.ID] = blockView;
+        this.m_blockViews[blockView.Block.ID] = blockView;
     }
 
-    void RemoveBlockView(BlockView blockView)
+    public void RemoveBlockView(BlockView blockView)
     {
+        if (blockView == null)
+        {
+            Debug.LogError("RemoveBlockView: blockView es null.");
+            return;
+        }
+
+        if (blockView.Block == null)
+        {
+            //Debug.LogError($"RemoveBlockView: blockView {blockView.name} no tiene un Block asignado.");
+            return;
+        }
         BlockView view = blockView as BlockView;
-        if (view != null && m_blockViews.ContainsKey(view.Block.ID))
+        if (view != null && this.m_blockViews.ContainsKey(view.Block.ID))
         {
             Destroy(view.gameObject);
-            m_blockViews.Remove(view.Block.ID);
+            this.m_blockViews.Remove(view.Block.ID);
+        }
+        else
+        {
+            Debug.LogWarning($"RemoveBlockView: El bloque con ID {blockView.Block.ID} no está en la lista.");
         }
     }
     
@@ -286,5 +350,20 @@ public class WorkSpaceView : MonoBehaviour
        // Resources.UnloadUnusedAssets();
     }
 
-
+    public void Initialized(GameObject middlePanel, GameObject rightPanel)
+    {
+        if (rightPanel != null)
+        {
+            m_codingArea = rightPanel.GetComponent<RectTransform>();
+            if (m_codingArea == null)
+            {
+                Debug.LogError("Initialized: BLockSpaceView: No se encontró RectTransform en rightPanel.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Initialized: BLockSpaceView: rightPanel es null en Initialized.");
+        }
+        Debug.Log("Initialized: BLockSpaceView: WorkSpaceView inicializado con middlePanel y rightPanel.");
+    }
 }

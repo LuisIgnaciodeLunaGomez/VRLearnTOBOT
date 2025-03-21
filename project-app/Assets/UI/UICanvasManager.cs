@@ -9,12 +9,13 @@
  * 
  * Fecha: 17/02/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
  * Descripción: Clase que genera la vista de la interfaz de usuario de scratch
  */
 
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,12 +29,10 @@ public class UICanvasManager : MonoBehaviour
     private GameObject m_canvasGO; //Canvas principal que incluye a todos los paneles
     private GameObject m_uiManager; //UIManager que contiene el Canvas principal y todos los paneles de la interfaz
     private Transform m_rightPanelTransform; // Referencia al RightPanel
-  
-  
 
     //Defino las medidas de la pantalla para que se ajuste a cualquier resolución
-    private int m_screenWidth =1200;
-    private int m_screenHeight =720;
+    private const int m_screenWidth =1200;
+    private const int m_screenHeight =720;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -117,11 +116,35 @@ public class UICanvasManager : MonoBehaviour
         workSpaceRect.offsetMax = Vector2.zero;
         workSpaceRect.pivot = new Vector2(0.5f, 0.5f);
 
+        Debug.Log(workSpaceGO.GetComponent<RectTransform>() != null ? "RectTransform presente" : "Falta RectTransform");
+
         this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>(); //Añado el script
+
+        if (this.m_workSpace == null)
+        {
+            Debug.Log(workSpaceGO.GetComponent<WorkSpace>() != null ? "WorkSpace encontrado": "Falta  WorkSpace");
+            return;
+            //Debug.LogError("No se pudo inicializar WorkSpace.");
+        }
         WorkSpaceView workSpaceView = workSpaceGO.AddComponent<WorkSpaceView>(); //Añado el script
+
+        if (workSpaceView == null)
+        {
+           
+            Debug.Log(workSpaceGO.GetComponent<WorkSpaceView>() != null ? "WorkSpaceView encontrado" : "WorkSpaceView es null");
+            return;
+           // Debug.LogError(" No se pudo inicializar WorkSpaceView.");
+        }
+
 
         BlockStatusView statusView = workSpaceGO.AddComponent<BlockStatusView>(); //Añado el script BlockStatusView al WorkSpace
 
+        if (statusView == null)
+        {
+            Debug.Log(workSpaceGO.GetComponent<BlockStatusView>() != null ? "WorkSpaceView encontrado" : "WorkSpaceView es null");
+            return;
+            //Debug.LogError("No se pudo inicializar BlockStatusView.");
+        }
         //Panel para la lista de bloques y su representación en el espacio de trabajo al seleccionar una categoría
         GameObject middlePanel = CreatePanel(
             "BlockListPanel", 
@@ -140,16 +163,72 @@ public class UICanvasManager : MonoBehaviour
             new Vector2(0.4f, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero,
             new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
+        /*Canvas topCanvas = rightPanel.AddComponent<Canvas>();
+        topCanvas.overrideSorting = true;
+        topCanvas.sortingOrder = 3;*/
+
         m_rightPanelTransform = rightPanel.transform; // Guardamos la referencia al Transform del RightPanel
 
         this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();
 
         this.m_blockScrollList.Initialized(Resources.Load<GameObject>("Prefabs/BlockPrefab"), middlePanel.transform);
                 this.m_blockScrollList.SetWorkspaceTransform(m_rightPanelTransform);
-        this.m_blockScrollList.SetWorkSpace(m_workSpace);
+
+        //StartCoroutine(WaitForWorkSpace());
+
+        if (m_workSpace == null)
+        {
+            Debug.LogError("m_workSpace es null al intentar configurar BlockScrollList.");
+            return;
+        }
+        else
+        {
+            this.m_blockScrollList.SetWorkSpace(m_workSpace);
+        }
 
         WorkSpace wsComponent = m_workSpace.GetComponent<WorkSpace>();
-        wsComponent.Initialized(middlePanel, rightPanel);
+        //wsComponent.Initialized(middlePanel, rightPanel);
+
+        //Verificación del WorkSpaceView
+        workSpaceView = m_workSpace.GetComponent<WorkSpaceView>();
+
+        if (workSpaceView != null)
+        {
+            workSpaceView.Initialized(middlePanel, rightPanel);
+
+           // if (rightPanel == null)
+           if (!rightPanel.TryGetComponent(out RectTransform rightPanelRect))
+                {
+                Debug.LogError("WorkSpaceView: rightPanel es NULL. No se puede obtener RectTransform.");
+                return;
+            }
+
+            //RectTransform rightPanelRect = rightPanel.GetComponent<RectTransform>();
+            if (rightPanelRect == null)
+            {
+                Debug.LogError("WorkSpaceView: No se encontró RectTransform en rightPanel.");
+                return;
+            }
+            workSpaceView.BindModel(m_workSpace, rightPanelRect); // Vincula el modelo de workspace con el workSpaceView
+            Debug.Log("UICanvasMangaer: CreateWorkSpace: WorkSpaceView inicializado correctamente.");
+
+        }
+        else
+        {
+            Debug.LogError("CreateWorkSpace: UICanvasMAnager:No se encontró WorkSpaceView en el GameObject WorkSpace.");
+        }
+
+
+        // Me aseguro que WorkSpace está inicializado
+        if (m_workSpace != null)
+        {
+            m_workSpace.Initialized(middlePanel, rightPanel);
+        }
+        else
+        {
+            Debug.LogError("CreateWorkSpace: UICanvasMAnager: WorkSpace es null en CreateWorkspace.");
+            return;
+        }
 
         CreateBlockContainer(middlePanel, m_blockScrollList);
     }
@@ -335,6 +414,7 @@ public class UICanvasManager : MonoBehaviour
             else
             {
                 Debug.LogError("No se encontró la Texture2D para el icono: " + iconName);
+                return;
             }
         }
     }
@@ -349,15 +429,19 @@ public class UICanvasManager : MonoBehaviour
         {
            { "GreenFlag", () => {
                 Debug.Log("Ejecutar acción de inicio");
+               return;
            }},
             { "load_icon", () => {
                 Debug.Log("Cargar datos");
+                return;
             }},
             { "save_icon", () => {
                 Debug.Log("Guardar datos");
+                return;
             }},
             { "stopFlag", () => {
                 Debug.Log("Detener ejecución");
+                return;
 
             }}
         };
@@ -369,6 +453,7 @@ public class UICanvasManager : MonoBehaviour
         else
         {
             Debug.Log("Acción no definida para: " + iconName);
+            return;
         }
     }
 
@@ -385,7 +470,9 @@ public class UICanvasManager : MonoBehaviour
         categoryLoader.xmlFileName = "XML/Categories";
         categoryLoader.categoryPrefab = Resources.Load<GameObject>("Prefabs/CategoryPrefab"); //Prefab que muestra el circulo y texto de la categoría
         categoryLoader.uiCanvasManager = this;
-        categoryLoader.LoadCategoriesFromXML();
+
+        StartCoroutine(WaitForCategoryLoader(categoryLoader));
+        //categoryLoader.LoadCategoriesFromXML();
     }
 
     GameObject SetupLeftPanel(GameObject parent)
@@ -432,6 +519,19 @@ public class UICanvasManager : MonoBehaviour
         return contentPanel;
     }
 
+    IEnumerator WaitForCategoryLoader(CategoryLoader loader)
+    {
+        yield return new WaitUntil(() => loader != null);
+        loader.LoadCategoriesFromXML();
+    }
+
+    IEnumerator WaitForWorkSpace()
+    {
+        yield return new WaitUntil(() =>this.m_workSpace != null);
+
+        this.m_blockScrollList.SetWorkSpace(m_workSpace);
+    }
+
     /**
      * Actualiza el panel central con el nombre de la categoría seleccionada
      * @param categoryName Nombre de la categoría seleccionada
@@ -444,7 +544,6 @@ public class UICanvasManager : MonoBehaviour
             this.m_blockScrollList.ShowBlockCategory(categoryName, categoryColor);
         }
 
-     
     }
 
 }
