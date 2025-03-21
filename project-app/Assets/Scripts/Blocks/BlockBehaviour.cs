@@ -783,17 +783,24 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
      */
     private void ConnectTo(BlockBehaviour otherBlock, ConnectionZone zone)
     {
-        RectTransform rect = GetComponent<RectTransform>();
+        RectTransform myRect = GetComponent<RectTransform>();
+        RectTransform otherRect = otherBlock.GetComponent<RectTransform>();
+        float myHeight = myRect.rect.height;
+        float otherHeight = otherRect.rect.height;
         if (zone == ConnectionZone.Top)
         {
             this.previousConnection.Connect(otherBlock.NextConnection);
-            this.transform.localPosition = otherBlock.NextConnection.position - new Vector2(0, rect.rect.height);
+            this.transform.localPosition = otherBlock.NextConnection.position - new Vector2(0, myRect.rect.height);
         }
         else if (zone == ConnectionZone.Bottom)
         {
             this.NextConnection.Connect(otherBlock.previousConnection);
-            this.transform.localPosition = otherBlock.previousConnection.position + new Vector2(0, rect.rect.height);
+            this.transform.localPosition = otherBlock.previousConnection.position + new Vector2(0, myRect.rect.height);
         }
+
+        // Actualizar la posición lógica del bloque
+        this.m_block.XY = this.transform.localPosition;
+        this.m_block.UpdateConnectionPositions();
         Debug.Log($"Conectado {m_BlockType} con {otherBlock.m_BlockType} en {zone}");
     }
    
