@@ -34,10 +34,36 @@ public class ShadowCollision : MonoBehaviour
         if (other.CompareTag("Block"))
         {
             BlockBehaviour block = other.GetComponent<BlockBehaviour>();
-            if (block != null)
+            BlockBehaviour parentBlock = GetComponentInParent<BlockBehaviour>();
+            if (block != null && block != parentBlock)
             {
-                shadowImage.color = new Color(0, 0, 0, 0.3f); // Gris al entrar
-                OnBlockEntered?.Invoke(block); // Notificar entrada
+
+                // Si una sombra ya está activa, no activar la otra
+                if ((name.Contains("Top") && block.collidingWithBottomShadowOf != null) ||
+                    (name.Contains("Bottom") && block.collidingWithTopShadowOF != null))
+                {
+                    return;
+                }
+
+                shadowImage.enabled = true; // Mostrar la sombra
+
+              
+                // Debug.Log($"ShadowCollision: Bloque {block.gameObject.name} entró en {gameObject.name} de {parentBlock.name}");
+                this.shadowImage.color = new Color(0, 0, 0, 0.3f); // Gris al entrar
+                this.OnBlockEntered?.Invoke(block); // Notificar entrada
+                                               // Notificar al bloque en movimiento
+                if (name.Contains("Top"))
+                {
+                    //block.collidingWithTopShadowOF = parentBlock;
+                    //parentBlock.ShowTopShadow(ConnectionZone.Top);
+                    parentBlock.SetConnectionZone(ConnectionZone.Top);
+                }
+                else if (name.Contains("Bottom"))
+                {
+                    //block.collidingWithBottomShadowOf = parentBlock;
+                   // parentBlock.ShowBottomShadow(ConnectionZone.Bottom);
+                    parentBlock.SetConnectionZone(ConnectionZone.Bottom);
+                }
             }
         }
     }
@@ -47,10 +73,26 @@ public class ShadowCollision : MonoBehaviour
         if (other.CompareTag("Block"))
         {
             BlockBehaviour block = other.GetComponent<BlockBehaviour>();
-            if (block != null)
+            BlockBehaviour parentBlock = GetComponentInParent<BlockBehaviour>();
+            if (block != null && block != parentBlock)
             {
-                shadowImage.color = new Color(0, 0, 0, 0); // Transparente al salir
-                OnBlockExited?.Invoke(block); // Notificar salida
+                this.shadowImage.enabled = false; // Ocultar la sombra
+                this.shadowImage.color = new Color(0, 0, 0, 0); // Transparente al salir
+                this.OnBlockExited?.Invoke(block); // Notificar salida
+              //  Debug.Log($"ShadowCollision: Bloque {block.gameObject.name} salió de {gameObject.name} de {parentBlock.gameObject.name}");
+             /*   if (name.Contains("Top") && block.collidingWithTopShadowOF == parentBlock)
+                {
+                    block.collidingWithTopShadowOF = null;
+                }
+                else if (name.Contains("Bottom") && block.collidingWithBottomShadowOf == parentBlock)
+                {
+                    block.collidingWithBottomShadowOf = null;
+                }*/
+                if (block != null && block != parentBlock)
+                {
+                    //parentBlock.HideAllShadows(ConnectionZone.None);
+                    parentBlock.ClearConnectionZone();
+                }
             }
         }
     }

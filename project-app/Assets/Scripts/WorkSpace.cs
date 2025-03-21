@@ -28,7 +28,7 @@ public class WorkSpace : MonoBehaviour
     private List<BlockBehaviour> m_blocks = new List<BlockBehaviour>(); //Componentes que representan bloques
     private List<BlockConnection> pendingConnections = new List<BlockConnection>(); // Lista de conexiones pendientes
 
-    public List<BlockBehaviour> blocksInWorkspace => new List<BlockBehaviour>(FindObjectsOfType<BlockBehaviour>());
+    public List<BlockBehaviour> blocksInWorkspace => new List<BlockBehaviour>(FindObjectsByType<BlockBehaviour>(FindObjectsSortMode.None));
 
     private Dictionary<EConnection, BlockConnectionDB> ConnectionDBs; //Almacena las conexiones organizadas por tipo de conexión
 
