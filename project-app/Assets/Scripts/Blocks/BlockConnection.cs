@@ -59,7 +59,7 @@ public class BlockConnection
         this.type = type;
         this.Check = new List<string>();
         this.position = Vector2.zero;
-        Debug.Log($"BlockConnection: Constructor: BlockConnection creada para tipo {type}, SourceBlock: {sourceBlock?.gameObject.name}");
+       // Debug.Log($"BlockConnection: Constructor: BlockConnection creada para tipo {type}, SourceBlock: {sourceBlock?.gameObject.name}");
     }
 
     public void Connect(BlockConnection otherConnection)

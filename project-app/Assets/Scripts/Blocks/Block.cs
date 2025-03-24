@@ -30,6 +30,8 @@ public class Block
     {
         this.blockData = blockData;
 
+        if (blockData == null) return;
+
         if (blockData.args != null)
         {
             foreach (var arg in blockData.args)

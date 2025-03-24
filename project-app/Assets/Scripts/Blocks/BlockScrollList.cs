@@ -133,7 +133,7 @@ public class BlockScrollList : MonoBehaviour
         if (m_categoryText != null)
         {
             m_categoryText.text = categoryName;
-            Debug.Log($"Asignado el nombre de la categoria {categoryName}");
+           // Debug.Log($"Asignado el nombre de la categoria {categoryName}");
         }
 
         //Verifico la existencia del BlockContainer
@@ -178,7 +178,7 @@ public class BlockScrollList : MonoBehaviour
             if (blockGO != null)
             {
                 blockGO.transform.SetParent(categoryContainer.transform, false);
-                Debug.Log($"Bloque {blockData.type} añadido al contenedor de la categoría {categoryName}");
+             //   Debug.Log($"Bloque {blockData.type} añadido al contenedor de la categoría {categoryName}");
             }
             else
             {
@@ -284,7 +284,7 @@ public class BlockScrollList : MonoBehaviour
     private GameObject NewBlockView(BlockDataLoader.BlockData blockData, BlockDataLoader.BlockCategoryData categoryData, string categoryName, GameObject categoryContainer, Color categoryColor)
     {
 
-        Debug.Log($"Creando bloque {blockData.type} en la categoría {categoryName}");
+        //Debug.Log($"Creando bloque {blockData.type} en la categoría {categoryName}");
 
         //Creación del bloque lógico
         Block newBlock = new Block(blockData.type, Vector2.zero, m_workSpace);
@@ -294,7 +294,7 @@ public class BlockScrollList : MonoBehaviour
         BlockView blockView = BlockViewFactory.CreateView(newBlock, blockData, m_workSpaceView);
         if (blockView == null)
         {
-            Debug.LogError($"No se pudo crear BlockView para {blockData.type}");
+         //   Debug.LogError($"No se pudo crear BlockView para {blockData.type}");
             return null;
         }
 
@@ -307,11 +307,11 @@ public class BlockScrollList : MonoBehaviour
         // Obtener el tamaño original del prefab desde BlockDataLoader o el RectTransform
         Vector2 originalSize = BlockDataLoader.GetBlockSize(blockData.spriteName); // Asegúrate de que este método devuelva 316x175
 
-        Debug.Log($"Tamaño original del bloque {blockData.spriteName}: {originalSize}");
+       // Debug.Log($"Tamaño original del bloque {blockData.spriteName}: {originalSize}");
         if (originalSize == Vector2.zero)
         {
             originalSize = new Vector2(316, 175); // Valor por defecto si no se encuentra
-            Debug.LogWarning($"Tamaño no encontrado para {blockData.spriteName}, usando 316x175 como predeterminado.");
+            //Debug.LogWarning($"Tamaño no encontrado para {blockData.spriteName}, usando 316x175 como predeterminado.");
         }
 
         RectTransform blockRect = blockGO.GetComponent<RectTransform>();
@@ -344,7 +344,7 @@ public class BlockScrollList : MonoBehaviour
         Vector2 calculatedSize = blockView.CalculatedSize;
         if (calculatedSize.x <= 0)
         {
-            Debug.LogWarning($"CalculatedSize inválido para {blockData.type}: {calculatedSize}. Usando tamaño mínimo.");
+           // Debug.LogWarning($"CalculatedSize inválido para {blockData.type}: {calculatedSize}. Usando tamaño mínimo.");
             calculatedSize.x = 100f;
         }
         float currentHeight = blockRect.sizeDelta.y;

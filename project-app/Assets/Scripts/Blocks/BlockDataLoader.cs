@@ -201,7 +201,7 @@ public class BlockDataLoader
                 if (spriteNode != null)
                 {
                     blockData.spriteName = spriteNode.InnerText.Trim();
-                    Debug.Log($" SpriteName encontrado para `{blockData.type}`: {blockData.spriteName}");
+                   // Debug.Log($" SpriteName encontrado para `{blockData.type}`: {blockData.spriteName}");
                 }
                 else
                 {
