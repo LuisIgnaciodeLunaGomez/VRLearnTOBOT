@@ -26,10 +26,10 @@ public class WorkSpace : MonoBehaviour
     private GameObject m_MiddlePanel;
     private GameObject m_RightPanel;
     private List<BlockBehaviour> m_blocks = new List<BlockBehaviour>(); //Componentes que representan bloques
-    private List<BlockConnection> pendingConnections = new List<BlockConnection>(); // Lista de conexiones pendientes
-
+    // Conjunto de bloques en el CodingArea (sin duplicados)
+    public HashSet<BlockBehaviour> staticBlocks = new HashSet<BlockBehaviour>();
     public List<BlockBehaviour> blocksInWorkspace => new List<BlockBehaviour>(FindObjectsByType<BlockBehaviour>(FindObjectsSortMode.None));
-
+    public static WorkSpace Instance { get; private set; }
     private Dictionary<EConnection, BlockConnectionDB> ConnectionDBs; //Almacena las conexiones organizadas por tipo de conexión
 
     /**
@@ -175,7 +175,7 @@ public class WorkSpace : MonoBehaviour
             { EConnection.InputValue, new BlockConnectionDB() },
             { EConnection.OutputValue, new BlockConnectionDB() }
         };
-        Debug.Log(" bases de datos de conexiones configuradas.");
+       // Debug.Log(" bases de datos de conexiones configuradas.");
     }
 
     void Awake()
@@ -193,6 +193,15 @@ public class WorkSpace : MonoBehaviour
         else
         {
             m_WorkspaceDB.Add(Id, this);
+        }
+
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject); // Evita duplicados
         }
 
     }
@@ -238,32 +247,20 @@ public class WorkSpace : MonoBehaviour
      */
     public void AddBlock(BlockBehaviour block)
     {
-        if (block == null)
+        if (block == null || block.blockModel == null)
         {
            // Debug.LogError("AddBlock: BlockBehaviour es null.");
             return;
         }
 
-        if (block.blockModel == null)
-        {
-            //Debug.LogError($"AddBlock: WorkSpace: blockModel es null para el bloque {block.blockType}.");
-            return;
-        }
-        if (block != null && !block.isATemplate)
+        if (block != null && !block.isATemplate )
         {
         
-            if (block.NextConnection != null)
+            if (block.nextConnection != null )
             {
-                if (block.NextConnection.sourceBlock == null)
-                {
-                 //   Debug.LogWarning($"El bloque {block.blockType} tiene nextConnection pero no tiene sourceBlock.");
-                    //return;
-                    pendingConnections.Add(block.NextConnection);
-                }
-                else
-                {
-                    ConnectionDBs[EConnection.NextStatement].AddConnection(block.NextConnection);
-                }
+              
+               ConnectionDBs[EConnection.NextStatement].AddConnection(block.nextConnection);
+                
             }
 
             // Registrar previousConnection
@@ -317,7 +314,7 @@ public class WorkSpace : MonoBehaviour
     {
         if (block != null && !block.isATemplate)
         {
-            ConnectionDBs[EConnection.NextStatement].RemoveConnection(block.NextConnection);
+            ConnectionDBs[EConnection.NextStatement].RemoveConnection(block.nextConnection);
             ConnectionDBs[EConnection.PrevStatement].RemoveConnection(block.previousConnection);
             foreach (var input in block.blockModel.inputList)
             {

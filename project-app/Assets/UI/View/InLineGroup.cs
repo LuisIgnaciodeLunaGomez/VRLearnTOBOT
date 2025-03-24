@@ -58,7 +58,7 @@ using UnityEngine.UI;
                     }
                     size.x += childSize.x;
                     size.y = Mathf.Max(size.y, childSize.y);
-                    Debug.Log($"Child {child.name} size: {childSize}");
+                 //   Debug.Log($"Child {child.name} size: {childSize}");
                 }
             }
             if (layout != null)
@@ -70,7 +70,7 @@ using UnityEngine.UI;
 
             if (size.x == 0) size.x = 100f; // Tamaño mínimo
             if (size.y == 0) size.y = 50f; // Tamaño mínimo
-            Debug.Log($"InLineGroup CalculateSize: {size}");
+          //  Debug.Log($"InLineGroup CalculateSize: {size}");
             return size;
         }
     }
@@ -85,7 +85,7 @@ using UnityEngine.UI;
             return;
         this.Width = width;
 
-        Debug.Log($"UpdateAlignRight -> Ancho: {this.Width}, Último hijo: {LastChild.XY}");
+     //   Debug.Log($"UpdateAlignRight -> Ancho: {this.Width}, Último hijo: {LastChild.XY}");
 
 
         ConnectionInputView conView = ((InputView)LastChild).GetConnectionView();

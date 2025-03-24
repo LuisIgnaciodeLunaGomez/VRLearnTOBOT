@@ -23,15 +23,20 @@ public class BlockConnectionDB : List<BlockConnection>
     public void AddConnection(BlockConnection connection)
     {
         if (connection == null ) return; //|| connection.m_sourceBlock == null
-        if (Contains(connection))
+        BlockConnectionDB connectionDB = new BlockConnectionDB();
+       // Debug.Log("Mostrar las conexiones");
+        connectionDB.DisplayConnections();
+    
+        
+       /* if (Contains(connection))
         {
-            Debug.LogWarning("Connection already in database.");
+            Debug.LogWarning($"Connection already in database: Type={connection.type}, Block={connection.sourceBlock?.gameObject.name ?? "Unknown"} (ID={connection.sourceBlock?.blockModel?.ID ?? "No ID"})");
             return;
-        }
+        }*/
 
         int position = FindPositionForConnection(connection);
         Insert(position, connection);
-      //  Debug.Log($"Connection {connection.type} added at position {position} with y={connection.position.y}");
+        Debug.Log($"Connection {connection.type} added at position {position} with y={connection.position.y}");
     }
 
     public void RemoveConnection(BlockConnection connection)
@@ -41,7 +46,7 @@ public class BlockConnectionDB : List<BlockConnection>
         if (index >= 0)
         {
             RemoveAt(index);
-           // Debug.Log($"Connection {connection.type} removed from database.");
+            Debug.Log($"Connection {connection.type} removed from database.");
         }
     }
 
@@ -139,6 +144,16 @@ public class BlockConnectionDB : List<BlockConnection>
         }
 
         return -1;
+    }
+
+    public void DisplayConnections()
+    {
+        foreach (var connection in this)
+        {
+            string sourceBlockName = connection.sourceBlock?.gameObject.name ?? "Unknown";
+            string sourceBlockID = connection.sourceBlock?.blockModel?.ID ?? "No ID";
+            Debug.Log($"Mostrando conexión - Connection Type: {connection.type}, Position: {connection.position}, Source Block: {sourceBlockName} (ID: {sourceBlockID})");
+        }
     }
 }
 

@@ -16,7 +16,6 @@
 
 
 using System;
-using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,45 +41,18 @@ public class ShadowCollision : MonoBehaviour
         {
             m_block = other.GetComponent<BlockBehaviour>();
            // BlockBehaviour parentBlock = GetComponentInParent<BlockBehaviour>();
-            if (m_block != null && m_block != m_parentBlock)
+            if (m_block != null && m_block != m_parentBlock &&m_parentBlock.isDraggable)
             {
                 // Activar la sombra visual
                 SetShadowVisible(true);
-
+                if (m_zone == ConnectionZone.Top)
+                    m_parentBlock.collidingWithTopShadowOF = m_block;
+                else if (m_zone == ConnectionZone.Bottom)
+                    m_parentBlock.collidingWithBottomShadowOf = m_block;
                 // Notificar
-                Debug.Log($"[ShadowCollision] {m_zone} => Bloque {m_block.name} ENTRÓ en la sombra de {m_parentBlock.name}");
+                Debug.Log("[ShadowCollision] " + m_zone + " => Bloque " + m_block.name + " (ID: " + m_block.blockModel?.ID + ") ENTRÓ en la sombra de " + m_parentBlock.name + " (ID: " + m_parentBlock.blockModel?.ID + ")");
                 OnBlockEntered?.Invoke(m_block);
-                /* Debug.Log($"Colisión entrada: (ID: {block.blockModel?.ID}) con {gameObject.name} " +
-                       $"en posición: {block.transform.localPosition}");
-                 // Activar la sombra correspondiente del bloque estático
-                 if (gameObject.name.Contains("Top"))
-                 {
-                     shadowImage.enabled = true;
-                     parentBlock.shadowTop.SetActive(true);
-                     parentBlock.shadowTop.GetComponent<Image>().enabled = true;
-                     parentBlock.shadowTop.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.3f); // Gris translúcido
-                     Debug.Log($"Estado sombra Top: {parentBlock.shadowTop.GetComponent<Image>().enabled}, Color: {parentBlock.shadowTop.GetComponent<Image>().color}");
-                 }
-                 else if (gameObject.name.Contains("Bottom"))
-                 {
-                     shadowImage.enabled = true;
-                     parentBlock.shadowBottom.SetActive(true);
-                     parentBlock.shadowBottom.GetComponent<Image>().enabled = true;
-                     parentBlock.shadowBottom.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f,0.3f); // Gris translúcido
-
-                     Debug.Log($"Estado sombra Bottom: {parentBlock.shadowBottom.GetComponent<Image>().enabled}, Color: {parentBlock.shadowBottom.GetComponent<Image>().color}");
-                 }
-
-                 OnBlockEntered?.Invoke(block);*/
-
-                /*  if (gameObject.name.Contains("Top"))
-                  {
-                      parentBlock.SetConnectionZone(ConnectionZone.Top);
-                  }
-                  else if (gameObject.name.Contains("Bottom"))
-                  {
-                      parentBlock.SetConnectionZone(ConnectionZone.Bottom);
-                  }*/
+                
             }
         }
     }
@@ -93,24 +65,16 @@ public class ShadowCollision : MonoBehaviour
            // BlockBehaviour parentBlock = GetComponentInParent<BlockBehaviour>();
             if (m_block != null && m_block != m_parentBlock)
             {
+
+                if (m_zone == ConnectionZone.Top && m_parentBlock.collidingWithTopShadowOF == m_block)
+                    m_parentBlock.collidingWithTopShadowOF = null;
+                else if (m_zone == ConnectionZone.Bottom && m_parentBlock.collidingWithBottomShadowOf == m_block)
+                    m_parentBlock.collidingWithBottomShadowOf = null;
                 SetShadowVisible(false);
-                Debug.Log($"[ShadowCollision] {m_zone} => Bloque {m_block.name} SALIÓ de la sombra de {m_parentBlock.name}");
+                Debug.Log("[ShadowCollision] " + m_zone + " => Bloque " + m_block.name + " (ID: " + m_block.blockModel?.ID + ") SALIÓ de la sombra de " + m_parentBlock.name + " (ID: " + m_parentBlock.blockModel?.ID + ")");
                 OnBlockExited?.Invoke(m_block);
                 m_parentBlock.ClearConnectionZone();
-                /* // Desactivar la sombra del bloque estático
-                 if (gameObject.name.Contains("Top"))
-                 {
-                     shadowImage.enabled = false;
-                     parentBlock.shadowTop.GetComponent<Image>().enabled = false;
-                 }
-                 else if (gameObject.name.Contains("Bottom"))
-                 {
-                     shadowImage.enabled = false;
-                     parentBlock.shadowBottom.GetComponent<Image>().enabled = false;
-                 }
-
-                 OnBlockExited?.Invoke(block);
-                 parentBlock.ClearConnectionZone();*/
+               
             }
         }
     }
@@ -139,7 +103,7 @@ public class ShadowCollision : MonoBehaviour
 
     private void SetShadowVisible(bool visible)
     {
-        Debug.Log($"SetShadowVisible: Setting visibility to {visible} on {gameObject.name}");
+        Debug.Log($"SetShadowVisible: Setting visibility to {visible} on {m_block.blockModel.ID} para {gameObject.name}");
         if (m_shadowImage != null)
         {
             m_shadowImage.enabled = visible;
@@ -151,7 +115,7 @@ public class ShadowCollision : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Shadow image is null on {gameObject.name}");
+            Debug.LogError($"Shadow image is null on {m_block.blockModel.ID} para {gameObject.name}");
         }
     }
 }

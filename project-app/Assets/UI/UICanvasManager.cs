@@ -116,7 +116,7 @@ public class UICanvasManager : MonoBehaviour
         workSpaceRect.offsetMax = Vector2.zero;
         workSpaceRect.pivot = new Vector2(0.5f, 0.5f);
 
-        Debug.Log(workSpaceGO.GetComponent<RectTransform>() != null ? "RectTransform presente" : "Falta RectTransform");
+        //Debug.Log(workSpaceGO.GetComponent<RectTransform>() != null ? "RectTransform presente" : "Falta RectTransform");
 
         this.m_workSpace = workSpaceGO.AddComponent<WorkSpace>(); //Añado el script
 
@@ -216,7 +216,7 @@ public class UICanvasManager : MonoBehaviour
                 return;
             }
             workSpaceView.BindModel(m_workSpace, rightPanelRect); // Vincula el modelo de workspace con el workSpaceView
-            Debug.Log("UICanvasMangaer: CreateWorkSpace: WorkSpaceView inicializado correctamente.");
+           // Debug.Log("UICanvasMangaer: CreateWorkSpace: WorkSpaceView inicializado correctamente.");
 
         }
         else

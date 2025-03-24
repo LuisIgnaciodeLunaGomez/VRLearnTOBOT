@@ -51,7 +51,7 @@ public class WorkSpaceView : MonoBehaviour
             this.BuildViews();
         }
 
-        Debug.Log("BindModel: WorkSpaceView: WorkSpaceView vinculado al modelo.");
+       // Debug.Log("BindModel: WorkSpaceView: WorkSpaceView vinculado al modelo.");
     }
 
     public void UnBindModel()
@@ -364,6 +364,6 @@ public class WorkSpaceView : MonoBehaviour
         {
             Debug.LogError("Initialized: BLockSpaceView: rightPanel es null en Initialized.");
         }
-        Debug.Log("Initialized: BLockSpaceView: WorkSpaceView inicializado con middlePanel y rightPanel.");
+       // Debug.Log("Initialized: BLockSpaceView: WorkSpaceView inicializado con middlePanel y rightPanel.");
     }
 }

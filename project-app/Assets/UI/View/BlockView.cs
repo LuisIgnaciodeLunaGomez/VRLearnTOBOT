@@ -60,7 +60,7 @@ public class BlockView : BaseView
         this.m_Block = block;
         this.m_WorkSpaceView = workSpaceView;
         this.m_Block.Initialize(blockData);
-       //Debug.Log($"Vinculando modelo de bloque: {BlockType} en {this.m_Block.XY}");
+        //Debug.Log($"Vinculando modelo de bloque: {BlockType} en {this.m_Block.XY}");
 
         Childs.Clear(); // Limpia hijos anteriores
 
@@ -95,7 +95,7 @@ public class BlockView : BaseView
 
         // Configurar el HorizontalLayoutGroup (existente o recién creado)
         HorizontalLayoutGroup hLayout = inLineGroup.GetComponent<HorizontalLayoutGroup>();
- 
+
         if (hLayout == null)
         {
             hLayout = inLineGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -113,134 +113,144 @@ public class BlockView : BaseView
         inLineGroupComponent.Childs.Clear();
 
         // Crear elementos para los argumentos basados en los datos del XML
-        foreach (var arg in m_Block.blockData.args)
+        if (blockData == null)
         {
-            GameObject argumentObject = new GameObject(arg.type == "label" ? arg.value : arg.name);         
 
-            if (arg.type == "label")
+            Debug.Log($"{block.ID} no tiene datos de bloque. Verifica el XML.");
+            return;
+        }
+        else
+        {
+            foreach (var arg in m_Block.blockData.args)
             {
-                
-                TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
-                textComponent.text = arg.value;
-                textComponent.fontSize = 32;
-                textComponent.color = Color.white;
-                textComponent.alignment = TextAlignmentOptions.Center;
-                textComponent.enableAutoSizing = true;
-                LabelView labelView = argumentObject.AddComponent<LabelView>();
-                inLineGroupComponent.Childs.Add(labelView);
+                GameObject argumentObject = new GameObject(arg.type == "label" ? arg.value : arg.name);
 
-                //Debug.Log($"Añadido LabelView: {arg.value}, Total Childs: {inLineGroupComponent.Childs.Count}");
-            }
-            else if (arg.type == "input")
-            {
-              ;
-                TMP_InputField inputField = argumentObject.AddComponent<TMP_InputField>();
-                inputField.text = arg.defaultValue ?? "10";
-                inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
-
-                InputView inputView = argumentObject.AddComponent<InputView>();
-                //inputView.SetBackgroundSprite(backgroundImage.sprite);
-                inLineGroupComponent.Childs.Add(inputView);
-                Debug.Log($"Añadido InputView: {arg.name}, Total Childs: {inLineGroupComponent.Childs.Count}");
-            }
-
-            else if (arg.type == "image")
-            {
-                // Creo un objeto Image para el ícono
-                Image imageComponent = argumentObject.AddComponent<Image>();
-                Debug.Log($"Valor de arg.name: '{arg.name}'");
-                // Cargo el sprite desde Resources 
-
-                Sprite sprite = Resources.Load<Sprite>($"Icons/{arg.name}"); 
-
-
-                if (sprite != null)
+                if (arg.type == "label")
                 {
-                    imageComponent.sprite = sprite;
-                    imageComponent.preserveAspect = true; // Mantengo la proporción de la imagen
-                                                          // Ajusto el tamaño del RectTransform para que se vea bien (puedes personalizarlo)
-                    RectTransform rectTransform = argumentObject.GetComponent<RectTransform>();
-                    //rectTransform.sizeDelta = new Vector2(sprite.rect.width , sprite.rect.height);
 
-                    rectTransform.sizeDelta = new Vector2(80f, 80f);
-                    Debug.Log($"Sprite {arg.name} cargado correctamente. Tamaño: {sprite.rect.width}x{sprite.rect.height}");
+                    TextMeshProUGUI textComponent = argumentObject.AddComponent<TextMeshProUGUI>();
+                    textComponent.text = arg.value;
+                    textComponent.fontSize = 32;
+                    textComponent.color = Color.white;
+                    textComponent.alignment = TextAlignmentOptions.Center;
+                    textComponent.enableAutoSizing = true;
+                    LabelView labelView = argumentObject.AddComponent<LabelView>();
+                    inLineGroupComponent.Childs.Add(labelView);
+
+                    //Debug.Log($"Añadido LabelView: {arg.value}, Total Childs: {inLineGroupComponent.Childs.Count}");
+                }
+                else if (arg.type == "input")
+                {
+                    ;
+                    TMP_InputField inputField = argumentObject.AddComponent<TMP_InputField>();
+                    inputField.text = arg.defaultValue ?? "10";
+                    inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+
+                    InputView inputView = argumentObject.AddComponent<InputView>();
+                    //inputView.SetBackgroundSprite(backgroundImage.sprite);
+                    inLineGroupComponent.Childs.Add(inputView);
+                    //Debug.Log($"Añadido InputView: {arg.name}, Total Childs: {inLineGroupComponent.Childs.Count}");
                 }
 
+                else if (arg.type == "image")
+                {
+                    // Creo un objeto Image para el ícono
+                    Image imageComponent = argumentObject.AddComponent<Image>();
+                    // Debug.Log($"Valor de arg.name: '{arg.name}'");
+                    // Cargo el sprite desde Resources 
+
+                    Sprite sprite = Resources.Load<Sprite>($"Icons/{arg.name}");
 
 
-                // Añadir al InLineGroup
-                argumentObject.transform.SetParent(inLineGroup, false);
-                argumentObject.transform.localScale = Vector3.one;
+                    if (sprite != null)
+                    {
+                        imageComponent.sprite = sprite;
+                        imageComponent.preserveAspect = true; // Mantengo la proporción de la imagen
+                                                              // Ajusto el tamaño del RectTransform para que se vea bien (puedes personalizarlo)
+                        RectTransform rectTransform = argumentObject.GetComponent<RectTransform>();
+                        //rectTransform.sizeDelta = new Vector2(sprite.rect.width , sprite.rect.height);
+
+                        rectTransform.sizeDelta = new Vector2(80f, 80f);
+                        // Debug.Log($"Sprite {arg.name} cargado correctamente. Tamaño: {sprite.rect.width}x{sprite.rect.height}");
+                    }
+
+
+
+                    // Añadir al InLineGroup
+                    argumentObject.transform.SetParent(inLineGroup, false);
+                    argumentObject.transform.localScale = Vector3.one;
+                }
+
+                if (argumentObject != null)
+                {
+
+                    argumentObject.transform.SetParent(inLineGroup, false);
+                    argumentObject.transform.localScale = Vector3.one;
+
+                    // Childs.Add(argumentObject);
+                    // Debug.Log($" Argumento añadido y agregado a Childs: {arg.type} - {arg.value}");
+
+                }
+                else
+                {
+                    Debug.LogWarning($"El objeto `{argumentObject?.name}` no tiene el componente BaseView y no se puede añadir a Childs.");
+                }
+
+                // Verificar si se crearon hijos
+                if (inLineGroup.childCount == 0)
+                {
+                    Debug.LogError($"No se crearon hijos en el bloque `{BlockType}`. Verifica que el XML está bien definido.");
+                }
+                else
+                {
+                    // Debug.Log($"Se añadieron {inLineGroup.childCount} hijos al bloque `{BlockType}`.");
+                }
+                Canvas.ForceUpdateCanvases();
+
+
+                // Agregar el bloque al espacio de trabajo
+                if (m_WorkSpaceView != null)
+                {
+                    Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
+                    m_WorkSpaceView.AddBlockView(this);
+                }
+                /* else
+                 {
+                     Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
+                 }*/
+
+                // Debug.Log($"Total de hijos en InLineGroup: {inLineGroup.childCount}");
+                // Debug.Log($"Total de hijos en Childs: {Childs.Count}");
+
+                /* if (Childs.Count == 0)
+                 {
+                     Debug.LogError($" No se encontraron hijos en el bloque {BlockType}. Asegúrate de que el prefab tenga hijos.");
+                 }*/
+
+                // Agregar el bloque al espacio de trabajo
+                if (m_WorkSpaceView != null)
+                {
+                    Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
+                    m_WorkSpaceView.AddBlockView(this);
+                }
+
+                else
+                {
+                    // Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
+
+                }
+
+                //Debug.Log($"Nuevo sizeDelta aplicado: {ViewRectransform.sizeDelta}");
             }
 
-            if (argumentObject != null)
-            {
-         
-                argumentObject.transform.SetParent(inLineGroup, false);
-                argumentObject.transform.localScale = Vector3.one;
-
-               // Childs.Add(argumentObject);
-               // Debug.Log($" Argumento añadido y agregado a Childs: {arg.type} - {arg.value}");
-
-            }
-            else
-            {
-                Debug.LogWarning($"El objeto `{argumentObject?.name}` no tiene el componente BaseView y no se puede añadir a Childs.");
-            }
-
-            // Verificar si se crearon hijos
-            if (inLineGroup.childCount == 0)
-            {
-                Debug.LogError($"No se crearon hijos en el bloque `{BlockType}`. Verifica que el XML está bien definido.");
-            }
-            else
-            {
-                Debug.Log($"Se añadieron {inLineGroup.childCount} hijos al bloque `{BlockType}`.");
-            }
+            this.UpdateSize();
             Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(inLineGroup.GetComponent<RectTransform>());
 
 
-            // Agregar el bloque al espacio de trabajo
-            if (m_WorkSpaceView != null)
-            {
-                Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
-                m_WorkSpaceView.AddBlockView(this);
-            }
-           /* else
-            {
-                Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
-            }*/
-
-            Debug.Log($"Total de hijos en InLineGroup: {inLineGroup.childCount}");
-           // Debug.Log($"Total de hijos en Childs: {Childs.Count}");
-
-           /* if (Childs.Count == 0)
-            {
-                Debug.LogError($" No se encontraron hijos en el bloque {BlockType}. Asegúrate de que el prefab tenga hijos.");
-            }*/
-
-            // Agregar el bloque al espacio de trabajo
-            if (m_WorkSpaceView != null)
-            {
-                Debug.Log($"Bloque {BlockType} agregado al WorkSpaceView.");
-                m_WorkSpaceView.AddBlockView(this);
-            }
-
-            else
-            {
-               // Debug.LogError($"m_WorkSpaceView no está asignado para el bloque {BlockType}.");
-                
-            }
-
-             //Debug.Log($"Nuevo sizeDelta aplicado: {ViewRectransform.sizeDelta}");
         }
-
-        this.UpdateSize();
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(inLineGroup.GetComponent<RectTransform>());
-
-
     }
+
 
     //método estático para eliminar una entrada por ID
     public static void RemoveBlockPosition(string blockId)
@@ -277,7 +287,7 @@ public class BlockView : BaseView
                 m_Block.XY = position;
                 // Verificar si está en RightPanel o CodingArea
                 string panelName = GetParentPanelName();
-                Debug.Log($"Panel detectado para {BlockType}: {panelName}");
+                //Debug.Log($"Panel detectado para {BlockType}: {panelName}");
 
                 if (panelName == "RightPanel" || panelName == "CodingArea")
                 {
@@ -286,17 +296,17 @@ public class BlockView : BaseView
                 }
                 else
                 {
-                    Debug.LogWarning($"Bloque {BlockType} no está en RightPanel ni CodingArea (Panel detectado: {panelName})");
+                   // Debug.LogWarning($"Bloque {BlockType} no está en RightPanel ni CodingArea (Panel detectado: {panelName})");
                 }
             }
             else
             {
-                Debug.LogError($"m_Block es null para {BlockType}, no se puede registrar la posición.");
+               // Debug.LogError($"m_Block es null para {BlockType}, no se puede registrar la posición.");
             }
         }
         else
         {
-            Debug.LogError($" No se puede actualizar la posición del bloque {BlockType} porque ViewRectransform es nulo.");
+           // Debug.LogError($" No se puede actualizar la posición del bloque {BlockType} porque ViewRectransform es nulo.");
 
         }
         
@@ -333,7 +343,7 @@ public class BlockView : BaseView
                 return parent.name;
             parent = parent.parent;
         }
-        Debug.LogWarning($"No se encontró RightPanel ni CodingArea en la jerarquía de {gameObject.name}");
+       // Debug.LogWarning($"No se encontró RightPanel ni CodingArea en la jerarquía de {gameObject.name}");
         return null;
     }
 
@@ -409,7 +419,7 @@ public class BlockView : BaseView
         }
         else
         {
-            Debug.LogWarning($"No se encontró un TopmostChild en el InLineGroup del bloque {BlockType}.");
+           // Debug.LogWarning($"No se encontró un TopmostChild en el InLineGroup del bloque {BlockType}.");
         }
     }
 
@@ -417,23 +427,23 @@ public class BlockView : BaseView
     {
         int count = 0;
 
-        Debug.Log($"Buscando el {index}th InLineGroup en {BlockType}, Total de hijos en transform: {transform.childCount}");
+     //   Debug.Log($"Buscando el {index}th InLineGroup en {BlockType}, Total de hijos en transform: {transform.childCount}");
 
         foreach (Transform child in transform)
         {
-            Debug.Log($" Recorriendo hijo: {child.GetType().Name}");
+           // Debug.Log($" Recorriendo hijo: {child.GetType().Name}");
             InLineGroup view = child.GetComponent<InLineGroup>();
             if (view != null)
             {
                 if (count == index)
                 {
-                    Debug.Log($"Encontrado InLineGroup en {BlockType}.");
+                    //Debug.Log($"Encontrado InLineGroup en {BlockType}.");
                     return view;
                 }
                 count++;
             }
         }
-        Debug.LogErrorFormat("<color=red>Can't find the {0}th lineGroup in block view of {1}.</color>", index, this.GetType().Name);
+        //Debug.LogErrorFormat("<color=red>Can't find the {0}th lineGroup in block view of {1}.</color>", index, this.GetType().Name);
         return null;
     }
 
@@ -449,7 +459,7 @@ public class BlockView : BaseView
         {
             size = lineGroup.CalculatedSize;
 
-            Debug.Log($"Tamaño calculado desde InLineGroup: {size}"); 
+          //  Debug.Log($"Tamaño calculado desde InLineGroup: {size}"); 
         
         }
 
@@ -478,7 +488,7 @@ public class BlockView : BaseView
         }
 
 
-        Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - InLineGroup Size: {size}");
+      //  Debug.Log($"[BlockView:CalculateSize] {gameObject.name} - InLineGroup Size: {size}");
 
 
       /*  if (m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customMeshImage)
@@ -542,7 +552,7 @@ public class BlockView : BaseView
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(ViewRectransform); // Fuerzo la actualización
         }
-        Debug.Log($"Actualizando tamaño del bloque {BlockType} a: {size}");
+    //    Debug.Log($"Actualizando tamaño del bloque {BlockType} a: {size}");
     }
 
     public void NotifyBlockView()
@@ -605,20 +615,5 @@ public class BlockView : BaseView
         }
     }
 
-   /* public void ConnectBlocks(BlockView parent, BlockView child)
-    {
-        if (parent == null || child == null) return;
-
-        BlockConnection connection = null;
-        if (child.Block.previousConnection != null)
-            connection = child.Block.previousConnection.targetConnection;
-        else if (child.Block.outputConnection != null)
-            connection = child.Block.outputConnection.targetConnection;
-
-        if (connection != null)
-        {
-            connection.FireUpdate(UpdateState.Connected);
-        }
-    }*/
 
 }

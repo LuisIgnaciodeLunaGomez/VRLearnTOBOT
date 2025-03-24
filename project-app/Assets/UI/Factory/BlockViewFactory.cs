@@ -23,8 +23,8 @@ public static class BlockViewFactory
       {
         
         BlockView blockView = null;
-            Debug.Log($"CreateView: BlockView: Asignando WorkSpaceView: {workSpaceView != null}");
-            Debug.Log($"CreateView: BlockView: Creando BlockView para {blockData.spriteName}");
+           // Debug.Log($"CreateView: BlockView: Asignando WorkSpaceView: {workSpaceView != null}");
+           // Debug.Log($"CreateView: BlockView: Creando BlockView para {blockData.spriteName}");
 
         GameObject blockPrefab = Resources.Load<GameObject>($"Prefabs/BlocksPrefab/{blockData.spriteName}");
 
