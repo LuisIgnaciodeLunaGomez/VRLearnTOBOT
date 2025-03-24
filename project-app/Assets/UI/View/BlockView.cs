@@ -35,6 +35,9 @@ public class BlockView : BaseView
 
     private WorkSpaceView m_WorkSpaceView; //Referencia al gestor de la interfaz de usuario
 
+    // Lista estática para almacenar posiciones de bloques en RightPanel/CodingArea
+    private static Dictionary<string, (string panelName, Vector2 position)> blockPositions = new Dictionary<string, (string, Vector2)>();
+
     public override ViewType Type => ViewType.Block;
 
     public bool inToolBox { get; set; }
@@ -239,6 +242,16 @@ public class BlockView : BaseView
 
     }
 
+    //método estático para eliminar una entrada por ID
+    public static void RemoveBlockPosition(string blockId)
+    {
+        if (blockPositions.ContainsKey(blockId))
+        {
+            blockPositions.Remove(blockId);
+            Debug.Log($"Bloque con ID: {blockId} eliminado de blockPositions. Total restante: {blockPositions.Count}");
+        }
+    }
+
     public void Dispose()
     {
         if(m_Block != null) unBindModel(); // Si el bloque no es nulo, desvincularlo
@@ -257,19 +270,73 @@ public class BlockView : BaseView
         {
             ViewRectransform.anchoredPosition = position; // Actualiza la posición del bloque en la interfaz
 
-            Debug.Log($" Bloque {BlockType} movido a: {position}");
+           // Debug.Log($" Bloque {BlockType} movido a: [x] {position.x } - [y] {position.y}");
             // Notificar al bloque que su posición ha cambiado
             if (m_Block != null)
             {
                 m_Block.XY = position;
+                // Verificar si está en RightPanel o CodingArea
+                string panelName = GetParentPanelName();
+                Debug.Log($"Panel detectado para {BlockType}: {panelName}");
+
+                if (panelName == "RightPanel" || panelName == "CodingArea")
+                {
+                    blockPositions[m_Block.ID] = (panelName, position);
+                   // Debug.Log($"Posición registrada: ID={m_Block.ID}, Panel={panelName}, Posición={position}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Bloque {BlockType} no está en RightPanel ni CodingArea (Panel detectado: {panelName})");
+                }
             }
             else
             {
-                Debug.LogError($" No se puede actualizar la posición del bloque {BlockType} porque ViewRectransform es nulo.");
-
+                Debug.LogError($"m_Block es null para {BlockType}, no se puede registrar la posición.");
             }
         }
+        else
+        {
+            Debug.LogError($" No se puede actualizar la posición del bloque {BlockType} porque ViewRectransform es nulo.");
+
+        }
+        
     }
+
+    public static void PrintBlockSummary()
+    {
+        Debug.Log("=== Resumen de Bloques en RightPanel/CodingArea ===");
+
+        if (blockPositions.Count == 0)
+        {
+            Debug.Log("No hay bloques registrados en RightPanel ni CodingArea.");
+        }
+        else
+        {
+            foreach (var entry in blockPositions)
+            {
+                string id = entry.Key;
+                string panelName = entry.Value.panelName;
+                Vector2 position = entry.Value.position;
+                Debug.Log($"ID: {id}, Panel: {panelName}, Posición: (X: {position.x}, Y: {position.y})");
+            }
+            Debug.Log("==========================================");
+        }
+    }
+
+    // Método auxiliar para obtener el nombre del panel padre
+    private string GetParentPanelName()
+    {
+        Transform parent = transform.parent;
+        while (parent != null)
+        {
+            if (parent.name.Contains("RightPanel") || parent.name.Contains("CodingArea"))
+                return parent.name;
+            parent = parent.parent;
+        }
+        Debug.LogWarning($"No se encontró RightPanel ni CodingArea en la jerarquía de {gameObject.name}");
+        return null;
+    }
+
 
     public void UpdateLayout()
     {
@@ -280,6 +347,15 @@ public class BlockView : BaseView
         }
     }
 
+    // Eliminar posición al arrastrar
+    public void RemovePositionOnDrag()
+    {
+        if (m_Block != null && blockPositions.ContainsKey(m_Block.ID))
+        {
+            blockPositions.Remove(m_Block.ID);
+            Debug.Log($"Posición del bloque {BlockType} eliminada al iniciar arrastre.");
+        }
+    }
     /**
      * Añade una imagen de fondo al bloque
      * @param image Imagen de fondo a añadir

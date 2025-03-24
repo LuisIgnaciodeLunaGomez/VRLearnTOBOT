@@ -67,7 +67,7 @@ public class UICanvasManager : MonoBehaviour
         this.m_canvasGO.transform.SetParent(this.m_uiManager.transform);
 
         Canvas canvas = this.m_canvasGO.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.renderMode = RenderMode.ScreenSpaceCamera;
 
         CanvasScaler canvasScaler = this.m_canvasGO.AddComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -161,13 +161,19 @@ public class UICanvasManager : MonoBehaviour
         //área de codificación donde se arrastran los bloques para su conexión y posterior ejecución
         GameObject rightPanel = CreatePanel("CodingArea", workSpaceGO.transform,
             new Vector2(0.4f, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero,
-            new Vector2(0.5f, 0.5f), new Color(0.976f, 0.976f, 0.976f, 1f));
+            new Vector2(0.0f, 1f), new Color(0.976f, 0.976f, 0.976f, 1f));
 
         /*Canvas topCanvas = rightPanel.AddComponent<Canvas>();
         topCanvas.overrideSorting = true;
         topCanvas.sortingOrder = 3;*/
 
-        m_rightPanelTransform = rightPanel.transform; // Guardamos la referencia al Transform del RightPanel
+       // m_rightPanelTransform = rightPanel.transform; // Guardamos la referencia al Transform del RightPanel
+        RectTransform rightRect = rightPanel.GetComponent<RectTransform>();
+        rightRect.anchorMin = new Vector2(0, 1); // Superior izquierda relativa al WorkSpace
+        rightRect.anchorMax = new Vector2(0, 1);
+        rightRect.pivot = new Vector2(0, 1);
+        rightRect.sizeDelta = new Vector2((m_screenWidth * 0.835f) * 0.85f, m_screenHeight * 0.95f); // 60% del ancho del WorkSpace
+        rightRect.anchoredPosition = new Vector2((m_screenWidth * 0.85f) * 0.4f, 0); // Desplazado 40% del ancho del WorkSpace
 
         this.m_blockScrollList = middlePanel.AddComponent<BlockScrollList>();
 

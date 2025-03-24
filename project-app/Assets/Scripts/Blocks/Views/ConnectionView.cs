@@ -15,7 +15,6 @@
  * 
  */
 
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public class ConnectionView : BaseView

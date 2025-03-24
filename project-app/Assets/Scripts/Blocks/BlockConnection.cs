@@ -67,7 +67,7 @@ public class BlockConnection
 
         if (this.targetConnection == otherConnection) return;
 
-        this.CheckConnection(otherConnection);
+       // this.CheckConnection(otherConnection);
 
         if (this.IsSuperior) this.ConnectInternal(otherConnection);
         else otherConnection.ConnectInternal(this);

@@ -39,30 +39,30 @@ public class SpriteConnectionDetector : MonoBehaviour
     private Vector3 worldBottomConnectionOffset;
     private Vector3 worldTopConnectionOffset2;
     private Vector3 worldBottomConnectionOffset2;
-    void Awake()
-    {
-        this.spriteRenderer = GetComponent<SpriteRenderer>();
+   // void Awake()
+  //  {
+       /* this.spriteRenderer = GetComponent<SpriteRenderer>();
         if (this.sprite == null && this.spriteRenderer != null)
             this.sprite = this.spriteRenderer.sprite;
 
-        if (this.sprite != null)
-            CreateCanvasAndImage();
+     /*   if (this.sprite != null)
+          //  CreateCanvasAndImage();
         else
             Debug.LogError("No sprite assigned or found in SpriteRenderer!");
     }
 
-    void OnValidate()
+   /* void OnValidate()
     {
         // Se ejecuta en el editor para que los Gizmos se muestren sin entrar en Play
         this.spriteRenderer = GetComponent<SpriteRenderer>();
         if (this.sprite == null && this.spriteRenderer != null)
             this.sprite = this.spriteRenderer.sprite;
 
-        if (this.sprite != null && this.canvasRectTransform == null)
-            this.CreateCanvasAndImage();
+       // if (this.sprite != null && this.canvasRectTransform == null)
+            //this.CreateCanvasAndImage();
 
-        this.CalculateConnections();
-    }
+       // this.CalculateConnections();
+    }*/
 
     private void CreateCanvasAndImage()
     {
@@ -136,7 +136,45 @@ public class SpriteConnectionDetector : MonoBehaviour
         Debug.Log($"[Mundo] worldBottomConnectionOffset: {this.worldBottomConnectionOffset2}");
 
     }
-    
+
+    // Nuevos métodos públicos para acceder a las posiciones en coordenadas de mundo
+    public Vector3 GetWorldTopConnection()
+    {
+        CalculateConnections(); // Asegurar que estén actualizadas
+        return worldTopConnection;
+    }
+
+    public Vector3 GetWorldBottomConnection()
+    {
+        CalculateConnections();
+        return worldBottomConnection;
+    }
+
+    public Vector3 GetWorldTopConnectionOffset()
+    {
+        CalculateConnections();
+        return worldTopConnectionOffset;
+    }
+
+    public Vector3 GetWorldBottomConnectionOffset()
+    {
+        CalculateConnections();
+        return worldBottomConnectionOffset;
+    }
+
+    public Vector3 GetWorldTopConnectionOffset2()
+    {
+        CalculateConnections();
+        return worldTopConnectionOffset2;
+    }
+
+    public Vector3 GetWorldBottomConnectionOffset2()
+    {
+        CalculateConnections();
+        return worldBottomConnectionOffset2;
+    }
+
+
     void OnDrawGizmos()
     {
         if (this.sprite == null || this.imageRectTransform == null)
@@ -169,5 +207,7 @@ public class SpriteConnectionDetector : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawSphere(this.worldBottomConnectionOffset2, 0.05f);
         }
+
+
     }
 }

@@ -20,8 +20,8 @@ using UnityEngine;
 
 public class PrefabValidator
 {
-    [MenuItem("Tools/Validate Block Prefabs")]
-    static void ValidatePrefabs()
+    //[MenuItem("Tools/Validate Block Prefabs")]
+    /*static void ValidatePrefabs()
     {
         string[] prefabPaths = System.IO.Directory.GetFiles("Assets/Resources/Prefabs/BlocksPrefab/", "*.prefab", System.IO.SearchOption.AllDirectories);
         foreach (string path in prefabPaths)
@@ -32,6 +32,5 @@ public class PrefabValidator
                 Debug.LogError($"Prefab en '{path}' falta el componente BlockView.");
             }
         }
-        Debug.Log("Validación completada.");
+        Debug.Log("Validación completada.");*/
     }
-}

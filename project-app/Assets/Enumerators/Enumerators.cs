@@ -66,7 +66,8 @@ public enum EConnection
 public enum ConnectionZone { 
     None, 
     Top, 
-    Bottom }
+    Bottom 
+}
 
 public enum ShadowZone { Top, Bottom }
 ;
