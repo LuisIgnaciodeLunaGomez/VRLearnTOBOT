@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Block
+public class Block: Observable<int>
 {
 
     public string ID { get; private set; }
