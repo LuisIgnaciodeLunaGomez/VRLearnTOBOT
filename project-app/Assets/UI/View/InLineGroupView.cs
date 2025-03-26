@@ -9,23 +9,32 @@
  * 
  * Fecha: 08/03/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
  * Descripción: 
  * 
  */
 
 
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
+using static UnityEngine.EventSystems.EventTrigger;
+using UnityEngine.UIElements;
 
-    public class InLineGroup : BaseView 
+    public class InLineGroupView : BaseView 
     {
 
-    [SerializeField] private float m_ReservedStartX;
-    [SerializeField] private RectTransform m_ViewTransform; //Transform de la vista
+    private float m_ReservedStartX =0f; // Espacio reservado para elementos adicionales 
+    private RectTransform m_ViewTransform; //Transform de la vista
 
     public override ViewType Type => ViewType.LineGroup;
+
+    // Márgenes calculados 
+      //Punto de inicio de los hijos dentro del bloque(posición relativa)
+    public override Vector2 ChildStartXY => new Vector2(m_MarginLeft, -m_MarginTop);
+   
     
     public override Vector2 CalculatedSize
     {
@@ -116,6 +125,113 @@ using UnityEngine.UI;
             size.x -= conView.Width;
         return size;
     }
+
+    #region Internos
+
+    private bool HasSlotConnection()
+    {
+        foreach (var child in Childs)
+        {
+            if (child is InputView inputView)
+            {
+                var con = inputView.GetConnectionView();
+                if (con != null && con.IsSlot) return true;
+            }
+        }
+        return false;
+    }
+
+    private bool ApplyRightMargin()
+    {
+        if (Childs.Count == 0) return false;
+        var lastInput = Childs[Childs.Count - 1] as InputView;
+        if (lastInput == null) return false;
+
+        var conView = lastInput.GetConnectionView();
+        return conView == null || conView.IsSlot; // solo aplicamos margen si es un slot o no tiene conexión
+    }
+
+    #endregion
+
+/**
+ * Descripción: Permite reservar espacio al principio de una línea de inputs
+ * */
+public float ReservedStartX
+{
+    get { return m_ReservedStartX; }
+    set { m_ReservedStartX = value; }
+}
+
+    /**
+     * Descripción: Calcula el margen izquierdo total de la línea, teniendo en cuenta el espacio reservado
+     */
+    private float m_MarginLeft => BlockViewSettings.Get().ContentMargin.left + m_ReservedStartX;
+
+    /**
+     * Descripción: Calcula el margen derecho total de la línea, teniendo en cuenta el espacio reservado
+     */
+    private float mMarginRight
+    {
+        get
+        {
+            if (Childs == null || Childs.Count == 0)
+                return 0;
+
+            bool applyMargin = true;
+
+            InputView inputView = Childs[Childs.Count - 1] as InputView;
+            if (inputView != null)
+            {
+                ConnectionInputView conView = inputView.GetConnectionView();
+                if (conView != null && !conView.IsSlot)
+                    applyMargin = false;
+            }
+            return applyMargin ? BlockViewSettings.Get().ContentMargin.right : 0;
+        }
+    }
+
+    private float m_MarginTop
+    {
+        get
+        {
+            if (Childs == null || Childs.Count == 0)
+                return 0;
+
+            for (int i = 0; i < Childs.Count; i++)
+            {
+                InputView inputView = Childs[i] as InputView;
+                if (inputView != null)
+                {
+                    ConnectionInputView conView = inputView.GetConnectionView();
+                    if (conView != null && conView.IsSlot)
+                        return BlockViewSettings.Get().ContentMargin.top;
+                }
+            }
+            return 0;
+        }
+    }
+
+    private float m_MarginBottom
+    {
+        get
+        {
+            if (Childs == null || Childs.Count == 0)
+                return 0;
+
+            for (int i = 0; i < Childs.Count; i++)
+            {
+                InputView inputView = Childs[i] as InputView;
+                if (inputView != null)
+                {
+                    ConnectionInputView conView = inputView.GetConnectionView();
+                    if (conView != null && conView.IsSlot)
+                        return BlockViewSettings.Get().ContentMargin.bottom;
+                }
+            }
+            return 0;
+        }
+    }
+
 
 }
 

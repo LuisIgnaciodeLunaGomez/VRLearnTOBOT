@@ -25,26 +25,27 @@ using System;
 public class BlockView : BaseView
 {
 
-    [SerializeField] private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
-    [SerializeField] private Dictionary<string, BlockView> mBlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
-    [SerializeField] private HorizontalLayoutGroup m_inLineGroup;
+    private List<Image> m_BgImages = new List<Image>(); //Lista de imagenes que forman el fondo del bloque 
+    private Dictionary<string, BlockView> m_BlockViews = new Dictionary<string, BlockView>(); //Diccionario que contiene los bloques
+    private HorizontalLayoutGroup m_inLineGroup;
 
-    public List<BaseView> GetChildren() => base.Childs;
+    //public List<BaseView> GetChildren() => base.Childs;
 
     private Block m_Block; //Referencia al modelo lógico del bloque
+    public Block Block => this.m_Block;
 
     private WorkSpaceView m_WorkSpaceView; //Referencia al gestor de la interfaz de usuario
-
+    private MemorySafeBlockObserver m_BlockObserver; //Observador de bloques
     // Lista estática para almacenar posiciones de bloques en RightPanel/CodingArea
     private static Dictionary<string, (string panelName, Vector2 position)> blockPositions = new Dictionary<string, (string, Vector2)>();
 
-    public override ViewType Type => ViewType.Block;
+    public override ViewType Type => ViewType.Block; //Tipo de vista bloque
 
     public bool inToolBox { get; set; }
     public Vector2 Position { get; set; }
     public RectTransform ViewRectransform{ get => GetComponent<RectTransform>(); set => throw new NotSupportedException(); }
-    string BlockType => this.m_Block?.type ?? "Unknown";
-    public Block Block =>this.m_Block;
+    string BlockType => m_Block?.type ?? "Unknown";
+    
 
     /**
      * Descripción: Víncula el modelo lógico y los datos a la vista
@@ -53,13 +54,13 @@ public class BlockView : BaseView
      */
     public void BindModel(Block block, BlockDataLoader.BlockData blockData, WorkSpaceView workSpaceView)
     {
-        if (this.m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
+        if (m_Block == block) return; //Si el modelo lógico del bloque es el mismo que el modelo lógico del bloque actual, no se hace nada
 
-        unBindModel(); // Si hay un bloque anterior, desvincularlo
+        if( m_Block!= null) unBindModel(); // Si hay un bloque anterior, desvincularlo
 
-        this.m_Block = block;
-        this.m_WorkSpaceView = workSpaceView;
-        this.m_Block.Initialize(blockData);
+        m_Block = block;
+        m_WorkSpaceView = workSpaceView;
+        m_Block.Initialize(blockData);
         //Debug.Log($"Vinculando modelo de bloque: {BlockType} en {this.m_Block.XY}");
 
         Childs.Clear(); // Limpia hijos anteriores
@@ -89,7 +90,7 @@ public class BlockView : BaseView
 
             // Agregar el componente InLineGroup para que se reconozca como tal
             //groupObject.AddComponent<InLineGroup>();
-            inLineGroup.gameObject.AddComponent<InLineGroup>();
+            inLineGroup.gameObject.AddComponent<InLineGroupView>();
         }
 
 
@@ -109,7 +110,7 @@ public class BlockView : BaseView
         lineGroupRect.pivot = new Vector2(0.5f, 0.5f);
         lineGroupRect.anchoredPosition = Vector2.zero;
 
-        InLineGroup inLineGroupComponent = inLineGroup.GetComponent<InLineGroup>();
+        InLineGroupView inLineGroupComponent = inLineGroup.GetComponent<InLineGroupView>();
         inLineGroupComponent.Childs.Clear();
 
         // Crear elementos para los argumentos basados en los datos del XML
@@ -397,7 +398,7 @@ public class BlockView : BaseView
 
     public void AddBlockView(BlockView blockView)
     {
-        mBlockViews[blockView.Block.ID] = blockView;
+        m_BlockViews[blockView.Block.ID] = blockView;
     }
 
     public void BuildLayout()
@@ -405,7 +406,7 @@ public class BlockView : BaseView
         // BaseView startView = this.GetLineGroup(0).GetTopmostChild();
         //startView.UpdateLayout(startView.HeaderXY);
 
-        InLineGroup lineGroup = GetLineGroup(0);
+        InLineGroupView lineGroup = GetLineGroup(0);
         if (lineGroup == null)
         {
             Debug.LogWarning($"No se encontró un InLineGroup en el bloque {BlockType}.");
@@ -423,7 +424,7 @@ public class BlockView : BaseView
         }
     }
 
-    public InLineGroup GetLineGroup(int index)
+    public InLineGroupView GetLineGroup(int index)
     {
         int count = 0;
 
@@ -431,8 +432,8 @@ public class BlockView : BaseView
 
         foreach (Transform child in transform)
         {
-           // Debug.Log($" Recorriendo hijo: {child.GetType().Name}");
-            InLineGroup view = child.GetComponent<InLineGroup>();
+            // Debug.Log($" Recorriendo hijo: {child.GetType().Name}");
+            InLineGroupView view = child.GetComponent<InLineGroupView>();
             if (view != null)
             {
                 if (count == index)
@@ -454,7 +455,7 @@ public class BlockView : BaseView
         //Calcular el tamaño de los hijos
         Vector2 size = Vector2.zero;
 
-        InLineGroup lineGroup = GetLineGroup(0);
+        InLineGroupView lineGroup = GetLineGroup(0);
         if (lineGroup != null)
         {
             size = lineGroup.CalculatedSize;
@@ -615,5 +616,45 @@ public class BlockView : BaseView
         }
     }
 
+    private void OnBlockUpdated(UpdateStates updateState)
+    {
+        switch (updateState)
+        {
+            case UpdateStates.Inputs:
+            {
+                //rebuild block view's input views
+                //BlockViewBuilder.BuildInputViews(m_Block, this);
 
+                //reupdate layout
+                BuildLayout();
+
+                //call this once to update the connection DB
+                this.OnXYUpdated();
+
+                //call this again to change new input views
+                this.ChangeBgColor(m_BgImages[0].color);
+
+                break;
+            }
+
+        case UpdateStates.Connections:
+                // Actualizar posiciones de conexiones o reconexiones visuales
+                this.BuildLayout(); // O lo que corresponda
+                break;
+
+            case UpdateStates.IsShadow:
+                // Cambiar visibilidad o color
+                this.ChangeBgColor(Color.gray);
+                break;
+
+            //Falta el resto por hacer
+        }
+
+    }
+
+    public void UpdateBlockState(UpdateStates updateState)
+    {
+        OnBlockUpdated(updateState);
+    }
 }
+

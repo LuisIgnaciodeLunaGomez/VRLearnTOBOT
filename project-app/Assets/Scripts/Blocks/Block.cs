@@ -9,9 +9,9 @@
  * 
  * Fecha: 22/02/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
- * Descripción: 
+ * Descripción: Clásica que aplica el módelo lógico de un bloque
  */
 
 using System.Collections.Generic;
@@ -21,11 +21,11 @@ using UnityEngine;
 public class Block: Observable<int>
 {
 
-    public string ID { get; private set; }
-    public string type { get; private set; }
+    public string ID { get; private set; } //Identificador único del bloque
+    public string type { get; private set; } //Tipo de bloque se define en el XML
 
-    public BlockDataLoader.BlockData blockData { get; private set; }
-
+    public BlockDataLoader.BlockData blockData { get; private set; } //Sistema de carga de datos del xml
+  
     public void Initialize(BlockDataLoader.BlockData blockData)
     {
         this.blockData = blockData;
@@ -45,6 +45,14 @@ public class Block: Observable<int>
             }
         }
     }
+    private bool m_Disabled = false;    //Flag para indicar si el bloque está deshabilitado
+    private bool m_Movable = true;      //Flag para indicar si el bloque es movible
+    private bool m_Deletable = true;    //Flag para indicar si el bloque es eliminable
+    private bool m_IsShadow = false;    //Flag para indicar que es un bloque sombra es decir permite conexiones de otros bloques
+    private bool m_Collapsed = false;   //Flag para indicar si el bloque es colapsable
+    private bool m_Editable = true;     //Flag para indicar si el bloque es editable
+    private int mInputsInlineState = -1; // -1: not defined; 0: defined false; 1: defined true
+
 
     public Vector2 XY { get; set; }
     //private bool m_Disabled = false;
@@ -58,6 +66,8 @@ public class Block: Observable<int>
     public BlockConnection outputConnection { get; set; }
     public BlockConnection previousConnection { get; set; }
     public BlockConnection nextConnection { get; set; }
+    public List<Input> InputList { get; protected set; } //Lista de entradas del bloque  puede contener texto, número, variable y otros bloques mediante una ConnectionIput donde conectar un bloque hijo
+
 
     private Block m_SourceBlock; //Bloque al que pertenece la conexión
 
@@ -165,6 +175,155 @@ public class Block: Observable<int>
         childBlocks.Clear();
     }
 
+    /**
+ * Descripción: Verifica si todas las entradas requeridas del bloque están conectadas
+ * @param includeShadows: Determina si los bloques sombra cuentan como entradas válidas
+ * @return: true si todas las entradas están rellenas, false en caso contrario
+ */
+    public bool AllInputsFilled(bool includeShadows = true)
+    {
+        // Verifica cada entrada en la lista
+        foreach (var input in inputList)
+        {
+            if (input.Connection != null)
+            {
+                var targetBlock = input.Connection.TargetBlock;
+                if (targetBlock == null || (!includeShadows && targetBlock.IsShadow))
+                {
+                    return false;
+                }
+
+                // Verificación recursiva para bloques anidados
+                if (!targetBlock.blockModel.AllInputsFilled(includeShadows))
+                {
+                    return false;
+                }
+            }
+        }
+
+        // Verifica el siguiente bloque en la cadena
+        var next = NextBlock;
+        if (next != null)
+        {
+            return next.AllInputsFilled(includeShadows);
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Descripción: Encuentra la última conexión disponible en una cadena de bloques
+     * @return: La última conexión disponible o null si no hay ninguna
+     */
+    public BlockConnection LastConnectionInStack()
+    {
+        var current = this;
+        var nextConnection = current.nextConnection;
+
+        while (nextConnection != null)
+        {
+            var nextBlock = nextConnection.TargetBlock?.blockModel;
+            if (nextBlock == null)
+            {
+                // Encontró una conexión siguiente sin nada conectado
+                return nextConnection;
+            }
+            current = nextBlock;
+            nextConnection = current.nextConnection;
+        }
+
+        // No hay más conexiones disponibles
+        return null;
+    }
+
+
+    /**
+     * Descripción: Obtiene todos los bloques descendientes (hijos, nietos, etc.)
+     * @return: Lista con todos los bloques descendientes incluyendo this
+     */
+    public List<Block> GetAllDescendants()
+    {
+        var result = new List<Block> { this };
+
+        // Agrega los descendientes de los bloques hijo
+        foreach (var child in childBlocks)
+        {
+            result.AddRange(child.GetAllDescendants());
+        }
+
+        // Agrega los descendientes de los bloques de entrada
+        foreach (var input in inputList)
+        {
+            var targetBlock = input.Connection?.TargetBlock?.blockModel;
+            if (targetBlock != null)
+            {
+                result.AddRange(targetBlock.GetAllDescendants());
+            }
+        }
+
+        // Agrega los bloques en la cadena
+        var nextBlock = NextBlock;
+        if (nextBlock != null)
+        {
+            result.Add(nextBlock);
+            result.AddRange(nextBlock.GetAllDescendants());
+        }
+
+        return result;
+    }
+
+    /**
+ * Descripción: Verifica si el bloque es raíz en el workspace
+ * @return: true si es raíz, false en caso contrario
+ */
+    public bool IsRootBlock()
+    {
+        return parentBlock == null &&
+               (previousConnection == null || !previousConnection.isConnected) &&
+               (outputConnection == null || !outputConnection.isConnected);
+    }
+
+    /**
+ * Descripción: Encuentra conexiones compatibles entre este bloque y otro
+ * @param otherBlock: Bloque con el que verificar compatibilidad
+ * @return: Lista de pares de conexiones compatibles
+ */
+    public List<(BlockConnection, BlockConnection)> FindCompatibleConnections(Block otherBlock)
+    {
+        var result = new List<(BlockConnection, BlockConnection)>();
+        var myConnections = GetConnection();
+        var otherConnections = otherBlock.GetConnection();
+
+        foreach (var myConn in myConnections)
+        {
+            foreach (var otherConn in otherConnections)
+            {
+                if (myConn.CheckType(otherConn))
+                {
+                    result.Add((myConn, otherConn));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Descripción: Obtiene el bloque raíz de la jerarquía actual
+     * @return: El bloque raíz
+     */
+    public Block GetRootBlock()
+    {
+        Block rootBlock = this;
+
+        while (rootBlock.parentBlock != null)
+        {
+            rootBlock = rootBlock.parentBlock;
+        }
+
+        return rootBlock;
+    }
     // Obtiene todas las conexiones de un bloque
     public List<BlockConnection> GetConnection()
     {
@@ -186,7 +345,42 @@ public class Block: Observable<int>
 
     }
 
-# region Métodos para manejar entradas de bloques o Inputs
+
+    /**
+     * Descripción: Actualiza propiedades de estado del bloque y notifica a los observadores
+     * @param disabled: Estado de deshabilitado
+     * @param movable: Estado de movible
+     * @param deletable: Estado de eliminable
+     */
+    public void UpdateState(bool? disabled = null, bool? movable = null, bool? deletable = null)
+    {
+        int updateMask = 0;
+
+        if (disabled.HasValue)
+        {
+            m_Disabled = disabled.Value;
+            updateMask |= 1 << 3; // UpdateState.IsDisabled = 3
+        }
+
+        if (movable.HasValue)
+        {
+            m_Movable = movable.Value;
+            updateMask |= 1 << 7; // UpdateState.IsMovable = 7
+        }
+
+        if (deletable.HasValue)
+        {
+            m_Deletable = deletable.Value;
+            updateMask |= 1 << 6; // UpdateState.IsDeletable = 6
+        }
+
+        if (updateMask > 0)
+        {
+            FireUpdate(updateMask);
+        }
+    }
+
+    #region Métodos para manejar entradas de bloques o Inputs
 
     //añade entradas a un bloque
     public void AppendInput(Input input, int index = -1)
@@ -222,12 +416,56 @@ public class Block: Observable<int>
 
     #endregion
 
-    public List<string> GetVar() => new List<string>();
+   
 
-    public void RenameVar(string oldName, string newName) { }
-    
-    public string GetFieldValue(string name) => null; 
-    public void SetFieldValue(string name, string value) { }    
+    /**
+       * Descripción: Devuelve un campo de tipo Field detnro de un bloque que contenga un nombre específico para dicho campo (etiquetas visibles, valores de texto editables, menús desplegables (dropdowns), variables, etc.
+       * @return: Field field 
+       */
+    public Field GetField(string name)
+    {
+        //TODO
+        return null;
+    }
+
+    /**
+     * Descripción: Obtiene las variables de un bloque
+     * @return: List<string>: Lista de variables
+     */
+    public List<string> GetVars()
+    {
+        //TODO
+        return null; //Devuelvo la lista de variables
+    }
+    /**
+     * Descripción: Renombra una variable de un bloque
+     * @param: Antigua variable
+     * @param: Nueva variable
+     */
+    public void RenameVar(string oldName, string newName)
+    {
+        //TODO
+        
+    }
+
+    /**
+        * Descripción: Obtiene el valor de un campo de un bloque
+        * @param: name: Nombre del campo
+        */
+    public string GetFieldValue(string name)
+    {
+        //TODO
+        return null;
+    }
+    /**
+       * Descripción: Cambia el valor de un campo de un bloque
+       * @param: name: Nombre del campo
+       * @param: newValue: Nuevo valor del campo
+       */
+    public void SetFieldValue(string name, string newValue)
+    {
+       //TODO
+    }
 
     #endregion
 
@@ -262,15 +500,6 @@ public class Block: Observable<int>
 
     public void UpdateConnectionPositions()
     {
-        /* if (previousConnection != null) previousConnection.position = XY;
-         if (nextConnection != null) nextConnection.position = XY + new Vector2(0, behaviour != null ? behaviour.GetComponent<RectTransform>().rect.height : 30f);
-         foreach (var input in inputList)
-         {
-             if (input.Connection != null)
-             {
-                 input.Connection.position = XY;
-             }
-         }*/
 
         if (previousConnection != null)
         {
@@ -324,9 +553,161 @@ public class Block: Observable<int>
 
     }
 
+    /**
+     * Descripción: Devuelve todos los bloques que son descendientes directos de este bloque.
+     * @return List<Block>: Lista de bloques descendientes.
+     */
+    public List<Block> GetDescendants()
+    {
+        var blocks = new List<Block> { this }; //Añade el bloque actual a la lista de bloques this hace referencia al Block actual
 
-    public List<Block> GetDescendants() => new List<Block> { this }.Concat(this.childBlocks.SelectMany(c => c.GetDescendants())).ToList();
+        for (int i = 0; i < childBlocks.Count; i++)
+        {
+            blocks.AddRange(childBlocks[i].GetDescendants()); //Añade los bloques descendientes de este bloque si existen
+        }
+
+        return blocks; //Devuelve los bloques
+    }
+    #endregion
+
+    #region Propiedades de estado
+    public bool Disabled
+    {
+        get { return m_Disabled; } //getter para obtener el valor de mDisabled
+        set
+        {
+            if (Disabled != value) //Solo actua si hay cambio
+            {
+                m_Disabled = value;
+                FireUpdate(1 << (int)UpdateStates.IsDisabled); //Si el valor de Disabled es distinto al valor pasado por parámetro se llama a FireUpdate para notificar a las vistas que ha habido un cambio
+            }
+        }
+    }
+
+    public bool Deletable
+    {
+        get { return m_Deletable && !m_IsShadow && !(workSpace != null && workSpace.Options.ReadOnly); } //getter para obtener el valor de mDeletable y comprobar si el bloque es una sombra o si el espacio de trabajo es de solo lectura
+        set
+        {
+            if (m_Deletable != value)//Solo actua si hay cambio
+            {
+                m_Deletable = value;
+                FireUpdate(1 << (int)UpdateStates.IsDeletable); //Si el valor de Deletable es distinto al valor pasado por parámetro se llama a FireUpdate para notificar a las vistas que ha habido un cambio
+            }
+        }
+    }
+
+    public bool Movable
+    {
+        get { return m_Movable && !m_IsShadow && !(workSpace != null && workSpace.Options.ReadOnly); } //getter para obtener el valor de mMovable y comprobar si el bloque es una sombra o si el espacio de trabajo es de solo lectura
+        set
+        {
+            if (m_Movable != value) //Solo actua si hay cambio
+            {
+                m_Movable = value;
+                FireUpdate(1 << (int)UpdateStates.IsMovable); //Si el valor de Movable es distinto al valor pasado por parámetro se llama a FireUpdate para notificar a las vistas que ha habido un cambio
+            }
+        }
+    }
+
+    public bool IsShadow
+    {
+        get { return m_IsShadow; } //getter para obtener el valor de mIsShadow
+        set
+        {
+            if (m_IsShadow != value)//Solo actua si hay cambio
+            {
+                m_IsShadow = value;
+                FireUpdate(1 << (int)UpdateStates.IsShadow); //Si el valor de IsShadow es distinto al valor pasado por parámetro se llama a FireUpdate para notificar a las vistas que ha habido un cambio
+            }
+        }
+    }
+
+    public bool Editable
+    {
+        get { return m_Editable && !(workSpace != null && workSpace.Options.ReadOnly); }
+        set
+        {
+            if (m_Editable != value)//Solo actua si hay cambio
+            {
+                m_Editable = value;
+                FireUpdate(1 << (int)UpdateStates.IsEditable);
+            }
+        }
+    }
+
+    public bool Collapsed
+    {
+        get { return m_Collapsed; } //getter para obtener el valor de mCollapsed
+        set
+        {
+            if (m_Collapsed != value) //Solo actua si hay cambio
+            {
+                m_Collapsed = value;
+                FireUpdate(1 << (int)UpdateStates.IsCollapsed); //Si el valor de Collapsed es distinto al valor pasado por parámetro se llama a FireUpdate para notificar a las vistas que ha habido un cambio
+            }
+        }
+    }
 
     #endregion
+
+
+    /**
+     * Descripción: Permite establecer la orientación e las entrddas en una lista
+     * @param: bool value True or False 
+     */
+    public void SetInputsInline(bool value)
+    {
+        if (value && mInputsInlineState != 1) //Valor existe y mInputsInlineState es distinto de 1
+        {
+            mInputsInlineState = 1; //mInputsInlineState igual a 1 - en línea activado Horizontal
+            FireUpdate(1 << (int)UpdateStates.IsInputInline); //Llama a FireUpdate para notificar a las vistas que ha habido un cambio
+        }
+        else if (!value && mInputsInlineState != 0) //si es distinto de 0
+        {
+            mInputsInlineState = 0; //mInputsInlineState = 0 - en línea desactivado Vertical
+            FireUpdate(1 << (int)UpdateStates.IsInputInline); //mInputsInlineState
+        }
+    }
+
+    /**
+     * Descripción: Determina si las entradas del bloque deben mostrarse en línea (horizontalmente) o en columna (verticalmente)
+     * Esencial para el diseño de bloques de tipo aritmético, texto, lógico, etc.
+     * @return bool: True or False
+     */
+    public bool GetInputsInline()
+    {
+        //todo
+        return false;
+    }
+
+    /**
+     * Descripción: Devuelve TRUE si alguno de los bloques que envuelven al actual está deshabilitado
+     */
+    public bool GetInheritedDisabled()
+    {
+        var ancestor = this.GetSurroundParent(); //Obtiene el bloque padre
+        while (ancestor != null)
+        {
+            if (ancestor.Disabled) //si el ancestro es disable devuelve True
+            {
+                return true;
+            }
+            ancestor = ancestor.GetSurroundParent(); //Si no es disable se obtiene el bloque padre del ancestro
+        }
+       
+        return false; //No es disable
+    }
+
+    /**
+      * Descripción: Devuelve 
+      * @param return string msg
+      */
+    public string ToDevString()
+    {
+        //TODO
+
+       return null;
+    }
 }
 

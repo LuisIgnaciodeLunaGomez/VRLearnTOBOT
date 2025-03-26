@@ -55,6 +55,8 @@ public class WorkSpace : MonoBehaviour
         BlockDB = new Dictionary<string, Block>();
     }
 
+    public WorkSpaceOptions Options { get; private set; }
+
 
     /**
      * Descripción: Obtiene todos los bloques principales

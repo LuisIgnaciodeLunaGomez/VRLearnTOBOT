@@ -59,7 +59,10 @@ public class BlockBehaviour : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public bool isDraggable => m_isDraggable;
 
     public string blockType => m_BlockType;
+    
+    private bool m_IsShadow = false;
 
+    public bool IsShadow => m_IsShadow;
     public GameObject shadowTop
     {
         get => m_shadowTop;
