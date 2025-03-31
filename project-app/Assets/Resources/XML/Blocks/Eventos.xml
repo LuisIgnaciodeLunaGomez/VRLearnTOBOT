@@ -2,7 +2,7 @@
 <Blocks category="Events" color="#FFBF00">
 	<!-- Color Naranja para Eventos -->
 
-	<Block type="event_whenflagclicked">
+	<Block type="event_whenflagclicked" spriteName="Hat_block_grey">>
 		<!-- Cambiado 'Screen_Flag_Green' -->
 		<!-- Los bloques Hat (sombrero) NO tienen PreviousStatement -->
 		<NextStatement check="Statement"/>
@@ -18,7 +18,7 @@
 
 	<!-- Otros bloques de Events... -->
 	
-	<Block type="event_whenkeypressed">
+	<Block type="event_whenkeypressed" spriteName="Hat_block_grey">>
 		<NextStatement check="Statement"/>
 		<Args>
 			<Arg type="field_label" value="al presionar tecla"/>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Blocks category="Motion" color="#4C97FF">
 	<!-- Atributos globales para la categoría-->
-	<Block type="motion_movesteps">
+	<Block type="motion_movesteps" spriteName="Stack_block_grey">>
 		<!-- Tipo único del bloque -->
 		<!-- Conexiones Principales -->
 		<PreviousStatement check="Statement"/>
@@ -43,7 +43,7 @@
 		<!-- <Mutator name="if_else_mutator"/> -->
 	</Block>
 
-	<Block type="motion_goto">
+	<Block type="motion_goto" spriteName="Stack_block_grey">>
 		<PreviousStatement check="Statement"/>
 		<NextStatement check="Statement"/>
 		<Colour>%{MOTION_HUE}</Colour>
@@ -66,7 +66,7 @@
 	</Block>
 
 	<!-- Bloque con Salida (Output) -->
-	<Block type="math_number">
+	<Block type="math_number" spriteName="Stack_block_grey">>
 		<Output check="Number"/>
 		<!-- Devuelve un Número -->
 		<Colour>%{MATH_HUE}</Colour>
@@ -76,7 +76,7 @@
 	</Block>
 
 	<!-- Bloque con Dropdown -->
-	<Block type="logic_boolean">
+	<Block type="logic_boolean" spriteName="Stack_block_grey">>
 		<Output check="Boolean"/>
 		<Colour>%{LOGIC_HUE}</Colour>
 		<Args>
@@ -90,7 +90,7 @@
 	</Block>
 
 	<!-- Bloque con Input de Statement -->
-	<Block type="controls_repeat">
+	<Block type="controls_repeat" spriteName="Stack_block_grey">
 		<PreviousStatement check="Statement"/>
 		<NextStatement check="Statement"/>
 		<Colour>%{LOOPS_HUE}</Colour>
