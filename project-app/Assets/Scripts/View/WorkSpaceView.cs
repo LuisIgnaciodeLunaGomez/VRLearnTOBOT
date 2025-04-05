@@ -11,374 +11,464 @@
  * 
  * Versión: 2.0.0
  * 
- * Descripción: Crea la vista del espacio de trabajo
+ * Descripción:  proveer el RectTransform del m_codingArea y la referencia al Canvas / Camera
  */
 
-using UnityEngine;
+using System;
 using System.Collections.Generic;
-using System.Linq; 
-using System; 
-
+using UnityEngine;
 
 public class WorkSpaceView : MonoBehaviour
 {
-    [Header("UI Setup (Assign in Inspector or via UICanvasView)")]
-    
-    [SerializeField] private RectTransform m_codingArea;
+    private RectTransform m_codingArea;        
+    private BaseToolbox m_toolbox;           
+    private BlockStatusView m_blockStatusView;
+    //[SerializeField] private PlayControlView m_playControlView; //Los controles de ejecución TODO: Implementar
 
-    [Header("View Components (Assign or Find)")]
-   
-    [SerializeField] private BlockStatusView m_StatusView;
-
-    private WorkspaceModel m_WorkspaceModel;
-    private BlockDragController m_BlockDragController; 
-    private ExecutionController m_ExecutionController;
-    private WorkSpaceView m_WorkSpaceView;
-    
+    public BaseToolbox Toolbox => m_toolbox;
+    public BlockStatusView BlockStatusView => m_blockStatusView;
+    //public PlayControlView PlayControlView => m_playControlView; 
+    public RectTransform CodingArea => m_codingArea;
+    public BlockStatusView StatusView { get; private set; }
+    //  Referencia al Modelo Lógico (de UBlockly) 
+    private WorkSpaceModel m_WorkspaceModel;
+    public WorkSpaceModel Workspace => m_WorkspaceModel;
     private Dictionary<string, BlockView> m_blockViews = new Dictionary<string, BlockView>();
-
-    public RectTransform CodingAreaRect => m_codingArea;
-    public Canvas RootCanvas { get; private set; }
-
+    // Cache 
+    public Canvas RootCanvas { get; private set; } 
     public Camera EventCamera => RootCanvas?.worldCamera;
-  
-    public static WorkSpaceView Instance { get; private set; }
-   
-    public void InitializeView(WorkspaceModel model, BlockDragController dragController, RectTransform codingAreaRect)
-    {
-        Debug.Log("WorkspaceView Initializing...");
-
-        // Validar y obtener referencias
-        m_codingArea = codingAreaRect; // Asignar desde el parámetro
-        if (m_codingArea == null)
-        {
-            Debug.LogError("WorkspaceView: CodingArea RectTransform was not provided during initialization! Cannot place blocks.", this.gameObject);
-            this.enabled = false;
-            if (m_codingArea == null) return;
-        }
-
-        // m_BlockDragController = dragController; 
-
-        //  Limpiar y Vincular 
-        ClearAllBlockViews();
-        BindModel(model); // 
-
-        Debug.Log("WorkspaceView Initialized and Bound.");
-    }
-
-    // Vincula la vista al modelo y se suscribe a sus eventos
-    public void BindModel(WorkspaceModel model)
-    {
-        if (m_WorkspaceModel == model) return;
-        UnbindModel(); // Desuscribir del modelo anterior
-
-        m_WorkspaceModel = model;
-
-        if (m_WorkspaceModel == null)
-        {
-            Debug.LogWarning("WorkspaceView: BindModel called with null model.");
-            return;
-        }
-
-        // Suscribirse a los eventos globales del WorkspaceModel
-        m_WorkspaceModel.OnChange += HandleWorkspaceChange;
-
-        // Poblar la vista con los bloques existentes en el modelo al inicio
-        PopulateInitialBlocks();
-        Debug.Log($"WorkSpaceView bound to WorkspaceModel {m_WorkspaceModel.Id}");
-
-    }
-
-    // Desvincula del modelo y limpia
-    public void UnbindModel()
-    {
-        if (m_WorkspaceModel != null)
-        {
-            m_WorkspaceModel.OnChange -= HandleWorkspaceChange;
-            m_WorkspaceModel = null;
-        }
-        ClearAllBlockViews();
-    }
-
-
-    //  Creación/Destrucción de Vistas 
-
-    private void HandleWorkspaceChange(WorkspaceModel workspace, WorkspaceChangeType changeType, object payload)
-    {
-        if (workspace != m_WorkspaceModel || this == null) return; // Seguridad
-
-        try
-        {
-            switch (changeType)
-            {
-                case WorkspaceChangeType.BlockAdded:
-                    if (payload is BlockModel addedBlock) CreateBlockView(addedBlock);
-                    break;
-
-                case WorkspaceChangeType.BlockRemoved:
-                    if (payload is BlockModel removedBlock) RemoveBlockView(removedBlock);
-                    break;
-
-                case WorkspaceChangeType.BlockMoved:
-                    // El BlockView ya actualizó su posición XY al recibir el evento del modelo.
-                    //TODO ¿Necesitamos hacer algo aquí? Quizás redibujar conexiones si se superponen?
-                    
-                    break;
-
-                case WorkspaceChangeType.ConnectionCreated:
-                case WorkspaceChangeType.ConnectionBroken:
-                    // Los BlockViews/ConnectionViews implicados se actualizan solos a través de sus observadores del modelo.
-                    
-                    QueueFullLayoutUpdate(); //Podríamos forzar un re-layout general si la conexión afecta mucho
-                    break;
-
-                case WorkspaceChangeType.Clear:
-                    ClearAllBlockViews();
-                    break;
-
-                case WorkspaceChangeType.LoadFinish:
-                    // Después de cargar, asegurar que todas las vistas estén posicionadas y layout OK
-                    
-                    Debug.Log("WorkspaceView: Forcing layout after LoadFinish.");
-                    QueueFullLayoutUpdate();
-                    break;
-
-                    //TODO Caso Variables/Procedimientos -Si WorkspaceView necesita mostrarlos de alguna forma
-                    //TODO  case WorkspaceChangeType.VariableAdded: UpdateVariableDisplays(); break;
-                    // ...
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error in WorkspaceView.HandleWorkspaceChange ({changeType}): {ex.Message}\n{ex.StackTrace}");
-        }
-    }
-
-    // Crea las vistas para los bloques ya existentes en el modelo )
-    private void PopulateInitialBlocks()
-    {
-        if (m_WorkspaceModel == null) return;
-        ClearAllBlockViews(); // Limpiar primero
-        Debug.Log($"WorkspaceView: Populating initial blocks ({m_WorkspaceModel.BlockDatabase.Count} total)...");
-        // Iterar sobre TODOS los bloques, no solo TopBlocks, porque necesitamos crear
-        
-        foreach (BlockModel block in m_WorkspaceModel.TopBlocks) // Solo procesa TopBlocks (raíces)
-        {
-            CreateBlockView(block); 
-        }
-       
-        // Limpiar vistas existentes
-        /*ClearAllBlockViews();
-        // Crear vista para cada bloque en el modelo
-        foreach (BlockModel block in m_WorkspaceModel.GetAllBlocks())
-        { // Todos los bloques
-            CreateBlockView(block);
-        }*/
-        // Forzar layout al final
-        QueueFullLayoutUpdate();
-    }
-
-
-    // Crea la vista para un BlockModel específico
-    private void CreateBlockView(BlockModel blockModel)
-    {
-        if (blockModel == null || m_blockViews.ContainsKey(blockModel.ID))
-            return; 
-
-        Debug.Log($"WorkspaceView: Creating BlockView for {blockModel.Type} ({blockModel.ID})");
-
-        BlockView newView = BlockViewFactory.CreateView(blockModel, this); 
-        if (newView == null)
-        {
-            Debug.LogError($"BlockViewFactory failed to create view for block type {blockModel.Type}");
-            return;
-        }
-
-        //  Configurar Padre y Posición Inicial
-        newView.transform.SetParent(m_codingArea, false);
-        newView.XY = blockModel.XY; // Posicionar visualmente donde dice el modelo
-
-       
-        newView.BindModel(blockModel); 
-
-        
-        m_blockViews[blockModel.ID] = newView;
-
- 
-    }
-
-
-    // Elimina la vista para un BlockModel específico
-    private void RemoveBlockView(BlockModel blockModel)
-    {
-        if (blockModel == null || !m_blockViews.TryGetValue(blockModel.ID, out BlockView viewToRemove))
-            return; 
-
-        Debug.Log($"WorkspaceView: Removing BlockView for {blockModel.Type} ({blockModel.ID})");
-
-        m_blockViews.Remove(blockModel.ID); // Quitar del diccionario
-
-        // Desvincular antes de destruir 
-        viewToRemove.UnbindModel();
-
-        // Destruir el GO de la vista
-        Destroy(viewToRemove.gameObject);
-    }
-
-    // Limpia todas las vistas de bloques
-    private void ClearAllBlockViews()
-    {
-        // Copiar valores - vamos a modificar el diccionario al destruir
-        List<BlockView> viewsToClear = new List<BlockView>(m_blockViews.Values);
-        m_blockViews.Clear(); // Limpiar diccionario primero
-
-        foreach (BlockView view in viewsToClear)
-        {
-            if (view != null)
-            {
-                view.UnbindModel(); // Desvincular
-                Destroy(view.gameObject);
-            }
-        }
-        Debug.Log("WorkspaceView: Cleared all block views.");
-    }
-
-
-    //  Búsqueda de Vistas Hijas
-
-    public BlockView GetBlockView(BlockModel model)
-    {
-        if (model == null) return null;
-        m_blockViews.TryGetValue(model.ID, out BlockView view);
-        return view;
-    }
-
-    public ConnectionView GetConnectionView(ConnectionModel connectionModel)
-    {
-        BlockView blockView = GetBlockView(connectionModel?.SourceBlockModel);
-        return blockView?.FindConnectionView(connectionModel); 
-    }
-
-    public FieldView GetFieldView(FieldModel fieldModel)
-    {
-        BlockView blockView = GetBlockView(fieldModel?.ParentInput?.SourceBlockModel);
-        return blockView?.FindFieldView(fieldModel); 
-    }
-
-
-    // --- Layout Update ---
-    private bool m_needsFullLayoutUpdate = false;
-    public void QueueFullLayoutUpdate() => m_needsFullLayoutUpdate = true;
-
-    void LateUpdate()
-    {
-        if (m_needsFullLayoutUpdate)
-        {
-            m_needsFullLayoutUpdate = false;
-            Debug.Log("WorkspaceView: Forcing full layout update...");
-            // Forzar un re-layout de todas las vistas Top level
-            foreach (var blockView in m_blockViews.Values.Where(bv => bv.BlockModel != null && bv.BlockModel.IsPotentiallyTopBlock()))
-            { 
-              // Iniciar cálculo desde el bloque raíz
-                blockView.QueueForceLayoutUpdate(); 
-            }
-            
-        }
-    }
-
-    //  Limpieza 
-    void OnDestroy()
-    {
-        UnbindModel(); // Desuscribirse del modelo
-                      
-    }
+    public static WorkSpaceView Active {get; private set;}
 
     void Awake()
     {
-        Debug.Log("WorkSpaceView: Awake starting...");
-
-        // Singleton Setup
-        if (Instance == null)
+        if (Active == null)
         {
-            Instance = this;
-            // DontDestroyOnLoad(gameObject); // Si persiste entre escenas
+            Active = this;
+            // DontDestroyOnLoad(gameObject)
         }
-        else if (Instance != this)
+        else if (Active != this)
         {
-            Debug.LogWarning($"Duplicate WorkSpaceView instance detected on {gameObject.name}. Destroying duplicate.", this.gameObject);
+            Debug.LogWarning($"Duplicate WorkSpaceView instance on {gameObject.name}. Destroying duplicate.");
             Destroy(gameObject);
             return;
         }
 
+        Debug.Log("WorkSpaceView: Awake starting...");
+
+        // Validación Crítica de Referencias del Inspector
+        if (m_codingArea == null) { Debug.LogError("WorkSpaceView: CodingArea MUST be assigned!", this); this.enabled = false; return; }
+        if (m_toolbox == null) { Debug.LogError("WorkSpaceView: Toolbox (e.g., BlockListView) MUST be assigned!", this); this.enabled = false; return; }
+       // if (m_playControlView == null) { Debug.LogWarning("WorkSpaceView: PlayControlView is not assigned.", this); }
+        if (m_blockStatusView == null) { Debug.LogWarning("WorkSpaceView: BlockStatusView is not assigned.", this); }
         RootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
-        if (RootCanvas == null)
+        if (RootCanvas == null) { Debug.LogError("WorkSpaceView: Root Canvas not found!", this); this.enabled = false; return; }
+
+        BlockResMgr resMgr = BlockResMgr.Get(); //carga la configuración
+        try
         {
-            Debug.LogError("WorkSpaceView: Root Canvas not found! This component needs to be under a Canvas hierarchy.", this.gameObject);
-            this.enabled = false; // No puede funcionar sin Canvas
+            if (resMgr == null)
+            {
+                Debug.LogWarning("WorkSpaceView.Awake: BlockResMgr not ready. Attempting load.");
+            }
+
+            Debug.Log("<color=yellow>WorkSpaceView: BlockResMgr Settings potentially loaded.</color>");
+
+            BlockViewSettings.Get(); // Cargar settings 
+            ScratchBlocks.Init(); // Cargar definiciones
+            Debug.Log("<color=green>WorkSpaceView: ScratchBlocks.Init potentially called.</color>");
+
+            // Crear el Modelo Workspace
+            WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions(); // Configurar opciones
+            m_WorkspaceModel = new WorkSpaceModel(options);
+
+            Debug.Log($"<color=green>WorkSpaceView: UBlockly WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
+
+            // Vincular el modelo creado a esta vista
+            //BindModel(m_WorkspaceModel);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"<color=red>CRITICAL ERROR during UBlockly initialization in WorkSpaceView.Awake: {e.Message}\n{e.StackTrace}</color>");
+            this.enabled = false;
+        }
+
+        Debug.Log("WorkSpaceView: Awake finished.");
+    }
+
+    /**
+     * Descripción: Vincula el modelo lógico a esta vista.
+     * @param workspace El modelo lógico de UBlockly a vincular.
+     * @param toolboxRef Referencia al Toolbox (BaseToolbox) para la vista.
+     * @param codingAreaRect RectTransform del área de código donde se colocarán los bloques.
+     * @param statusViewRef Referencia opcional al BlockStatusView para mostrar el estado de ejecución.
+     */
+    public void BindModel(WorkSpaceModel workspace, BaseToolbox toolboxRef, RectTransform codingAreaRect, BlockStatusView statusViewRef = null)
+    {
+        if (m_WorkspaceModel != null && m_WorkspaceModel != workspace)
+        {
+            UnbindModel(); // Desvincular modelo anterior si es diferente
+        }
+
+        m_WorkspaceModel = workspace;
+        m_toolbox = toolboxRef;
+        m_codingArea = codingAreaRect;     
+        m_blockStatusView = statusViewRef;  
+
+        // Validaciones
+        if (m_WorkspaceModel == null)
+        {
+            Debug.LogError("WorkSpaceView.BindModel: Cannot bind a null workspace!", this);
             return;
         }
+        if (m_toolbox == null)
+        {
+            
+            Debug.LogWarning("WorkSpaceView.BindModel: Toolbox reference is null!", this);
+        }
+        if (m_codingArea == null)
+        {
+            Debug.LogError("WorkSpaceView.BindModel: CodingArea reference is null! This is essential.", this);
+            this.enabled = false; // Desactivar si falta el área
+            return;
+        }
+        // if (m_blockStatusView == null) {
+        //     Debug.LogWarning("WorkSpaceView.BindModel: BlockStatusView reference is null.", this);
+        // }
 
-        // Buscar StatusView si no está asignada 
-        if (m_StatusView == null) m_StatusView = GetComponentInChildren<BlockStatusView>();
-        
-        Debug.Log("WorkSpaceView: Awake finished basic setup.");
-        
+        Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.name}, CodingArea: {m_codingArea?.name}</color>");
+
+        if (workspace.TopBlocks.Count > 0)
+        {
+            Debug.Log($"<color=lightblue>WorkSpaceView: Model has {workspace.TopBlocks.Count} top blocks. Building views...</color>");
+            BuildViews(); 
+        }
+        else
+        {
+            Debug.Log("<color>WorkSpaceView: Model is empty, no initial views to build.</color>");
+        }
+
+        Debug.Log($"<color=green>WorkSpaceView: Successfully bound to Workspace {workspace.Id}.</color>");
     }
 
-    void Start() 
+    /**
+     * Descripción: Desvincula el modelo lógico de esta vista.
+     * Limpia las vistas de bloques y otros elementos visuales.
+     */
+    public void UnbindModel()
     {
-        m_ExecutionController = FindFirstObjectByType<ExecutionController>(); 
-        m_WorkSpaceView = FindFirstObjectByType<WorkSpaceView>(); 
+        if (m_WorkspaceModel == null) return;
+        Debug.Log($"WorkSpaceView: Unbinding from Workspace {m_WorkspaceModel.Id}...");
+       // m_playControlView?.Reset(); 
+        m_toolbox?.Clean();       
+        CleanViews();
+        m_WorkspaceModel.Dispose(); 
+        m_WorkspaceModel = null;
+    }
 
-        if (m_ExecutionController == null) Debug.LogError("ExecutionController not found", this.gameObject);
-        if (m_WorkSpaceView == null) Debug.LogError("WorkSpaceView not found", this.gameObject);
+    #region Gestión de Vistas 
 
-        // Suscribirse
-        if (m_ExecutionController != null)
+    /**
+     *Descripción: Obtiene la BlockView asociada a un bloque lógico 
+     * Busca en el diccionario de vistas usando el ID del bloque.
+     * Si la vista fue destruida pero no removida, la elimina del diccionario.
+     * @param block El bloque lógico del que se quiere obtener la vista.
+     * @return La BlockView asociada al bloque, o null si no se encuentra.
+     */
+    public BlockView GetBlockView(BlockModel block)
+    {
+        if (block == null) return null;
+        m_blockViews.TryGetValue(block.ID, out var view);
+      
+        if (view != null && view.gameObject == null)
         {
-            //TODO
+            Debug.LogWarning($"GetBlockView found a destroyed view for block {block.ID}. Removing reference.");
+            m_blockViews.Remove(block.ID);
+            return null;
+        }
+        return view;
+    }
+
+    /**
+     * Descripción: Añade una BlockView al diccionario de vistas. Se usa para mantener el diccionario actualizado con las vistas activas.
+     * @param blockView La BlockView a añadir al diccionario.
+     */
+    public void AddBlockView(BlockView blockView)
+    {
+        if (blockView?.Block == null) return;
+        m_blockViews[blockView.Block.ID] = blockView;
+    }
+
+    /**
+     * Descripción: Remueve una BlockView del diccionario de vistas. Se usa para limpiar referencias a vistas destruidas o no válidas.
+     */
+    public void RemoveBlockView(BlockView blockView)
+    {
+        if (blockView?.Block != null)
+        {
+            m_blockViews.Remove(blockView.Block.ID);
         }
     }
 
-    public void InitializeView(WorkspaceModel model, BlockDragController dragController) 
+    /**
+     * Descripción: Clona el modelo y crea una nueva vista para él en la posición dada.
+     * @param originalBlockView La BlockView original que se quiere clonar.
+     * @param logicalPosition La posición lógica donde se colocará la nueva vista.
+     * @return La nueva BlockView clonada, o null si hubo un error.
+     */
+    public BlockView CloneBlockView(BlockView originalBlockView, Vector2 logicalPosition)
     {
-        Debug.Log("WorkspaceView Initializing...");
+        if (originalBlockView?.Block == null)
+        {
+            Debug.LogError("CloneBlockView: Original BlockModel or its model is null");
+            return null;
+        }
 
+        BlockModel newBlockModel = originalBlockView.Block.Clone();
+        if (newBlockModel == null)
+        {
+            Debug.LogError($"Failed to clone BlockModel Model {originalBlockView.Block.ID}");
+            return null;
+        }
+
+        newBlockModel.XY = logicalPosition; // Establecemos la posición lógica inicial
+        BlockView newView = BlockViewFactory.CreateView(newBlockModel);
+
+        if (newView != null)
+        {
+            newView.InToolbox = false; // No está en la toolbox
+            newView.transform.SetParent(m_codingArea, false); // Padre visual
+            newView.XY = logicalPosition; // Sincronizar posición visual 
+                                          
+            Debug.Log($"Cloned block {originalBlockView.Block.ID} -> New block {newBlockModel.ID} with View {newView.name}");
+        }
+        else
+        {
+            Debug.LogError($"BlockViewFactory failed to create view for cloned block {newBlockModel.ID}");
+            newBlockModel.Dispose(false); // Limpiamos el modelo clonado si la vista falló
+        }
+
+        return newView;
+    }
+
+    /**
+     * Descripción: Construye las vistas para todos los bloques Top existentes en el modelo Workspace.
+     */ 
+    public void BuildViews()
+    {
+        if (m_WorkspaceModel == null) return;
+        Debug.Log($"WorkSpaceView: BuildViews for {m_WorkspaceModel.TopBlocks.Count} top blocks...");
+        CleanViews();
+
+        List<BlockModel> topBlocks = m_WorkspaceModel.GetTopBlocks(false); // Obtener TopBlocks del modelo
+        foreach (BlockModel block in topBlocks)
+        {
+            BuildBlockViewRecursive(block); 
+        }
+        Debug.Log($"WorkSpaceView: BuildViews finished. Total views in dict: {m_blockViews.Count}");
+        // LayoutRebuilder.ForceRebuildLayoutImmediate(m_codingArea); 
+    }
+
+    /** Descripción: Construye la vista de un bloque y sus bloques hijos de forma recursiva.
+     * @param block El bloque lógico del que se quiere construir la vista.
+     * @return La BlockView creada, o null si hubo un error.
+     */
+    private BlockView BuildBlockViewRecursive(BlockModel block)
+    {
+        if (block == null) return null;
+        // Evitamos crear vistas duplicadas si ya existe por alguna razón
+        if (m_blockViews.ContainsKey(block.ID)) return m_blockViews[block.ID];
+
+        BlockView view = BlockViewFactory.CreateView(block);
+        if (view == null) return null; // Falló la creación
+
+        // Configuración de la vista creada (padre, posición, estado)
+        view.InToolbox = false; // Pertenece al workspace
+        view.transform.SetParent(m_codingArea, false);
+        view.XY = block.XY;
+     
+        // Procesar bloques conectados a Inputs
+        foreach (InputModel input in block.InputList)
+        {
+            if (input.Connection != null && input.Connection.IsConnected)
+            {
+                BuildBlockViewRecursive(input.Connection.TargetBlock);
+            }
+        }
+
+        // Procesar bloque conectado a Next
+        if (block.NextConnection != null && block.NextConnection.IsConnected)
+        {
+            BuildBlockViewRecursive(block.NextConnection.TargetBlock);
+        }
+
+        return view;
+    }
+
+    /**
+     * Descripción: Limpia todas las vistas de bloque gestionadas por este WorkspaceView.
+     */
+    public void CleanViews()
+    {
+        if (m_blockViews.Count == 0) return;
+        Debug.Log($"WorkSpaceView: Cleaning {m_blockViews.Count} views...");
+
+        // Copio keys o values porque Dispose modificará el diccionario
+        List<BlockView> viewsToDispose = new List<BlockView>(m_blockViews.Values);
+        m_blockViews.Clear(); // Limpiamos el diccionario 
+
+        foreach (var view in viewsToDispose)
+        {
+            if (view != null && view.gameObject != null)
+            {
+          
+                view.Dispose();
+            }
+        }
+        Debug.Log("WorkSpaceView: CleanViews finished.");
+    }
+
+    /** 
+     * Descripción: Encuentra la ConnectionView visual asociada a un ConnectionModel lógico específico.
+     * @param model El ConnectionModel del que se quiere obtener la vista.
+     * @return La ConnectionView asociada al modelo, o null si no se encuentra.
+     */
+    public ConnectionView GetConnectionView(ConnectionModel model)
+    {
+        if (model == null)
+        {
+            Debug.LogWarning("GetConnectionView called with a null ConnectionModel.");
+            return null;
+        }
+        if (model.SourceBlock == null)
+        {
+            Debug.LogWarning($"GetConnectionView called for a ConnectionModel without a SourceBlockModel (ID: {model.Type}, Block?: {model.SourceBlock?.ID ?? "NULL"})");
+            return null;
+        }
+
+        BlockView sourceBlockView = GetBlockView(model.SourceBlock); 
+        if (sourceBlockView == null)
+        {
+           
+            Debug.LogWarning($"GetConnectionView could not find the BlockView for SourceBlock ID: {model.SourceBlock.ID}");
+            return null;
+        }
+
+        return sourceBlockView.FindConnectionView(model);
+    }
+
+    private BlockView m_BlockOverTrash = null;
+
+    /**
+     * Descripción: Verifica si un bloque está sobre el área de la papelera.
+     * @param blockView La BlockView que se quiere verificar.
+     */
+    public void CheckTrashBin(BlockView blockView)
+    {
+        // Lógica para detectar si las coordenadas de blockView están sobre el icono/área de la papelera
+        bool isOver = false; // <-- Implementa esta detección
+        if (TrashCanRect != null)
+        { // Asume que tienes el RectTransform de la papelera
+            Vector3[] worldCorners = new Vector3[4];
+            TrashCanRect.GetWorldCorners(worldCorners);
+            Rect trashWorldRect = new Rect(worldCorners[0].x, worldCorners[0].y, worldCorners[2].x - worldCorners[0].x, worldCorners[2].y - worldCorners[0].y);
+            isOver = trashWorldRect.Contains(blockView.transform.position); // O el centro del bloque?
+
+            // Feedback visual si está sobre la papelera (opcional)
+            HighlightTrashBin(isOver); // Implementa resaltado de la papelera
+        }
+
+        m_BlockOverTrash = isOver ? blockView : null;
+    }
+
+    /**
+     * Descripción: Verifica si un bloque está sobre la papelera.
+     * @param blockView La BlockView que se quiere verificar.
+     * @return true si el bloque está sobre la papelera, false en caso contrario.
+     */
+    public bool IsOverTrashBin(BlockView blockView)
+    {
+        return m_BlockOverTrash == blockView; // Devuelve true si ESTE bloque era el último sobre la papelera
+    }
+
+    /**
+     * Descripción: Resalta o desresalta la papelera visualmente.
+     * @param highlight true para resaltar, false para desresaltar.
+     */
+    public void HighlightTrashBin(bool highlight) { /*TODO*/}
+    public RectTransform TrashCanRect;
+
+    #endregion
+
+
+    void OnDestroy()
+    {
+        if (Active == this)
+        {
+         
+            Debug.Log("WorkSpaceView.OnDestroy: Cleaning up UBlockly...");
+            ScratchBlocks.Dispose(); 
+            BlockViewSettings.Dispose(); // Limpia caché de settings
+            BlockResMgr.Dispose();       // Limpia caché de recursos
+            // Resources.UnloadUnusedAssets(); 
+
+            Active = null; // Limpiar referencia estática
+        }
+        Debug.Log("WorkSpaceView: Destroyed completely.");
+    }
+
+    /**
+     * Descripción: Método de limpieza al destruir la vista.
+     * Se asegura de desvincular el modelo y limpiar las vistas.
+     */
+    public void Dispose()
+    {
+        Debug.Log("WorkSpaceView.Dispose() called.");
+        UnbindModel(); 
+    }
+
+
+    /**
+     * Descripción: Convierte una posición de pantalla a la posición lógica dentro del espacio de trabajo.
+     * @param screenPoint La posición de pantalla a convertir.
+     * @param eventCamera La cámara asociada al evento (puede ser null si el Canvas es Screen Space Overlay).
+     * @return La posición lógica dentro del espacio de trabajo.
+     */
+    public Vector2 ScreenPointToWorkspaceLogicalPosition(Vector2 screenPoint, Camera eventCamera)
+    {
         if (m_codingArea == null || RootCanvas == null)
         {
-            Debug.LogError("WorkspaceView cannot initialize, core components missing (CodingArea or RootCanvas). Check Awake logs.", this.gameObject);
-            return;
+            Debug.LogError("ScreenPointToWorkspaceLogicalPosition: CodingArea or RootCanvas is null!");
+            return Vector2.zero;
         }
 
-        m_BlockDragController = dragController;
-        if (m_BlockDragController == null) Debug.LogWarning("WorkspaceView initialized without a BlockDragController.", this.gameObject);
+        Vector2 localPoint; //relativo al pivot del m_codingArea.
+                           
 
+        bool success = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            m_codingArea, screenPoint, eventCamera, out localPoint
+        );
 
-        ClearAllBlockViews();
-        BindModel(model); 
+        if (!success)
+        {
+            Debug.LogWarning("ScreenPointToLocalPointInRectangle failed. Returning zero.");
+            return Vector2.zero;
+        }
+      
+        float workspaceScale = 1.0f; // TODO: Reemplazar con Workspace.Scale o similar - float workspaceScale = Workspace?.Options?.Scale ?? 1.0f;
 
-        Debug.Log("WorkspaceView Initialized and Bound.");
+        //Origen del Workspace:  (0,0) esquina superior izquierda.
+        Vector2 workspaceOriginOffset = Vector2.zero; 
+        float codingAreaHeight = m_codingArea.rect.height;
+        Vector2 logicalPosition;
+        logicalPosition.x = (localPoint.x / workspaceScale);
+        logicalPosition.y = (codingAreaHeight / workspaceScale) - (localPoint.y / workspaceScale); // Y lógica = AltoTotal - Y_UI
+
+        logicalPosition -= workspaceOriginOffset;
+      
+        // Debug.Log($"ScreenToLogic: Screen={screenPoint}, Local={localPoint}, Logic={logicalPosition}");
+
+        return logicalPosition;
     }
+} // Fin Clase WorkSpaceView
 
    
-    internal void RegisterBlockView(BlockView view)
-    {
-        if (view?.BlockModel != null && !m_blockViews.ContainsKey(view.BlockModel.ID))
-        {
-            m_blockViews.Add(view.BlockModel.ID, view);
-        }
-        else if (view?.BlockModel != null)
-        {
-            Debug.LogWarning($"BlockView for {view.BlockModel.ID} already registered.");
-        }
-    }
-    
-
-    internal void UnregisterBlockView(BlockView view)
-    {
-        if (view?.BlockModel != null)
-        {
-            m_blockViews.Remove(view.BlockModel.ID);
-        }
-    }
-}
