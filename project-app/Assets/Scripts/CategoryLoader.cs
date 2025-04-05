@@ -93,7 +93,8 @@ public class CategoryLoader : MonoBehaviour
 
         if (rect != null)
         {
-            Debug.LogError($"No se encontró el componente RectTransform en el prefab {categoryPrefab.name}");
+            rect= newCategory.AddComponent<RectTransform>();
+            //Debug.LogError($"No se encontró el componente RectTransform en el prefab {categoryPrefab.name}");
              rect.anchorMin = new Vector2(0.5f, 1);
              rect.anchorMax = new Vector2(0.5f, 1);
              rect.pivot = new Vector2(0.5f, 1);
