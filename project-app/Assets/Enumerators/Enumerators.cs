@@ -20,7 +20,9 @@ public enum UpdateState
     Disconnected,
     BumpedAway, // Bloque que ha sido desconectado y ha sido alejado de la conexión
     Highlight, // Bloque que ha sido conectado y se ha resaltado
-    UnHighlight //Bloque que ha sido desconectado 
+    UnHighlight, //Bloque que ha sido desconectado 
+    AcceptConnection,
+    CancelConnection
 }
 
 public enum ViewType
@@ -55,14 +57,22 @@ public enum UpdateStates
 
 }
 
+public enum NumberType
+{
+    NaN,
+    Int,
+    Float,
+    Double,
+}
+
 public enum EConnection
 {
     InputValue,    // Entrada para valores (ej. un número en "mover X pasos")
     OutputValue,   // Salida de valores (ej. un bloque que genera un número)
     NextStatement, // Conexión para el siguiente bloque en una secuencia
     PrevStatement, // Conexión para el bloque anterior en una secuencia
-    DummyInput     // Input sin conexión (para agrupar fields)
-                   // Podemos añadir 'None' si lo vemos útil
+    DummyInput,     // Input sin conexión (para agrupar fields)
+    None            
 }
 
 public enum ConnectionZone { 
@@ -136,4 +146,35 @@ public enum BlockViewSettingsColor {
     CategoryVariablesColor,
     CategoryMyBlocksColor
 
+}
+
+public enum BlockResLoadType
+{
+    /// <summary>
+    /// Serialized in scriptable object
+    /// </summary>
+    Serialized = 1,
+    /// <summary>
+    /// Load from Resources 
+    /// </summary>
+    Resources = 2,
+    /// <summary>
+    /// Load from Assetbundle
+    /// </summary>
+    Assetbundle = 3,
+}
+
+public enum ConnectionUpdateEvent
+{
+    Connected,
+    Disconnected
+
+}
+
+
+public enum EAlign
+{
+    Left = -1,
+    Center = 0,
+    Right = 1,
 }
