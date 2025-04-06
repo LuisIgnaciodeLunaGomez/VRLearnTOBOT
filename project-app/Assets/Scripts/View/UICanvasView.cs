@@ -67,7 +67,7 @@ public class UICanvasView : MonoBehaviour
         //Instanciación y Configuración de Componentes MVC
         if (m_RightPanelRect != null && m_MiddlePanelRect != null)
         {
-            SetupUpComponents(m_MiddlePanelRect.gameObject, m_RightPanelRect.gameObject);
+            SetUpComponents(m_MiddlePanelRect.gameObject, m_RightPanelRect.gameObject);
         }
         else
         {
@@ -75,7 +75,7 @@ public class UICanvasView : MonoBehaviour
             return; // Detener si los paneles críticos fallaron
         }
         LoadCategories(categoryContentPanel); // Cargar categorías en el panel izquierdo
-        Debug.Log("<color=green>UICanvasView: Awake finished UI and UBlockly base setup.</color>");
+        Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
     }
 
     /**
@@ -93,13 +93,19 @@ public class UICanvasView : MonoBehaviour
                 
             }
 
-            ScratchBlocks.Init(); //Carga I18n etc. similiar a UBlockly
+            ScratchBlocks.Init(); //Carga I18n Idioma
+
+            Debug.Log("<color=teal>UICanvasView: Calling BlockDataLoader.LoadAllDefinitions()...</color>");
+            BlockDataLoader.LoadAllDefinitions(); 
+            Debug.Log("<color=teal>UICanvasView: BlockDataLoader.LoadAllDefinitions() finished.</color>");
             Debug.Log("<color=green>UICanvasView: ScratchBlocks.Init() successful.</color>");
+
+
         }
         catch (System.Exception e)
         {
             Debug.LogError($"<color=red>UICanvasView: CRITICAL ERROR during ScratchBlocks.Init(): {e.Message}\n{e.StackTrace}</color>");
-            enabled = false; // Desactivar este manager si el core falla
+            enabled = false; 
         }
     }
     /**
@@ -149,7 +155,7 @@ public class UICanvasView : MonoBehaviour
             new Vector2(0, 0.90f), new Vector2(1, 1), Vector2.zero, Vector2.zero,
             new Vector2(0, 0), new Color(0.6f, 0.4f, 1f, 1f));
 
-        // Asignación altura fija (alternativa a los offsets)
+        // Asignación altura fija 
         topPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 30);
 
         Canvas topCanvas = topPanel.AddComponent<Canvas>();
@@ -358,7 +364,7 @@ public class UICanvasView : MonoBehaviour
      * @param middlePanelGO GameObject del panel izquierdo (MiddlePanel)
      * @param rightPanelGO GameObject del panel derecho (RightPanel)
      */
-    private void SetupUpComponents(GameObject middlePanelGO, GameObject rightPanelGO)
+    private void SetUpComponents(GameObject middlePanelGO, GameObject rightPanelGO)
     {
         Debug.Log("<color=yellow>UICanvasView: Setting up Components...</color>");
 
@@ -367,13 +373,17 @@ public class UICanvasView : MonoBehaviour
         {
             WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions();
             m_WorkspaceModel = new WorkSpaceModel(options);
-            Debug.Log($"<color=green>UICanvasView: UBlockly WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
+            Debug.Log($"<color=green>UICanvasView: WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
         }
         catch (System.Exception e)
         {
             Debug.LogError($"<color=red>UICanvasView: Failed to create WorkSpaceModel: {e.Message}</color>");
             return;
         }
+
+        // Configurar la Vista 
+        m_WorkSpaceView = rightPanelGO.GetComponent<WorkSpaceView>();
+        if (m_WorkSpaceView == null) m_WorkSpaceView = rightPanelGO.AddComponent<WorkSpaceView>();
 
         //Configuración del MiddlePanel) 
         m_Toolbox = middlePanelGO.GetComponent<BlockScrollListView>();
@@ -386,7 +396,8 @@ public class UICanvasView : MonoBehaviour
             return;
         }
 
-        Debug.Log($"<color=yellow>UICanvasView: Calling InitializeToolbox with Model ID: {m_WorkspaceModel?.Id}, View Instance ID: {m_WorkSpaceView?.GetInstanceID()}</color>");
+        // Debug.Log($"<color=yellow>UICanvasView: Calling InitializeToolbox with Model ID: {m_WorkspaceModel?.Id}, View Instance ID: {m_WorkSpaceView?.GetInstanceID()}</color>");
+        Debug.Log($"<color=yellow>UICanvasView: Preparing to InitializeToolbox. Container valid: {blockContainerTransform != null}, Manager valid: {this != null}, Model valid: {m_WorkspaceModel != null}, View valid: {m_WorkSpaceView != null}</color>");
         m_Toolbox.InitializeToolbox(
             blockContainerTransform, // Transform container
             this,                    // UICanvasView manager
@@ -396,9 +407,8 @@ public class UICanvasView : MonoBehaviour
 
         Debug.Log("<color=green>UICanvasView: Toolbox (BlockScrollList) configured and Initialized.</color>");
 
-        // Configurar la Vista 
-        m_WorkSpaceView = rightPanelGO.GetComponent<WorkSpaceView>();
-        if (m_WorkSpaceView == null) m_WorkSpaceView = rightPanelGO.AddComponent<WorkSpaceView>();
+
+        Debug.Log($"<color=orange>UICanvasView: PRE-BIND CHECK. WorkspaceModel is null? {(m_WorkspaceModel == null)}. Toolbox valid? {m_Toolbox != null}. PanelRect valid? {m_RightPanelRect != null}. View valid? {m_WorkSpaceView != null}</color>");
 
         if (m_WorkspaceModel != null && m_Toolbox != null && m_RightPanelRect != null && m_WorkSpaceView != null)
         {
@@ -414,7 +424,7 @@ public class UICanvasView : MonoBehaviour
         }
         else
         {
-            Debug.LogError("UICanvasView: Cannot bind WorkSpaceView, WorkSpaceModel is null!");
+          //  Debug.LogError("UICanvasView: Cannot bind WorkSpaceView, WorkSpaceModel is null!");
 
             string errorMsg = "UICanvasView: Cannot bind WorkSpaceView due to missing refs: ";
             if (m_WorkspaceModel == null) errorMsg += "WorkspaceModel ";
@@ -422,15 +432,10 @@ public class UICanvasView : MonoBehaviour
             if (m_RightPanelRect == null) errorMsg += "RightPanelRect ";
             if (m_WorkSpaceView == null) errorMsg += "WorkspaceView ";
             Debug.LogError(errorMsg);
-            enabled = false; // Desactivar si la vinculación falla
+            enabled = false; 
 
         }
-        // Configuración adicional que estaba en CreateWorkspace original
-        // BlockStatusView statusView = rightPanelGO.AddComponent<BlockStatusView>();
-        // if (statusView != null) statusView.InitializeView(m_uBlocklyView, ...); // Pasa la nueva vista 
-
-        // Asociar el Workspace con el Toolbox para la lógica de drag
-        // m_toolbox.SetWorkspaceView(m_uBlocklyView);
+       
     }
 
     /**
@@ -446,8 +451,8 @@ public class UICanvasView : MonoBehaviour
 
         //Imagen para que ScrollRect detecte el contenido
         Image bgImage = blockContainer.AddComponent<Image>();
-        bgImage.color = new Color(1, 1, 1, 0); // Transparente pero raycastable
-        bgImage.raycastTarget = true; // Importante para scroll
+        bgImage.color = new Color(1, 1, 1, 0); 
+        bgImage.raycastTarget = true; 
 
         RectTransform contentRect = blockContainer.GetComponent<RectTransform>();
         contentRect.anchorMin = new Vector2(0, 1); // Ancla Arriba-Izquierda
@@ -486,7 +491,7 @@ public class UICanvasView : MonoBehaviour
         Image panelImage = panel.GetComponent<Image>(); 
         if (panelImage == null) panelImage = panel.AddComponent<Image>();
         
-        //panelImage.color = new Color(0.9f, 0.9f, 0.9f, 1f); // Tu color original
+        //panelImage.color = new Color(0.9f, 0.9f, 0.9f, 1f);
       
       
         Debug.Log($"BlockContainer created inside {panel.name}");
@@ -523,9 +528,8 @@ public class UICanvasView : MonoBehaviour
 
         Image img = border.AddComponent<Image>();
         img.color = Color.gray;
-        img.raycastTarget = false; // El borde no necesita interactuar
+        img.raycastTarget = false; // no necesita interactuar
     }
-
 
     /**
      * Método que se ejecuta al hacer clic en un icono de la interfaz
@@ -576,7 +580,7 @@ public class UICanvasView : MonoBehaviour
             new Vector2(0, 0), new Vector2(0.15f, 0.95f), // Abajo-Izquierda hasta 15% ancho, debajo TopPanel
             Vector2.zero, Vector2.zero,
             new Vector2(0, 1), // Pivot Arriba-Izquierda
-            new Color(0.95f, 0.95f, 0.95f, 1f)); // Blanco o gris muy claro
+            new Color(0.95f, 0.95f, 0.95f, 1f)); 
 
         // Añadir ScrollRect al LeftPanel directamente
         ScrollRect scrollRect = leftPanel.AddComponent<ScrollRect>();
@@ -586,13 +590,13 @@ public class UICanvasView : MonoBehaviour
 
         // El ContentPanel donde irán las categorías
         GameObject contentPanel = new GameObject("CategoryContent");
-        contentPanel.transform.SetParent(leftPanel.transform, false); // Hijo directo del ScrollRect
+        contentPanel.transform.SetParent(leftPanel.transform, false); 
 
         RectTransform contentRect = contentPanel.AddComponent<RectTransform>();
         contentRect.anchorMin = new Vector2(0, 1); // Arriba-Izquierda
         contentRect.anchorMax = new Vector2(1, 1); // Arriba-Derecha (Stretch Horizontal)
         contentRect.pivot = new Vector2(0.5f, 1); // Pivote Arriba-Centro
-       // contentRect.sizeDelta = new Vector2(0, 0); // Altura controlada por Fitter
+       // contentRect.sizeDelta = new Vector2(0, 0);
 
         // Layout Vertical para los botones de categoría
         VerticalLayoutGroup layoutGroup = contentPanel.AddComponent<VerticalLayoutGroup>();
@@ -630,7 +634,6 @@ public class UICanvasView : MonoBehaviour
             return;
         }
 
-        // Asegurarse que el CategoryLoader no exista ya en el GameObject
         CategoryLoader categoryLoader = GetComponent<CategoryLoader>();
         if (categoryLoader == null)
         {
@@ -638,7 +641,7 @@ public class UICanvasView : MonoBehaviour
         }
 
         categoryLoader.contentPanel = contentPanel; // Panel con VerticalLayoutGroup
-        categoryLoader.xmlFileName = "XML/Categories"; // Ruta relativa a Resources
+        categoryLoader.xmlFileName = "XML/Categories"; 
         categoryLoader.categoryPrefab = Resources.Load<GameObject>("Prefabs/CategoryPrefab");
         categoryLoader.uiCanvasManageViewr = this; // Pasa la referencia a este manager
 
@@ -748,7 +751,7 @@ public class UICanvasView : MonoBehaviour
 
         m_WorkSpaceView?.Dispose(); 
         m_WorkspaceModel?.Dispose(); 
-        //ScratchBlocks.Dispose();  <-- Revisar si hace falta llamarlo o no
+        //ScratchBlocks.Dispose();  <-- TODO:  Revisar si hace falta llamarlo o no
     }
 
     /**

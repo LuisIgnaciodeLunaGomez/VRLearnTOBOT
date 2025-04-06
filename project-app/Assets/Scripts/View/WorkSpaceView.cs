@@ -54,45 +54,6 @@ public class WorkSpaceView : MonoBehaviour
         }
 
         Debug.Log("WorkSpaceView: Awake starting...");
-
-        // Validación Crítica de Referencias del Inspector
-        if (m_codingArea == null) { Debug.LogError("WorkSpaceView: CodingArea MUST be assigned!", this); this.enabled = false; return; }
-        if (m_toolbox == null) { Debug.LogError("WorkSpaceView: Toolbox (e.g., BlockListView) MUST be assigned!", this); this.enabled = false; return; }
-       // if (m_playControlView == null) { Debug.LogWarning("WorkSpaceView: PlayControlView is not assigned.", this); }
-        if (m_blockStatusView == null) { Debug.LogWarning("WorkSpaceView: BlockStatusView is not assigned.", this); }
-        RootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
-        if (RootCanvas == null) { Debug.LogError("WorkSpaceView: Root Canvas not found!", this); this.enabled = false; return; }
-
-        BlockResMgr resMgr = BlockResMgr.Get(); //carga la configuración
-        try
-        {
-            if (resMgr == null)
-            {
-                Debug.LogWarning("WorkSpaceView.Awake: BlockResMgr not ready. Attempting load.");
-            }
-
-            Debug.Log("<color=yellow>WorkSpaceView: BlockResMgr Settings potentially loaded.</color>");
-
-            BlockViewSettings.Get(); // Cargar settings 
-            ScratchBlocks.Init(); // Cargar definiciones
-            Debug.Log("<color=green>WorkSpaceView: ScratchBlocks.Init potentially called.</color>");
-
-            // Crear el Modelo Workspace
-            WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions(); // Configurar opciones
-            m_WorkspaceModel = new WorkSpaceModel(options);
-
-            Debug.Log($"<color=green>WorkSpaceView: UBlockly WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
-
-            // Vincular el modelo creado a esta vista
-            //BindModel(m_WorkspaceModel);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"<color=red>CRITICAL ERROR during UBlockly initialization in WorkSpaceView.Awake: {e.Message}\n{e.StackTrace}</color>");
-            this.enabled = false;
-        }
-
-        Debug.Log("WorkSpaceView: Awake finished.");
     }
 
     /**
@@ -104,9 +65,16 @@ public class WorkSpaceView : MonoBehaviour
      */
     public void BindModel(WorkSpaceModel workspace, BaseToolbox toolboxRef, RectTransform codingAreaRect, BlockStatusView statusViewRef = null)
     {
+        Debug.Log($"<color=cyan>WorkSpaceView ({GetInstanceID()}): BindModel called.</color>", this);
+
         if (m_WorkspaceModel != null && m_WorkspaceModel != workspace)
         {
             UnbindModel(); // Desvincular modelo anterior si es diferente
+        }
+        else if (m_WorkspaceModel == workspace && m_WorkspaceModel != null)
+        {
+            Debug.LogWarning($"WorkSpaceView: BindModel called with the same workspace model {workspace.Id}. Rebinding/refreshing.", this);
+            CleanViews();
         }
 
         m_WorkspaceModel = workspace;
@@ -131,11 +99,13 @@ public class WorkSpaceView : MonoBehaviour
             this.enabled = false; // Desactivar si falta el área
             return;
         }
-        // if (m_blockStatusView == null) {
-        //     Debug.LogWarning("WorkSpaceView.BindModel: BlockStatusView reference is null.", this);
-        // }
+        if (m_blockStatusView == null) {
+            Debug.LogWarning("WorkSpaceView.BindModel: BlockStatusView reference is null.", this);
+         }
 
-        Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.name}, CodingArea: {m_codingArea?.name}</color>");
+        Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.GetType().Name ?? "NULL"}, CodingArea: {m_codingArea?.name ?? "NULL"}</color>");
+
+        //Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.name}, CodingArea: {m_codingArea?.name}</color>");
 
         if (workspace.TopBlocks.Count > 0)
         {
@@ -364,17 +334,16 @@ public class WorkSpaceView : MonoBehaviour
      */
     public void CheckTrashBin(BlockView blockView)
     {
-        // Lógica para detectar si las coordenadas de blockView están sobre el icono/área de la papelera
-        bool isOver = false; // <-- Implementa esta detección
+        // Lógica para detectar si las coordenadas de blockView están sobre el icono/área de la papelera- revisar lo que vamos a hacer con la papelera
+        bool isOver = false; 
         if (TrashCanRect != null)
-        { // Asume que tienes el RectTransform de la papelera
+        {
             Vector3[] worldCorners = new Vector3[4];
             TrashCanRect.GetWorldCorners(worldCorners);
             Rect trashWorldRect = new Rect(worldCorners[0].x, worldCorners[0].y, worldCorners[2].x - worldCorners[0].x, worldCorners[2].y - worldCorners[0].y);
-            isOver = trashWorldRect.Contains(blockView.transform.position); // O el centro del bloque?
+            isOver = trashWorldRect.Contains(blockView.transform.position); 
 
-            // Feedback visual si está sobre la papelera (opcional)
-            HighlightTrashBin(isOver); // Implementa resaltado de la papelera
+            HighlightTrashBin(isOver); 
         }
 
         m_BlockOverTrash = isOver ? blockView : null;
@@ -387,7 +356,7 @@ public class WorkSpaceView : MonoBehaviour
      */
     public bool IsOverTrashBin(BlockView blockView)
     {
-        return m_BlockOverTrash == blockView; // Devuelve true si ESTE bloque era el último sobre la papelera
+        return m_BlockOverTrash == blockView; // Devuelve true si este bloque era el último sobre la papelera
     }
 
     /**
@@ -425,7 +394,6 @@ public class WorkSpaceView : MonoBehaviour
         Debug.Log("WorkSpaceView.Dispose() called.");
         UnbindModel(); 
     }
-
 
     /**
      * Descripción: Convierte una posición de pantalla a la posición lógica dentro del espacio de trabajo.
