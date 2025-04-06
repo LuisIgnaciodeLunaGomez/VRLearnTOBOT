@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Blocks category="Motion" color="#4C97FF">
+<Blocks category="Movimiento" color="#4C97FF">
 	<!-- Atributos globales para la categoría-->
 	<Block type="motion_movesteps" spriteName="Stack_block_grey">>
 		<!-- Tipo único del bloque -->
