@@ -14,156 +14,128 @@
  * Descripción:Controlador que carga las categorías de bloques y se relaciona con la vista correspondiente.
  */
 
-
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
+using System.Collections;
 
 public class CategoryController : MonoBehaviour
 {
-   
-    // Vista que muestra los bloques de la categoría seleccionada
-    [SerializeField] private BlockListView m_BlockListView;
+    private BlockListView m_BlockListView;
+    private string m_ActiveCategoryName = null;
+    private ToolboxConfig m_ToolboxConfig; 
+    private Dictionary<string, Color> m_CategoryColors;
+    private bool m_IsInitialized = false;
 
-    private string m_ActiveCategory = null;
-    
-    private Dictionary<string, Color> m_CategoryColors; // Referencia al color de la categoría
-   // private List<(string Name, Color Color)> m_Categories; // Caché de tuplas
-    private bool m_IsInitialized = false; // Flag para controlar Start
-    
-    
     public void InitializeController(BlockListView blockListView)
     {
         m_BlockListView = blockListView;
         if (m_BlockListView == null)
         {
-            Debug.LogError("CategoryController: BlockListView reference is missing!", this.gameObject);
-            return; 
-        }
-
-        // Cargar información necesaria (colores, nombres de categoría)
-        //  LoadCategoryInfo();
-       // UICanvasView uiView = Object.FindFirstObjectByType<UICanvasView>();
-       // if (uiView != null) m_categoryButtonContainer = uiView.CategoryButtonContainer;
-
-       // if (m_BlockListView == null) Debug.LogError("...", this.gameObject);
-        //if (m_categoryButtonContainer == null) Debug.LogError("CategoryController couldn't find CategoryButtonContainer via UICanvasView!", this.gameObject);
-
-       // List<string> categoryNames = m_CategoryColors.Keys.ToList(); 
-       // m_BlockListView?.DisplayCategories(categoryNames, m_CategoryColors, SelectCategory);
-
-        Debug.Log("CategoryController: Initial reference set.");
-        m_IsInitialized = true; // Marcar como listo para Start
-    }
-
-    void Start()
-    {
-        // Solo ejecutar si InitializeController fue llamado con éxito
-        if (!m_IsInitialized || m_BlockListView == null)
-        {
-            if (!m_IsInitialized) Debug.LogError("CategoryController.Start: InitializeController was not called!", this.gameObject);
+            Debug.LogError("CategoryController: BlockListView reference is missing!", this);
             return;
         }
 
-        Debug.Log("CategoryController.Start: Loading info and displaying categories...");
-
-        // Mover la lógica de carga y display aquí
-        LoadCategoryInfo();
-
-        List<string> categoryNames = m_CategoryColors?.Keys.ToList() ?? new List<string>();
-
-
-        if (categoryNames.Count == 0)
+        m_ToolboxConfig = ToolboxConfig.Load();
+        if (m_ToolboxConfig == null || m_ToolboxConfig.BlockCategoryList == null || m_ToolboxConfig.BlockCategoryList.Count == 0)
         {
-            Debug.LogWarning("CategoryController: No categories loaded or found to display.");
-        }
-
-        if (categoryNames.Count > 0)
-        {
-            m_BlockListView.DisplayCategories(categoryNames, m_CategoryColors, this.SelectCategory);
-           
-            SelectCategory(categoryNames[0]);
+            Debug.LogError("CategoryController: Failed to load ToolboxConfig from UBlockly BlockResMgr!", this);
+            m_CategoryColors = new Dictionary<string, Color>();
         }
         else
         {
-            
-            Debug.LogWarning("CategoryController: No categories loaded or found to display.");
+            m_CategoryColors = m_ToolboxConfig.BlockCategoryList.ToDictionary(
+                cat => cat.CategoryName,
+                cat => cat.Color 
+            );
+            Debug.Log($"CategoryController: Loaded {m_CategoryColors.Count} categories from UBlockly ToolboxConfig.");
         }
+
+        m_IsInitialized = true;
+        Debug.Log("CategoryController: Initialized.");
     }
 
-    private void LoadCategoryInfo()
+    IEnumerator Start()
     {
-        // Carga m_CategoryColors
-        m_CategoryColors = BlockDataLoader.GetAllCategoryColorsOrDefault(); // Carga la lista de tuplas
+        yield return new WaitUntil(() => m_IsInitialized); 
 
-        //Validar si el diccionario resultante está vacío/null
-        if (m_CategoryColors == null || m_CategoryColors.Count == 0)
+        if (m_BlockListView == null || m_ToolboxConfig == null) 
         {
-            Debug.LogWarning("CategoryController: No category color info loaded from BlockDataLoader.");
-            m_CategoryColors = new Dictionary<string, Color>(); // Asegurar que no sea null para evitar errores después
-                                                                
+            Debug.LogError("CategoryController.Start: Initialization incomplete (BlockListView or ToolboxConfig missing)!", this);
+            yield break;
         }
-        else
-        {
-            Debug.Log($"CategoryController: Loaded {m_CategoryColors.Count} categories with colors.");
-        }
-        /* if (m_Categories == null || m_Categories.Count == 0)
-         {
-             Debug.LogWarning("CategoryController: No category info loaded.");
-             m_CategoryColors = new Dictionary<string, Color>(); // Asegurar diccionario vacío
-             return;
-         }
-         // Convierte la lista de tuplas al diccionario de colores 
-         m_CategoryColors = m_Categories.ToDictionary(c => c.Name, c => c.Color);*/
+
+        Debug.Log("CategoryController.Start: Displaying categories...");
+        StartDisplayingCategories(); 
     }
 
-
-    // Acciones llamadas por los botones de categoría en la Vista
-
-    public void SelectCategory(string categoryName)
+    /**
+     * Descripción: Selecciona la categoría pulsada en el botón
+     * @param categoryName: Nombre de la categoría seleccionada
+     */
+    public void SelectCategory(string categoryName, BaseToolbox sourceToolBox)
     {
-        if (string.IsNullOrEmpty(categoryName) || categoryName == m_ActiveCategory)
+        if (string.IsNullOrEmpty(categoryName) || categoryName == m_ActiveCategoryName)
         {
-            return; 
+            return;
+        }
+        if (m_ToolboxConfig == null || !m_CategoryColors.ContainsKey(categoryName))
+        {
+            Debug.LogWarning($"CategoryController: Attempted to select unknown category '{categoryName}'", this);
+            return;
         }
 
         Debug.Log($"CategoryController: Selecting category '{categoryName}'");
+        m_ActiveCategoryName = categoryName;
 
-        m_ActiveCategory = categoryName;
+        ToolboxBlockCategory categoryConfig = m_ToolboxConfig.GetBlockCategory(categoryName);
+        if (categoryConfig == null)
+        { 
+            Debug.LogError($"Could not get category config for '{categoryName}' from ToolboxConfig.", this);
+            m_BlockListView?.ShowEmptyMessage($"Error loading blocks for {categoryName}."); 
+            return;
+        }
+
+        Color categoryColor = categoryConfig.Color;
+        List<string> blockTypesInCategory = categoryConfig.BlockList; 
 
        
-        Color categoryColor = m_CategoryColors.TryGetValue(categoryName, out Color color) ? color : Color.grey;
-
-        // BlockListView  muestra los bloques de esta categoría
         if (m_BlockListView != null)
         {
-            // obtener las BlockDefinitions desde BlockDataLoader
-            m_BlockListView.ShowBlockCategory(categoryName, categoryColor);
+            m_BlockListView.ShowBlocksForCategory(categoryName, sourceToolBox,categoryColor, blockTypesInCategory);
         }
     }
 
+    /**
+     * Descripción: Inicia la visualización de las categorías
+     */
     public void StartDisplayingCategories()
     {
-        if (m_BlockListView == null || !m_IsInitialized)
+        if (m_BlockListView == null || !m_IsInitialized || m_CategoryColors == null)
         {
-            Debug.LogError("CategoryController cannot display categories, refs missing!", this.gameObject);
+            Debug.LogError("CategoryController cannot display categories, initialization incomplete!", this);
             return;
         }
-        Debug.Log("CategoryController: StartDisplayingCategories...");
-        LoadCategoryInfo(); // Carga m_CategoryColors
+        Debug.Log("CategoryController: StartDisplayingCategories called.");
 
-        List<string> categoryNames = m_CategoryColors?.Keys.ToList() ?? new List<string>();
+        List<string> categoryNames = m_CategoryColors.Keys.ToList(); 
 
         if (categoryNames.Count > 0)
         {
-           
-            m_BlockListView.DisplayCategories(categoryNames, m_CategoryColors, this.SelectCategory);
-            
-            SelectCategory(categoryNames[0]);
+           ;
+            if (m_BlockListView != null)
+            {
+                SelectCategory(categoryNames[0], m_BlockListView);
+            }
+            else
+            {
+                Debug.LogError("Cannot select initial category because BlockListView reference is null.", this);
+            }
         }
         else
         {
-            m_BlockListView.ShowEmptyMessage("No categories found."); 
+            if (m_BlockListView != null) m_BlockListView.ShowEmptyMessage("No categories found.");
         }
     }
-}
+
+}//Fin clase CategoryController
