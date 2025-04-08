@@ -20,13 +20,12 @@ using UnityEngine;
 public class AppController : MonoBehaviour
 {
     public static AppController Instance { get; private set; }
-    // Referencias obtenidas, no asignadas en Inspector
     private UICanvasView m_uiManager;
     private WorkSpaceModel m_workspaceModel;
     private WorkSpaceView m_workspaceView;
     private ExecutionController m_executionController;
-    private InputController m_inputController; // Si aún lo necesitas
-    // TODO otras referencias
+    private InputController m_inputController; 
+    
 
     void Awake()
     {
@@ -45,8 +44,7 @@ public class AppController : MonoBehaviour
     {
         Debug.Log("<color=orange>AppController: Start - Finding components...</color>");
 
-        // Esperar a que UICanvasManager termine su Awake
-        yield return null; // Espera un frame
+        yield return null;
 
         m_uiManager = FindFirstObjectByType<UICanvasView>();
         if (m_uiManager == null)
@@ -55,7 +53,6 @@ public class AppController : MonoBehaviour
             yield break;
         }
 
-        // Obtener referencias clave desde UICanvasManager
         m_workspaceModel = m_uiManager.Workspace;
         m_workspaceView = m_uiManager.WorkSpaceView;
 
@@ -65,7 +62,6 @@ public class AppController : MonoBehaviour
             yield break;
         }
 
-        // Encontrar o inicializar otros controladores
         m_executionController = FindFirstObjectByType<ExecutionController>();
         if (m_executionController == null) m_executionController = gameObject.AddComponent<ExecutionController>();
 
