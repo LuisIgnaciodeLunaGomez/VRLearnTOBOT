@@ -195,7 +195,7 @@ public class FieldVariableView : FieldView
                 UpdateText(); 
             }
         }
-        else if (selectedVariable == null) /
+        else if (selectedVariable == null) 
         {
             // HandleSpecialVariableActions();
         }
