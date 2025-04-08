@@ -9,177 +9,127 @@
  * 
  * Fecha: 11/03/2025
  * 
- * Versión: 2.0.0
+ * Versión: 2.0.1
  * 
  * Descripción: Esta clase visualizará la ejecucción de código y mostrará el estado de los bloques
  * 
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI; 
 
-public class BlockStatusView : MonoBehaviour // Asegúrate que hereda de MonoBehaviour
+public class BlockStatusView : MonoBehaviour 
 {
-    
-    [SerializeField] private GameObject m_HighlightObject; 
-    private ExecutionController m_ExecutionController;
-    private WorkSpaceView m_WorkspaceView;
 
-    void Awake()
+    private RunnerUpdateStateObserver mObserver;
+    private GameObject mStatusObj;
+    private Stack<BlockModel> mRunningBlocks;
+    private BlockView mRunBlockView;
+
+    private void Awake()
     {
-        // Encontrar referencias 
-       /* m_ExecutionController = FindFirstObjectByType<ExecutionController>();
-        m_WorkspaceView = FindFirstObjectByType<WorkSpaceView>();         
-        // Validar referencias
-        if (m_ExecutionController == null)
-            Debug.LogError("BlockStatusView: ExecutionController not found!");
-        if (m_WorkspaceView == null)
-            Debug.LogError("BlockStatusView: WorkspaceView not found!");*/
-
-      
-        if (m_HighlightObject == null)
-        {
-            m_HighlightObject = new GameObject("StatusHighlight", typeof(RectTransform), typeof(Image));
-            m_HighlightObject.transform.SetParent(this.transform);
-            Image img = m_HighlightObject.GetComponent<Image>();
-            img.color = new Color(1f, 1f, 0f, 0.5f); // Amarillo semitransparente
-            img.raycastTarget = false; 
-            RectTransform rt = m_HighlightObject.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
-            rt.localScale = Vector3.one;
-        }
-        m_HighlightObject?.SetActive(false); // Oculto al inicio
+        mRunningBlocks = new Stack<BlockModel>();
+        mObserver = new RunnerUpdateStateObserver(this);
+        CSharp.Runner.AddObserver(mObserver);
     }
 
-    void Start()
+    private void Show()
     {
-        m_ExecutionController = FindFirstObjectByType<ExecutionController>(); 
-        m_WorkspaceView = FindFirstObjectByType<WorkSpaceView>();
-
-        // Validar referencias
-        if (m_ExecutionController == null)
-            Debug.LogError("BlockStatusView: ExecutionController not found in Start!", this.gameObject);
-        if (m_WorkspaceView == null)
-            Debug.LogError("BlockStatusView: WorkspaceView not found in Start!", this.gameObject);
-
-        // Suscribir a eventos del ExecutionController
-        if (m_ExecutionController != null)
+        if (mStatusObj == null)
         {
-            m_ExecutionController.OnExecutionStartBlock += HandleExecutionStartBlock;
-            m_ExecutionController.OnExecutionFinishBlock += HandleExecutionFinishBlock;
-            m_ExecutionController.OnExecutionStop += HandleExecutionStopOrError;
-            m_ExecutionController.OnExecutionError += HandleExecutionStopOrError; 
+            mStatusObj = GameObject.Instantiate(BlockViewSettings.Get().PrefabStatusLight, WorkSpaceView.Active.CodingArea, false);
+            RectTransform statusRect = mStatusObj.GetComponent<RectTransform>();
+            statusRect.anchorMin = statusRect.anchorMax = new Vector2(0, 1);
+            statusRect.pivot = 0.5f * Vector2.one;
+        }
+        if (!mStatusObj.activeInHierarchy)
+            mStatusObj.SetActive(true);
+    }
+
+    private void Hide()
+    {
+        if (mStatusObj != null)
+        {
+            mStatusObj.SetActive(false);
         }
     }
 
-    public void InitializeView(WorkSpaceView workspaceView, ExecutionController executionController)
+    private void OnDestroy()
     {
-        m_WorkspaceView = workspaceView;
-        m_ExecutionController = executionController;
-        if (m_WorkspaceView == null) Debug.LogError("...", this.gameObject);
-        if (m_ExecutionController == null) Debug.LogError("...", this.gameObject);
-       
-        //Subscripción a eventos
-        if (m_ExecutionController != null)
+        CSharp.Runner.RemoveObserver(mObserver);
+    }
+
+    public void UpdateStatus(RunnerUpdateState args)
+    {
+        switch (args.Type)
         {
-            m_ExecutionController.OnExecutionStartBlock += HandleExecutionStartBlock;
-            m_ExecutionController.OnExecutionFinishBlock += HandleExecutionFinishBlock;
-            m_ExecutionController.OnExecutionStop += HandleExecutionStopOrError;
-            m_ExecutionController.OnExecutionError += HandleExecutionStopOrError;
-            Debug.Log("BlockStatusView subscribed to ExecutionController events.");
-        }
-    }
-    void OnDestroy()
-    {
-        //Desubscripción a eventos
-        if (m_ExecutionController != null)
-        {
-            m_ExecutionController.OnExecutionStartBlock -= HandleExecutionStartBlock;
-            m_ExecutionController.OnExecutionFinishBlock -= HandleExecutionFinishBlock;
-            m_ExecutionController.OnExecutionStop -= HandleExecutionStopOrError;
-            m_ExecutionController.OnExecutionError -= HandleExecutionStopOrError;
-        }
-    }
-
-
-    //  Manejo de Eventos 
-
-    private BlockView m_CurrentHighlightedView = null;
-
-    private void HandleExecutionStartBlock(BlockModel blockModel)
-    {
-        if (m_WorkspaceView == null || blockModel == null) return;
-
-        BlockView blockView = m_WorkspaceView.GetBlockView(blockModel); 
-
-        if (blockView != null)
-        {
-            m_CurrentHighlightedView = blockView; // se Guarda la referencia a la vista actual
-            ShowHighlight(blockView);
-        }
-        else
-        {
-            Debug.LogWarning($"BlockStatusView: Could not find BlockView for Block ID {blockModel.ID}");
-            HideHighlight();
-        }
-    }
-
-    private void HandleExecutionFinishBlock(BlockModel blockModel)
-    {
-        
-        if (m_CurrentHighlightedView != null && m_CurrentHighlightedView.BlockModel == blockModel)
-        {
-            HideHighlight();
-            m_CurrentHighlightedView = null;
-        }
-       
-    }
-
-    private void HandleExecutionStopOrError(BlockModel block, string message) // Sobrecarga para Error
-    {
-        HideHighlight();
-        m_CurrentHighlightedView = null;
-    }
-    private void HandleExecutionStopOrError() // Sobrecarga para Stop
-    {
-        HideHighlight();
-        m_CurrentHighlightedView = null;
-    }
-
-
-    private void ShowHighlight(BlockView targetView)
-    {
-        if (m_HighlightObject == null || targetView == null) return;
-
-        // Mover el objeto de resaltado para ser hijo del BlockView y resetear su posición/escala local
-        m_HighlightObject.transform.SetParent(targetView.ViewTransform, false);
-        m_HighlightObject.transform.localPosition = Vector3.zero;
-        m_HighlightObject.transform.localScale = Vector3.one;
-        m_HighlightObject.GetComponent<RectTransform>().anchoredPosition = Vector2.zero; // Resetear anchored
-
-        // Asegurar que su RectTransform cubra el targetView 
-        // RectTransform rt = m_HighlightObject.GetComponent<RectTransform>();
-        // rt.anchorMin = Vector2.zero;
-        // rt.anchorMax = Vector2.one;
-        // rt.offsetMin = new Vector2(-2, -2); // Expandir un poco para borde
-        // rt.offsetMax = new Vector2(2, 2);
-
-        m_HighlightObject.SetActive(true);
-        m_HighlightObject.transform.SetAsLastSibling(); // Asegurar que esté por encima visualmente
-    }
-
-    private void HideHighlight()
-    {
-        if (m_HighlightObject != null)
-        {
-            m_HighlightObject.SetActive(false);
-            // Opcional: Moverlo de vuelta a ser hijo de BlockStatusView para no ensuciar jerarquía
-            // m_HighlightObject.transform.SetParent(this.transform);
+            case RunnerUpdateState.RunBlock:
+                {
+                    mRunningBlocks.Push(args.RunningBlock);
+                    mRunBlockView = WorkSpaceView.Active.GetBlockView(args.RunningBlock);
+                    Show();
+                    break;
+                }
+            case RunnerUpdateState.FinishBlock:
+                {
+                    if (mRunningBlocks.Count > 0 && mRunningBlocks.Peek() == args.RunningBlock)
+                    {
+                        mRunningBlocks.Pop();
+                        if (mRunningBlocks.Count > 0)
+                            mRunBlockView = WorkSpaceView.Active.GetBlockView(mRunningBlocks.Peek());
+                        else
+                            Hide();
+                    }
+                    break;
+                }
+            case RunnerUpdateState.Stop:
+                {
+                    Hide();
+                    mRunningBlocks.Clear();
+                    mRunBlockView = null;
+                    break;
+                }
+            case RunnerUpdateState.Error:
+                {
+                    if (!string.IsNullOrEmpty(args.Msg))
+                    {
+                        MsgDialog dialog = DialogFactory.CreateDialog("message") as MsgDialog;
+                        dialog.SetMsg(args.Msg);
+                    }
+                    Hide();
+                    mRunningBlocks.Clear();
+                    mRunBlockView = null;
+                    break;
+                }
         }
     }
 
-  
-}
+    private void LateUpdate()
+    {
+        if (mRunBlockView != null)
+        {
+            RectTransform statusRect = mStatusObj.GetComponent<RectTransform>();
+            statusRect.SetParent(mRunBlockView.ViewTransform, false);
+            statusRect.anchoredPosition = new Vector2(20, -25);
+            mRunBlockView = null;
+        }
+    }
+
+    private class RunnerUpdateStateObserver : IObserver<RunnerUpdateState>
+    {
+        private BlockStatusView mView;
+
+        public RunnerUpdateStateObserver(BlockStatusView statusView)
+        {
+            mView = statusView;
+        }
+
+        public void OnUpdated(object subject, RunnerUpdateState args)
+        {
+            mView.UpdateStatus(args);
+        }
+    }
+
+
+}//Fin clase BlockStatusView

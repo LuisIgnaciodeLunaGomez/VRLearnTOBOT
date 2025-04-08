@@ -14,670 +14,922 @@
  * Descripción: Clase que representa un bloque visual en la interfaz de usuario premite la vinculación del modelo lógico con la UI
  * 
  */
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using System;
 
-[RequireComponent(typeof(CanvasGroup))] 
-[RequireComponent(typeof(LayoutElement))] 
+[RequireComponent(typeof(CanvasGroup))]
+[RequireComponent(typeof(LayoutElement))]
 
-public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHandler 
+public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHandler //TODO: Interesante mirar IPointerClickHandler
 {
-    
-    public override ViewType Type => ViewType.Block;
-    private BlockModel m_BlockModel;
-    public BlockModel BlockModel => m_BlockModel;
 
+    [SerializeField] private List<Image> m_BgImages = new List<Image>();
+    [Tooltip("Asigna aquí la Imagen principal que muestra el color del bloque")]
+    [SerializeField] private Image m_PrimaryBackground; 
+    private bool m_LayoutIsDirty = false;
 
-    private Image m_BackgroundImage;
-    private LayoutElement m_LayoutElement;
-    private CanvasGroup m_CanvasGroup;
-    private BlockDragController m_DragController; 
-
-   
-    public bool IsDraggable { get;  set; } = true;
-    public bool IsTemplate { get; set; } = false;
-
-    
-    private Vector2 m_DragOffset; // Offset LOCAL dentro del bloque
-    private bool m_IsDragging = false; // Flag interno para saber si se está arrastrando 
-    private bool m_needsLayoutUpdate = false;
-
- 
-    public override void InitializeView()
+    public override ViewType Type
     {
-        base.InitializeView(); 
-        m_BackgroundImage = GetComponent<Image>();
-        m_LayoutElement = GetComponent<LayoutElement>();
-        m_CanvasGroup = GetComponent<CanvasGroup>();
-        if (m_CanvasGroup == null) m_CanvasGroup = gameObject.AddComponent<CanvasGroup>();
+        get { return ViewType.Block; }
+    }
 
-        // Configuraciones por defecto
-        m_LayoutElement.ignoreLayout = false;
-        if (m_BackgroundImage == null) Debug.LogWarning($"BlockView ({gameObject.name}) is missing an Image.");
+    public string BlockType
+    {
+        get { return mBlock.Type; }
+    }
 
-        if (m_DragController == null) 
+    private BlockModel mBlock;
+    public BlockModel Block { get { return mBlock; } }
+    private bool m_IsInlineMode = false;
+    public bool IsInlineMode => m_IsInlineMode;
+    public bool InToolbox { get; set; }
+    public bool IsDragging { get; set; } = true;
+  
+    private MemorySafeBlockObserver mBlockObserver;
+    private CanvasGroup m_canvasGroup; 
+    private Vector2 m_dragStartOffset; 
+    private LayoutElement m_layoutElement;             
+    private WorkSpaceView m_WorkspaceView;
+
+    public WorkSpaceView workSpaceView { get; set; }
+    protected override void InitializeView()
+    {
+        base.InitializeView();
+    }
+    public virtual void BindModel(BlockModel block, WorkSpaceView workspaceView)
+    {
+        if (mBlock == block) return;
+        if (mBlock != null) UnBindModel();
+
+        mBlock = block;
+        m_WorkspaceView = workspaceView;
+
+        if (m_WorkspaceView != null)
         {
-            m_DragController = FindFirstObjectByType<BlockDragController>(); 
-            if (m_DragController == null)
+            WorkSpaceView.Active.AddBlockView(this);
+        }
+        else
+        {
+            Debug.LogError($"BlockView ({BlockType}): BindView called with a NULL WorkSpaceView! Interactions may fail.", this);
+        }
+
+        mBlockObserver = new MemorySafeBlockObserver(this);
+        mBlock.AddObserver(mBlockObserver);
+
+        int inputIndex = 0;
+        foreach (BaseView view in ChildViews)
+        {
+            if (view.Type == ViewType.Connection)
             {
-                Debug.LogError("BlockView could not find BlockDragController!");
+                ConnectionView conView = view as ConnectionView;
+                conView.BindModel(mBlock.GetFirstClassConnection(conView.ConnectionType), this);
             }
-        }
-
-    }
-
-   
-    public void Setup(BlockDragController dragController )
-    {
-        m_DragController = dragController;
-    }
-
-   
-    public void BindModel(BlockModel blockModel)
-    {
-        if (m_BlockModel == blockModel) return;
-        UnbindModel();
-
-        m_BlockModel = blockModel;
-        if (m_BlockModel == null)
-        {
-            if (IsTemplate)
+            else if (view.Type == ViewType.LineGroup)
             {
-              
-                QueueForceLayoutUpdate();
-            }
-            return;
-        }
-
-        gameObject.name = $"BlockView_{m_BlockModel.Type}_{m_BlockModel.ID.Substring(0, 4)}";
-
-        // Suscribirse a Eventos del Modelo
-        m_BlockModel.OnUpdate += HandleModelUpdate;
-
-        //ENLAZAR Vistas Hijas Existentes  con el Modelo
-        if (!BindChildViewsRecursive()) 
-        {
-            Debug.LogError($"BlockView.BindModel ({m_BlockModel.Type}): Failed to bind child views due to structure mismatch. Rebuilding.");
-            RebuildContent(); 
-            return; 
-        }
-
-        // Actualizar Estado Visual Inicial y Posición
-        UpdateVisualState();
-        XY = m_BlockModel.XY; // Sincronizar posición visual con la lógica inicial
-        SetColor(m_BlockModel.Definition.color); // Asegurar color correcto
-
-        //Layout Inicial
-        QueueForceLayoutUpdate(); 
-    }
-
-    //  Reacción a Cambios del Modelo 
-    internal void HandleModelUpdate(BlockModel model, BlockUpdateType updateType)
-    {
-        if (model != m_BlockModel || this == null || !gameObject.activeInHierarchy) return;
-
-       
-        switch (updateType)
-        {
-            // Reconstrucción compelta del contenido visual
-            case BlockUpdateType.Structure_Inputs:
-            case BlockUpdateType.Structure_Connections:
-                RebuildContent();
-                break;
-
-            // Actualizar apariencia
-            case BlockUpdateType.State_Disabled:
-            case BlockUpdateType.State_Movable:
-            case BlockUpdateType.State_Deletable:
-            case BlockUpdateType.State_Editable:
-            case BlockUpdateType.State_Shadow:
-                UpdateVisualState(); // 
-                if (updateType == BlockUpdateType.State_Shadow) SetColorBasedOnModel(); // Recalcula color si cambia a/de sombra
-                break;
-            case BlockUpdateType.State_Collapsed:
-                UpdateCollapsedState(); 
-                break;
-
-            // Cambio de posición lógica 
-            case BlockUpdateType.Position_XY:
-                if (!m_IsDragging && XY != model.XY) // Evitar bucle si yo inicié el cambio
+                LineGroupView groupView = view as LineGroupView;
+                foreach (var inputView in groupView.ChildViews)
                 {
-                    XY = model.XY; // Actualizar posición visual
-                    
+                    ((InputView)inputView).BindModel(mBlock.InputList[inputIndex], this);
+                    inputIndex++;
                 }
-                break;
-
-            // Cambios de valor (Field/Variable)
-            case BlockUpdateType.Value_Field:
-            case BlockUpdateType.Value_Variable:
-                QueueForceLayoutUpdate();
-                break;
+            }
         }
+
+        RegisterUIEvents();
+
     }
-
-    // Reconstruye TODO el contenido interno 
-    private void RebuildContent()
-    {
-        Debug.Log($"BlockView {m_BlockModel?.ID}: Rebuilding content...");
-        //Desvincular modelos hijos
-        UnbindChildViewsRecursive();
-
-        // Destruir GameObjects hijos (vistas internas)
-        foreach (var child in ChildViews.ToList())
-        {
-            RemoveChildView(child);
-            Destroy(child.gameObject);
-        }
-        ChildViews.Clear();
-
-        //  Llamar al Builder para recrear la estructura visual
-        if (m_BlockModel?.Definition != null)
-            BlockViewBuilder.BuildBlockViewContent(this.gameObject, m_BlockModel.Definition);
-
-        // Re-enlazar los nuevos hijos creados por el Builder
-        BindChildViewsRecursive();
-
-        //Forzar Layout
-        QueueForceLayoutUpdate();
-    }
-
-    public void UnbindModel()
-    {
-        if (m_BlockModel != null)
-        {
-            m_BlockModel.OnUpdate -= HandleModelUpdate;
-            UnbindChildViewsRecursive(); //
-            m_BlockModel = null;
-        }
-    }
-
    
-    protected override Vector2 CalculateSize()
+    
+    public void NotifyLayoutDirty()
     {
-        var lineGroups = ChildViews.OfType<LineGroupView>();
-        float contentWidth = 0;
-        float contentHeight = 0;
-        if (lineGroups.Any())
+        if (!m_LayoutIsDirty) 
         {
-            contentWidth = lineGroups.Max(lg => lg.Size.x);
-            contentHeight = lineGroups.Sum(lg => lg.Size.y) + Mathf.Max(0, lineGroups.Count() - 1) * BlockViewSettings.ContentSpace.y;
+            // Debug.Log($"BlockView ({gameObject.name}): Marked as dirty.", this);
+            m_LayoutIsDirty = true;
         }
 
-        // Añadir espacio para conexiones principales visuales
-        float topPadding = BlockViewSettings.BlockTopPadding;
-        float bottomPadding = BlockViewSettings.BlockBottomPadding; 
-        float sidePadding = BlockViewSettings.BlockSidePadding;
-        float outputNotchWidth = 0;
-
-        if (m_BlockModel?.PreviousConnection != null) topPadding = Mathf.Max(topPadding, BlockViewSettings.ConnectionHeight);
-        if (m_BlockModel?.NextConnection != null) bottomPadding = Mathf.Max(bottomPadding, BlockViewSettings.ConnectionHeight);
-        if (m_BlockModel?.OutputConnection != null)
-        {
-            // Añadir espacio a la izquierda para la conexión de output
-            sidePadding = Mathf.Max(sidePadding, BlockViewSettings.OutputConnectionWidth);
-            outputNotchWidth = BlockViewSettings.OutputConnectionWidth; 
-            topPadding = Mathf.Max(topPadding, BlockViewSettings.BlockTopPaddingOutput); 
-            bottomPadding = Mathf.Max(bottomPadding, BlockViewSettings.BlockBottomPaddingOutput);
-        }
-
-        float totalWidth = Mathf.Max(contentWidth + sidePadding * 2, BlockViewSettings.MinBlockSize.x);
-        float totalHeight = Mathf.Max(contentHeight + topPadding + bottomPadding, BlockViewSettings.MinBlockSize.y);
-
-        //Ajustar 'contentWidth' si la conexión Output influye
-        //totalWidth = Mathf.Max(contentWidth + sidePadding + outputNotchWidth, BlockViewSettings.MinBlockSize.x);
-
-
-        // Actualizar LayoutElement
-        if (m_LayoutElement != null)
-        {
-            m_LayoutElement.preferredWidth = totalWidth;
-            m_LayoutElement.preferredHeight = totalHeight;
-        }
-        return new Vector2(totalWidth, totalHeight);
     }
 
-    private bool m_NeedsLayoutUpdate = false;
-    public void QueueForceLayoutUpdate()
+    public void UnBindModel()
     {
-        if (!m_NeedsLayoutUpdate) 
-        {
-            m_NeedsLayoutUpdate = true; LayoutRebuilder.MarkLayoutForRebuild(ViewTransform);
-        } 
-    } 
+      if (mBlock == null) return;
 
-    // Posición donde empieza el primer hijo a primera LineGroup o una Connection
+        foreach (BaseView view in ChildViews)
+        {
+            if (view is ConnectionView conView)
+            {
+                conView.UnBindModel();
+            }
+            else if (view is LineGroupView groupView)
+            {
+                foreach (var childOfGroup in groupView.ChildViews)
+                {
+                     if (childOfGroup is InputView inputView)
+                    {
+                         inputView.UnBindModel();
+                     }
+                 }
+             }
+             else if (view is FieldView fieldView)
+             {
+                // fieldView.UnBindModel(); 
+             }
+        }
+
+        WorkSpaceView.Active?.RemoveBlockView(this);
+        mBlock.RemoveObserver(mBlockObserver);
+        mBlock = null;
+    }
+
+    public void Dispose()
+    {
+        foreach (BaseView view in ChildViews )
+        {
+            if (view.Type == ViewType.Connection)
+            {
+                if (((ConnectionView)view).TargetBlockView != null)
+                    ((ConnectionView)view).TargetBlockView.Dispose();
+            }
+            else if (view.Type == ViewType.LineGroup)
+            {
+                LineGroupView groupView = view as LineGroupView;
+                foreach (var inputView in groupView.ChildViews )
+                {
+                    if (((InputView)inputView).HasConnection && ((InputView)inputView).GetConnectionView().TargetBlockView != null)
+                        ((InputView)inputView).GetConnectionView().TargetBlockView.Dispose();
+                }
+            }
+        }
+
+        BlockModel model = mBlock;
+        UnBindModel();
+        if (this.gameObject != null)
+        {
+            Destroy(this.gameObject);
+        }
+        
+        model?.Dispose();
+    }
+
+    #region UI Update
+
     public override Vector2 ChildStartXY
     {
         get
         {
-            // Si tiene Previous, el primer LineGroup empieza debajo de la muesca
-            if (m_BlockModel?.PreviousConnection != null)
+            BlockViewSettings settings = BlockViewSettings.Instance;
+            if (settings == null)
             {
-                return new Vector2(BlockViewSettings.BlockSidePadding, // Margen izquierdo
-                                    -BlockViewSettings.ConnectionHeight); // Debajo de la conexión prev
+                Debug.LogError("BlockViewSettings instance is null! Cannot calculate size correctly.");
+                return Vector2.one * 50; 
             }
-            // Si tiene Output, los inputs empiezan más a la derecha
-            else if (m_BlockModel?.OutputConnection != null)
+            if (ChildViews [0].Type == ViewType.Connection)
             {
-                return new Vector2(BlockViewSettings.OutputConnectionWidth, // Después de la conexión output
-                                   -BlockViewSettings.BlockTopPadding); // Margen superior
+                EConnection conType = ((ConnectionView)ChildViews [0]).ConnectionType;
+                switch (conType)
+                {
+                    case EConnection.OutputValue:
+                        return settings.ValueConnectPointRect.position;
+
+                    case EConnection.PrevStatement:
+                    case EConnection.NextStatement:
+                        return settings.StatementConnectPointRect.position;
+                }
             }
-            // Bloque sin Prev ni Output 
-            else
-            {
-                return new Vector2(BlockViewSettings.BlockSidePadding,
-                                    -BlockViewSettings.BlockTopPadding);
-            }
+            return base.ChildStartXY;
         }
     }
 
-    // Cuando el BlockView se mueve, actualiza el modelo lógico y las posiciones lógicas de las conexiones
+    protected override Vector2 CalculateSize()
+    {
+        BlockViewSettings settings = BlockViewSettings.Instance;
+        if (settings == null)
+        {
+            Debug.LogError("BlockViewSettings instance is null! Cannot calculate size correctly.");
+            return Vector2.one * 50; 
+        }
+        bool alignRight = false;
+
+        Vector2 size = Vector2.zero;
+        for (int i = 0; i < ChildViews .Count; i++)
+        {
+            LineGroupView groupView = ChildViews [i] as LineGroupView;
+            if (groupView != null)
+            {
+                size.x = Mathf.Max(size.x, groupView.Size.x);
+                size.y += groupView.Size.y;
+                if (i < ChildViews .Count - 1)
+                    size.y += settings.ContentSpace.y;
+
+                if (((InputView)groupView.LastChild).AlignRight)
+                    alignRight = true;
+            }
+        }
+
+        List<Vector4> dimensions = new List<Vector4>();
+        for (int i = 0; i < ChildViews .Count; i++)
+        {
+            LineGroupView groupView = ChildViews [i] as LineGroupView;
+            if (groupView != null)
+            {
+                if (alignRight)
+                    groupView.UpdateAlignRight(size.x);
+
+                Vector2 drawSize = groupView.GetDrawSize();
+                dimensions.Add(new Vector4(groupView.XY.x, groupView.XY.y - drawSize.y, groupView.XY.x + drawSize.x, groupView.XY.y));
+            }
+        }
+
+        ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
+        return size;
+    }
+
     protected internal override void OnXYUpdated()
     {
-        // base.OnXYUpdated(); 
-        if (m_BlockModel != null && !IsTemplate) // Solo actualiza el modelo si no es una plantilla
-        {
-            
-            WorkspaceController workspaceController = WorkspaceController.Instance; 
-            if (workspaceController != null)
-            {
-                workspaceController.RequestBlockMove(m_BlockModel, this.XY);
-            }
-            else
-            {
-                Debug.LogError("WorkspaceController not found in BlockView.OnXYUpdated!");
-                
-            }
-        }
-     
-        foreach (var conView in GetAllConnectionViewsInChildren())
-        {
-            conView.OnXYUpdated();
-        }
+        if (InToolbox) return;
+
+        mBlock.XY = XY;
+        base.OnXYUpdated();
     }
 
-    // Cuando el tamaño cambia, actualizar layout o background
     protected internal override void OnSizeUpdated()
     {
-        base.OnSizeUpdated();
-        // Ajustar el tamaño de la imagen de fondo si es necesario
-        if (m_BackgroundImage != null)
+        ChildViews .ForEach(child =>
         {
-            // Si la imagen es 'Sliced', RectTransform maneja el tamaño.
-            // Si es 'Simple', escalar o ajustar UVs.
-           
-            m_BackgroundImage.rectTransform.sizeDelta = this.Size; 
-        }
-        // Forzar redibujo del layout padre 
-        // ParentView?.UpdateLayout();
-    }
-
-    //Enlazar vistas hijas recursivamente
-    private bool BindChildViewsRecursive()
-    {
-        if (m_BlockModel == null) return false; // No hay modelo para enlazar
-
-        int inputModelIndex = 0;
-        bool success = true;
-
-        // Obtener vistas hijas directas  -Connections y LineGroups
-
-        List<BaseView> directChildren = ChildViews.ToList(); 
-
-        foreach (BaseView childView in directChildren)
-        {
-            
-            if (childView is ConnectionView conView && !(childView is ConnectionInputView)) 
+            if (child.Type == ViewType.Connection)
             {
-                ConnectionModel modelToBind = null;
-                switch (conView.ConnectionType)
-                {
-                    case EConnection.OutputValue: modelToBind = m_BlockModel.OutputConnection; break;
-                    case EConnection.PrevStatement: modelToBind = m_BlockModel.PreviousConnection; break;
-                    case EConnection.NextStatement: modelToBind = m_BlockModel.NextConnection; break;
-                }
-
-                if (modelToBind != null)
-                {
-                    conView.BindModel(modelToBind);
-                }
-                else
-                {
-                   
-                    if (HasConnectionSlot(conView.ConnectionType))
-                    { 
-                        // Comprueba si la definición *debería* tenerla
-                        Debug.LogError($"Bind Error ({m_BlockModel.Type}): Found {conView.ConnectionType} View but no matching Model!");
-                        success = false;
-                    }
-                    // Si la definición no la tiene, esta vista es errónea 
-                     childView.gameObject.SetActive(false); 
-                }
+                child.OnXYUpdated();
             }
-            // Es un LineGroupView
-            else if (childView is LineGroupView lineGroup)
-            {
-                // Recorrer sus hijos (InputViews)
-                foreach (BaseView inputChild in lineGroup.ChildViews)
-                {
-                    if (inputChild is InputView inputView)
-                    {
-                        if (inputModelIndex < m_BlockModel.InputList.Count)
-                        {
-                            // Enlazar InputView con el InputModel correspondiente
-                            inputView.BindModel(m_BlockModel.InputList[inputModelIndex]);
-                            // BindModel de InputView se encarga de enlazar sus FieldViews y ConnectionInputView internas
-                            inputModelIndex++;
-                        }
-                        else
-                        {
-                            Debug.LogError($"Bind Error ({m_BlockModel.Type}): Found more InputViews than InputModels.");
-                            inputView.gameObject.SetActive(false); // Ocultar extra
-                            success = false;
-                        }
-                    }
-                    else { Debug.LogWarning($"LineGroup contains unexpected child type: {inputChild.GetType()}"); }
-                }
-            }
-            else { Debug.LogWarning($"BlockView contains unexpected child type: {childView.GetType()}"); }
-        }
-
-        // Comprobación final: ¿Se enlazaron todos los InputModels?
-        if (inputModelIndex < m_BlockModel.InputList.Count)
-        {
-            Debug.LogError($"Bind Error ({m_BlockModel.Type}): More InputModels than InputViews were found/bound.");
-            success = false;
-        }
-
-        return success;
+        });
     }
 
-    // Desvincular
-    private void UnbindChildViewsRecursive()
+    
+    
+    
+    public void BuildLayout()
     {
-        foreach (BaseView childView in ChildViews)
+        BaseView startView = this.GetLineGroup(0).GetTopmostChild();
+        startView.UpdateLayout(startView.HeaderXY);
+    }
+
+    
+   
+    public void AddBgImage(Image image)
+    {
+        if (image != null && !m_BgImages.Contains(image))
+            m_BgImages.Add(image);
+    }
+
+   
+    public void ChangeBgColor(Color color)
+    {
+        m_BgImages.RemoveAll(bg => bg == null);
+        foreach (Image bg in m_BgImages)
         {
-            if (childView is ConnectionView conView) conView.UnbindModel();
-            else if (childView is InputView inputView) inputView.UnbindModel(); // InputView desvincula sus FieldViews
-            else if (childView is LineGroupView lineGroup)
-            { 
-                foreach (BaseView inputChild in lineGroup.ChildViews)
-                {
-                    if (inputChild is InputView iv) iv.UnbindModel();
-                }
-            }
+            bg.color = color;
         }
     }
 
-    //  Actualización de Estado Visual 
+    #endregion
 
-    private void UpdateVisualState() 
+    #region UI Interactions
+
+    private void RegisterUIEvents()
     {
-        if (m_BlockModel == null)
+        var mutatorEntry = ViewTransform.Find("Mutator_entry");
+        if (mutatorEntry != null)
         {
-            // Estado default para plantillas
-            IsDraggable = IsTemplate ? true : false;
-            if (m_CanvasGroup != null) { m_CanvasGroup.alpha = 1f; m_CanvasGroup.interactable = true; }
-            
-            return;
-        }
-
-        IsDraggable = m_BlockModel.Movable;
-        float targetAlpha = (m_BlockModel.Disabled || !m_BlockModel.Editable) ? 0.6f : 1.0f;
-        if (m_CanvasGroup != null) m_CanvasGroup.alpha = targetAlpha;
-        if (m_CanvasGroup != null) m_CanvasGroup.interactable = m_BlockModel.Editable && !m_BlockModel.Disabled;
-
-        SetColorBasedOnModel(); 
-
-    }
-
-    private void UpdateCollapsedState()
-    {
-        if (m_BlockModel == null) return;
-        // TODO: Lógica para ocultar/mostrar inputs/next block, cambiar texto, etc.
-        Debug.LogWarning($"Collapse/Expand not implemented for BlockView {m_BlockModel.Type}");
-        QueueForceLayoutUpdate();
-    }
-
-    public void SetColor(Color color)
-    {
-        if (m_BackgroundImage != null) m_BackgroundImage.color = color;
-        
-    }
-
-    void LateUpdate()
-    {
-        if (m_needsLayoutUpdate)
-        {
-            m_needsLayoutUpdate = false;
-            Debug.Log($"<color=lightblue>Performing Layout for {m_BlockModel.Type}...</color>");
-            PerformLayoutDownwards(); // Inicia el layout descendente
-                                      // Forzar actualización de componentes UI de Unity si se usan
-            LayoutRebuilder.ForceRebuildLayoutImmediate(ViewTransform);
-        }
-    }
-    // Drag & Drop 
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        if (!IsDraggable) { eventData.pointerDrag = null; return; }
-        m_IsDragging = true;
-
-        
-        if (m_DragController != null)
-        {
-            if (IsTemplate)
-            {
-                // Template: Pide al drag controller que inicie el proceso de clonado
-                // Se pasa la definición o el tipo y la posición inicial del puntero
-                BlockDefinition definition = m_BlockModel?.Definition ?? BlockDataLoader.GetDefinition(gameObject.name.Replace("Template_", ""));
-                if (definition != null)
-                    m_DragController.StartDraggingTemplate(this, definition, eventData);
-                else { eventData.pointerDrag = null; Debug.LogError("Cannot start drag: Template definition not found."); }
-              
-                return; 
-            }
-            else
-            {
-                // Bloque Real-Calcular offset local e iniciar drag
-                if (m_CanvasGroup != null) m_CanvasGroup.blocksRaycasts = false;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(ViewTransform, eventData.position, eventData.pressEventCamera, out m_DragOffset);
-                m_DragController.StartDraggingBlock(this, eventData); 
-            }
-        }
-        else { eventData.pointerDrag = null; Debug.LogError("BlockDragController not found!"); }
-
-    }
-
-    // Coroutine para esperar y pasar el drag
-    /*private IEnumerator PassDragToNewView(BlockModel newModel, PointerEventData eventData)
-    {
-        BlockView newView = null;
-        float timeout = 0.5f; // Esperar max 0.5 seg
-        float elapsed = 0f;
-        while (newView == null && elapsed < timeout)
-        {
-            newView = WorkSpaceView.Instance?.GetBlockView(newModel); // Intentar encontrar la nueva vista
-            if (newView == null) yield return null; // Esperar al siguiente frame
-            elapsed += Time.deltaTime;
-        }
-
-        if (newView != null)
-        {
-            Debug.Log($"Passing drag to new view: {newView.gameObject.name}");
-            eventData.pointerDrag = newView.gameObject;
-            ExecuteEvents.Execute(newView.gameObject, eventData, ExecuteEvents.beginDragHandler);
-        }
-        else
-        {
-            Debug.LogError("Failed to find new BlockView for cloned model to pass drag!");
-            eventData.pointerDrag = null;
-            // ¿Qué hacer con el modelo clonado si no se encontró la vista? Podría necesitar limpiarse.
-            WorkspaceController.Instance?.CancelPendingClone(newModel); // Necesitas método en WC
-        }
-    }*/
-
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        if (!m_IsDragging || IsTemplate) return; 
-        m_DragController?.UpdateDragging(this, eventData, m_DragOffset); 
-    }
-
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        if (!m_IsDragging) return; 
-        if (!IsTemplate && m_CanvasGroup != null) m_CanvasGroup.blocksRaycasts = true; 
-        m_IsDragging = false;
-      
-        m_DragController?.StopDragging(this, eventData);
-    }
-
-    // obtener posición en coordenadas del Workspace
-    /*private Vector2 GetPointerPosInWorkspace(PointerEventData eventData)
-    {
-        RectTransform workspaceAreaRect = WorkSpaceView.Instance?.CodingArea;
-        Canvas workspaceCanvas = WorkSpaceView.Instance?.GetComponentInParent<Canvas>();
-        Vector2 localPos = Vector2.zero;
-        if (workspaceAreaRect != null && workspaceCanvas != null)
-        {
-            // Usa la cámara del canvas raíz si existe, sino null (Screen Space Overlay)
-            Camera cam = (rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : rootCanvas.worldCamera;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(workspaceAreaRect, eventData.position, workspaceCanvas.worldCamera, out localPos);
-        }
-        return localPos;
-    }
-    */
- 
-    // Encuentra ConnectionView hija -Principal o de Input
-    public ConnectionView FindConnectionView(ConnectionModel modelToFind)
-    {
-        if (modelToFind == null) return null;
-        return GetAllConnectionViewsInChildren().FirstOrDefault(cv => cv.ConnectionModel == modelToFind);
-    }
-
-    // Encuentra FieldView hija
-    public FieldView FindFieldView(FieldModel modelToFind)
-    {
-        if (modelToFind == null) return null;
-        foreach (var lineGroup in ChildViews.OfType<LineGroupView>())
-        {
-            foreach (var inputView in lineGroup.ChildViews.OfType<InputView>())
-            {
-                foreach (var fieldView in inputView.ChildViews.OfType<FieldView>())
-                {
-                    if (fieldView.FieldModel == modelToFind) return fieldView; 
-                }
-            }
-        }
-        return null;
-    }
-
-    //encontrar ConnectionViews o FieldViews específicas
-    public IEnumerable<ConnectionView> GetAllConnectionViewsInChildren()
-    {
-        List<ConnectionView> views = new List<ConnectionView>();
-        foreach (var child in ChildViews)
-        {
-            if (child is ConnectionView cv) views.Add(cv);
-            else if (child is LineGroupView lgv)
-            {
-                foreach (var inputChild in lgv.ChildViews)
-                {
-                    if (inputChild is InputView iv)
-                    {
-                        if (iv.GetConnectionView() != null) views.Add(iv.GetConnectionView());
-                    }
-                }
-            }
-        }
-        return views;
-    }
-
-    // --- Limpieza 
-    public new void OnDestroy()
-    {
-        UnbindModel();
-        
-    }
-
-
-    // Llama a UpdateLayout 
-    private void ForceLayoutCalculationNow()
-    {
-        if (this == null || !gameObject.activeInHierarchy) return;
-        try
-        {
-            
-            BaseView header = GetHeaderView(); 
-            if (header != null) header.PerformLayoutDownwards();
-            else PerformLayoutDownwards();
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Error during ForceLayoutCalculationNow for {gameObject.name}: {e.Message}\n{e.StackTrace}");
+            mutatorEntry.GetComponent<Button>().onClick.AddListener(() =>
+                DialogFactory.CreateMutatorDialog(mBlock)
+            );
         }
     }
 
    
-    public BaseView GetHeaderView()
+    public void SetOrphan()
     {
-        BaseView header = this;
-        while (header.PreviousView != null && header.ParentView == this.ParentView) // Busca el primer hermano en la misma línea/padre
+        if (InToolbox)
+            InToolbox = false;
+        ViewTransform.SetParent(WorkSpaceView.Active.CodingArea);
+        ViewTransform.SetAsLastSibling();
+    }
+
+    private Vector2 mTouchOffset;
+    private ConnectionModel mClosestConnection = null;
+    private ConnectionModel mAttachingConnection = null;
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (!IsDragging || mBlock == null) 
         {
-            header = header.PreviousView;
+            eventData.pointerDrag = null; 
+            return;
         }
-        return header;
-    }
 
+        Debug.Log($"BeginDrag on: {BlockType} (InToolbox: {InToolbox})");
 
-    // saber si la definición tiene una conexión específica
-    private bool HasConnectionSlot(EConnection type)
-    {
-        if (m_BlockModel?.Definition == null) return false;
-        switch (type)
+        if (WorkSpaceView.Active == null)
         {
-            case EConnection.OutputValue: return m_BlockModel.Definition.hasOutput;
-            case EConnection.PrevStatement: return m_BlockModel.Definition.hasPreviousStatement;
-            case EConnection.NextStatement: return m_BlockModel.Definition.hasNextStatement;
-            default: return false; 
+            Debug.LogError("BlockView: WorkSpaceView.Active is null. Cannot begin drag.");
+            eventData.pointerDrag = null;
+            return;
         }
-    }
 
-    private void ConfigureForTemplate()
-    {
-      
-        string potentialType = gameObject.name.Replace("Template_", "");
-        BlockDefinition definition = BlockDataLoader.GetDefinition(potentialType);
-        if (definition != null) SetColor(definition.color); else SetColor(Color.grey);
-    }
-    private void SetColorBasedOnModel()
-    {
-        if (m_BlockModel == null) return;
-        Color targetColor = m_BlockModel.IsShadow ? BlockViewSettings.ShadowColor : (m_BlockModel.Definition?.color ?? Color.grey);
-        SetColor(targetColor);
-    }
+        mBlock.UnPlug(); 
 
-    // obtener primer hijo de contenido real
-    private BaseView GetFirstContentChild()
-    {
-        return ChildViews.FirstOrDefault(v => v is ConnectionView || v is LineGroupView);
-    }
-
-    //  para Revertir UI desde InputController
-    public void ForceUpdateDisplayFromModel()
-    {
-        // Forzar actualización de los fields hijos
-        foreach (var fieldView in GetComponentsInChildren<FieldView>(true))
-        { 
-            if (fieldView.FieldModel != null)
-                fieldView.ForceUpdateDisplayFromModel(); // 
+        if (!InToolbox)
+            SetOrphan();
+        else
+        {
+           
+            transform.SetParent(WorkSpaceView.Active.CodingArea, true); 
+            transform.SetAsLastSibling();
+            InToolbox = false; 
         }
+
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+             transform.parent as RectTransform, 
+             eventData.position,
+             WorkSpaceView.Active.EventCamera, 
+             out Vector2 localPointerPos);
+        m_dragStartOffset = ViewTransform.anchoredPosition - localPointerPos;
+
+        m_canvasGroup.blocksRaycasts = false; 
+
+        mClosestConnection = null;
+        mAttachingConnection  = null;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        WorkSpaceView activeWorkspaceView = WorkSpaceView.Active;
+
+        if (!IsDragging || activeWorkspaceView == null || mBlock == null) return;
         
-        QueueForceLayoutUpdate();
+        BlockViewSettings settings = BlockViewSettings.Instance;
+        if (settings == null)
+        {
+            Debug.LogError("BlockViewSettings instance is null! Cannot calculate size correctly.");
+           
+        }
+
+        Vector2 localPointerPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+           transform.parent as RectTransform,
+            eventData.position,
+            WorkSpaceView.Active.EventCamera,
+            out localPointerPos);
+
+        XY = localPointerPos + m_dragStartOffset;
+
+        ConnectionModel oldClosest = mClosestConnection;
+        mClosestConnection = null; 
+        mAttachingConnection  = null;
+
+
+        WorkSpaceModel workspaceModel = mBlock.Workspace;
+        if (workspaceModel == null)
+        {
+            Debug.LogError("BlockModel has no associated WorkspaceModel!", this);
+            workspaceModel = activeWorkspaceView.Workspace; 
+            if (workspaceModel == null) return; 
+        }
+
+        float maxSearchRadius = settings.ConnectSearchRange; 
+
+      
+        List<ConnectionModel> draggableConnections = mBlock.GetDraggingConnections();
+
+        ConnectionPair bestPairFound = null; 
+        float minRadius = int.MaxValue;
+
+        foreach (ConnectionModel myConn in draggableConnections)
+        {
+            BlockConnectionDB oppositeDB = workspaceModel.GetConnectionDB(myConn.OppositeType); // De ConnectionModel
+            if (oppositeDB != null)
+            {
+                
+                Vector2 dragOffset = Vector2.zero;
+
+                oppositeDB.SearchForClosest(myConn, (int)maxSearchRadius, dragOffset, out ConnectionModel currentClosest, out float currentRadius);
+
+                if (currentClosest != null && currentRadius < minRadius)
+                {
+                    minRadius = currentRadius;
+                    bestPairFound = new ConnectionPair(myConn, currentClosest, currentRadius);
+                }
+            }
+        }
+
+        mClosestConnection = bestPairFound?.Neighbour;
+        mAttachingConnection = bestPairFound?.Mine;
+
+        if (oldClosest != null && (mClosestConnection == null || oldClosest != mClosestConnection))
+        {
+            ConnectionView oldClosestView = activeWorkspaceView.GetConnectionView(oldClosest);
+            oldClosestView?.Highlight(false);
+        }
+        if (mClosestConnection != null && mClosestConnection != oldClosest)
+        {
+            ConnectionView closestView = activeWorkspaceView.GetConnectionView(mClosestConnection);
+            closestView?.Highlight(true);
+        }
+
+        activeWorkspaceView.CheckTrashBin(this); 
     }
-}
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (!IsDragging) return; 
+
+        m_canvasGroup.blocksRaycasts = true; 
+
+        if (mClosestConnection != null && mAttachingConnection != null)
+        {
+            
+            mClosestConnection.FireUpdate(UpdateState.UnHighlight);
+            mAttachingConnection.Connect(mClosestConnection);
+
+
+            if (!mAttachingConnection.IsConnected)
+            {
+                Debug.LogWarning($"BlockView {BlockType}: Connection attempt failed between {mAttachingConnection .SourceBlock.Type} and {mClosestConnection.SourceBlock.Type}");
+            }
+
+        }
+        else
+        {
+        
+            if (mBlock != null && (mBlock.OutputConnection?.IsConnected == true || mBlock.PreviousConnection?.IsConnected == true))
+            {
+                Debug.LogWarning($"BlockView {BlockType}: EndDrag without connection, but model seems connected. Forcing UnPlug again.");
+                mBlock.UnPlug();
+            }
+        }
+
+        mClosestConnection = null;
+        mAttachingConnection  = null;
+
+        // TODO: Finalizar check de Papelera
+        WorkSpaceView.Active.Toolbox?.FinishCheckBin(this);
+    }
+
+
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        //todo: background outline
+        /*if (!eventData.dragging && !InToolbox) 
+            BlocklyUI.WorkspaceView.CloneBlockView(this, XYInCodingArea + BlockViewSettings.Get().BumpAwayOffset);*/
+    }
+
+    #endregion
+
+    #region Block State Update
+
+    
+  
+    protected void OnBlockUpdated(UpdateStates updateState)
+    {
+        switch (updateState)
+        {
+            case UpdateStates.Inputs:
+                {
+                    BlockViewBuilder.BuildInputViews(mBlock, this);
+
+                    BuildLayout();
+
+                    this.OnXYUpdated();
+                    this.ChangeBgColor(m_BgImages[0].color);
+
+                    break;
+                }
+        }
+    }
+   
+
+    #endregion
+
+    #region Child View Getter
+
+    
+    public ConnectionView GetConnectionView(EConnection connectionType)
+    {
+        int i = 0;
+        while (i < ChildViews .Count)
+        {
+            ConnectionView view = ChildViews [i] as ConnectionView;
+            if (view == null) break;
+            if (view.ConnectionType == connectionType)
+                return view;
+            i++;
+        }
+        //Debug.LogFormat("<color=red>Can't find the {0} connection view in block view of {1}.</color>", connectionType, BlockType);
+        return null;
+    }
+
+    
+    public ConnectionView GetInputConnectionView(int inputIndex)
+    {
+        InputView inputView = GetInputView(inputIndex);
+        if (inputView != null)
+            return inputView.GetConnectionView();
+        return null;
+    }
+
+    
+ 
+    public LineGroupView GetLineGroup(int logicalIndex)
+    {
+       
+        List<BaseView> children = this.ChildViews;
+
+        Debug.Log($"GetLineGroup({logicalIndex}): Checking BlockView '{this.gameObject.name}' which has {children.Count} children in its ChildViews property.", this.gameObject);
+
+        if (logicalIndex < 0)
+        {
+            Debug.LogError($"GetLineGroup: Invalid negative index ({logicalIndex}) requested.", this.gameObject);
+            return null;
+        }
+
+        int currentLogicalIndex = 0;
+        foreach (BaseView child in children) 
+        {
+            if (child == null)
+            {
+                Debug.LogWarning($"GetLineGroup({logicalIndex}): Found NULL entry in ChildViews! Skipping.", this.gameObject);
+                continue; 
+            }
+
+            if (child is LineGroupView groupView) 
+            {
+                Debug.Log($" - Found LineGroupView at physical index (relative to loop): {children.IndexOf(child)}, Logical Index: {currentLogicalIndex}");
+                if (currentLogicalIndex == logicalIndex)
+                {
+                    Debug.Log($"   ---> MATCH FOUND for logical index {logicalIndex}. Returning {groupView.name}");
+                    return groupView;
+                }
+                currentLogicalIndex++;
+            }
+            else
+            {
+                Debug.Log($" - Child {child.name} is NOT a LineGroupView (Type: {child.GetType().Name})");
+            }
+        }
+        Debug.LogWarning($"BlockView ({BlockType}): GetLineGroup({logicalIndex}) did NOT find the requested group. Total LineGroups found: {currentLogicalIndex}. Total children: {children.Count}.", this);
+
+
+        return null;
+    }
+
+   
+    public InputView GetInputView(int index)
+    {
+        int inputCounter = 0;
+        int groupCounter = 0;
+        while (groupCounter < ChildViews .Count)
+        {
+            LineGroupView view = ChildViews [groupCounter] as LineGroupView;
+            groupCounter++;
+            if (view == null) continue;
+
+            if (inputCounter + view.ChildViews .Count > index)
+                return view.ChildViews [index - inputCounter] as InputView;
+
+            inputCounter += view.ChildViews .Count;
+        }
+        //Debug.LogFormat("<color=red>Can't find the {0}th input view in block view of {1}.</color>", index, BlockType);
+        return null;
+    }
+
+    public List<InputView> GetInputViews()
+    {
+        List<InputView> inputViews = new List<InputView>();
+        foreach (BaseView baseChildView in ChildViews)
+        {
+            if (baseChildView is LineGroupView lineGroupView)
+            {
+                if (lineGroupView.HasChildren)
+                {
+                    inputViews.AddRange(lineGroupView.ChildViews
+                                                     .Select(v => v as InputView)
+                                                     .Where(iv => iv != null));
+                }
+            }
+            else if (baseChildView is InputView directInputView)
+            {
+                inputViews.Add(directInputView);
+            }
+        }
+        return inputViews;
+    }
+
+    
+
+    #endregion
+
+   
+    
+    public void UpdateColor() 
+    {
+        ApplyBlockColor();
+    }
+
+    
+    
+    protected virtual void ApplyBlockColor()
+    {
+        if (mBlock == null) return;
+
+        Color blockColor = Color.grey; 
+
+        if (WorkSpaceView.Active != null && WorkSpaceView.Active.Toolbox != null)
+        {
+            blockColor = WorkSpaceView.Active.Toolbox.GetColorOfBlock(mBlock.Type);
+        }
+     
+
+        if (m_PrimaryBackground != null)
+        {
+            m_PrimaryBackground.color = blockColor;
+        }
+
+        else
+        {
+            Debug.LogWarning($"No primary background image assigned to apply color on {gameObject.name}");
+        }
+    }
+
+      
+    public void QueueForceLayoutUpdate()
+    {
+        if (this != null && transform is RectTransform rt)
+        {
+            LayoutRebuilder.MarkLayoutForRebuild(rt);
+        }
+        else if (this == null)
+        {
+            //Debug.LogWarning($"QueueForceLayoutUpdate called on a potentially destroyed BlockView.");
+        }
+        else
+        {
+            //Debug.LogWarning($"Transform on {gameObject.name} is not a RectTransform?");
+        }
+    }
+
+   
+    public ConnectionView FindConnectionView(ConnectionModel modelToFind)
+    {
+        if (modelToFind == null)
+        {
+            Debug.LogWarning($"BlockView ({Block?.Type ?? "Unknown"}): FindConnectionView called with a null model.");
+            return null;
+        }
+
+        foreach (BaseView childView in ChildViews)
+        {
+            if (childView is ConnectionView connectionView)
+            {
+           
+                if (connectionView.ConnectionModel == modelToFind) 
+                {
+                    return connectionView; 
+                }
+            }
+        }
+
+        foreach (BaseView childView in ChildViews)
+        {
+            if (childView is LineGroupView lineGroupView)
+            {
+                foreach (var potentialInputView in lineGroupView.ChildViews)
+                {
+                    if (potentialInputView is InputView inputView)
+                    {
+                        ConnectionView inputConnectionView = inputView.GetConnectionView(); 
+                        if (inputConnectionView != null)
+                        {
+                            if (inputConnectionView.ConnectionModel == modelToFind) 
+                            {
+                                return inputConnectionView;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+      
+        return null; 
+    }
+
+     
+    public void InitiateDragFromExternal(PointerEventData eventData)
+    {
+        // Debug.Log($"InitiateDragFromExternal called on: {BlockType}");
+
+        if (mBlock == null || !IsDragging)
+        { 
+            Debug.LogError($"BlockView ({gameObject.name}): Cannot initiate external drag - No model or not draggable.");
+            return;
+        }
+
+        WorkSpaceView activeWorkspace = WorkSpaceView.Active;
+        if (activeWorkspace == null) return;
+
+        IsDragging = true;
+
+        SetOrphan(); 
+
+        if (m_canvasGroup != null) m_canvasGroup.blocksRaycasts = false;
+        if (m_layoutElement != null) m_layoutElement.ignoreLayout = true;
+
+        RectTransform parentRect = activeWorkspace.CodingArea;
+        if (ViewTransform != null && parentRect != null) 
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                eventData.position,
+                activeWorkspace.EventCamera,
+                out Vector2 localPointerPos);
+            m_dragStartOffset = ViewTransform.anchoredPosition - localPointerPos;
+        }
+        else
+        {
+            Debug.LogError($"InitiateDragFromExternal ({BlockType}): Failed to get ViewTransform or ParentRect for offset calculation.");
+            m_dragStartOffset = Vector2.zero; 
+        }
+
+        mClosestConnection = null;
+        mAttachingConnection = null;
+
+    }
+
+   
+    public void HandleModelUpdate(BlockModel model, BlockUpdateType updateType)
+    {
+        if (model != mBlock || mBlock == null)
+        {
+            Debug.LogWarning($"BlockView ({gameObject?.name}): Received HandleModelUpdate for unexpected model or null model. Ignored.", this);
+            return;
+        }
+        // Debug.Log($"BlockView ({mBlock.Type}): Handling update - {updateType}", this); // Opcional para depuración
+
+        switch (updateType)
+        {
+            case BlockUpdateType.State_Disabled:
+                SetVisualStateDisabled(model.Disabled); 
+                break;
+            case BlockUpdateType.State_Movable:
+                this.IsDragging = model.Movable;
+                break;
+            
+            case BlockUpdateType.State_Collapsed:
+                SetVisualStateCollapsed(model.Collapsed); 
+                MarkDirty();
+                break;
+
+            case BlockUpdateType.State_InputsInline:
+                m_IsInlineMode = model.GetInputsInline(); 
+                MarkDirty();
+                break;
+
+            case BlockUpdateType.Structure_Inputs:
+                BlockViewBuilder.BuildInputViews(mBlock, this); 
+                MarkDirty(); 
+                break;
+            case BlockUpdateType.Structure_Connections:
+                
+                MarkDirty();
+                break;
+
+            case BlockUpdateType.Value_Field:
+             
+                MarkDirty(); 
+                break;
+
+            case BlockUpdateType.Value_Variable:
+               
+                MarkDirty(); 
+                break;
+
+            case BlockUpdateType.Position_XY:
+               
+                if (m_ViewTransform != null && !IsDragging) 
+                {
+                    m_ViewTransform.anchoredPosition = model.XY; 
+                }
+                break;
+
+            default:
+                Debug.LogWarning($"BlockView ({mBlock.Type}): Unhandled update type: {updateType}", this);
+                break;
+        }
+    }
+    private void SetVisualStateDisabled(bool isDisabled)
+    {
+        if (m_canvasGroup == null) m_canvasGroup = GetComponent<CanvasGroup>();
+        if (m_canvasGroup != null)
+        {
+            m_canvasGroup.alpha = isDisabled ? 0.6f : 1.0f; 
+        }
+    }
+    private void SetVisualStateCollapsed(bool isCollapsed)
+    {
+       
+        LineGroupView firstLineGroup = GetLineGroup(0); 
+
+        for (int i = 0; i < ChildViews.Count; i++)
+        {
+            if (ChildViews[i] is LineGroupView groupView)
+            {
+                bool shouldBeActive = !isCollapsed || (i == 0); 
+                groupView.gameObject.SetActive(shouldBeActive);
+            }
+        }
+    }
+
+  
+    public virtual void BindView(BlockModel blockModel) 
+    {
+        if (mBlock == blockModel && mBlock != null) return; 
+        if (blockModel == null)
+        {
+            Debug.LogError($"BlockView ({gameObject.name}): Attempted to BindView with a NULL model!", this);
+            return;
+        }
+        if (mBlock != null) UnBindModel(); 
+
+        mBlock = blockModel;
+        if (WorkSpaceView.Active != null)
+        {
+            WorkSpaceView.Active.AddBlockView(this);
+        }
+        else
+        {
+            Debug.LogError($"BlockView ({BlockType}): Cannot find active WorkSpaceView during BindView!");
+        }
+
+        mBlockObserver = new MemorySafeBlockObserver(this); 
+        mBlock.AddObserver(mBlockObserver);
+
+        Debug.Log($"BlockView ({BlockType}): Binding Model ID {mBlock.ID}");
+
+        int inputModelIndex = 0;
+        foreach (BaseView childView in ChildViews) 
+        {
+            if (childView is ConnectionView conView)
+            {
+                ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
+                if (conModel != null)
+                {
+                    conView.BindModel(conModel, this); 
+                }
+                else
+                {
+                    Debug.LogWarning($"BlockView ({BlockType}): No model for ConnectionView {conView.ConnectionType}");
+                }
+            }
+            else if (childView is LineGroupView groupView)
+            {
+                foreach (var viewInGroup in groupView.ChildViews)
+                {
+                    if (viewInGroup is InputView inputView)
+                    {
+                        if (inputModelIndex < mBlock.InputList.Count)
+                        {
+                            InputModel inputModel = mBlock.InputList[inputModelIndex];
+                            if (inputModel != null)
+                            {
+                                inputView.BindModel(inputModel, this); 
+                            }
+                            else { Debug.LogError($"NULL InputModel at index {inputModelIndex}"); }
+                            inputModelIndex++;
+                        }
+                        else
+                        {
+                            Debug.LogError($"View/Model mismatch: Too many InputViews (index {inputModelIndex}) for model {BlockType}");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        RegisterUIEvents(); 
+        UpdateColor();      
+        MarkDirty();        
+        QueueForceLayoutUpdate(); 
+
+        Debug.Log($"BlockView ({BlockType}): BindView completed.");
+    }
+
+}//fin de la clase BlockView
+

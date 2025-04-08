@@ -21,24 +21,22 @@ using System.Linq;
 
 public class BlockScrollListView : BaseToolbox
 {
-    private Transform m_blockContainer; // Contenedor donde instanciar los bloques (asignado por UICanvasManager)
-    [SerializeField] private GameObject m_blockViewPrefab; // Prefab base para crear vistas de bloque
-    private UICanvasView m_uiManager; // Referencia al manager para comunicación inversa si es necesaria
-    private WorkSpaceView m_workspaceView; // Referencia a la vista del área de código (para Drag & Drop)
-    private WorkSpaceModel m_currentWorkspace; // El modelo principal (para BlockFactory si es necesario)
+    private Transform m_blockContainer; 
+    [SerializeField] private GameObject m_blockViewPrefab; 
+    private UICanvasView m_uiManager; 
+    private WorkSpaceView m_workspaceView; 
+    private WorkSpaceModel m_currentWorkspace; 
 
     private string m_currentCategory = null;
-    private List<GameObject> m_templateBlocks = new List<GameObject>(); // Mantener lista de GOs de plantilla
+    private List<GameObject> m_templateBlocks = new List<GameObject>(); 
 
-    //Diccionarios para Variables/Procedimientos
     protected new Dictionary<string, BlockView> mVariableGetterViews = new Dictionary<string, BlockView>();
-    protected new List<BlockView> mVariableHelperViews = new List<BlockView>(); // Para Setters/Changers
+    protected new List<BlockView> mVariableHelperViews = new List<BlockView>(); 
     protected new Dictionary<string, BlockView> mProcedureCallerViews = new Dictionary<string, BlockView>();
 
-    //Observadores
     private VariableObserver mVarObserver;
     private ProcedureObserver mProcObserver;
-
+    public WorkSpaceView WorkspaceViewForFactory => m_workspaceView;
     /**
      * Descripción: Inicializa el Toolbox con las referencias necesarias.
      * @param blockContainer: Contenedor donde se instanciarán los bloques.
@@ -55,21 +53,18 @@ public class BlockScrollListView : BaseToolbox
         m_currentWorkspace = workspace;
         m_workspaceView = workspaceView;
 
-        // Cargar prefab fijo Assets/Resources/Prefabs/BlocksPrefab/Stack_block_grey.prefab
         m_blockViewPrefab = Resources.Load<GameObject>("Prefabs/BlocksPrefab/Stack_block_grey"); 
         Debug.Log($"<color=lightblue>BlockScrollList: BlockViewPrefab loaded: {m_blockViewPrefab != null}</color>");
         if (m_blockViewPrefab == null)
         {
             Debug.LogError("----> FAILED TO LOAD BlockViewPrefab FROM RESOURCES! Check Path: Resources/Prefabs/BlocksPrefab <----");
         }
-        // Validaciones
         if (m_blockContainer == null) Debug.LogError("BlockContainer is NULL");
         if (m_blockViewPrefab == null) Debug.LogError("BlockViewPrefab is NULL");
         if (m_uiManager == null) Debug.LogError("UIManager is NULL");
         if (m_currentWorkspace == null) Debug.LogError("WorkspaceModel is NULL");
         if (m_workspaceView == null) Debug.LogError("WorkspaceView is NULL");
 
-        // Registrar observadores 
         if (m_currentWorkspace != null)
         {
             mVarObserver = new VariableObserver(this);
@@ -91,7 +86,6 @@ public class BlockScrollListView : BaseToolbox
         m_currentCategory = categoryName;
         Debug.Log($"<color=lightblue>BlockScrollList(Toolbox): Showing category '{categoryName}'</color>");
 
-        
         ClearTemplateBlocks();
 
         if (m_currentWorkspace == null || m_blockContainer == null || m_blockViewPrefab == null)
@@ -99,7 +93,6 @@ public class BlockScrollListView : BaseToolbox
             Debug.LogError("BlockScrollList: Cannot show category, dependencies missing.");
             return;
         }
-
        
         switch (categoryName)
         {
@@ -112,25 +105,23 @@ public class BlockScrollListView : BaseToolbox
                 break;
 
             default:
-                // Categoría estándar
                 List<string> blockTypes = GetBlockTypesFromDefinitions(categoryName);
                 if (blockTypes != null)
                 {
                     foreach (string blockType in blockTypes)
                     {
-                        // Crear modelo temporal desconectado
-                        BlockModel templateModel = BlockFactory.Instance.CreateBlock(null, blockType);
+                        BlockModel templateModel = BlockFactory.Instance.CreateBlock(m_currentWorkspace, blockType); 
                         if (templateModel != null)
                         {
-                            // Crear vista y añadirla
+                        
                             BlockView view = NewBlockViewInternal(templateModel, m_blockContainer);
                             if (view != null)
                             {
-                                m_templateBlocks.Add(view.gameObject); // Añadir a la lista general
+                                m_templateBlocks.Add(view.gameObject); 
                             }
                             else
                             {
-                                templateModel.Dispose(); // Limpiar modelo si vista falló
+                                templateModel.Dispose(); 
                             }
                         }
                         else
@@ -142,7 +133,6 @@ public class BlockScrollListView : BaseToolbox
                 break;
         }
 
-        //  Actualizar Layout 
         LayoutRebuilder.MarkLayoutForRebuild(m_blockContainer as RectTransform);
         StartCoroutine(ForceScrollRectUpdate()); 
     }
@@ -150,17 +140,17 @@ public class BlockScrollListView : BaseToolbox
     // Corutina para forzar actualización del ScrollRect después de un frame
     private IEnumerator<WaitForEndOfFrame> ForceScrollRectUpdate()
     {
-        yield return new WaitForEndOfFrame(); // Espera a que el layout calcule
+        yield return new WaitForEndOfFrame(); 
         LayoutRebuilder.MarkLayoutForRebuild(m_blockContainer as RectTransform);
         ScrollRect scrollRect = GetComponentInParent<ScrollRect>(); 
-        if (scrollRect != null) scrollRect.verticalNormalizedPosition = 1f; // Scroll arriba
+        if (scrollRect != null) scrollRect.verticalNormalizedPosition = 1f;
     }
 
     // Método Interno para Crear Vistas 
     private BlockView NewBlockViewInternal(BlockModel block, Transform parent, int index = -1)
     {
    
-        BlockView view = BlockViewFactory.CreateView(block);
+        BlockView view = BlockViewFactory.CreateView(block,this);
         if (view == null)
         {
             Debug.LogError($"BlockViewFactory failed for block type {block.Type}");
@@ -172,13 +162,20 @@ public class BlockScrollListView : BaseToolbox
         if (index >= 0)
             view.transform.SetSiblingIndex(index);
 
-        // Añadir Dragger
-        ToolboxBlockDragger dragger = view.gameObject.GetComponent<ToolboxBlockDragger>();
-        if (dragger == null) dragger = view.gameObject.AddComponent<ToolboxBlockDragger>();
+        if (view.workSpaceView == null)
+        {
+            Debug.LogError($"BlockView {view.name} still has null WorkSpaceView after Factory creation!", view.gameObject);
+        }
 
+       
         
         if (m_workspaceView != null)
-        {
+        { 
+            // Añadir Dragger
+            ToolboxBlockDragger dragger = view.gameObject.GetComponent<ToolboxBlockDragger>();
+            if (dragger == null) dragger = view.gameObject.AddComponent<ToolboxBlockDragger>();
+            if (m_workspaceView == null) Debug.LogError("InitializeToolbox did not set m_workspaceView in BlockScrollListView!");
+
             dragger.Init(m_workspaceView);
         }
         else
@@ -189,7 +186,6 @@ public class BlockScrollListView : BaseToolbox
         return view;
     }
 
-    //  Limpieza 
     private void ClearTemplateBlocks()
     {
         Debug.Log($"Clearing {m_templateBlocks.Count + mVariableGetterViews.Count + mVariableHelperViews.Count + mProcedureCallerViews.Count} previous template blocks.");
@@ -207,7 +203,7 @@ public class BlockScrollListView : BaseToolbox
         foreach (BlockView view in mProcedureCallerViews.Values) { if (view != null && view.gameObject != null) Destroy(view.gameObject); }
         mProcedureCallerViews.Clear();
 
-        // Destruir botón "Crear Variable" 
+        
        /* Button createVarButton = m_blockContainer.GetComponentInChildren<Button>(); 
         if (createVarButton != null && createVarButton.name.Contains("CreateVarButton")) 
         {
@@ -221,7 +217,6 @@ public class BlockScrollListView : BaseToolbox
     // Implementación de Manejadores de Variables 
     private void BuildVariableBlocksInternal()
     {
-        // 1. Botón Crear Variable (Adaptar Prefab si es necesario)
         GameObject createVarPrefab = BlockViewSettings.Get()?.PrefabBtnCreateVar; // Obtener prefab desde settings
         if (createVarPrefab != null)
         {
@@ -231,11 +226,12 @@ public class BlockScrollListView : BaseToolbox
             if (buttonText != null)
                 buttonText.text = I18n.Get(MsgDefine.NEW_VARIABLE);
             else Debug.LogError("PrefabBtnCreateVar is missing Text component in children.", btnGO);
+            
             // Asignar color y acción
             Color categoryColor = BlockDataLoader.GetColorForCategoryPublic(Define.VARIABLE_CATEGORY_NAME);
             Image buttonImage = btnGO.GetComponentInChildren<Image>();
             if (buttonImage != null)
-                buttonImage.color = categoryColor; // Asignar color
+                buttonImage.color = categoryColor; 
             else Debug.LogError("PrefabBtnCreateVar is missing Image component in children.", btnGO);
 
             Button button = btnGO.GetComponent<Button>();
@@ -251,10 +247,9 @@ public class BlockScrollListView : BaseToolbox
         }
         else { Debug.LogWarning("PrefabBtnCreateVar not found in BlockViewSettings"); }
 
-
+        /* TODO: REVSISAR*/
         List<VariableModel> allVars = m_currentWorkspace.GetAllVariables();
         if (allVars.Count == 0) return; // No hay variables, solo mostrar el botón crear
-
         
         if (mVariableHelperViews.Count == 0) 
             CreateVariableHelperViewsInternal();
@@ -290,7 +285,7 @@ public class BlockScrollListView : BaseToolbox
                 if (block != null)
                 {
                     try { block.SetFieldValue("VAR", firstVarName); }
-                    catch { /*TOIDO*/ }
+                    catch { /*TODO*/ }
 
                     BlockView view = NewBlockViewInternal(block, m_blockContainer);
                     if (view != null)
@@ -438,7 +433,6 @@ public class BlockScrollListView : BaseToolbox
         }
         else
         {
-            // Fallback si no hay mutator 
             block.SetFieldValue("NAME", procedureInfo.Name);
         }
 
