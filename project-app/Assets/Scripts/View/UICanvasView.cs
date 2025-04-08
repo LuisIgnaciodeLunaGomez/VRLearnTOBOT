@@ -93,7 +93,7 @@ public class UICanvasView : MonoBehaviour
                 
             }
 
-            ScratchBlocks.Init(); //Carga I18n Idioma
+            ScratchBlocks.Init();
 
             Debug.Log("<color=teal>UICanvasView: Calling BlockDataLoader.LoadAllDefinitions()...</color>");
             BlockDataLoader.LoadAllDefinitions(); 
@@ -404,8 +404,6 @@ public class UICanvasView : MonoBehaviour
             m_WorkspaceModel,        // WorkSpaceModel workspace
             m_WorkSpaceView          // WorkSpaceView workspaceView
         );
-
-        Debug.Log("<color=green>UICanvasView: Toolbox (BlockScrollList) configured and Initialized.</color>");
 
 
         Debug.Log($"<color=orange>UICanvasView: PRE-BIND CHECK. WorkspaceModel is null? {(m_WorkspaceModel == null)}. Toolbox valid? {m_Toolbox != null}. PanelRect valid? {m_RightPanelRect != null}. View valid? {m_WorkSpaceView != null}</color>");
