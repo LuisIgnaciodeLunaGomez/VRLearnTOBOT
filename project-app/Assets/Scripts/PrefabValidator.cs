@@ -20,7 +20,7 @@ using UnityEngine;
 
 public class PrefabValidator
 {
-    //[MenuItem("Tools/Validate Block Prefabs")]
+    //[MenuItem("Tools/Validate BlockModel Prefabs")]
     /*static void ValidatePrefabs()
     {
         string[] prefabPaths = System.IO.Directory.GetFiles("Assets/Resources/Prefabs/BlocksPrefab/", "*.prefab", System.IO.SearchOption.AllDirectories);

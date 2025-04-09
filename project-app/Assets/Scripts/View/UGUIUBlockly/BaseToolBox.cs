@@ -15,7 +15,6 @@
  * Descripción: Integración de la estructura de Ublockly dentro del proyecto por semejanza con ScratchBlocks. 
  */
 
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -53,8 +52,8 @@ public abstract class BaseToolbox : MonoBehaviour
 
         Build();
 
-        mWorkspace.VariableMap.AddObserver(new VariableObserver(this));
-        mWorkspace.ProcedureDB.AddObserver(new ProcedureObserver(this));
+       // mWorkspace.VariableMap.AddObserver(new VariableObserver(this));
+      //  mWorkspace.ProcedureDB.AddObserver(new ProcedureObserver(this));
     }
 
     public void Clean()
@@ -77,29 +76,28 @@ public abstract class BaseToolbox : MonoBehaviour
     /// <summary>
     /// Create a new block view in toolbox 
     /// </summary>
-    protected BlockView NewBlockView(string blockType, Transform parent = null) // Aceptar padre opcional
+    protected BlockView NewBlockView(string blockType, BaseToolbox sourceToolbox, Transform parent = null) 
     {
         if (mWorkspace == null) return null;
-        if (parent == null) parent = mHiddenCache; // Usar caché si no se especifica padre
+        if (parent == null) parent = mHiddenCache; 
 
         try
         {
             BlockModel block = BlockFactory.Instance.CreateBlock(mWorkspace, blockType);
             if (block == null) return null;
-            mWorkspace.RemoveTopBlock(block); // No es un top block aún
+            mWorkspace.RemoveTopBlock(block); 
 
-            BlockView view = BlockViewFactory.CreateView(block); 
+            BlockView view = BlockViewFactory.CreateView(block, sourceToolbox); 
             if (view != null)
             {
                 view.InToolbox = true;
                 view.BuildLayout();
-                // No añadir ToolboxBlockDragger aquí si se hace en el método que llama?
-                // O añadirlo aquí SIEMPRE que se crea para el toolbox? Añadirlo aquí es más seguro:
-                if (parent != mHiddenCache) // Solo añade dragger si el padre es el contenedor real
+                
+                if (parent != mHiddenCache) 
                 {
                     ToolboxBlockDragger dragger = view.GetComponent<ToolboxBlockDragger>();
                     if (dragger == null) dragger = view.gameObject.AddComponent<ToolboxBlockDragger>();
-                    dragger.Init(this.WorkspaceView); // Asume que tienes WorkspaceView accesible
+                    dragger.Init(this.WorkspaceView); 
                 }
 
             }
@@ -108,40 +106,20 @@ public abstract class BaseToolbox : MonoBehaviour
         catch (Exception e) { Debug.LogWarning(e); return null; }
     }
 
-    // Método auxiliar potencial para botones genéricos
-    /* protected virtual void BuildButton(string buttonText, Action onClickAction)
-       {
-           Transform parentContainer = null;
-           // Determinar el contenedor correcto (¿Variable o Procedure?)
-           if(mActiveCategory == Define.VARIABLE_CATEGORY_NAME)
-                 mRootList.TryGetValue(Define.VARIABLE_CATEGORY_NAME, out parentContainer);
-             else if (mActiveCategory == Define.PROCEDURE_CATEGORY_NAME)
-                 mRootList.TryGetValue(Define.PROCEDURE_CATEGORY_NAME, out parentContainer);
-
-           if(parentContainer != null) {
-                 // Instanciar prefab de botón o crearlo programáticamente
-                GameObject buttonGO = new GameObject("ToolboxButton_" + buttonText);
-                 // ... Añadir RectTransform, Image, Button, TextMeshPro ...
-                buttonGO.transform.SetParent(parentContainer, false);
-                 // ... Configurar texto y listener: button.onClick.AddListener(() => onClickAction?.Invoke()); ...
-             }
-        }
-    */
     /// <summary>
     /// Create a new block view in toolbox 
     /// </summary>
-    protected BlockView NewBlockView(BlockModel block, Transform parent, int index = -1)
+    protected BlockView NewBlockView(BlockModel block, BaseToolbox sourceToolbox, Transform parent, int index = -1)
     {
         mWorkspace.RemoveTopBlock(block);
 
-        BlockView view = BlockViewFactory.CreateView(block);
+        BlockView view = BlockViewFactory.CreateView(block, sourceToolbox);
         view.InToolbox = true;
         view.ViewTransform.SetParent(parent, false);
 
         if (index >= 0)
             view.ViewTransform.SetSiblingIndex(index);
 
-        //add mask
         GameObject maskObj = new GameObject("ToolboxMask");
         maskObj.transform.SetParent(view.ViewTransform, false);
         RectTransform maskTrans = maskObj.AddComponent<RectTransform>();
@@ -157,14 +135,13 @@ public abstract class BaseToolbox : MonoBehaviour
 
     protected void PickBlockView(PointerEventData data, BlockView blockView)
     {
-        // compute the local position of the block view in coding area
         Vector3 localPos = WorkspaceView.CodingArea.InverseTransformPoint(blockView.ViewTransform.position);
 
-        // clone a new block view for coding area
-        BlockView newBlockView = WorkspaceView.CloneBlockView(blockView, new Vector2(localPos.x, localPos.y));
+       
+        BlockView newBlockView = WorkspaceView.CloneBlockView(blockView,this, new Vector2(localPos.x, localPos.y));
         newBlockView.OnBeginDrag(data);
 
-        //change the dragging object as the newly created blockview 
+      
         data.pointerDrag = newBlockView.gameObject;
 
         OnPickBlockView();
@@ -193,17 +170,13 @@ public abstract class BaseToolbox : MonoBehaviour
     /// </summary>
     public Color GetColorOfBlockView(BlockView view)
     {
-        foreach (var category in mConfig.BlockCategoryList)
+        if (view == null)
         {
-            foreach (string type in category.BlockList)
-            {
-                if (string.Equals(view.BlockType, type))
-                {
-                    return category.Color;
-                }
-            }
+            Debug.LogWarning("GetColorOfBlockView called with null view.");
+            return Color.white; 
         }
-        return Color.white;
+       
+        return GetColorOfBlock(view.BlockType);
     }
 
     #region Variables
@@ -213,50 +186,23 @@ public abstract class BaseToolbox : MonoBehaviour
 
     protected virtual List<BlockView> BuildVariableBlocks()
     {
-        /* Transform parent = mRootList[Define.VARIABLE_CATEGORY_NAME].transform;
+       
+        List<BlockView> createdViews = new List<BlockView>(); 
+        if (mWorkspace == null) return createdViews; 
 
-         //build createVar button
-         GameObject obj = GameObject.Instantiate(BlockViewSettings.Get().PrefabBtnCreateVar);
-
-         obj.GetComponentInChildren<Text>().text = I18n.Get(MsgDefine.NEW_VARIABLE);
-
-         obj.transform.SetParent(parent, false);
-         obj.GetComponentInChildren<Image>().color = mConfig.GetBlockCategory(Define.VARIABLE_CATEGORY_NAME).Color;
-         obj.GetComponent<Button>().onClick.AddListener(() =>
-         {
-             DialogFactory.CreateDialog("variable_name");
-         });
-
-         List<VariableModel> allVars = mWorkspace.GetAllVariables();
-         if (allVars.Count == 0) return;
-
-         CreateVariableHelperViews();
-
-         //list all variable getter views
-         foreach (VariableModel variable in mWorkspace.GetAllVariables())
-         {
-             CreateVariableGetterView(variable.Name);
-         }*/
-
-        List<BlockView> createdViews = new List<BlockView>(); // Lista para devolver
-        if (mWorkspace == null) return createdViews; // Devolver lista vacía si no hay workspace
-
-        // -- Lógica para crear bloques 'Get Variable' --
-        var variables = mWorkspace.GetAllVariables(); // Obtiene TODAS las variables del workspace
+        var variables = mWorkspace.GetAllVariables(); 
         if (variables.Count > 0)
         {
-            // Crear bloque 'Get' GENÉRICO una vez (si todos usan el mismo prefab base)
-            BlockView getBlockView = NewBlockView(Define.VARIABLE_GET_BLOCK_TYPE, mHiddenCache); // Usa un padre temporal oculto
+            
+            BlockView getBlockView = NewBlockView(Define.VARIABLE_GET_BLOCK_TYPE,this, mHiddenCache); 
             if (getBlockView != null)
             {
                 createdViews.Add(getBlockView);
-                // Configuración adicional si es necesaria aquí? O se hace después?
-                // getBlockView.transform.SetParent(null); // Desemparentar de mHiddenCache por ahora
+               
             }
             else { Debug.LogWarning("Failed to create base view for VARIABLE_GET_BLOCK_TYPE"); }
 
-            // -- Crear bloques 'Set Variable' (si tu lenguaje los tiene como bloques separados) --
-            BlockView setBlockView = NewBlockView(Define.VARIABLE_SET_BLOCK_TYPE, mHiddenCache); // Crea vista SET base
+            BlockView setBlockView = NewBlockView(Define.VARIABLE_SET_BLOCK_TYPE,this, mHiddenCache); 
             if (setBlockView != null)
             {
                 createdViews.Add(setBlockView);
@@ -264,9 +210,6 @@ public abstract class BaseToolbox : MonoBehaviour
             }
             else { Debug.LogWarning("Failed to create base view for VARIABLE_SET_BLOCK_TYPE"); }
 
-            // -- Crear botón "Create Variable" (si no se maneja distinto) --
-            // Esto puede ser un botón UI normal, no necesariamente un BlockView
-            // BuildButton(Define.CREATE_VARIABLE_TITLE); // Método auxiliar que necesita el contenedor real
         }
         else // No hay variables
         {
@@ -275,7 +218,7 @@ public abstract class BaseToolbox : MonoBehaviour
 
 
 
-        return createdViews; // Devolver la lista de vistas creadas (sin padre final asignado
+        return createdViews; 
     }
 
     protected void CreateVariableGetterView(string varName)
@@ -289,7 +232,7 @@ public abstract class BaseToolbox : MonoBehaviour
 
         BlockModel block = mWorkspace.NewBlock(Define.VARIABLE_GET_BLOCK_TYPE);
         block.SetFieldValue("VAR", varName);
-        BlockView view = NewBlockView(block, parentObj.transform);
+        BlockView view = NewBlockView(block,this, parentObj.transform);
         mVariableGetterViews[varName] = view;
     }
 
@@ -318,7 +261,7 @@ public abstract class BaseToolbox : MonoBehaviour
             {
                 BlockModel block = mWorkspace.NewBlock(blockType);
                 block.SetFieldValue("VAR", varName);
-                BlockView view = NewBlockView(block, parentObj.transform);
+                BlockView view = NewBlockView(block,this, parentObj.transform);
                 mVariableHelperViews.Add(view);
             }
         }
@@ -348,7 +291,6 @@ public abstract class BaseToolbox : MonoBehaviour
                 {
                     DeleteVariableGetterView(updateData.VarName);
 
-                    //change variable helper view
                     List<VariableModel> allVars = mWorkspace.GetAllVariables();
                     if (allVars.Count == 0)
                     {
@@ -402,9 +344,7 @@ public abstract class BaseToolbox : MonoBehaviour
 
     protected Dictionary<string, BlockView> mProcedureCallerViews = new Dictionary<string, BlockView>();
 
-
-
-    protected virtual List<BlockView> BuildProcedureBlocks() // Cambiado de void a List<BlockView>
+    protected virtual List<BlockView> BuildProcedureBlocks() 
     {
         List<BlockView> createdViews = new List<BlockView>();
         if (mWorkspace == null)
@@ -417,87 +357,15 @@ public abstract class BaseToolbox : MonoBehaviour
             Debug.LogError("Workspace.ProcedureDB is null!");
             return createdViews;
         }
-
-        // Obtener TODOS los bloques de definición
-        // Asegúrate que GetDefinitionBlocks() exista y sea público en tu ProcedureDB
         List<BlockModel> allDefinitions = mWorkspace.ProcedureDB.GetDefinitionBlocks();
 
         if (allDefinitions == null || allDefinitions.Count == 0)
         {
-            //Debug.Log("No procedure definitions found.");
-            // Aún podrías querer construir el botón "Make a Block" aquí
-            // BuildButton(Define.CREATE_PROCEDURE_TITLE);
+           
             return createdViews;
         }
 
-
-        // --- Filtrar y Crear bloque 'Call No Return' ---
-        /* if (proceduresNoReturn.Count > 0)
-         {
-             BlockView callNoReturnView = NewBlockViewFromModel( // Usa la versión que toma modelo
-                  BlockFactory.Instance.CreateBlock(mWorkspace, Define.CALL_NO_RETURN_BLOCK_TYPE),
-                  buildParent,
-                  false);
-
-             if (callNoReturnView != null)
-             {
-                 string procedureName = proceduresNoReturn[0].GetFieldValue("NAME");
-                 if (!string.IsNullOrEmpty(procedureName))
-                 {
-                     // Establecer valor en el MODELO del clon primero
-                     callNoReturnView.Block.SetFieldValue("NAME", procedureName);
-
-                     // AHORA, buscar la VISTA manualmente
-                     FieldView targetFieldView = FindFieldViewByName(callNoReturnView, "NAME");
-
-                     if (targetFieldView is FieldProcedureView procedureFieldView) // Asegúrate que el cast es correcto
-                     {
-                         procedureFieldView.UpdateValue(procedureName); // Actualiza la vista
-                         createdViews.Add(callNoReturnView); // Añadir SOLO si todo funcionó
-                     }
-                     else
-                     {
-                         Debug.LogWarning($"Could not find or cast FieldView 'NAME' in {Define.CALL_NO_RETURN_BLOCK_TYPE} template.");
-                         callNoReturnView.Dispose(); // Limpia si no se pudo configurar
-                     }
-                 }
-                 else
-                 {
-                     Debug.LogWarning($"Procedure definition block {proceduresNoReturn[0].ID} has no value in field 'NAME'");
-                     callNoReturnView.Dispose();
-                 }
-             }
-             else { Debug.LogWarning($"Failed to create base view for {Define.CALL_NO_RETURN_BLOCK_TYPE}"); }
-
-         }*/
-        // --- Filtrar y Crear bloque 'Call With Return' ---
-        // Usar LINQ para filtrar los bloques que SÍ tienen retorno
-        /* if (proceduresWithReturn.Count > 0)
-         {
-             BlockView callWithReturnView = NewBlockView(Define.CALL_WITH_RETURN_BLOCK_TYPE, mHiddenCache);
-             if (callWithReturnView != null)
-             {
-                 createdViews.Add(callWithReturnView);
-                 var fieldView = callWithReturnView.GetFieldView("NAME");
-                 if (fieldView is FieldProcedureView procedureField)
-                 {
-                     procedureField.UpdateValue(proceduresWithReturn[0].Name);
-                 }
-                 else if (fieldView != null)
-                 {
-                     Debug.LogWarning($"Field 'NAME' in {Define.CALL_WITH_RETURN_BLOCK_TYPE} template is not a FieldProcedureView (Type: {fieldView.GetType()}). Cannot set initial value.");
-                 }
-             }
-             else { Debug.LogWarning($"Failed to create base view for {Define.CALL_WITH_RETURN_BLOCK_TYPE}"); }
-         }*/
-
-        // --- Botón "Make a Block" (Create Procedure) ---
-        // La lógica para añadir el botón iría aquí, si es necesario construirlo dinámicamente
-        // por ejemplo, usando otro método auxiliar BuildButton().
-        // BuildButton(Define.CREATE_PROCEDURE_TITLE);
-
-
-        return createdViews; // Devuelve las VISTAS creadas (callNoReturnView, callWithReturnView)
+        return createdViews; 
     } 
 
     protected void CreateProcedureCallerView(Procedure procedureInfo, bool hasReturn)
@@ -512,7 +380,7 @@ public abstract class BaseToolbox : MonoBehaviour
         string blockType = hasReturn ? Define.CALL_WITH_RETURN_BLOCK_TYPE : Define.CALL_NO_RETURN_BLOCK_TYPE;
         BlockModel block = mWorkspace.NewBlock(blockType);
         block.SetFieldValue("NAME", procedureInfo.Name);
-        BlockView view = NewBlockView(block, parentObj.transform);
+        BlockView view = NewBlockView(block,this, parentObj.transform);
         mProcedureCallerViews[procedureInfo.Name] = view;
     }
 
@@ -543,7 +411,6 @@ public abstract class BaseToolbox : MonoBehaviour
                 }
             case ProcedureUpdateData.Mutate:
                 {
-                    //mutate the caller prototype view
                     BlockView view;
                     if (mProcedureCallerViews.TryGetValue(updateData.ProcedureInfo.Name, out view))
                     {
@@ -581,7 +448,7 @@ public abstract class BaseToolbox : MonoBehaviour
 
     private void Update()
     {
-        //            UpdatePickedBlockView();
+        // UpdatePickedBlockView();
     }
 
     #endregion
@@ -592,17 +459,14 @@ public abstract class BaseToolbox : MonoBehaviour
 
         if (mConfig != null)
         {
-            // Usamos el método que añadimos a ToolboxConfig
+           
             ToolboxBlockCategory category = mConfig.GetBlockCategoryByType(blockType);
             if (category != null)
             {
-                return category.Color; // Devuelve el color de la categoría encontrada
+                return category.Color; 
             }
         }
-           
-        
-        // Fallback color
         Debug.LogWarning($"Could not determine color for block type {blockType}. Using default.");
         return Color.gray;
     }
-}
+}//fin clase BaseToolBox

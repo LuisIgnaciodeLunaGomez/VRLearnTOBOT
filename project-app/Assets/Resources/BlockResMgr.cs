@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -146,11 +147,21 @@ public class BlockResMgr : ScriptableObject
         if (configSelected.Count == 0)
         {
             Debug.LogWarning("Please select a toolbox config file in BlockResSettings.asset. Default select \'default\'.");
-            configSelected.Add(m_ToolboxFiles.Find(file => file.IndexName == "default"));
+            var defaultFile = m_ToolboxFiles.Find(file => file.IndexName == "default");
+
+           // configSelected.Add(m_ToolboxFiles.Find(file => file.IndexName == "default"));
+            if (defaultFile == null)
+            {
+                Debug.LogError("No default toolbox config file found in BlockResSettings.");
+                return null;
+            }
+            configSelected.Add(defaultFile);
         }
         else if (configSelected.Count > 1)
         {
-            Debug.LogWarning("You have selected more than one toolbox config files in BlockResSettings.asset. The first one will be used.");
+            Debug.LogWarning("Please select a toolbox config XML file in BlockResSettings.asset. Default select 'default'.");
+            
+            //Debug.LogWarning("You have selected more than one toolbox config files in BlockResSettings.asset. The first one will be used.");
         }
 
         var resParam = configSelected[0];
@@ -172,11 +183,80 @@ public class BlockResMgr : ScriptableObject
         if (textAsset == null)
             return null;
 
-        ToolboxConfig toolboxConfig = JsonUtility.FromJson<ToolboxConfig>(textAsset.text);
+        //ToolboxConfig toolboxConfig = JsonUtility.FromJson<ToolboxConfig>(textAsset.text);
         if (m_LoadType == BlockResLoadType.Assetbundle && mABUnload != null)
             mABUnload(resParam.ResName);
 
-        return toolboxConfig;
+        try
+        {
+            ToolboxConfig toolboxConfig = new ToolboxConfig();
+            toolboxConfig.BlockCategoryList = new List<ToolboxBlockCategory>();
+
+            XDocument doc = XDocument.Parse(textAsset.text);
+
+            XElement toolboxElement = doc.Root;
+            if (toolboxElement == null)
+            {
+                Debug.LogError("Invalid Toolbox XML: Missing root element.");
+                return null;
+            }
+
+           
+            toolboxConfig.Style = toolboxElement.Attribute("style")?.Value ?? "default";
+
+            foreach (XElement element in toolboxElement.Elements())
+            {
+                if (element.Name.LocalName.Equals("category", StringComparison.OrdinalIgnoreCase))
+                {
+                    ToolboxBlockCategory category = new ToolboxBlockCategory();
+                    category.CategoryName = element.Attribute("name")?.Value; 
+                    category.Colour = element.Attribute("colour")?.Value;    
+                    category.Custom = element.Attribute("custom")?.Value;   
+                    category.BlockList = new List<string>();
+
+                    if (string.IsNullOrEmpty(category.CategoryName))
+                    {
+                        Debug.LogWarning($"Found category with missing 'name' attribute in toolbox XML.");
+                        continue;
+                    }
+
+                    foreach (XElement blockElement in element.Elements("block"))
+                    {
+                        string blockType = blockElement.Attribute("type")?.Value;
+                        if (!string.IsNullOrEmpty(blockType))
+                        {
+                            category.BlockList.Add(blockType);
+                        }
+                    }
+                    toolboxConfig.BlockCategoryList.Add(category);
+                }
+               else if (element.Name.LocalName.Equals("sep", StringComparison.OrdinalIgnoreCase))
+                {
+                    ToolboxBlockCategory separator = new ToolboxBlockCategory
+                    {
+                        CategoryName = "---SEP---",
+                        Custom = "SEPARATOR"
+                    };
+                    toolboxConfig.BlockCategoryList.Add(separator);
+                }
+            }
+
+            if (m_LoadType == BlockResLoadType.Assetbundle && mABUnload != null)
+                mABUnload(resParam.ResName);
+
+            return toolboxConfig;
+
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            Debug.LogError($"Error parsing Toolbox XML ({resParam.ResName}): {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Unexpected error processing Toolbox XML ({resParam.ResName}): {ex.Message}\n{ex.StackTrace}");
+            return null;
+        }
     }
 
     #region Block View Prefabs
