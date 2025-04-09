@@ -1,50 +1,74 @@
 ![VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
 
-🚀 Laboratorio virtual  de programación y robótica mediante programación de bloques con Scratch y simulación de robots lego Wedo 2.0.
-Trabajo Fin de Grado curso 2024 -2025 Ingeniería Informática Universidad de Burgos desarrollado por Luis Ignacio de Luna Gómez
+<h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0)</h1>
+
+<h2><strong>Trabajo Fin de Grado curso 2024 -2025</strong>
+</h2>
+<h3>Ingeniería Informática Universidad de Burgos</h3>
+
+Desarrollado por <strong>Luis Ignacio de Luna Gómez</strong>
 
 🧑‍🏫 <strong>Tutor del trabajo</strong>
 <p>Carlos López Nozal</p>
 <p>Departamento de Ingeniería Informática, Universidad de Burgos</p>
 <p>Contacto:  <a href="mailto:clopezno@ubu.es">clopezno@ubu.es</a></p>
 
-📌 Descripción del proyecto
+ <h2>📌 Descripción del proyecto</h2>
 
-Este proyecto tiene como objetivo el desarrollo de un laboratorio virtual de programación y robótica utilizando Unity.
-La plataforma permitirá a los usuarios interactuar con bloques de programación visual, similares a Scratch, para simular y programar el robot LEGO WeDo 2.0.
+Este proyecto tiene como objetivo el desarrollo de un **laboratorio virtual de programación y robótica** utilizando el motor de videojuegos **Unity** para su desarrollo..
+La plataforma esta diseñada para servir como una herramienta educativa que permita a sus usuarios aprender concetos básicos de programación y robótica interactuando con **bloques de programación visual de scrtach** para simular la iteracción de un **robot Lego Wedo 2.0** simulado en un entorno 3D.
 
-El laboratorio busca ser una herramienta educativa innovadora que facilite la enseñanza de la programación en entornos visuales, brindando una alternativa accesible y didáctica para estudiantes de distintas edades.
+El objetivo principal es crear una **alternativa accesible, interactica y didáctica** para la metodología **STEAM** (Cienca, Tecnología, Arte, Ingeniería y Matemáticas), especialmente enfocada a la enseñanza de la lógica de programación y el funcionamiento básico de robots, mediante el uso en dispositivos **Android** de tipo Tablets.
 
-🎯 #Características Principales
+<h2>🎯  Características Principales</h2>
 <ul>
-  <li>✔ Simulación de bloques de Scratch: Adaptación de un entorno gráfico basado en bloques de palabra  para la interacción con bloques de programación.</li>
-  <li>✔ Compatibilidad con el robot LEGO WeDo 2.0: Simulación del hardware, incluyendo sensores de movimiento, distancia y motores.</li>
-  <li>✔ Desarrollo en Unity: Implementación de un sistema de interacción intuitivo y visualmente atractivo.</li>
-  <li>✔ Laboratorio educativo: Enfoque en la enseñanza de la lógica de programación y robótica de manera accesible.</li>
-</ul>
-
-🛠 <strong>Herramientas utilizadas:</strong>
-<ul>
-  <li>✔ Unity (Motor de desarrollo para la simulación).
-  <li>✔ C# (Lógica y programación de los bloques interactivos).
-  <li>✔ Firebase (Almacenamiento de datos y configuración de usuario).
-  <li>✔ Scratch (Base conceptual para los bloques de programación).
-</ul>
-
-🛠 <strong>Control de versiones</strong>
-
- <ul>
-  <li>✔ Github: Almacenar la documentación del proyecto y el código del proyecto </li>
-  <li>✔ Zube  Gestionar las tareas y el avance del proyecto utilizando metodología ágil.</li>
+<li>
+  🧱 <strong>Interfaz de programación visual:</strong> Se va a implementar un entorno gráfico basado en bloques, replicando el entorno de programación en scartch, para construir programas de forma intuitiva.
+</li>
+  <li> 
+  🤖 <strong>Simulación de robot LEGO Wedo 2.0: </strong>
+    <<ul>
+    <li> Modelo 3D Interactivo del robot</li>
+    <li>Simulación y comportamiento del motor</li>
+      <li>Simulación de sensores>
+    </ul>
+  </li>
+  <li>
+    <strong>Ejecución en tiempo real:</strong> Los programas creados con bloques se traducen y ejecutan para controlar al robot virtual dentro del entorno de simulación.
+  </li>
+  <li> <strong>Plataforma Android:</strong> La aplicación será diseñada para su ejecucción en tablets con el sistema operativo Android.
+ <li>
+ <strong> Enfoque educativo:</strong> La herramienta esta diseñada para servir de apoyo a la enseñanza de programación y robótica.  
+ </li>
+<li>
+  <strong> Desarrollo en Unity: </strong>Esta herramienta nos permite el diseño del entorno de simulación 3D interactivo.
+</li>
  </ul>
-  
-💻 <strong>Lenguajes de programación:</strong>
 
- <ul>
-  <<li>✔ C#</li>
+<h2>🛠 Herramientas utilizadas:</h2>
+<ul>
+  <li> <strong>Motor de desarrollo utilizado</strong> Unity Versión: 6000.0.26f1</li>
+  <li> <strong>Lenguaje de programación principal</strong>: C#</li>
+  <li> <strong>Interfaz de bloques:</strong> Basado en el repositorio UBlockly, el cual ha sido adaptado a este proyecto</li>
+  <li> <strong>Base de datos: </strong> Firebase.
+    <ul>
+    <li>Servicios usados (pendiente de concretar</li>
+    </ul>
+  <li> <strong>Control de versiones</strong>: Git / Github</li>
+<li><strong>Gestión de proyectos</strong>: Zube (Metodológía Ágil)</li>  
 </ul>
 
-📬 <strong>Contacto</strong>
+<h2>🚧 Estado del Proyecto</h2>
+
+Actualmente el proyecto se encuentra en **desarrollo** como parte del Trabajo de Fin de Grado
+
+<h2>🚀 Cómo Empezar (Instrucciones Preliminares)</h2>
+
+*Prerequisitos*
+
+*Instalacion y ejecucción*
+
+<h2>📬 <strong>Contacto</strong></h2
 
 <ul>
 <li><strong>Email: </strong><a href="mailto:correo@luisgnaciodeluna.com">correo@luisgnaciodeluna.com </a> | <a href="mailto:ldg1008@alu.ubu.es">ldg1008@alu.ubu.es</li>
