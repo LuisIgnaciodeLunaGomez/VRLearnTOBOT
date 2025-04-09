@@ -7,7 +7,7 @@
  * 
  * email: ldg1008@alu.ubu.es
  * 
- * Fecha: 26/32/2025
+ * Fecha: 26/03/2025
  * 
  * Versión: 1.0.
  * 
