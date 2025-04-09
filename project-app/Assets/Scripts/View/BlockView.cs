@@ -20,7 +20,6 @@ using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(LayoutElement))]
@@ -63,11 +62,24 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     }
     public virtual void BindModel(BlockModel block, WorkSpaceView workspaceView)
     {
-        if (mBlock == block) return;
+        if (mBlock == block && mBlock != null) return;
+
+        if (block == null)
+        {
+            Debug.LogError($"BlockView ({gameObject.name}): Attempted to BindModel with a NULL model!", this);
+            return;
+        }
+        if (workspaceView == null) 
+        {
+            Debug.LogError($"BlockView ({block.Type}/{gameObject.name}): Attempted to BindModel with a NULL WorkSpaceView!", this);
+            //return;
+        }
         if (mBlock != null) UnBindModel();
 
         mBlock = block;
         m_WorkspaceView = workspaceView;
+
+        Debug.Log($"BlockView ({BlockType}): Assigning WorkspaceView (InstanceID: {m_WorkspaceView?.GetInstanceID()})", this.gameObject);
 
         if (m_WorkspaceView != null)
         {
@@ -82,25 +94,57 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         mBlock.AddObserver(mBlockObserver);
 
         int inputIndex = 0;
-        foreach (BaseView view in ChildViews)
+        foreach (BaseView childView in ChildViews)
         {
-            if (view.Type == ViewType.Connection)
+            // if (childView.Type == ViewType.Connection)
+            if (childView is ConnectionView conView)
             {
-                ConnectionView conView = view as ConnectionView;
-                conView.BindModel(mBlock.GetFirstClassConnection(conView.ConnectionType), this);
-            }
-            else if (view.Type == ViewType.LineGroup)
-            {
-                LineGroupView groupView = view as LineGroupView;
-                foreach (var inputView in groupView.ChildViews)
+                //ConnectionView conView = childView as ConnectionView;
+                ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
+                if (conModel != null)
                 {
-                    ((InputView)inputView).BindModel(mBlock.InputList[inputIndex], this);
-                    inputIndex++;
+                    conView.BindModel(conModel, this);
+                    //conView.BindModel(mBlock.GetFirstClassConnection(conView.ConnectionType), this);
                 }
             }
-        }
+            //  else if (childView.Type == ViewType.LineGroup)
+            else if (childView is LineGroupView groupView)
+            {
+                foreach (var viewInGroup in groupView.ChildViews)
+                    //LineGroupView groupView = childView as LineGroupView;
+                    if (viewInGroup is InputView inputView)
+                    {
+                        if (inputIndex < mBlock.InputList.Count)
+                        {
+                            InputModel inputModel = mBlock.InputList[inputIndex];
+                            if (inputModel != null)
+                            {
+
+                                // ((InputView)inputView).BindModel(mBlock.InputList[inputIndex], this);
+                                inputView.BindModel(inputModel, this);
+                            }
+                            else
+                            {
+                                Debug.LogError($"NULL InputModel at index {inputIndex} for Block {BlockType}");
+                            }
+
+                        }
+                        inputIndex++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        Debug.Log($"BlockView ({BlockType}): Finished binding children.");
 
         RegisterUIEvents();
+        UpdateColor();
+        MarkDirty(); 
+        QueueForceLayoutUpdate(); 
+
+        Debug.Log($"BlockView ({BlockType}): BindModel completed fully.");
 
     }
    

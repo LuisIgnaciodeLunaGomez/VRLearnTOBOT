@@ -177,6 +177,7 @@ public class ConnectionView : BaseView
     {
         // if (m_ConnectionModel == null || m_SourceBlockView?.WorkSpaceView == null) // Necesitamos WorkspaceView
         //     return;
+        if (m_SourceBlockView != null && m_SourceBlockView.InToolbox) return;
 
         if (m_ConnectionModel == null) { Debug.LogError("OnXYUpdated: m_ConnectionModel is NULL!", this); return; }
         if (m_SourceBlockView == null) { Debug.LogError("OnXYUpdated: m_SourceBlockView is NULL!", this); return; }
@@ -245,7 +246,6 @@ public class ConnectionView : BaseView
             Debug.LogError($"OnXYUpdated: Exception calculating screenPoint: {e.Message}", this); return;
         }
         
-        // Intento convertir el screenPoint a coordenadas locales del CodingArea
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(codingArea,
                 RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, ViewTransform.position),
                 canvas.worldCamera,
@@ -253,14 +253,12 @@ public class ConnectionView : BaseView
         {
             m_ConnectionModel.Location = relativePos; 
 
-            // Añadir a la DB en la nueva ubicación si no está oculta
             if (db != null && !m_ConnectionModel.Hidden)
                 db.AddConnection(m_ConnectionModel);
 
-            // Actualizar posición del bloque hijo si está conectado
      
             if (m_ConnectionModel.IsSuperior && m_TargetBlockView != null)
-                m_TargetBlockView.OnXYUpdated(); // Notificar al hijo que su padre (indirecto) se movió
+                m_TargetBlockView.OnXYUpdated(); 
         }
         else
         {
@@ -275,35 +273,28 @@ public class ConnectionView : BaseView
         switch (updateState)
         {
             case UpdateState.Connected:
-                // Superior: Acaba de conectarse a un inferior.
                 if (!m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Superior can receive 'Connected'");
                 OnAttached();
                 break;
 
             case UpdateState.AcceptConnection:
-                // Inferior: Acaba de conectarse a un superior.
                 if (m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Inferior can receive 'AcceptConnection'");
-                // Actualizamos referencia al TargetBlock (que es el SourceBlock del Superior)
                 m_TargetBlockView = m_SourceBlockView.workSpaceView?.GetBlockView(m_ConnectionModel.TargetBlock);
                 break;
 
             case UpdateState.Disconnected:
-                // Superior: Acaba de desconectarse de un inferior.
                 if (!m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Superior can receive 'Disconnected'");
                 OnDetached();
                 break;
 
             case UpdateState.CancelConnection:
-                // Inferior: Acaba de desconectarse de un superior.
                 if (m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Inferior can receive 'CancelConnection'");
-                // Limpia la referencia visual
                 m_TargetBlockView = null;
                 m_SourceBlockView.SetOrphan();
                 break;
 
 
             case UpdateState.BumpedAway:
-                // Inferior: empujado tras una desconexión.
                 if (m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Inferior can receive 'BumpedAway'");
                 if (BlockViewSettings.Instance != null)
                     m_SourceBlockView.XY += BlockViewSettings.Instance.BumpAwayOffset;
@@ -335,12 +326,8 @@ public class ConnectionView : BaseView
 
         if (m_TargetBlockView != null)
         {
-              m_SourceBlockView.AddChildView(m_TargetBlockView);
-
-        
+            m_SourceBlockView.AddChildView(m_TargetBlockView);
             // m_TargetBlockView.XY = this.ChildStartXY; 
-
-            
             m_SourceBlockView.UpdateLayout(m_SourceBlockView.XY); 
         }
         else

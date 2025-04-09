@@ -31,24 +31,25 @@ public class UICanvasView : MonoBehaviour
     public string logoSpriteName; // Nombre del sprite para el logo 
     public string[] topIconNames; // Nombres de sprites para iconos (GreenFlag, StopFlag, Save...)
 
-    // Referencias a los componentes clave del sistema UBlockly
-    private WorkSpaceModel m_WorkspaceModel; // El modelo lógico de area de trabajo
-    private WorkSpaceView m_WorkSpaceView; // La vista  del área de código
-    private BlockScrollListView m_Toolbox;  // El contenedor de bloques (Toolbox) en el panel izquierdo (MiddlePanel)
-
-    [SerializeField] private GameObject categoryButtonPrefab; // Prefab para el botón de categoría
+    private WorkSpaceModel m_WorkspaceModel; // Modelo lógico de area de trabajo
+    private WorkSpaceView m_WorkSpaceView; // Vista  del área de código
+    private BlockListView m_Toolbox;  // Contenedor de bloques (Toolbox) en el panel izquierdo (MiddlePanel)
+    private ToolboxConfig m_ToolboxConfiguration;
+    [SerializeField] private GameObject categoryButtonPrefab; // Prefab  botón de categoría
     [SerializeField] private GameObject BlockViewPrefab; // Prefab base
-    // Propiedades públicas para acceder si es necesario
+    private RectTransform m_CategoryButtonContainerRect; //Contenedor de botones
+    private ScrollRect m_MiddlePanelScrollRect;
     public WorkSpaceModel Workspace => m_WorkspaceModel;
     public WorkSpaceView WorkSpaceView => m_WorkSpaceView;
-    public BlockScrollListView Toolbox => m_Toolbox;
+    public BlockListView Toolbox => m_Toolbox;
 
-    private GameObject m_CanvasGO; // Referencia al Canvas
-    private GameObject m_UiManagerView; // Referencia al UIManager
-    private RectTransform m_RightPanelRect;  // Referencia al panel derecho (CodingArea)
-    private RectTransform m_MiddlePanelRect; // Referencia al panel izquierdo (BlockListPanel)
-    //private Transform m_blockContainerInToolbox;  // Referencia al contenedor de bloques dentro del Toolbox (BlockScrollListView)
+    private GameObject m_CanvasGO; 
+    private GameObject m_UiManagerView; 
+    private RectTransform m_RightPanelRect;  
+    private RectTransform m_MiddlePanelRect; 
+    //private Transform m_blockContainerInToolbox;  
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase); 
+
     //Dimensiones estimadas de la pantalla
     private const int m_screenWidth = 1200;
     private const int m_screenHeight = 720;
@@ -61,20 +62,29 @@ public class UICanvasView : MonoBehaviour
         InitializeUIManager();
         InitializeCanvas();
         CreateTopPanel();
-        GameObject categoryContentPanel = SetupLeftPanel(m_CanvasGO);  //Left Panel
+        
+        GameObject categoryContentPanelGO = SetupLeftPanel(m_CanvasGO); // Left Panel
+        if (categoryContentPanelGO != null)
+        {
+            m_CategoryButtonContainerRect = categoryContentPanelGO.GetComponent<RectTransform>();
+            if (m_CategoryButtonContainerRect == null)
+                Debug.LogError("SetupLeftPanel returned GO missing RectTransform!");
+        }
+        else { Debug.LogError("SetupLeftPanel failed to return content panel GO!"); }
+
         CreateWorkspacePanels(); // Middle y Right Panels
 
-        //Instanciación y Configuración de Componentes MVC
         if (m_RightPanelRect != null && m_MiddlePanelRect != null)
         {
-            SetUpComponents(m_MiddlePanelRect.gameObject, m_RightPanelRect.gameObject);
+            SetUpComponents(m_MiddlePanelRect.gameObject, m_RightPanelRect.gameObject); 
         }
         else
         {
             Debug.LogError("UICanvasView: Failed to create Middle or Right panels. Cannot setup UBlockly.");
-            return; // Detener si los paneles críticos fallaron
+            enabled = false;
+            return;
         }
-        LoadCategories(categoryContentPanel); // Cargar categorías en el panel izquierdo
+
         Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
     }
 
@@ -99,7 +109,19 @@ public class UICanvasView : MonoBehaviour
             BlockDataLoader.LoadAllDefinitions(); 
             Debug.Log("<color=teal>UICanvasView: BlockDataLoader.LoadAllDefinitions() finished.</color>");
             Debug.Log("<color=green>UICanvasView: ScratchBlocks.Init() successful.</color>");
+            
+            Debug.Log("<color=teal>UICanvasView: Loading Toolbox Configuration...</color>");
 
+            m_ToolboxConfiguration = ToolboxConfig.Load();
+            if (m_ToolboxConfiguration == null)
+            {
+                Debug.LogError("UICanvasView: FAILED to load Toolbox Configuration!");
+                m_ToolboxConfiguration = new ToolboxConfig { BlockCategoryList = new List<ToolboxBlockCategory>() }; 
+            }
+            else
+            {
+                Debug.Log($"<color=green>UICanvasView: Toolbox Configuration loaded successfully. Style: {m_ToolboxConfiguration.Style}, Categories: {m_ToolboxConfiguration.BlockCategoryList?.Count ?? 0}</color>");
+            }
 
         }
         catch (System.Exception e)
@@ -248,7 +270,7 @@ public class UICanvasView : MonoBehaviour
         RectTransform panelRect = panel.GetComponent<RectTransform>();
         float panelHeight = panelRect.rect.height;
         if (panelHeight <= 0) panelHeight = 30; // Fallback
-        float iconSize = panelHeight * 0.7f; // Iconos un poco más pequeños que la barra
+        float iconSize = panelHeight * 0.7f; // Iconos un poco más pequeños que la barra REVISAR no se muestran bien
         float padding = 5f;
 
         // Contenedor para layout automático a la derecha
@@ -342,6 +364,25 @@ public class UICanvasView : MonoBehaviour
             new Color(0.9f, 0.9f, 0.9f, 1f)); // Gris claro
         m_MiddlePanelRect = middlePanel.GetComponent<RectTransform>();
 
+        ScrollRect scrollRect = middlePanel.GetComponent<ScrollRect>();
+        if (scrollRect == null)
+        {
+            scrollRect = middlePanel.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false; // Solo scroll vertical
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            Debug.Log("Added ScrollRect to MiddlePanel dynamically.", middlePanel);
+        }
+
+        //Da problemas de render
+        /*Mask mask = middlePanel.GetComponent<Mask>();
+        if (mask == null)
+        {
+            mask = middlePanel.AddComponent<Mask>();
+            mask.showMaskGraphic = false; // No mostrar el fondo del panel como máscara
+            Debug.Log("Added Mask to MiddlePanel dynamically.", middlePanel);
+        }*/
+
         // Panel Derecho del WorkArea 
         GameObject rightPanel = CreatePanel(
             "CodingAreaPanel", 
@@ -368,7 +409,6 @@ public class UICanvasView : MonoBehaviour
     {
         Debug.Log("<color=yellow>UICanvasView: Setting up Components...</color>");
 
-        //Creación del Modelo 
         try
         {
             WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions();
@@ -381,59 +421,71 @@ public class UICanvasView : MonoBehaviour
             return;
         }
 
-        // Configurar la Vista 
         m_WorkSpaceView = rightPanelGO.GetComponent<WorkSpaceView>();
         if (m_WorkSpaceView == null) m_WorkSpaceView = rightPanelGO.AddComponent<WorkSpaceView>();
 
-        //Configuración del MiddlePanel) 
-        m_Toolbox = middlePanelGO.GetComponent<BlockScrollListView>();
-        if (m_Toolbox == null) m_Toolbox = middlePanelGO.AddComponent<BlockScrollListView>();
-        Transform blockContainerTransform = CreateAndConfigureBlockContainer(middlePanelGO);
-        if (blockContainerTransform == null)
+        m_Toolbox = middlePanelGO.GetComponent<BlockListView>();
+        if (m_Toolbox == null) m_Toolbox = middlePanelGO.AddComponent<BlockListView>();
+
+        m_MiddlePanelScrollRect = middlePanelGO.GetComponent<ScrollRect>();
+        if (m_MiddlePanelScrollRect == null)
         {
-            Debug.LogError("<color=red>UICanvasView: Failed to create BlockContainer for Toolbox!</color>");
-            this.enabled = false;
-            return;
+            Debug.LogWarning("Middle Panel (BlockListPanel) is missing ScrollRect component. Adding one.", middlePanelGO);
+            m_MiddlePanelScrollRect = middlePanelGO.AddComponent<ScrollRect>();
+            m_MiddlePanelScrollRect.horizontal = false;
+            m_MiddlePanelScrollRect.vertical = true;
+            m_MiddlePanelScrollRect.movementType = ScrollRect.MovementType.Clamped;
+            m_MiddlePanelScrollRect.viewport = middlePanelGO.GetComponent<RectTransform>();
+
+            if (middlePanelGO.GetComponent<Mask>() == null) middlePanelGO.AddComponent<Mask>().showMaskGraphic = false;
+            Image panelImage = middlePanelGO.GetComponent<Image>();
+            if (panelImage == null) panelImage = middlePanelGO.AddComponent<Image>();
+            panelImage.color = new Color(0, 0, 0, 0);
+            panelImage.raycastTarget = true;
         }
-
-        // Debug.Log($"<color=yellow>UICanvasView: Calling InitializeToolbox with Model ID: {m_WorkspaceModel?.Id}, View Instance ID: {m_WorkSpaceView?.GetInstanceID()}</color>");
-        Debug.Log($"<color=yellow>UICanvasView: Preparing to InitializeToolbox. Container valid: {blockContainerTransform != null}, Manager valid: {this != null}, Model valid: {m_WorkspaceModel != null}, View valid: {m_WorkSpaceView != null}</color>");
-        m_Toolbox.InitializeToolbox(
-            blockContainerTransform, // Transform container
-            this,                    // UICanvasView manager
-            m_WorkspaceModel,        // WorkSpaceModel workspace
-            m_WorkSpaceView          // WorkSpaceView workspaceView
-        );
-
-
-        Debug.Log($"<color=orange>UICanvasView: PRE-BIND CHECK. WorkspaceModel is null? {(m_WorkspaceModel == null)}. Toolbox valid? {m_Toolbox != null}. PanelRect valid? {m_RightPanelRect != null}. View valid? {m_WorkSpaceView != null}</color>");
 
         if (m_WorkspaceModel != null && m_Toolbox != null && m_RightPanelRect != null && m_WorkSpaceView != null)
         {
-            //Vinculación del modelo lógico con la vista
-            Debug.Log($"<color=yellow>UICanvasView: Calling BindModel on WorkSpaceView (Instance ID: {m_WorkSpaceView?.GetInstanceID()})</color>");
-
+            Debug.Log($"<color=yellow>UICanvasView: Binding WorkSpaceView ({m_WorkSpaceView.GetInstanceID()}) to Model...</color>");
             m_WorkSpaceView.BindModel(
-                m_WorkspaceModel,    // Modelo lógico
-                m_Toolbox,           // BlockScrollList
-                m_RightPanelRect     // RectTransform del área de código                         
-            );
-            Debug.Log("<color=green>UICanvasView:  WorkSpaceView bound to Model and dependencies.</color>");
-        }
-        else
-        {
-          //  Debug.LogError("UICanvasView: Cannot bind WorkSpaceView, WorkSpaceModel is null!");
+                m_WorkspaceModel,
+                m_Toolbox,
+                m_RightPanelRect,
+                null
+             );
+            Debug.Log("<color=green>UICanvasView: WorkSpaceView bound to Model.</color>");
 
-            string errorMsg = "UICanvasView: Cannot bind WorkSpaceView due to missing refs: ";
-            if (m_WorkspaceModel == null) errorMsg += "WorkspaceModel ";
-            if (m_Toolbox == null) errorMsg += "Toolbox ";
-            if (m_RightPanelRect == null) errorMsg += "RightPanelRect ";
-            if (m_WorkSpaceView == null) errorMsg += "WorkspaceView ";
-            Debug.LogError(errorMsg);
-            enabled = false; 
+            RectTransform categoryButtonContainer = m_CategoryButtonContainerRect;
+
+            ToolboxConfig toolboxConfig = m_ToolboxConfiguration;
+
+            if (m_Toolbox != null && m_WorkspaceModel != null && toolboxConfig != null && m_WorkSpaceView != null && categoryButtonContainer != null && m_MiddlePanelScrollRect != null)
+            {
+                Debug.Log("<color=yellow>UICanvasView: Calling InitializeToolbox on BlockListView...</color>");
+                m_Toolbox.InitializeToolbox(
+                    m_WorkspaceModel,
+                    toolboxConfig,
+                    m_WorkSpaceView,
+                    categoryButtonContainer,
+                    m_MiddlePanelScrollRect
+                );
+                Debug.Log("<color=green>UICanvasView: BlockListView Toolbox Initialized.</color>");
+            }
+            else
+            {
+                //  Debug.LogError("UICanvasView: Cannot bind WorkSpaceView, WorkSpaceModel is null!");
+
+                string errorMsg = "UICanvasView: Cannot bind WorkSpaceView due to missing refs: ";
+                if (m_WorkspaceModel == null) errorMsg += "WorkspaceModel ";
+                if (m_Toolbox == null) errorMsg += "Toolbox ";
+                if (m_RightPanelRect == null) errorMsg += "RightPanelRect ";
+                if (m_WorkSpaceView == null) errorMsg += "WorkspaceView ";
+                Debug.LogError(errorMsg);
+                enabled = false;
+
+            }
 
         }
-       
     }
 
     /**
@@ -442,7 +494,7 @@ public class UICanvasView : MonoBehaviour
      * @param: blockScrollListRef Referencia al BlockScrollListView
      * @return: Transform del contenedor creado
      */
-    public Transform CreateBlockContainer(GameObject panel, BlockScrollListView blockScrollListRef)
+    public Transform CreateBlockContainer(GameObject panel, BlockListView blockScrollListRef)
     {
         GameObject blockContainer = new GameObject("BlockContainer");
         blockContainer.transform.SetParent(panel.transform, false);
@@ -599,7 +651,7 @@ public class UICanvasView : MonoBehaviour
         // Layout Vertical para los botones de categoría
         VerticalLayoutGroup layoutGroup = contentPanel.AddComponent<VerticalLayoutGroup>();
         layoutGroup.padding = new RectOffset(5, 5, 40, 5); 
-        layoutGroup.spacing = 100f;
+        layoutGroup.spacing = 40f;
         layoutGroup.childAlignment = TextAnchor.UpperCenter;
         layoutGroup.childControlWidth = false; 
         layoutGroup.childControlHeight = false; 
@@ -749,7 +801,7 @@ public class UICanvasView : MonoBehaviour
 
         m_WorkSpaceView?.Dispose(); 
         m_WorkspaceModel?.Dispose(); 
-        //ScratchBlocks.Dispose();  <-- TODO:  Revisar si hace falta llamarlo o no
+        //ScratchBlocks.Dispose(); //REVISAR 
     }
 
     /**
