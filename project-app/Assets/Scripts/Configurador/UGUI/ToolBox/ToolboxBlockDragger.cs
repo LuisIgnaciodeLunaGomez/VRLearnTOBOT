@@ -98,6 +98,4 @@ public class ToolboxBlockDragger : MonoBehaviour, IBeginDragHandler
 
     }
 
-
-
 }//fin clase ToolboxBlockDragger
