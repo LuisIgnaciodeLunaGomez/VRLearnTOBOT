@@ -15,30 +15,41 @@
  */
 
 using System;
+using UnityEditor;
+using UnityEngine;
 
 public class MemorySafeBlockObserver : IObserver<int>
 {
-    private BlockView view;
+    private BlockView m_view;
 
     public MemorySafeBlockObserver(BlockView view)
     {
-        this.view = view;
+        this.m_view = view;
     }
 
     public void OnUpdated(object model, int updateStateMask)
     {
-        if (view == null || view.Block != model)
+        if (m_view == null || m_view.Block != model || m_view.gameObject == null)
         {
-            ((Block)model).RemoveObserver(this);
+            try
+            {
+               
+                ((Observable<int>)model).RemoveObserver(this);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to remove observer: {ex.Message}");
+            }
             return;
         }
-
-        foreach (UpdateStates state in Enum.GetValues(typeof(UpdateStates)))
+        foreach (BlockUpdateType stateType in Enum.GetValues(typeof(BlockUpdateType))) 
         {
-            if (((1 << (int)state) & updateStateMask) != 0)
+            int stateMaskValue = 1 << (int)stateType; 
+            if ((stateMaskValue & updateStateMask) != 0)
             {
-                view.UpdateBlockState(state);
+                m_view.HandleModelUpdate((BlockModel)model, stateType); 
             }
         }
     }
-}
+
+}//fin clase MemorySafeBlockObserver
