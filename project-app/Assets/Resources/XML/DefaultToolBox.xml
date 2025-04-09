@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolbox style="Scratch">
+	<!-- El atributo style es opcional  -->
+
+	<!-- Categoría Movimiento -->
+	<!-- 'Name' de Categories.xml para el atributo 'name' -->
+	<!--  'Color' de Categories.xml para el atributo 'colour' -->
+	<category name="Movimiento" colour="#4C97FF">
+		<!-- Lista los 'type' de los bloques definidos en Movimiento.xml -->
+		<block type="motion_movesteps"></block>
+		<!-- <block type="motion_goto"></block> -->
+		
+		<!-- <block type="motion_turnright"></block> -->
+		<!-- <block type="motion_turnleft"></block> -->
+		
+	</category>
+
+	<!-- Categoría Apariencia -->
+	<category name="Apariencia" colour="#9966FF">
+		
+	</category>
+
+	<!-- Categoría Sonido -->
+	<category name="Sonido" colour="#CF63CF">
+	</category>
+
+	<!-- Categoría Eventos -->
+	<category name="Eventos" colour="#FFBF00">
+		<block type="event_whenflagclicked"></block>
+		
+	</category>
+
+	<!-- Categoría Control -->
+	<category name="Control" colour="#FFAB19">
+
+	</category>
+
+	<!-- Categoría Sensores -->
+	<category name="Sensores" colour="#5CB1D6">
+	</category>
+
+	<!-- Categoría Operadores -->
+	<category name="Operadores" colour="#59C059">
+		
+	</category>
+
+	<!-- Categorías Especiales -->
+
+
+	<!-- Separador Opcional -->
+	<sep></sep>
+
+	<category name="Variables" colour="#FF8C1A" custom="VARIABLE"></category>
+	<category name="MisBloques" colour="#FF6680" custom="PROCEDURE"></category>
+	
+
+</toolbox>

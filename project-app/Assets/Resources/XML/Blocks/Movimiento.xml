@@ -42,8 +42,7 @@
 		<!-- añadir Mutator o Extensions -->
 		<!-- <Mutator name="if_else_mutator"/> -->
 	</Block>
-
-	<Block type="motion_goto" spriteName="Stack_block_grey">>
+<!--Block type="motion_goto" spriteName="Stack_block_grey">>
 		<PreviousStatement check="Statement"/>
 		<NextStatement check="Statement"/>
 		<Colour>%{MOTION_HUE}</Colour>
@@ -63,20 +62,20 @@
 				<Field type="field_number" name="DEFAULT_Y"/>
 			</Arg>
 		</Args>
-	</Block>
+	</Block>-->
 
 	<!-- Bloque con Salida (Output) -->
-	<Block type="math_number" spriteName="Stack_block_grey">>
-		<Output check="Number"/>
+	<!--<Block type="math_number" spriteName="Stack_block_grey">>
+		<Output check="Number"/>-->
 		<!-- Devuelve un Número -->
-		<Colour>%{MATH_HUE}</Colour>
+	<!--	<Colour>%{MATH_HUE}</Colour>
 		<Args>
 			<Arg type="field_number" name="NUM" defaultValue="0"/>
 		</Args>
-	</Block>
+	</Block>-->
 
 	<!-- Bloque con Dropdown -->
-	<Block type="logic_boolean" spriteName="Stack_block_grey">>
+	<!--<Block type="logic_boolean" spriteName="Stack_block_grey">>
 		<Output check="Boolean"/>
 		<Colour>%{LOGIC_HUE}</Colour>
 		<Args>
@@ -87,10 +86,10 @@
 				</Options>
 			</Arg>
 		</Args>
-	</Block>
+	</Block>-->
 
 	<!-- Bloque con Input de Statement -->
-	<Block type="controls_repeat" spriteName="Stack_block_grey">
+	<!--<Block type="controls_repeat" spriteName="Stack_block_grey">
 		<PreviousStatement check="Statement"/>
 		<NextStatement check="Statement"/>
 		<Colour>%{LOOPS_HUE}</Colour>
@@ -102,13 +101,13 @@
 				<Field type="field_number" name="DEFAULT_TIMES"/>
 			</Arg>
 			<Arg type="field_label" value="veces"/>
-			<Arg type="input_statement" name="DO">
+			<Arg type="input_statement" name="DO">-->
 				<!-- Input de Statement -->
-				<Check>Statement</Check>
+	<!--	<Check>Statement</Check>-->
 				<!-- Tipos permitidos dentro -->
-			</Arg>
+	<!--		</Arg>
 		</Args>
-	</Block>
+	</Block>-->
 
 
 </Blocks>

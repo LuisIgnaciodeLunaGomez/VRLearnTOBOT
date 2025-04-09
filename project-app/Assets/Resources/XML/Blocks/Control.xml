@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Blocks category="Control" color="#FFAB19">
-	<!-- Elemento Raíz ÚNICO -->
+	<!-- Añadir definiciones de <Block> aquí -->
+	<!-- Elemento Raíz ÚNICO 
 	<Block type="control_wait">
 		<PreviousStatement/>
 		<NextStatement/>
@@ -27,7 +28,7 @@
 				<Check>Statement</Check>
 			</Arg>
 		</Args>
-	</Block>
+	</Block>-->
 	<!-- Otros bloques de Control irían aquí -->
 </Blocks>
 <!-- Cierre del Elemento Raíz -->
