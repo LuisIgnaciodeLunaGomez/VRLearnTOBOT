@@ -9,229 +9,530 @@
  * 
  * Fecha: 27/01/2025
  * 
- * Versión: 1.0.0
+ * Versión: 2.0.0
  * 
- * Descripción: Clase que se encarga de cargar los datos de los bloques desde un archivo JSON
+ * Descripción: Clase que se encarga de cargar los datos de los bloques desde un archivo XML
  */
-
-
 using System.Collections.Generic;
 using System.Xml;
 using UnityEngine;
-public class BlockDataLoader
+using System.Linq;
+using System.Xml.Linq;
+using System;
+using Newtonsoft.Json.Linq;
+
+public static class BlockDataLoader
 {
-    [System.Serializable]
-    public class BlockData
+
+    private static Dictionary<string, Vector2> m_blockSizes = new Dictionary<string, Vector2>(); 
+    private static List<(string Name, Color Color)> m_cachedCategories = new List<(string, Color)>();
+    private static Dictionary<string, Color> m_categoryColorsCache = new Dictionary<string, Color>();
+    private static bool m_isLoaded = false; // Flag para saber si ya se cargó todo
+    public static void LoadAllDefinitions()
     {
-        public string type;     // Tipo de bloque
-        public string text;      // Texto del bloque
-        public string iconPath;   // Ruta al icono del bloque
-        public string spriteName; // Nombre del sprite
-        public string label;      // Etiqueta del bloque
-        public List<BlockArg> args = new List<BlockArg>(); // Lista de argumentos
-    }
-    [System.Serializable]
-    public class BlockArg
-    {
-        public string type;      // Tipo de argumento (label, input, etc.)
-        public string value;     // Texto del label (si aplica)
-        public string name;      // Nombre del input (si aplica)
-        public string inputType; // Tipo del input (number, text, etc.)
-        public string defaultValue; // Valor por defecto (si aplica)
-    }
 
-    [System.Serializable]
-    public class BlockCategoryData
-    {
-        public string category;      // Nombre de la categoría
-        public List<BlockData> blocks; // Lista de bloques
-    }
+        if (m_isLoaded) return;
 
-    // Diccionario para almacenar los datos de los bloques
-    private static Dictionary<string, BlockData> m_blockData = new Dictionary<string, BlockData>();
-    private static Dictionary<string, Vector2> m_blockSizes = new Dictionary<string, Vector2>();
+        Debug.Log("<color=teal>BlockDataLoader: Loading all block definitions from XML...</color>");
+        TextAsset[] allXmlAssets = Resources.LoadAll<TextAsset>("XML/Blocks");
 
-    // Método para cargar los datos de bloques desde un archivo JSON
-    public static BlockCategoryData LoadCategoryData(string categoryName)
-    {
-        //Debug.Log($"Intentando cargar XML: {categoryName}");
-
-        // var jsonText = Resources.Load<TextAsset>(jsonFilePath); // Cargo desde la carpeta Resources
-        string xmlFilePath = $"{categoryName}";
-
-        TextAsset xmlFile = Resources.Load<TextAsset>(xmlFilePath);
-        if (xmlFile == null)
+        if (allXmlAssets.Length == 0)
         {
-            Debug.LogError($"No se pudo cargar el archivo JSON: {xmlFilePath}");
-            return null;
+            Debug.LogWarning("BlockDataLoader: No XML definition files found in Resources/XML/Blocks/");
         }
 
-        // Valido para depurar el xml
-        //Debug.Log($"XML encontrado: {xmlFilePath}, contenido: {xmlFile.text}"); 
+        BlockFactory.Instance.Clear();
 
-        XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.LoadXml(xmlFile.text); // Cargo el archivo XML
-
-        if (xmlDoc.DocumentElement == null)
+        foreach (TextAsset xmlAsset in allXmlAssets)
         {
-            Debug.LogError(" Error: `DocumentElement` es NULL. El XML podría estar mal formateado o no se está leyendo correctamente.");
-            return null;
+            LoadAndParseXmlAsset(xmlAsset, xmlAsset.name); 
         }
 
+        int loadedCount = BlockFactory.Instance.GetAllBlockDefinitions().Count;
+        int categoryCount = BlockFactory.Instance.GetAllBlockDefinitions().Values.Select(d => d.category).Distinct().Count();
+
+        Debug.Log($"<color=teal>BlockDataLoader: Finished loading. Added {loadedCount} block definitions to BlockFactory across approx {categoryCount} categories.</color>");
+        m_isLoaded = true;
+    }
+
+    /** 
+     * Descripción: Obtiene todas las definiciones para una categoría. Carga todo si no se ha hecho. 
+     * @param categoryName El nombre de la categoría a buscar.
+     * @return La lista de definiciones de bloques para la categoría o una lista vacía si no se encontró.
+     **/
+    public static List<BlockDefinition> GetDefinitionsForCategory(string categoryName)
+    {
+        if (!m_isLoaded) LoadAllDefinitions();
+
+        string normalizedCategory = NormalizeCategoryName(categoryName);
+
+        var allDefinitions = BlockFactory.Instance.GetAllBlockDefinitions().Values;
+
+        List<BlockDefinition> result = allDefinitions
+                                        .Where(def => string.Equals(def.category, normalizedCategory, StringComparison.OrdinalIgnoreCase))
+                                        .ToList();
+
+        if (result.Count == 0)
+        {
+            Debug.LogWarning($"BlockDataLoader: No definitions found in BlockFactory for category '{normalizedCategory}' (original: '{categoryName}').");
+        }
+        return result;
+    }
+
+  
+    /** 
+     * Descripción: Obtiene el color de una categoría (o gris si no se encuentra).
+     * @param categoryName El nombre de la categoría a buscar.
+     * @return El color de la categoría o gris si no se encontró.
+     */
+     
+    private static Color GetColorForCategory(string categoryName)
+    {
+      
+        switch (categoryName?.ToLower()) 
+        {
+            case "motion": return new Color(0.3f, 0.5f, 1f, 1f); 
+            case "events": return new Color(1f, 0.8f, 0f, 1f);
+            case "control": return new Color(1f, 0.7f, 0f, 1f);
+            case "looks": return new Color(0.6f, 0.4f, 1f, 1f); 
+            case "sensing": return new Color(0.3f, 0.7f, 0.9f, 1f); 
+            case "operators": return new Color(0.4f, 0.8f, 0.2f, 1f); 
+            case "variables": return new Color(1f, 0.5f, 0.1f, 1f); 
+            // TODO: añadir todas las categorías ...
+            default: return Color.grey;
+        }
+    }
+
+    /** 
+     * Descripción: Obtiene el color de una categoría (o gris si no se encuentra) para uso público.
+     * @param categoryName El nombre de la categoría a buscar.
+     * @return El color de la categoría o gris si no se encontró.
+     */
+    public static Color GetColorForCategoryPublic(string categoryName)
+    {
+        return GetColorForCategory(categoryName);
+    }
+
+    /**
+     * Descripción: Parsea un string de color (hex o hue) y devuelve un color por defecto si falla.
+     * @param: colorString El string de color a parsear.
+     * @param: defaultColor El color a devolver si falla el parseo.
+     * @return: El color parseado o el color por defecto si falla.
+     */
+    private static Color ParseColorString(string colorString, Color defaultColor)
+    {
+        if (string.IsNullOrWhiteSpace(colorString)) return defaultColor;
+
+        if (colorString.StartsWith("#"))
+        {
+            if (ColorUtility.TryParseHtmlString(colorString, out Color htmlColor))
+                return htmlColor;
+        }
+        else if (colorString.StartsWith("%{") && colorString.EndsWith("}"))
+        {
+         
+            Debug.LogWarning($"Hue color parsing ('{colorString}') not fully implemented. Using default.");
+        }
+
+        return defaultColor;
+    }
+
+    /**
+     * Descripción: Obtiene el nombre de sprite por defecto para un bloque según sus conexiones.
+     * @param hasPrev Si tiene conexión anterior.
+     * @param hasNext Si tiene conexión siguiente.
+     * @param hasOutput Si tiene conexión de salida.
+     * @return El nombre del sprite por defecto.
+     */
+    private static string GetDefaultSpriteForConnections(bool hasPrev, bool hasNext, bool hasOutput)
+    {
+        if (hasOutput) return "reporter_block"; 
+        if (!hasPrev && hasNext) return "hat_block";
+        if (hasPrev && hasNext) return "stack_block";
+        if (hasPrev && !hasNext) return "cap_block"; 
+        return "default_block"; // Fallback
+    }
+
+    // TODO: Implementar ParseDropdownOptions(XmlNode argNode) para dropdowns
+    // private static List<(string display, string value)> ParseDropdownOptions(XmlNode argNode) { }
+
+    // TODO: Añadir lógica para leer checks y field sombra de <Arg>
+    // private static List<string> ParseCheckNode(XmlNode checkNode) { }
+
+
+    /**
+     * Descripción: Parsea un asset XML y llena las cachés
+     * @param xmlAsset El asset XML a parsear.
+     * @param categoryNameFallback El nombre de categoría a usar si no se encuentra en el XML.
+     */
+    private static void LoadAndParseXmlAsset(TextAsset xmlAsset, string categoryNameFallback)
+    {
+        if (xmlAsset == null) return;
         try
         {
-                     
-            BlockCategoryData categoryData = new BlockCategoryData
-            {
-                category = categoryName,
-                blocks = new List<BlockData>()
-            };
-            
+            XDocument xDoc = XDocument.Parse(xmlAsset.text); 
+            XElement blocksRoot = xDoc.Root;
 
-            foreach (var block in categoryData.blocks)
+            if (blocksRoot == null || blocksRoot.Name.LocalName != "Blocks")
             {
-                Debug.Log($"Tipo: {block.type}, Label: {block.label}, SpriteName: {block.spriteName}");
+                Debug.LogError($"Invalid XML root element in {xmlAsset.name}. Expected <Blocks>.");
+                return;
             }
 
-            XmlNodeList blockNodes = xmlDoc.SelectNodes("/Blocks/Block");
+            string categoryNameFromXml = blocksRoot.Attribute("category")?.Value ?? categoryNameFallback;
+            string finalCategoryName = NormalizeCategoryName(categoryNameFromXml); 
 
-
-            if(blockNodes == null || blockNodes.Count == 0)
+            string colorStringFromXml = blocksRoot.Attribute("color")?.Value;
+            Color categoryColor = GetColorForCategory(finalCategoryName);
+            if (!string.IsNullOrEmpty(colorStringFromXml))
             {
-                Debug.LogWarning($"No se encontraron bloques en el archivo XML: {xmlFilePath}");
-                return null;
+                categoryColor = ParseColorString(colorStringFromXml, categoryColor);
             }
 
-            //Debug.Log($" Bloques encontrados en {xmlFilePath}: {blockNodes.Count}");
+            if (!m_categoryColorsCache.ContainsKey(finalCategoryName))
+                m_categoryColorsCache.Add(finalCategoryName, categoryColor);
 
-            /*foreach (XmlNode blockNode in blockNodes)
+            IEnumerable<XElement> blockNodes = blocksRoot.Elements("Block"); 
+
+            if (!blockNodes.Any())
             {
-                Debug.Log($" Bloque encontrado: {blockNode.InnerXml}");
-            }*/
-
-            foreach (XmlNode blockNode in blockNodes)
-            {
-                XmlNode typeNode = blockNode.SelectSingleNode("Type");
-                XmlNode labelNode = blockNode.SelectSingleNode("Label");
-                XmlNode spriteNode = blockNode.SelectSingleNode("SpriteName");
-
-                BlockData blockData = new BlockData
-                {
-                    /* type = blockNode.SelectSingleNode("Type").Value,
-                     label = blockNode.SelectSingleNode("Label").InnerText.Trim(),
-                     spriteName = blockNode.SelectSingleNode("SpriteName")?.InnerText.Trim()*/
-
-                    type = typeNode?.InnerText?.Trim() ?? "Unknown",
-                    label = labelNode?.InnerText?.Trim() ?? "Unnamed",
-                    spriteName = spriteNode?.InnerText?.Trim() ?? "NoSprite",
-                    args = new List<BlockArg>() // Inicializa la lista de argumentos
-                };
-
-                // Leer los <args>
-                /* XmlNodeList argsNodes = blockNode.SelectNodes("args/arg");
-
-                 if (argsNodes == null)
-                 {
-                     Debug.LogError($"No se encontró el nodo <args> en el bloque {blockData.type}");
-                 }
-                 else
-                 {
-
-                     Debug.Log($" Bloque {blockData.type} tiene {argsNodes.Count} argumentos");
-
-                 }*/
-
-                // Comprobamos si existe el nodo <args>
-                XmlNode argsNode = blockNode.SelectSingleNode("args");
-                if (argsNode == null)
-                {
-                   // Debug.LogWarning($"No se encontró el nodo <args> en el bloque `{blockData.type}`. XML del bloque: {blockNode.OuterXml}");
-                }
-                else
-                {
-                   // Debug.Log($"Nodo <args> encontrado en `{blockData.type}`: {argsNode.OuterXml}");
-                }
-
-                XmlNodeList argsNodes = blockNode.SelectNodes("args/arg");
-
-                if (argsNodes != null && argsNodes.Count > 0)
-                {
-
-                    foreach (XmlNode argNode in argsNodes)
-                    {
-                        BlockArg arg = new BlockArg
-                        {
-                            type = argNode.Attributes["type"]?.Value,
-                            value = argNode.Attributes["value"]?.Value,
-                            name = argNode.Attributes["name"]?.Value,
-                            inputType = argNode.Attributes["inputType"]?.Value,
-                            defaultValue = argNode.Attributes["default"]?.Value
-                        };
-
-                        blockData.args.Add(arg);
-                        //Debug.Log($"Arg: type={arg.type}, value={arg.value}, name={arg.name}, inputType={arg.inputType}, default={arg.defaultValue}");
-                    }
-
-                }
-                else
-                {
-                    Debug.LogWarning($"El bloque `{blockData.type}` no tiene argumentos definidos.");
-                }            
-                
-                
-
-
-                // Almacena el bloque en m_blockData usando el type como clave
-                if (!string.IsNullOrEmpty(blockData.type))
-                {
-                    m_blockData[blockData.type] = blockData; //Se guarda la información del bloque en el diccionario
-                }
-                else
-                {
-                    Debug.LogError($"El bloque {blockData.type} tiene un `type` nulo o vacío. Verifica el XML.");
-                }
-
-                if (string.IsNullOrEmpty(blockData.spriteName))
-                {
-                    Debug.LogWarning($"El bloque {blockData.type} no tiene un spriteName definido en el XML");
-                }
-
-               
-
-                if (spriteNode != null)
-                {
-                    blockData.spriteName = spriteNode.InnerText.Trim();
-                   // Debug.Log($" SpriteName encontrado para `{blockData.type}`: {blockData.spriteName}");
-                }
-                else
-                {
-                    Debug.LogWarning($" El bloque `{blockData.type}` no tiene un SpriteName definido en el XML.");
-                }
-
-                if (string.IsNullOrEmpty(blockData.spriteName))
-                {
-                    Debug.LogWarning($"El bloque {blockData.type} no tiene un spriteName definido en el XML");
-                }
-
-
-                categoryData.blocks.Add(blockData);
+                Debug.LogWarning($"No <Block> elements found in {xmlAsset.name}");
+                return;
             }
 
-
-            return categoryData;
+            foreach (XElement blockNode in blockNodes)
+            {
+                ParseAndAddToFactory(blockNode, finalCategoryName, categoryColor); 
+            }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Error al parsear JSON {xmlFilePath}: {e.Message}");
-            return null;
+            Debug.LogError($"Error parsing block definition XML {xmlAsset.name}: {e.Message}\n{e.StackTrace}");
         }
     }
 
-    public static Vector2 GetBlockSize(string type)
+    /**
+     * Description: Argumento de definición de bloque.Parser
+     * @param argNode El nodo XML que representa el argumento.
+     * @return La definición del argumento o null si no se pudo parsear.
+     */
+    private static ArgumentDefinition ParseArgumentDefinition(XElement argNode)
     {
-        return m_blockSizes.ContainsKey(type) ? m_blockSizes[type] : new Vector2(316, 175); // Tamaño por defecto
-       /* return m_blockSizes.ContainsKey(type) ?
-        new Vector2(m_blockSizes[type].x * 0.16f, m_blockSizes[type].y * 0.16f) :
-        new Vector2(316 * 0.16f, 175 * 0.16f);*/
+        string type = argNode.Attribute("type")?.Value;
+        if (string.IsNullOrEmpty(type)) return null;
+
+        ArgumentDefinition arg = new ArgumentDefinition
+        {
+            type = type,
+            value = argNode.Attribute("value")?.Value ?? argNode.Value,
+            name = argNode.Attribute("name")?.Value,
+            
+          //  inputType = argNode.Attribute("inputType")?.Value,
+            defaultValue = argNode.Attribute("defaultValue")?.Value
+        };
+
+        if (type == "input_value" || type == "input_statement")
+        {
+            XElement checkNode = argNode.Element("Check");
+            arg.checks = ParseCheckNode(checkNode);
+        }
+        if (type == "input_value")
+        {
+            XElement fieldNode = argNode.Element("Field");
+            if (fieldNode != null)
+            {
+                arg.shadowFieldType = fieldNode.Attribute("type")?.Value;
+                arg.shadowFieldName = fieldNode.Attribute("name")?.Value;
+                arg.defaultValue = fieldNode.Attribute("defaultValue")?.Value ?? arg.defaultValue;
+            }
+        }
+        if (type == "field_dropdown")
+        {
+            IEnumerable<XElement> optionNodes = argNode.Element("Options")?.Elements("Option");
+            arg.dropdownOptions = ParseDropdownOptions(optionNodes);
+        }
+
+        arg.DefinitionJson = ConvertFieldXmlToJson(argNode); 
+
+
+        return arg;
     }
-}
+
+    /** 
+     * Descripción: para parsear el atributo 'check'
+     * @param connectionNode El nodo XML que representa la conexión.
+     * @return Una lista de checks o null si no se encontraron.
+     */
+    private static List<string> ParseCheckAttribute(XAttribute checkAttribute)
+        {
+        string checkValue = checkAttribute?.Value;
+        if (string.IsNullOrWhiteSpace(checkValue))
+            return null; 
+        return checkValue.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+    }
+
+    /** 
+     * Descripción: para parsear el nodo 'Check' de un argumento.
+     * @param checkNode El nodo XML que representa los checks.
+     * @return Una lista de checks o null si no se encontraron.
+     */
+    private static List<string> ParseCheckNode(XmlNode checkNode)
+    {
+        string val = checkNode?.InnerText;
+        if (string.IsNullOrWhiteSpace(val)) return null;
+        return val.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+    }
+
+    /** 
+     * Descripción: para parsear las opciones de un dropdown.
+     * @param optionNodes La lista de nodos XML que representan las opciones.
+     * @return Una lista de tuplas (display, value) con las opciones.
+     */
+    private static List<(string display, string value)> ParseDropdownOptions(XmlNodeList optionNodes)
+    {
+        var options = new List<(string display, string value)>();
+        if (optionNodes == null) return options;
+        foreach (XmlNode opt in optionNodes)
+        {
+            string display = opt.Attributes["display"]?.Value ?? opt.InnerText;
+            string value = opt.InnerText;
+            options.Add((display, value));
+        }
+        return options;
+
+    }
+
+    /** 
+     * Descripción: Método para obtener los nombres de las categorías y sus colores.
+     * @return Una lista de tuplas (nombre, color) con las categorías y sus colores.
+     */
+    public static List<(string Name, Color Color)> LoadCategoryInfo(string filePath = "XML/Categories")
+    {
+        List<(string, Color)> categoryList = new List<(string, Color)>();
+        TextAsset xmlData = Resources.Load<TextAsset>(filePath);
+        if (xmlData == null)  return categoryList; 
+        try
+        {
+            XDocument xmlDoc = XDocument.Parse(xmlData.text);
+            IEnumerable<XElement> categories = xmlDoc.Element("Categories").Elements("Category");
+            foreach (XElement category in categories)
+            {
+                string name = category.Element("Name")?.Value;
+                string colorHex = category.Element("Color")?.Value;
+                if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(colorHex))
+                {
+                    if (ColorUtility.TryParseHtmlString(colorHex, out Color color))
+                    {
+                        categoryList.Add((name, color));
+                    }
+                    else { }
+                }
+            }
+        }
+        catch (Exception ex) { Debug.LogError(ex); }
+        return categoryList;
+    }
+
+    
+
+    /**
+     * Descripción: Define el sprite por defecto para los bloques según sus conexiones.
+     * @param hasPrev Si tiene conexión anterior.
+     * @param hasNext Si tiene conexión siguiente.
+     * @param hasOutput Si tiene conexión de salida.
+     * @param outputChecks Los tipos de salida que puede tener.
+     * @param hasStatementInput Si tiene entrada de statement.
+     * @return El nombre del sprite por defecto.
+     */
+    private static string GetDefaultSpriteForConnections(bool hasPrev, bool hasNext, bool hasOutput,  List<string> outputChecks,  bool hasStatementInput) 
+    {
+        if (hasOutput)
+        {
+            if (outputChecks != null && outputChecks.Contains("Boolean"))
+                return "boolean_block_grey";
+            else
+                return "reporter_block_grey";
+        }
+        if (!hasPrev && hasNext) return "hat_block_grey";  
+        if (hasPrev && !hasNext) return "cap_block_grey";  
+
+        if (hasPrev && hasNext)
+        {
+            if (hasStatementInput)
+                return "c_block_grey";
+            else
+                return "stack_block_grey";
+        }
+
+        Debug.LogWarning("Could not determine block shape, using default stack.");
+        return "stack_block_grey";
+    }
+
+    private static void ParseAndAddToFactory(XElement blockNode, string categoryName, Color categoryColor)
+    {
+        string type = blockNode.Attribute("type")?.Value;
+        if (string.IsNullOrEmpty(type))
+        {
+            Debug.LogError("Block definition is missing 'type' attribute. Skipping.");
+            return;
+        }
+
+        XElement prevNode = blockNode.Element("PreviousStatement");
+        XElement nextNode = blockNode.Element("NextStatement");
+        XElement outputNode = blockNode.Element("Output");
+        // TODO: resto del parseo: hasPrev, hasNext, hasOutput, checks...)
+
+        bool hasPrev = (prevNode != null);
+        bool hasNext = (nextNode != null);
+        bool hasOutput = (outputNode != null);
+
+        List<string> previousChecks = ParseCheckAttribute(prevNode?.Attribute("Checks"));
+        List<string> nextChecks = ParseCheckAttribute(nextNode?.Attribute("Checks"));
+        List<string> outputChecks = ParseCheckAttribute(outputNode?.Attribute("Checks"));
+
+        bool hasStatementInput = blockNode.Element("Args")?.Elements("Arg").Any(arg => arg.Attribute("type")?.Value == "input_statement") ?? false;
+
+        string defaultSpriteName = GetDefaultSpriteForConnections(hasPrev, hasNext, hasOutput, outputChecks, hasStatementInput);
+        string spriteFromXml = blockNode.Attribute("spriteName")?.Value?.Trim() ?? blockNode.Element("SpriteName")?.Value?.Trim();
+        string finalSpriteName = !string.IsNullOrEmpty(spriteFromXml) ? spriteFromXml : defaultSpriteName;
+
+        string colourString = blockNode.Element("Colour")?.Value;
+        bool inputsInline = blockNode.Element("InputsInline")?.Value?.ToLower() == "true";
+        // string tooltip = blockNode.Element("Tooltip")?.Value; 
+        // string helpUrl = blockNode.Element("HelpUrl")?.Value;
+
+        // Mutator
+        XElement mutatorNode = blockNode.Element("Mutator");
+        bool hasMutator = (mutatorNode != null);
+        string mutatorName = mutatorNode?.Attribute("name")?.Value;
+
+        BlockDefinition definition = new BlockDefinition
+        {
+            type = type,
+            category = categoryName, 
+            color = ParseColorString(colourString, categoryColor),
+            spriteName = finalSpriteName,
+            inputsInline = inputsInline, 
+
+            hasOutput = hasOutput,
+            hasPreviousStatement = hasPrev,
+            hasNextStatement = hasNext,
+
+            outputChecks = outputChecks,
+            previousChecks = previousChecks,
+            nextChecks = nextChecks,
+
+            hasMutator = hasMutator,
+            mutatorName = mutatorName,
+
+            args = new List<ArgumentDefinition>(),
+        };
+
+        XElement argsContainer = blockNode.Element("Args");
+        if (argsContainer != null)
+        {
+            foreach (XElement argNode in argsContainer.Elements("Arg"))
+            {
+                ArgumentDefinition arg = ParseArgumentDefinition(argNode); 
+                {
+                    definition.args.Add(arg);
+                }
+            }
+        }
+
+        BlockFactory.Instance.AddDefinition(definition.type, definition);
+
+        if (float.TryParse(blockNode.Attribute("width")?.Value, out float w) &&
+            float.TryParse(blockNode.Attribute("height")?.Value, out float h))
+        {
+            m_blockSizes[definition.type] = new Vector2(w, h);
+        }
+    }
+
+    private static string NormalizeCategoryName(string rawName)
+    {
+        if (string.IsNullOrWhiteSpace(rawName)) return "unknown"; 
+
+        switch (rawName.ToLowerInvariant()) 
+        {
+            case "motion": return "Movimiento";
+            case "looks": return "Apariencia";
+            case "sound": return "Sonido";
+            case "events": return "Eventos";
+            case "control": return "Control";
+            case "sensing": return "Sensores";
+            case "operators": return "Operadores";
+            case "variables": return "Variables";
+            case "my blocks":
+            case "procedures": return "Mis Bloques";
+            
+            default:
+                
+                return rawName;
+        }
+    }
+
+    private static List<string> ParseCheckNode(XElement checkNode)
+    {
+        string val = checkNode?.Value; 
+        if (string.IsNullOrWhiteSpace(val)) return null;
+        return val.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+    }
+
+    private static List<(string display, string value)> ParseDropdownOptions(IEnumerable<XElement> optionNodes)
+    {
+        var options = new List<(string display, string value)>();
+        if (optionNodes == null) return options;
+        foreach (XElement opt in optionNodes)
+        {
+            string display = opt.Attribute("display")?.Value ?? opt.Value;
+            string value = opt.Value; 
+            options.Add((display, value));
+        }
+        return options;
+    }
+
+    // Convierte la información relevante de un nodo XML <Arg> de tipo Field
+    // a un JObject que FieldFactory pueda entender.
+    private static JObject ConvertFieldXmlToJson(XElement argNode)
+    {
+        string fieldType = argNode.Attribute("type")?.Value;
+        if (!fieldType.StartsWith("field_")) return null;
+
+        JObject json = new JObject();
+        json["type"] = fieldType; 
+
+        string name = argNode.Attribute("name")?.Value;
+        if (!string.IsNullOrEmpty(name)) json["name"] = name;
+
+        string value = argNode.Attribute("value")?.Value ?? argNode.Value;
+        string defaultValue = argNode.Attribute("defaultValue")?.Value;
+
+        if (!string.IsNullOrEmpty(defaultValue)) json["text"] = defaultValue; 
+        else if (!string.IsNullOrEmpty(value)) json["text"] = value;
+
+        if (fieldType == "field_dropdown")
+        {
+            JArray optionsArray = new JArray();
+            var options = ParseDropdownOptions(argNode.Element("Options")?.Elements("Option"));
+            foreach (var opt in options)
+            {
+                optionsArray.Add(new JArray(opt.display, opt.value));
+            }
+            json["options"] = optionsArray;
+        }
+
+        foreach (var attr in argNode.Attributes())
+        {
+            if (attr.Name.LocalName != "type" && attr.Name.LocalName != "name" &&
+                attr.Name.LocalName != "value" && attr.Name.LocalName != "defaultValue")
+            {
+                json[attr.Name.LocalName] = attr.Value;
+            }
+        }
+
+        //Debug.Log($"Converted XML Arg to JSON for FieldFactory:\n{json.ToString()}");
+        return json;
+    }
+
+}// Fin de la clase BlockDataLoader

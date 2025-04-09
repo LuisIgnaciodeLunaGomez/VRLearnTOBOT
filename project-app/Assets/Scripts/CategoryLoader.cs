@@ -24,7 +24,7 @@ using Unity.VisualScripting;
 public class CategoryLoader : MonoBehaviour
 {
 
-    public GameObject contentPanel; // Panel donde se colocarán las categorías
+    public GameObject contentPanel; 
     public string xmlFileName = "XML/Categories"; 
     public GameObject categoryPrefab; 
     public UICanvasView uiCanvasManageViewr; 
@@ -91,15 +91,15 @@ public class CategoryLoader : MonoBehaviour
         newCategory.SetActive(true);
         RectTransform rect = newCategory.GetComponent<RectTransform>();
 
-        if (rect != null)
+        if (rect == null)
         {
             rect= newCategory.AddComponent<RectTransform>();
             //Debug.LogError($"No se encontró el componente RectTransform en el prefab {categoryPrefab.name}");
              rect.anchorMin = new Vector2(0.5f, 1);
              rect.anchorMax = new Vector2(0.5f, 1);
              rect.pivot = new Vector2(0.5f, 1);
-             rect.anchoredPosition = new Vector2(0, -rect.sizeDelta.y * contentPanel.transform.childCount);
-             rect.sizeDelta = new Vector2(50,50);  // Tamaño de la categoria
+            // rect.anchoredPosition = new Vector2(0, -rect.sizeDelta.y * contentPanel.transform.childCount);
+            // rect.sizeDelta = new Vector2(50,50);  // Tamaño de la categoria
         }
 
         LayoutElement layoutElement = newCategory.GetComponent<LayoutElement>();
