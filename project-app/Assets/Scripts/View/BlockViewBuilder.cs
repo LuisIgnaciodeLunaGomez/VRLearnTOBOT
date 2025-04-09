@@ -66,6 +66,14 @@ public static class BlockViewBuilder
 
     public static GameObject BuildBlockView(BlockModel block)
     {
+        #if UNITY_EDITOR
+        if (BlockViewSettings.Instance == null)
+            {
+                BlockViewSettings settings = Resources.Load<BlockViewSettings>("BlockViewSettings");
+                if (settings == null) Debug.LogError("BlockViewBuilder (Editor): Failed to load BlockViewSettings from Resources!");
+            }
+        #endif
+     
         GameObject blockPrefab = BlockViewSettings.Get().PrefabRoot;
         if (block.OutputConnection != null)
             blockPrefab = BlockViewSettings.Get().PrefabRootOutput;
@@ -136,7 +144,9 @@ public static class BlockViewBuilder
         BuildInputViews(block, blockView);
         blockView.BuildLayout();
         blockView.ChangeBgColor(Color.blue);
-        blockView.BindView(block);
+        //blockView.BindView(block);
+
+        //blockView.BindModel(block, workspaceView);
 
         return blockObj;
     }
@@ -154,17 +164,17 @@ public static class BlockViewBuilder
         return groupView;
     }
 
-    
+
     public static void BuildInputViews(BlockModel block, BlockView blockView)
     {
-        bool inputsInline = block.GetInputsInline();
+        //bool inputsInline = block.GetInputsInline();
         LineGroupView groupView = blockView.GetLineGroup(0);
 
         if (groupView == null)
         {
             Debug.LogError($"CRITICAL: Initial LineGroup (index 0) not found in BlockView '{blockView.BlockType}'. Cannot build inputs.", blockView.gameObject);
-      
-            return; 
+
+            return;
         }
         List<InputView> oldInputViews = blockView.GetInputViews();
 
@@ -176,28 +186,57 @@ public static class BlockViewBuilder
                 GameObject.DestroyImmediate(view.gameObject);
             }
         }
+        List<InputView> currentInputViews = groupView.ChildViews.OfType<InputView>().ToList();
 
-      
+        for (int g = 1; ; g++)
+        {
+            LineGroupView otherGroup = blockView.GetLineGroup(g);
+            if (otherGroup == null) break;
+            currentInputViews.AddRange(otherGroup.ChildViews.OfType<InputView>());
+        }
+
+        List<InputModel> modelsToBuild = block.InputList;
+        List<InputView> viewsToRemove = new List<InputView>();
+
+        foreach (InputView iv in currentInputViews)
+        {
+            if (iv.InputModel != null && !modelsToBuild.Contains(iv.InputModel))
+            {
+                viewsToRemove.Add(iv);
+            }
+            else if (iv.InputModel == null)
+            {
+                viewsToRemove.Add(iv);
+            }
+        }
+
+        foreach (InputView ivToRemove in viewsToRemove)
+        {
+            ivToRemove.UnBindModel(); 
+            ivToRemove.Parent?.RemoveChildView(ivToRemove);
+            if (ivToRemove.gameObject != null) GameObject.DestroyImmediate(ivToRemove.gameObject);
+        }
+
         for (int i = 0; i < block.InputList.Count; i++)
         {
             InputModel input = block.InputList[i];
-            bool useNewLineGroup = false; 
+            bool useNewLineGroup = false;
 
-            if (inputsInline)
+            /*if (inputsInline)
             {
                 if (input.Type == EConnection.NextStatement)
-                { 
+                {
                     useNewLineGroup = true;
                 }
-            }
-               else if (input.Type == EConnection.NextStatement)
+            }*/
+            if (input.Type == EConnection.NextStatement)
             {
                 useNewLineGroup = true;
             }
 
-            if (useNewLineGroup && i > 0) 
+            if (useNewLineGroup && i > 0)
             {
-                groupView = blockView.GetLineGroup(blockView.ChildViews.OfType<LineGroupView>().Count()); 
+                groupView = blockView.GetLineGroup(blockView.ChildViews.OfType<LineGroupView>().Count());
                 if (groupView == null) groupView = BuildNewLineGroup(blockView);
             }
 
@@ -208,23 +247,75 @@ public static class BlockViewBuilder
             }
 
             if (/* needBuild */ true)
-            { 
-                InputView inputView = BuildInputView(input, groupView, blockView); 
+            {
+                InputView inputView = BuildInputView(input, blockView);
                 if (inputView != null)
                 {
-                    groupView.AddChildView(inputView); 
+                    groupView.AddChildView(inputView);
                 }
             }
         }
-        for (int i = blockView.ChildViews .Count - 1; i >= 0; i--)
+        //int currentInputIndex = 0;
+        int currentGroupIndex = 0;
+        groupView = blockView.GetLineGroup(0); 
+
+        for (int i = 0; i < block.InputList.Count; i++)
         {
-            BaseView view = blockView.ChildViews [i];
-            if (view.Type == ViewType.LineGroup && view.ChildViews .Count == 0)
+            InputModel inputModel = block.InputList[i];
+            bool useNewLineGroup = false;
+            bool inputsInline = block.GetInputsInline(); 
+            if (inputsInline)
+            {
+                useNewLineGroup = (inputModel.Type == EConnection.NextStatement) && i > 0;
+            }
+            else
+            {
+                useNewLineGroup = (inputModel.Type == EConnection.NextStatement) && i > 0; 
+                if (!useNewLineGroup && i > 0) useNewLineGroup = true; 
+            }
+
+
+            if (useNewLineGroup)
+            {
+                currentGroupIndex++;
+                groupView = blockView.GetLineGroup(currentGroupIndex);
+                if (groupView == null) groupView = BuildNewLineGroup(blockView);
+            }
+
+            if (groupView == null) { 
+                //TODO  LogError 
+                continue; }
+
+            InputView existingView = currentInputViews.FirstOrDefault(iv => iv.InputModel == inputModel);
+            InputView inputViewToUse = null;
+
+            if (existingView != null)
+            {
+                if (existingView.Parent != groupView)
+                {
+                    existingView.Parent?.RemoveChildView(existingView);
+                    groupView.AddChildView(existingView);
+                }
+                inputViewToUse = existingView;
+                currentInputViews.Remove(existingView);
+            }
+            else
+            {
+                inputViewToUse = BuildInputView(inputModel, blockView);
+                if (inputViewToUse == null) continue;
+            }
+            inputViewToUse.transform.SetSiblingIndex(groupView.ChildViews.Count - 1);
+        }
+
+        for (int i = blockView.ChildViews.Count - 1; i >= 0; i--)
+        {
+            BaseView view = blockView.ChildViews[i];
+            if (view.Type == ViewType.LineGroup && view.ChildViews.Count == 0)
                 GameObject.DestroyImmediate(view.gameObject);
         }
     }
-
-    public static InputView BuildInputView(InputModel input, LineGroupView groupView, BlockView blockView)
+    
+    public static InputView BuildInputView(InputModel input, BlockView blockView)
     {
         GameObject inputPrefab;
         ConnectionInputViewType viewType;
@@ -255,6 +346,14 @@ public static class BlockViewBuilder
         inputObj.name = "Input_" + (!string.IsNullOrEmpty(input.Name) ? input.Name : "");
         
         RectTransform inputTrans = inputObj.GetComponent<RectTransform>();
+
+        LineGroupView groupView = blockView.GetLineGroup(0);
+        if (groupView == null)
+        {
+            Debug.LogError($"CRITICAL (BuildInputViews): Initial LineGroupView not found in BlockView '{blockView.gameObject.name}'. Creating one...", blockView.gameObject);
+            groupView = BuildNewLineGroup(blockView); 
+            if (groupView == null) return null; 
+        }
 
         if (groupView == null)
         {

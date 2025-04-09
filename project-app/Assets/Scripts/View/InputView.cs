@@ -24,7 +24,7 @@ public class InputView : BaseView
     private InputModel m_InputModel;
     public InputModel InputModel => m_InputModel;
 
-
+    
     [SerializeField] private float m_FieldSpacing = 2f; 
 
     public override Vector2 ChildStartXY => Vector2.zero; 

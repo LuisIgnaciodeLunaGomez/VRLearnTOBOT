@@ -30,6 +30,7 @@ public abstract class BaseView : MonoBehaviour
     protected internal virtual void OnSizeUpdated() {
         MarkDirty(); 
     }
+    public BaseView Parent => m_ParentView;
     protected internal virtual void OnXYUpdated(){ }
 
     public List<BaseView> ChildViews => m_ChildViews;

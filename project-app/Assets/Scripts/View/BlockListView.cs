@@ -40,7 +40,7 @@ public class BlockListView : BaseToolbox
     [SerializeField]
     private GameObject m_BlockViewPrefab;
 
-
+    private WorkSpaceModel m_WorkSpaceModel;
     private CategoryController m_CategoryController;
     private string m_ActiveCategory = null;
     private bool isInitialized = false;
@@ -828,25 +828,28 @@ public class BlockListView : BaseToolbox
 
     public  BlockView NewBlockView(string blockType, Transform parent = null, int index = -1)
     {
+        //WorkSpaceModel workspace = m_WorkSpaceModel;
         if (m_Workspace == null) { Debug.LogError("NewBlockView: Workspace model is null, cannot create block template."); return null; }
         if (m_WorkspaceView == null) { Debug.LogError("NewBlockView: Workspace view is null, BlockViewFactory needs it."); return null; }
 
-        BlockModel templateModel = BlockFactory.Instance.CreateBlock(m_Workspace, blockType);
-        if (templateModel == null)
+        BlockModel blockTemplateModel = BlockFactory.Instance.CreateBlock(null, blockType); //Creo un modelo sin WorkSpace asociado
+        if (blockTemplateModel == null)
         {
             Debug.LogWarning($"Could not create template MODEL for type: {blockType}");
             return null;
         }
-        m_Workspace.RemoveTopBlock(templateModel);
+        blockTemplateModel.IsShadow = true; 
+        blockTemplateModel.Movable = false; 
+        m_Workspace.RemoveTopBlock(blockTemplateModel);
 
-        BlockView view = BlockViewFactory.CreateView(templateModel, this); 
+        BlockView view = BlockViewFactory.CreateView(blockTemplateModel, this); 
         if (view == null)
         {
             Debug.LogError($"BlockViewFactory failed for block type {blockType}");
-            templateModel.Dispose(); 
+            blockTemplateModel.Dispose(); 
             return null;
         }
-
+       // m_TemplateViews.Add(view);
         view.InToolbox = true;
 
         if (parent == null) parent = m_BlockTemplateScrollRect.content; 
@@ -863,6 +866,18 @@ public class BlockListView : BaseToolbox
         }
         else { Debug.LogError($"Cannot initialize ToolboxBlockDragger on block {blockType}, WorkspaceView reference is missing!", view.gameObject); }
 
+        GameObject dragSourceGO = new GameObject("TemplateDragTrigger_" + blockTemplateModel.Type);
+        dragSourceGO.transform.SetParent(view.transform, false);
+        UnityEngine.UI.Image maskImage = dragSourceGO.AddComponent<UnityEngine.UI.Image>();
+        maskImage.color = Color.clear;
+        maskImage.raycastTarget = true;
+        RectTransform maskRect = dragSourceGO.GetComponent<RectTransform>() ?? dragSourceGO.AddComponent<RectTransform>();
+        maskRect.anchorMin = Vector2.zero; maskRect.anchorMax = Vector2.one;
+        maskRect.offsetMin = Vector2.zero; maskRect.offsetMax = Vector2.zero;
+
+        BlockTemplateDragSource dragSource = dragSourceGO.AddComponent<BlockTemplateDragSource>();
+        dragSource.TemplateBlockView = view;
+        dragSource.SourceToolbox = this;
 
         return view;
     }

@@ -9,7 +9,7 @@
  * 
  * Fecha: 22/02/2025
  * 
- * Versión: 2.0.0
+ * Versión: 2.0.1
  * 
  * Descripción: Clase que crea las vistas de los bloques y las plantillas de bloques.
  */
@@ -114,15 +114,16 @@ public static class BlockViewFactory
             }
         }
 
-       /* if (blockView == null)
-        {
-            Debug.LogError($"BlockViewFactory: CRITICAL - Failed to obtain BlockView component for {block.Type} after trying Prefab and Builder.");
-            if (blockInstance != null) GameObject.Destroy(blockInstance);
-            return null;
-        }*/
+        /* if (blockView == null)
+         {
+             Debug.LogError($"BlockViewFactory: CRITICAL - Failed to obtain BlockView component for {block.Type} after trying Prefab and Builder.");
+             if (blockInstance != null) GameObject.Destroy(blockInstance);
+             return null;
+         }*/
+        //blockView.InToolbox = isToolboxTemplate;
 
         Debug.Log($"BlockViewFactory: Assigning WorkspaceView (InstanceID: {workspaceView?.GetInstanceID()}) to BlockView '{blockView.gameObject.name}' BEFORE BindModel.", blockView.gameObject);
-        blockView.workSpaceView = workspaceView;
+       // blockView.workSpaceView = workspaceView;
 
         blockView.BindModel(blockModel, workspaceView);
 

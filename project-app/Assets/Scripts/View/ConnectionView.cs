@@ -171,8 +171,6 @@ public class ConnectionView : BaseView
 
         }
     }
-
-
     protected internal override void OnXYUpdated()
     {
         // if (m_ConnectionModel == null || m_SourceBlockView?.WorkSpaceView == null) // Necesitamos WorkspaceView
@@ -181,18 +179,25 @@ public class ConnectionView : BaseView
 
         if (m_ConnectionModel == null) { Debug.LogError("OnXYUpdated: m_ConnectionModel is NULL!", this); return; }
         if (m_SourceBlockView == null) { Debug.LogError("OnXYUpdated: m_SourceBlockView is NULL!", this); return; }
-        if (m_SourceBlockView.workSpaceView == null) { Debug.LogError($"OnXYUpdated: m_SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView!", this); return; }
+        if (m_SourceBlockView.WorkspaceView == null) { Debug.LogError($"OnXYUpdated: m_SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView!", this); return; }
 
-        WorkSpaceView workspaceView = m_SourceBlockView.workSpaceView;
+        WorkSpaceView workspaceView = m_SourceBlockView.WorkspaceView;
+
+        if (workspaceView == null)
+        {
+            Debug.LogError($"OnXYUpdated: m_SourceBlockView '{m_SourceBlockView.gameObject.name}' HAS NULL WorkspaceView property! Check BindModel chain.", this);
+            return; 
+        }
+
         RectTransform codingArea = workspaceView.CodingArea;
         Canvas canvas = workspaceView.RootCanvas;
 
         if (codingArea == null) { Debug.LogError($"OnXYUpdated ({m_ConnectionModel.Type} on {m_SourceBlockView.BlockType}): CodingArea is NULL in WorkspaceView '{workspaceView.gameObject.name}'!", this); return; }
         if (canvas == null) { Debug.LogError($"OnXYUpdated ({m_ConnectionModel.Type} on {m_SourceBlockView.BlockType}): RootCanvas is NULL in WorkspaceView '{workspaceView.gameObject.name}'!", this); return; }
 
-            BlockConnectionDB db = m_ConnectionModel.DB; 
-        if (db != null && m_ConnectionModel.InDB)
-            db.RemoveConnection(m_ConnectionModel);
+        //BlockConnectionDB db = m_ConnectionModel.DB; 
+        //if (db != null && m_ConnectionModel.InDB)
+        //    db.RemoveConnection(m_ConnectionModel);
 
         Vector2 relativePos;
         Vector2 screenPoint = Vector2.zero; 
@@ -253,10 +258,9 @@ public class ConnectionView : BaseView
         {
             m_ConnectionModel.Location = relativePos; 
 
-            if (db != null && !m_ConnectionModel.Hidden)
-                db.AddConnection(m_ConnectionModel);
+           // if (db != null && !m_ConnectionModel.Hidden)
+           //     db.AddConnection(m_ConnectionModel);
 
-     
             if (m_ConnectionModel.IsSuperior && m_TargetBlockView != null)
                 m_TargetBlockView.OnXYUpdated(); 
         }
@@ -279,7 +283,7 @@ public class ConnectionView : BaseView
 
             case UpdateState.AcceptConnection:
                 if (m_ConnectionModel.IsSuperior) throw new InvalidOperationException("Only Inferior can receive 'AcceptConnection'");
-                m_TargetBlockView = m_SourceBlockView.workSpaceView?.GetBlockView(m_ConnectionModel.TargetBlock);
+                m_TargetBlockView = m_SourceBlockView.WorkspaceView?.GetBlockView(m_ConnectionModel.TargetBlock);
                 break;
 
             case UpdateState.Disconnected:
@@ -322,7 +326,7 @@ public class ConnectionView : BaseView
             return;
         }
 
-        m_TargetBlockView = m_SourceBlockView.workSpaceView?.GetBlockView(m_ConnectionModel.TargetBlock);
+        m_TargetBlockView = m_SourceBlockView.WorkspaceView?.GetBlockView(m_ConnectionModel.TargetBlock);
 
         if (m_TargetBlockView != null)
         {

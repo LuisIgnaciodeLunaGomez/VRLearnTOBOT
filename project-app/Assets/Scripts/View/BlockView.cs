@@ -20,6 +20,7 @@ using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(LayoutElement))]
@@ -46,7 +47,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     public BlockModel Block { get { return mBlock; } }
     private bool m_IsInlineMode = false;
     public bool IsInlineMode => m_IsInlineMode;
-    public bool InToolbox { get; set; }
+    public bool InToolbox { get; set; } = false;
     public bool IsDragging { get; set; } = true;
   
     private MemorySafeBlockObserver mBlockObserver;
@@ -55,7 +56,9 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     private LayoutElement m_layoutElement;             
     private WorkSpaceView m_WorkspaceView;
 
-    public WorkSpaceView workSpaceView { get; set; }
+    //public WorkSpaceView workSpaceView { get; set; }
+
+    public WorkSpaceView WorkspaceView => m_WorkspaceView;
     protected override void InitializeView()
     {
         base.InitializeView();
@@ -369,159 +372,32 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!IsDragging || mBlock == null) 
+
+        if (!InToolbox && BlockDragController.Instance != null && this.Block != null && this.Block.Movable)
         {
-            eventData.pointerDrag = null; 
-            return;
+            BlockDragController.Instance.StartDraggingBlockInternal(this, eventData);
         }
-
-        Debug.Log($"BeginDrag on: {BlockType} (InToolbox: {InToolbox})");
-
-        if (WorkSpaceView.Active == null)
-        {
-            Debug.LogError("BlockView: WorkSpaceView.Active is null. Cannot begin drag.");
-            eventData.pointerDrag = null;
-            return;
-        }
-
-        mBlock.UnPlug(); 
-
-        if (!InToolbox)
-            SetOrphan();
         else
         {
-           
-            transform.SetParent(WorkSpaceView.Active.CodingArea, true); 
-            transform.SetAsLastSibling();
-            InToolbox = false; 
+            eventData.pointerDrag = null; // No permitir drag si está en toolbox o no es movible
         }
-
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-             transform.parent as RectTransform, 
-             eventData.position,
-             WorkSpaceView.Active.EventCamera, 
-             out Vector2 localPointerPos);
-        m_dragStartOffset = ViewTransform.anchoredPosition - localPointerPos;
-
-        m_canvasGroup.blocksRaycasts = false; 
-
-        mClosestConnection = null;
-        mAttachingConnection  = null;
+        
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        WorkSpaceView activeWorkspaceView = WorkSpaceView.Active;
+        if (!InToolbox) // Delegar si NO está en el toolbox
+            BlockDragController.Instance?.HandleDrag(this, eventData);
 
-        if (!IsDragging || activeWorkspaceView == null || mBlock == null) return;
-        
-        BlockViewSettings settings = BlockViewSettings.Instance;
-        if (settings == null)
-        {
-            Debug.LogError("BlockViewSettings instance is null! Cannot calculate size correctly.");
-           
-        }
-
-        Vector2 localPointerPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-           transform.parent as RectTransform,
-            eventData.position,
-            WorkSpaceView.Active.EventCamera,
-            out localPointerPos);
-
-        XY = localPointerPos + m_dragStartOffset;
-
-        ConnectionModel oldClosest = mClosestConnection;
-        mClosestConnection = null; 
-        mAttachingConnection  = null;
-
-
-        WorkSpaceModel workspaceModel = mBlock.Workspace;
-        if (workspaceModel == null)
-        {
-            Debug.LogError("BlockModel has no associated WorkspaceModel!", this);
-            workspaceModel = activeWorkspaceView.Workspace; 
-            if (workspaceModel == null) return; 
-        }
-
-        float maxSearchRadius = settings.ConnectSearchRange; 
-
-      
-        List<ConnectionModel> draggableConnections = mBlock.GetDraggingConnections();
-
-        ConnectionPair bestPairFound = null; 
-        float minRadius = int.MaxValue;
-
-        foreach (ConnectionModel myConn in draggableConnections)
-        {
-            BlockConnectionDB oppositeDB = workspaceModel.GetConnectionDB(myConn.OppositeType); // De ConnectionModel
-            if (oppositeDB != null)
-            {
-                
-                Vector2 dragOffset = Vector2.zero;
-
-                oppositeDB.SearchForClosest(myConn, (int)maxSearchRadius, dragOffset, out ConnectionModel currentClosest, out float currentRadius);
-
-                if (currentClosest != null && currentRadius < minRadius)
-                {
-                    minRadius = currentRadius;
-                    bestPairFound = new ConnectionPair(myConn, currentClosest, currentRadius);
-                }
-            }
-        }
-
-        mClosestConnection = bestPairFound?.Neighbour;
-        mAttachingConnection = bestPairFound?.Mine;
-
-        if (oldClosest != null && (mClosestConnection == null || oldClosest != mClosestConnection))
-        {
-            ConnectionView oldClosestView = activeWorkspaceView.GetConnectionView(oldClosest);
-            oldClosestView?.Highlight(false);
-        }
-        if (mClosestConnection != null && mClosestConnection != oldClosest)
-        {
-            ConnectionView closestView = activeWorkspaceView.GetConnectionView(mClosestConnection);
-            closestView?.Highlight(true);
-        }
-
-        activeWorkspaceView.CheckTrashBin(this); 
+   
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!IsDragging) return; 
+        if (!InToolbox) // Delegar si NO está en el toolbox
+            BlockDragController.Instance?.HandleEndDrag(this, eventData);
 
-        m_canvasGroup.blocksRaycasts = true; 
-
-        if (mClosestConnection != null && mAttachingConnection != null)
-        {
-            
-            mClosestConnection.FireUpdate(UpdateState.UnHighlight);
-            mAttachingConnection.Connect(mClosestConnection);
-
-
-            if (!mAttachingConnection.IsConnected)
-            {
-                Debug.LogWarning($"BlockView {BlockType}: Connection attempt failed between {mAttachingConnection .SourceBlock.Type} and {mClosestConnection.SourceBlock.Type}");
-            }
-
-        }
-        else
-        {
         
-            if (mBlock != null && (mBlock.OutputConnection?.IsConnected == true || mBlock.PreviousConnection?.IsConnected == true))
-            {
-                Debug.LogWarning($"BlockView {BlockType}: EndDrag without connection, but model seems connected. Forcing UnPlug again.");
-                mBlock.UnPlug();
-            }
-        }
-
-        mClosestConnection = null;
-        mAttachingConnection  = null;
-
-        // TODO: Finalizar check de Papelera
-        WorkSpaceView.Active.Toolbox?.FinishCheckBin(this);
     }
 
 
@@ -537,8 +413,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     #region Block State Update
 
-    
-  
     protected void OnBlockUpdated(UpdateStates updateState)
     {
         switch (updateState)
@@ -556,13 +430,10 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 }
         }
     }
-   
-
+  
     #endregion
 
     #region Child View Getter
-
-    
     public ConnectionView GetConnectionView(EConnection connectionType)
     {
         int i = 0;
@@ -577,8 +448,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         //Debug.LogFormat("<color=red>Can't find the {0} connection view in block view of {1}.</color>", connectionType, BlockType);
         return null;
     }
-
-    
     public ConnectionView GetInputConnectionView(int inputIndex)
     {
         InputView inputView = GetInputView(inputIndex);
@@ -586,9 +455,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             return inputView.GetConnectionView();
         return null;
     }
-
-    
- 
     public LineGroupView GetLineGroup(int logicalIndex)
     {
        
@@ -631,8 +497,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         return null;
     }
-
-   
     public InputView GetInputView(int index)
     {
         int inputCounter = 0;
@@ -651,7 +515,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         //Debug.LogFormat("<color=red>Can't find the {0}th input view in block view of {1}.</color>", index, BlockType);
         return null;
     }
-
     public List<InputView> GetInputViews()
     {
         List<InputView> inputViews = new List<InputView>();
@@ -674,19 +537,13 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         return inputViews;
     }
 
-    
-
     #endregion
 
-   
-    
     public void UpdateColor() 
     {
         ApplyBlockColor();
     }
 
-    
-    
     protected virtual void ApplyBlockColor()
     {
         if (mBlock == null) return;
@@ -710,7 +567,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         }
     }
 
-      
     public void QueueForceLayoutUpdate()
     {
         if (this != null && transform is RectTransform rt)
@@ -727,7 +583,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         }
     }
 
-   
     public ConnectionView FindConnectionView(ConnectionModel modelToFind)
     {
         if (modelToFind == null)
@@ -772,8 +627,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
       
         return null; 
     }
-
-     
     public void InitiateDragFromExternal(PointerEventData eventData)
     {
         // Debug.Log($"InitiateDragFromExternal called on: {BlockType}");
@@ -814,8 +667,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         mAttachingConnection = null;
 
     }
-
-   
     public void HandleModelUpdate(BlockModel model, BlockUpdateType updateType)
     {
         if (model != mBlock || mBlock == null)
@@ -898,82 +749,40 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
+   
 
-  
-    public virtual void BindView(BlockModel blockModel) 
+    public static void EditorInitialDisplayUpdate(FieldView fieldView, FieldModel fieldModel, string errorText = null)
     {
-        if (mBlock == blockModel && mBlock != null) return; 
-        if (blockModel == null)
-        {
-            Debug.LogError($"BlockView ({gameObject.name}): Attempted to BindView with a NULL model!", this);
-            return;
-        }
-        if (mBlock != null) UnBindModel(); 
+        if (fieldView == null || fieldModel == null) return;
 
-        mBlock = blockModel;
-        if (WorkSpaceView.Active != null)
+        string displayText = errorText ?? fieldModel.GetText() ?? $"[{fieldModel.GetType().Name}]";
+
+        if (fieldView is FieldLabelView labelView)
         {
-            WorkSpaceView.Active.AddBlockView(this);
+            labelView.SetDisplayText(displayText);
+        }
+        else if (fieldView is FieldInputView inputView)
+        {
+            inputView.SetDisplayText(displayText); 
+        }
+        else if (fieldView is FieldVariableView varView)
+        {
+            varView.SetDisplayText(displayText); 
+        }
+        else if (fieldView is FieldCheckboxView checkView)
+        {
+            
         }
         else
         {
-            Debug.LogError($"BlockView ({BlockType}): Cannot find active WorkSpaceView during BindView!");
-        }
-
-        mBlockObserver = new MemorySafeBlockObserver(this); 
-        mBlock.AddObserver(mBlockObserver);
-
-        Debug.Log($"BlockView ({BlockType}): Binding Model ID {mBlock.ID}");
-
-        int inputModelIndex = 0;
-        foreach (BaseView childView in ChildViews) 
-        {
-            if (childView is ConnectionView conView)
+            var textComp = fieldView.GetComponentInChildren<Text>();
+            if (textComp != null) textComp.text = displayText;
+            else
             {
-                ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
-                if (conModel != null)
-                {
-                    conView.BindModel(conModel, this); 
-                }
-                else
-                {
-                    Debug.LogWarning($"BlockView ({BlockType}): No model for ConnectionView {conView.ConnectionType}");
-                }
-            }
-            else if (childView is LineGroupView groupView)
-            {
-                foreach (var viewInGroup in groupView.ChildViews)
-                {
-                    if (viewInGroup is InputView inputView)
-                    {
-                        if (inputModelIndex < mBlock.InputList.Count)
-                        {
-                            InputModel inputModel = mBlock.InputList[inputModelIndex];
-                            if (inputModel != null)
-                            {
-                                inputView.BindModel(inputModel, this); 
-                            }
-                            else { Debug.LogError($"NULL InputModel at index {inputModelIndex}"); }
-                            inputModelIndex++;
-                        }
-                        else
-                        {
-                            Debug.LogError($"View/Model mismatch: Too many InputViews (index {inputModelIndex}) for model {BlockType}");
-                            break;
-                        }
-                    }
-                }
+                var tmpComp = fieldView.GetComponentInChildren<TextMeshProUGUI>();
+                if (tmpComp != null) tmpComp.text = displayText;
             }
         }
-
-
-        RegisterUIEvents(); 
-        UpdateColor();      
-        MarkDirty();        
-        QueueForceLayoutUpdate(); 
-
-        Debug.Log($"BlockView ({BlockType}): BindView completed.");
     }
-
 }//fin de la clase BlockView
 
