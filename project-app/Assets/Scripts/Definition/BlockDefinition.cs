@@ -184,7 +184,7 @@ public class BlockDefinition
         // Devuelve el valor que se leyó del XML/JSON
         return this.inputsInline;
     }
-}
+}//Fin clase BlockDefinition
 
 
 
