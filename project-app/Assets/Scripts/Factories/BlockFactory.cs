@@ -39,7 +39,7 @@ public class BlockFactory
         return mDefinitions;
     }
 
-    //Agrupa bloques por prefijos (motion_move pertenece a motion)
+    //Agrupa bloques por prefijos 
     private Dictionary<string, List<string>> mPrefixCategories = new Dictionary<string, List<string>>();
 
     // Devuelve los bloques que comparten un prefijo
@@ -103,7 +103,6 @@ public class BlockFactory
         else
         {
             // Creando un bloque real para el workspace
-            // Validar uid aquí para evitar conflicto si se proporciona
             if (!string.IsNullOrEmpty(uid) && workspace.GetBlockById(uid) != null)
             {
                 Debug.LogWarning($"BlockFactory: Block with provided ID '{uid}' already exists in workspace. Generating new ID.");
@@ -131,7 +130,7 @@ public class BlockFactory
 
             if (mutator != null) block.SetMutator(mutator);
             //if (inputsInline) block.SetInputsInline(true);
-            if (inputsInline != block.GetInputsInline()) // Solo si difiere del cálculo automático
+            if (inputsInline != block.GetInputsInline())
             {
                 block.SetInputsInline(inputsInline);
             }
@@ -190,11 +189,10 @@ public class BlockFactory
                 if (field is FieldVariableModel varField)
                 {
                     string variableId = fieldNode.Value;
-                    // Intenta encontrar la variable en el workspace por ID
                     VariableModel variable = workspace.VariableMap?.GetVariableById(variableId); 
                     if (variable != null)
                     {
-                        varField.SetValue(variable.Name); // Asigna el nombre al field
+                        varField.SetValue(variable.Name); 
                     }
                     else
                     {
@@ -211,7 +209,7 @@ public class BlockFactory
             }
         }
 
--
+
         foreach (XElement inputContainerNode in xmlBlock.Elements())
         {
             BlockModel childBlock = null; 
@@ -232,7 +230,7 @@ public class BlockFactory
                 XElement childNode = inputContainerNode.Elements().FirstOrDefault(); 
                 if (childNode != null && (childNode.Name.LocalName == "block" || childNode.Name.LocalName == "shadow"))
                 {
-                    childBlock = CreateFromXml(workspace, childNode); // ¡RECURSIÓN!
+                    childBlock = CreateFromXml(workspace, childNode); 
 
                     if (childBlock != null)
                     {
@@ -263,7 +261,7 @@ public class BlockFactory
             XElement nextBlockNode = nextContainerNode.Elements().FirstOrDefault();
             if (nextBlockNode != null && (nextBlockNode.Name.LocalName == "block" || nextBlockNode.Name.LocalName == "shadow"))
             {
-                BlockModel nextBlock = CreateFromXml(workspace, nextBlockNode); // ¡RECURSIÓN!
+                BlockModel nextBlock = CreateFromXml(workspace, nextBlockNode); 
                 if (nextBlock?.PreviousConnection != null && block.NextConnection != null &&
                     block.NextConnection.CanConnectWithReason(nextBlock.PreviousConnection) == ConnectionModel.CAN_CONNECT)
                 {
@@ -303,12 +301,11 @@ public class BlockFactory
         }
         mDefinitions[typeName] = definition; // Añade o sobrescribe
 
-        // Opcional: Actualizar también mPrefixCategories si es necesario
         int length = typeName.IndexOf("_");
         string prefix = length > 0 ? typeName.Substring(0, length) : typeName;
         if (!mPrefixCategories.ContainsKey(prefix))
             mPrefixCategories[prefix] = new List<string>();
-        if (!mPrefixCategories[prefix].Contains(typeName)) // Evitar duplicados en lista
+        if (!mPrefixCategories[prefix].Contains(typeName)) 
             mPrefixCategories[prefix].Add(typeName);
     }
 
