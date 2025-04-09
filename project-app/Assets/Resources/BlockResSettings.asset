@@ -18,8 +18,15 @@ MonoBehaviour:
     ResName: en
     TextFile: {fileID: 4900000, guid: fb2b240724f9d41aabcf2ca6e37be0b1, type: 3}
     Selected: 1
-  m_BlockJsonFiles: []
-  m_ToolboxFiles: []
+  m_BlockJsonFiles:
+  - IndexName: 
+    ResName: 
+    TextFile: {fileID: 0}
+  m_ToolboxFiles:
+  - IndexName: ToolBox Default
+    ResName: 
+    TextFile: {fileID: 4900000, guid: ebe24642ec8df2b4095ddbd1699d7e20, type: 3}
+    Selected: 1
   m_BlockViewPrefabPath: 
   m_BlockViewPrefabs: []
   m_DialogPrefabs: []
