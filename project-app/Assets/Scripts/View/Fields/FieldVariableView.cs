@@ -119,9 +119,6 @@ public class FieldVariableView : FieldView
         m_VariableNameText.text = variableNameToDisplay;
         MarkDirty();
     }
-
-
- 
     protected virtual void OnDropdownClicked()
     {
         if (FieldVariableModel == null || FieldModel.SourceBlock?.Workspace == null)
@@ -235,4 +232,20 @@ public class FieldVariableView : FieldView
     {
         throw new System.NotImplementedException();
     }
+
+    public void SetDisplayText(string text)
+    {
+        if (m_VariableNameText == null)
+        {
+            m_VariableNameText = GetComponentInChildren<TextMeshProUGUI>();
+            if (m_VariableNameText == null)
+            {
+                Debug.LogError($"SetDisplayText ({gameObject.name}): TextMeshProUGUI component not found or assigned!", this);
+                return;
+            }
+        }
+        m_VariableNameText.text = text;
+        // QueueForceLayoutUpdate(); // Podría ser necesario
+    }
+
 }//Fin clase FieldVariableView

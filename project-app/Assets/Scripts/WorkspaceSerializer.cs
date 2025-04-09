@@ -193,7 +193,7 @@ public static class WorkspaceSerializer
     private static void ParseAndLoadVariables(XElement variablesNode, WorkSpaceModel workspace)
     {
         if (variablesNode == null) return;
-        /
+        
         Debug.LogWarning("Variable loading not implemented.");
         /*
         foreach (XElement varNode in variablesNode.Elements("variable")) {

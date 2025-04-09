@@ -18,7 +18,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro; 
 
-
 public class FieldInputView : FieldView 
 {
     [Header("UI References")]
@@ -137,5 +136,22 @@ public class FieldInputView : FieldView
     protected override void RegisterInputListeners()
     {
         throw new System.NotImplementedException();
+    }
+
+    public void SetDisplayText(string text)
+    {
+        if (m_InputField == null)
+        {
+            m_InputField = GetComponentInChildren<TMP_InputField>();
+            if (m_InputField == null)
+            {
+                Debug.LogError($"SetDisplayText ({gameObject.name}): TMP_InputField component not found or assigned!", this);
+                return; // Salir si no se encuentra
+            }
+        }
+        m_InputField.text = text;
+        
+        // m_InputField.ForceLabelUpdate(); 
+        // QueueForceLayoutUpdate(); 
     }
 }//Fin clase FielInputView
