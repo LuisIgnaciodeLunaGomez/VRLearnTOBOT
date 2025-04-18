@@ -178,11 +178,13 @@ public class UICanvasView : MonoBehaviour
             new Vector2(0, 0), new Color(0.6f, 0.4f, 1f, 1f));
 
         // Asignación altura fija 
-        topPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 30);
+        topPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 0);
 
         Canvas topCanvas = topPanel.AddComponent<Canvas>();
-        topCanvas.overrideSorting = true;
-        topCanvas.sortingOrder = 1000;
+         topCanvas.overrideSorting = true;
+         topCanvas.sortingOrder = 1000;
+
+        topPanel.AddComponent<GraphicRaycaster>();
 
         if (!string.IsNullOrEmpty(logoSpriteName))
         {
@@ -288,15 +290,15 @@ public class UICanvasView : MonoBehaviour
         layoutGroup.childAlignment = TextAnchor.MiddleRight;
         layoutGroup.spacing = padding;
         layoutGroup.padding = new RectOffset(0, 0, 0, 0); // Padding interno del grupo 
-        layoutGroup.childControlWidth = false; // Cada icono tendrá su tamaño
-        layoutGroup.childControlHeight = false;
+        layoutGroup.childControlWidth = true; // Cada icono tendrá su tamaño
+        layoutGroup.childControlHeight = true;
         layoutGroup.childForceExpandWidth = false;
         layoutGroup.childForceExpandHeight = false;
 
         // El tamaño del container lo gestionará el LayoutGroup con un ContentSizeFitter
         ContentSizeFitter containerFitter = iconContainer.AddComponent<ContentSizeFitter>();
         containerFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        containerFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained; // Altura fija por los hijos
+        containerFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize; // Altura fija por los hijos
 
         for (int i = 0; i < iconNames.Length; i++)
         {
@@ -331,10 +333,7 @@ public class UICanvasView : MonoBehaviour
                     iconGO.SetActive(false);
 
                 }
-               /* else
-                {
-                    Debug.LogError("UICanvasView: Icon texture not found in Resources/Icons/: " + iconName);
-                }*/
+              
             }
         }
     }
