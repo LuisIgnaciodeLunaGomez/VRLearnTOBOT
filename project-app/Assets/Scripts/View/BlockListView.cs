@@ -22,1198 +22,751 @@ using System.Collections.Generic;
 using System;            
 using System.Collections;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 
-public class BlockListView : BaseToolbox
+public class BlockListView : MonoBehaviour
 {
     [Header("UI Assignments")]
+    [Tooltip("El RectTransform del panel que contiene los botones de categoría (injectado)")]
+
     private RectTransform m_categoryButtonContainer;
-    private RectTransform m_blockTemplateScrollAreaContent;
-    
+    [Tooltip("El componente ScrollRect del panel donde se muestran las plantillas de bloques.")]
     [SerializeField] private ScrollRect m_BlockTemplateScrollRect;
+    [Tooltip("El RectTransform que actúa como contenido dentro del ScrollRect de plantillas.")]
+    private RectTransform m_BlockTemplateContainerRect;
     [SerializeField] private TextMeshProUGUI m_CategoryTitleText;
     [SerializeField] private GameObject m_BinArea;
 
     [Header("Prefabs")]
+    [Tooltip("Texto que muestra el nombre de la categoría activa.")]
     [SerializeField] private GameObject m_CategoryButtonPrefab;
-    private RectTransform m_BlockTemplateContainerRect;
-    [SerializeField]
-    private GameObject m_BlockViewPrefab;
 
-    private WorkSpaceModel m_WorkSpaceModel;
+    [Header("Prefabs (Assigned Externally or Loaded)")]
+    [Tooltip("Prefab para los botones de categoría que se crean.")]
+    private RectTransform m_blockTemplateScrollAreaContent;
+
+    // Referencias al Modelo y otras Vistas/Controladores (Injectadas)
+    private WorkSpaceModel m_WorkspaceModel; //Modelo del WS
+    protected ToolboxConfig m_ToolboxConfig; //Configuración de la Toolbox (cargada desde XML)
+    protected WorkSpaceView m_WorkspaceView; //Vista área de codfificación para clonar e iniciar drag and drop
     private CategoryController m_CategoryController;
-    private string m_ActiveCategory = null;
-    private bool isInitialized = false;
 
-    protected WorkSpaceModel m_Workspace; 
-    protected ToolboxConfig m_Config;
-    protected WorkSpaceView m_WorkspaceView;
+    //Estado interno
+    private string m_ActiveCategoryName = null;
+    private bool m_IsInitialized = false;
 
-    new Dictionary<string, BlockView> mVariableGetterViews = new Dictionary<string, BlockView>();
-    new List<BlockView> mVariableHelperViews = new List<BlockView>();
-    new Dictionary<string, BlockView> mProcedureCallerViews = new Dictionary<string, BlockView>();
+    private Dictionary<string, Toggle> m_CategoryToggles = new Dictionary<string, Toggle>(); // Cache de toggles de categoría creados
 
-    private VariableObserver mVarObserver;
-    private ProcedureObserver mProcObserver;
+    // Caches para vistas plantilla de categorías especiales
+    private Dictionary<string, BlockView> m_VariableGetterTemplateViews = new Dictionary<string, BlockView>();
+    private List<BlockView> m_VariableHelperTemplateViews = new List<BlockView>();
+    private Dictionary<string, BlockView> m_ProcedureCallerTemplateViews = new Dictionary<string, BlockView>();
 
-    public WorkSpaceView WorkspaceViewForFactory => m_WorkspaceView;
+    // Nombres de Categorías Especiales de m_Config
+    private string m_CachedVariableCategoryName = null;
+    private string m_CachedProcedureCategoryName = null;
 
-  //  protected Dictionary<string, GameObject> m_RootList = new Dictionary<string, GameObject>(); 
-    protected Dictionary<string, Toggle> m_CategoryToggles = new Dictionary<string, Toggle>();
+    // Propiedades de Acceso
+    public WorkSpaceView WorkspaceViewForFactory => m_WorkspaceView; 
 
-    public void InitializeToolbox(WorkSpaceModel workspace, ToolboxConfig config, WorkSpaceView workspaceView,
-                                   RectTransform categoryButtonContainer, ScrollRect blockTemplateScrollRect)
+    // Observadores
+    private VariableObserver m_VariableObserver;
+    private ProcedureObserver m_ProcedureObserver;
+
+    /// <summary>
+    /// Inicializa la BlockListView con las referencias necesarias desde el orquestador (AppController/UICanvasView).
+    /// </summary>
+    public void InitializeToolbox(WorkSpaceModel workspace, ToolboxConfig config, WorkSpaceView workspaceView, RectTransform categoryButtonContainer, 
+                                  ScrollRect blockTemplateScrollRect, GameObject categoryButtonPrefab, CategoryController categoryController)
     {
-        if (isInitialized) return;
+        if (m_IsInitialized) return;
+        Debug.Log("<color=lightblue>BlockListView: Initializing...</color>");
 
-        Debug.Log("<color=lightblue>BlockListView: Initializing FULL Toolbox...</color>");
+        // Guardamos referencias y validamos
+        m_WorkspaceModel = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        m_ToolboxConfig = config ?? throw new ArgumentNullException(nameof(config));
+        m_WorkspaceView = workspaceView ?? throw new ArgumentNullException(nameof(workspaceView));
+        m_categoryButtonContainer = categoryButtonContainer ?? throw new ArgumentNullException(nameof(categoryButtonContainer));
+        m_BlockTemplateScrollRect = blockTemplateScrollRect ?? throw new ArgumentNullException(nameof(blockTemplateScrollRect));
+        m_CategoryButtonPrefab = categoryButtonPrefab ?? throw new ArgumentNullException(nameof(categoryButtonPrefab));
+        m_CategoryController = categoryController ?? throw new ArgumentNullException(nameof(categoryController), "CategoryController cannot be null for BlockListView initialization.");
 
-        m_Workspace = workspace;
-        m_Config = config;
-        m_WorkspaceView = workspaceView;
-        
-        m_categoryButtonContainer = categoryButtonContainer;
-        m_BlockTemplateScrollRect = blockTemplateScrollRect;
-
-        if (m_Workspace == null || m_Config == null )
+        // Validamos configuración
+        if (m_ToolboxConfig.BlockCategoryList == null)
         {
-            Debug.LogError("BlockListView: Initialization failed due to missing references.");
-            this.enabled = false;
-            return;
+            Debug.LogError("BlockListView: Initialization failed - ToolboxConfig.BlockCategoryList is null!");
+            this.enabled = false; return;
         }
 
-        if (m_BlockTemplateScrollRect == null)
-        {
-            Debug.LogError("BlockListView: Block Template ScrollRect is null!", this);
-            this.enabled = false;
-            return;
-        }
-
-        if (m_WorkspaceView == null) Debug.LogError("BlockListView InitializeToolbox: WorkspaceView is NULL!");
-        if (m_categoryButtonContainer == null) Debug.LogError("BlockListView InitializeToolbox: Category Button Container is NULL!");
-        if (m_BlockTemplateScrollRect == null) Debug.LogError("BlockListView InitializeToolbox: Block Template Scroll Rect is NULL!");
-
-        if (m_BlockTemplateScrollRect.content == null)
-        {
-            Debug.Log("BlockListView: Creating Block Template Container dynamically...");
-            m_BlockTemplateContainerRect = CreateAndConfigureBlockContainer(m_BlockTemplateScrollRect);
-            m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
-            m_BlockTemplateScrollRect.vertical = true; 
-            m_BlockTemplateScrollRect.horizontal = false;
-        }
-        else
-        {
-            
-            Debug.LogWarning("BlockListView: ScrollRect Content was pre-assigned. Using existing.", this);
-            m_BlockTemplateContainerRect = m_BlockTemplateScrollRect.content as RectTransform;
-        }
-
-        
+        // Obtenemos/Aseguramos el contenedor de contenido del ScrollRect
+        m_BlockTemplateContainerRect = m_BlockTemplateScrollRect.content as RectTransform;
         if (m_BlockTemplateContainerRect == null)
         {
-            Debug.LogError("BlockListView: Failed to assign or create Block Template Container!", this);
-            this.enabled = false;
-            return;
-        }
-
-       
-       /* if (m_CategoryButtonPrefab == null) 
-        {
-            Debug.LogError("BlockListView: Missing Category Button Prefab! Assign it in the inspector.", this);
-            this.enabled = false; 
-        }*/
-
-        if (m_BlockViewPrefab == null)
-            m_BlockViewPrefab = Resources.Load<GameObject>("Prefabs/BlocksPrefab/Stack_block_grey"); 
-        if (m_CategoryButtonPrefab == null)
-            m_CategoryButtonPrefab = Resources.Load<GameObject>("Prefabs/CategoryButtonPrefab"); 
-
-      
-        if (m_Workspace != null)
-        {
-            mVarObserver = new VariableObserver(this);
-            mProcObserver = new ProcedureObserver(this);
-            m_Workspace.VariableMap.AddObserver(mVarObserver);
-            m_Workspace.ProcedureDB.AddObserver(mProcObserver);
-            Debug.Log("<color=lightblue>BlockListView: Observers registered.</color>");
-        }
-        else
-        {
-            Debug.LogWarning("BlockListView: WorkspaceModel is null, cannot register observers.");
-        }
-
-        isInitialized = true;
-
-        if (m_Config != null)
-        {
-            Build(); 
-        }
-        else
-        {
-            Debug.LogWarning("BlockListView initialized but ToolboxConfig missing, Build() deferred.");
-        }
-    }
-
-    /**
-     * Descripción: Método que crea dinámicamente el GameObject que servirá como contenedor para las plantillas de bloques dentro del ScrollRect de la Toolbox.
-     * Configura RectTransform, VerticalLayoutGroup y ContentSizeFitter.
-     * @param scrollRectComponent: El componente ScrollRect al que se añadirá el contenedor.
-     * @return: El RectTransform del contenedor creado.
-     */
-    private RectTransform CreateAndConfigureBlockContainer(ScrollRect scrollRectComponent)
-    {
-        GameObject containerGO = new GameObject("BlockContainer_Generated"); 
-        RectTransform parentRect = scrollRectComponent.transform as RectTransform;
-        containerGO.transform.SetParent(parentRect, false); 
-        containerGO.layer = parentRect.gameObject.layer; 
-
-        // RectTransform 
-        RectTransform containerRect = containerGO.AddComponent<RectTransform>();
-        containerRect.anchorMin = new Vector2(0, 1);       // Arriba-Izquierda
-        containerRect.anchorMax = new Vector2(1, 1);       // Arriba-Derecha (Stretch Horizontal)
-        containerRect.pivot = new Vector2(0.5f, 1);     // Pivote Arriba-Centro
-        containerRect.anchoredPosition = Vector2.zero; // Posición relativa al anchor
-        containerRect.sizeDelta = new Vector2(0, 100);   // Ancho 0 (se estira), Altura inicial
-
-        // Vertical Layout Group - VLG
-        VerticalLayoutGroup layoutGroup = containerGO.AddComponent<VerticalLayoutGroup>();
-        layoutGroup.padding = new RectOffset(5, 5, 10, 5);  
-        layoutGroup.spacing = 8f;                           
-        layoutGroup.childAlignment = TextAnchor.UpperCenter;
-        layoutGroup.childControlWidth = true;               // Hijos toman el ancho del contenedor
-        layoutGroup.childControlHeight = false;              // Hijos definen su propia altura
-        layoutGroup.childForceExpandWidth = false;
-        layoutGroup.childForceExpandHeight = false;
-
-        // Content Size Fitter 
-        ContentSizeFitter fitter = containerGO.AddComponent<ContentSizeFitter>();
-        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; 
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize; // Ajusta la altura al contenido
-
-        // Image (Invisible)
-        Image bgImage = containerGO.AddComponent<Image>();
-        bgImage.color = Color.clear; // Transparente
-        bgImage.raycastTarget = false; //No necesita interceptar clicks
-
-        Debug.Log($"Dynamically created Block Container '{containerGO.name}'", containerGO);
-        return containerRect;
-    }
-
-    protected override void Build()
-    {
-        if (!isInitialized) { Debug.LogWarning("BlockListView.Build called before initialization."); return; }
-        if (m_Config == null || m_Config.BlockCategoryList == null || m_Config.BlockCategoryList.Count == 0)
-        {
-            Debug.LogError("BlockListView(BaseToolbox): Cannot Build, ToolboxConfig is missing or empty!");
-            return;
-        }
-        Debug.Log($"BlockListView(BaseToolbox): Build started with {m_Config.BlockCategoryList.Count} categories.");
-        BuildMenu();
-
-        if (m_Config.BlockCategoryList.Count > 0)
-        {
-            StartCoroutine(SelectFirstCategoryAfterBuild());
-        }
-    }
-
-    private IEnumerator SelectFirstCategoryAfterBuild()
-    {
-        yield return null; 
-        if (m_Config != null && m_Config.BlockCategoryList.Count > 0)
-        {
-            string firstCategoryName = m_Config.BlockCategoryList[0].CategoryName;
-            if (m_CategoryToggles.TryGetValue(firstCategoryName, out Toggle firstToggle))
+            // Si ScrollRect no tenía content asignado, intentamos encontrar uno como hijo o crear uno.
+            m_BlockTemplateContainerRect = m_BlockTemplateScrollRect.viewport?.GetComponentInChildren<RectTransform>(true); // Buscar hijo directo
+            if (m_BlockTemplateContainerRect == null || m_BlockTemplateContainerRect == m_BlockTemplateScrollRect.transform) // Evitamos usar el propio ScrollRect como contenido
             {
-                if (firstToggle != null) 
-                {
-                    firstToggle.isOn = true; 
-                }
-                else
-                {
-                    Debug.LogWarning($"First category toggle '{firstCategoryName}' became null before selection.");
-                    ShowBlockCategory(firstCategoryName, m_Config.GetBlockCategory(firstCategoryName)?.Color ?? Color.grey);
-                }
+                Debug.Log("BlockListView: Creating Block Template Container dynamically...");
+                m_BlockTemplateContainerRect = CreateAndConfigureBlockContainer(m_BlockTemplateScrollRect);
+                m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
             }
             else
             {
-                Debug.LogError($"Could not find toggle for the first category '{firstCategoryName}' after building the menu.");
-                ShowBlockCategory(firstCategoryName, m_Config.GetBlockCategory(firstCategoryName)?.Color ?? Color.grey);
+                Debug.Log("BlockListView: Found existing RectTransform child for ScrollRect content.", m_BlockTemplateContainerRect);
+                m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
             }
+
+
+            if (m_BlockTemplateContainerRect == null) { Debug.LogError("Failed to find/create Block Template Container!"); this.enabled = false; return; }
         }
+
+        // Aseguramos layout en el contenedor existente/creado
+        EnsureLayoutComponents(m_BlockTemplateContainerRect.gameObject);
+
+        // Obtenemos/Cacheamos nombres de categorías especiales
+        m_CachedVariableCategoryName = GetCategoryNameByCustomType("VARIABLE");
+        m_CachedProcedureCategoryName = GetCategoryNameByCustomType("PROCEDURE", "MYBLOCKS");
+
+        // Registramos Observers para Variables y Procedimientos
+        if (m_WorkspaceModel != null)
+        {
+            m_VariableObserver = Utilidades.GetOrAddComponent<VariableObserver>(this.gameObject);
+            m_VariableObserver.SetTargetToolbox(this); // Pasamos referencia
+            m_WorkspaceModel.VariableMap.AddObserver(m_VariableObserver);
+
+            m_ProcedureObserver = Utilidades.GetOrAddComponent<ProcedureObserver>(this.gameObject);
+            m_ProcedureObserver.SetTargetToolbox(this); // Pasamos referencia
+            m_WorkspaceModel.ProcedureDB.AddObserver(m_ProcedureObserver);
+            // Debug.Log("<color=lightblue>BlockListView: Observers registered.</color>");
+        }
+
+        m_IsInitialized = true;
+
+        // Construimos la interfaz inicial del menú de categorías
+        BuildMenu();
+
+        // Mostrar la primera categoría
+        StartCoroutine(SelectFirstCategoryAfterBuild()); // Seleccionar la primera categoría
+
+        Debug.Log("<color=green>BlockListView: Initialized and first category selected.</color>");
     }
-    protected virtual void BuildMenu()
+
+    /// <summary>
+    /// Crea dinámicamente el RectTransform 'Content' para un ScrollRect si no existe.
+    /// </summary>
+    private RectTransform CreateAndConfigureBlockContainer(ScrollRect scrollRectComponent)
     {
-        Debug.Log($"BuildMenu: Category count: {m_Config.BlockCategoryList?.Count ?? 0}. Container valid: {m_categoryButtonContainer != null}");
-        if (m_categoryButtonContainer == null) { Debug.LogError("Category Button container is null in BuildMenu!"); return; }
+        GameObject containerGO = new GameObject("BlockContainer_");
+        containerGO.layer = scrollRectComponent.gameObject.layer; // Copiar layer
+        RectTransform containerRect = containerGO.AddComponent<RectTransform>();
+        containerRect.SetParent(scrollRectComponent.viewport, false); // Ponerlo dentro del Viewport por defecto
 
-        ToggleGroup toggleGroup = m_categoryButtonContainer.GetComponent<ToggleGroup>();
-        if (toggleGroup == null)
+        // Configuración RectTransform (Fill Stretch, Pivot Top-Center)
+        containerRect.anchorMin = new Vector2(0, 1); // Top-Left Anchor
+        containerRect.anchorMax = new Vector2(1, 1); // Top-Right Anchor 
+        containerRect.pivot = new Vector2(0.5f, 1); // Top-Center Pivot
+        containerRect.anchoredPosition = Vector2.zero; // Alinear con Top
+        containerRect.sizeDelta = new Vector2(0, 100); // Ancho = 0 (depende de padre), Altura inicial pequeña
+        Debug.Log($"<color=red>CreateAndConfigureBlockContainer:</color> ScrollRect is '{scrollRectComponent?.name ?? "NULL"}', Viewport is '{scrollRectComponent?.viewport?.name ?? "NULL"}'. Attempting to parent '{containerGO.name}' to viewport.");
+        containerRect.SetParent(scrollRectComponent.viewport, false);
+
+        // Aseguramos Layout y Fitter 
+        EnsureLayoutComponents(containerGO);
+
+        // Debug.Log($"Dynamically created Block Container '{containerGO.name}' for ScrollRect '{scrollRectComponent.name}'", containerGO);
+        return containerRect;
+    }
+
+    /// <summary>
+    /// Asegura que el GameObject tenga VerticalLayoutGroup y ContentSizeFitter con configuración adecuada.
+    /// </summary>
+    private void EnsureLayoutComponents(GameObject go)
+    {
+    
+        // VerticalLayoutGroup
+        VerticalLayoutGroup layoutGroup = go.GetComponent<VerticalLayoutGroup>();
+        if (layoutGroup == null) layoutGroup = go.AddComponent<VerticalLayoutGroup>();
+        // Ajustamos settings del VLG relativos a padding, spacing, alineamiento y childcontrol
+        layoutGroup.padding = new RectOffset(5, 5, 10, 10); // Más padding arriba/abajo
+        layoutGroup.spacing = 8f;
+        layoutGroup.childAlignment = TextAnchor.MiddleCenter; // Centrar bloques horizontalmente
+        layoutGroup.childControlWidth = true; 
+        layoutGroup.childControlWidth = false;
+        layoutGroup.childControlHeight = false; 
+        layoutGroup.childForceExpandWidth = false;
+        layoutGroup.childForceExpandHeight = false;
+
+        // ContentSizeFitter
+        ContentSizeFitter fitter = go.GetComponent<ContentSizeFitter>();
+        if (fitter == null) fitter = go.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; 
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize; 
+
+        // Imagen invisible para que VLG/CSF funcione si no hay otra imagen
+        Image img = go.GetComponent<Image>();
+        if (img == null) img = go.AddComponent<Image>();
+        img.color = Color.clear;
+        img.raycastTarget = false; // No interactivo
+    }
+
+    /// <summary>
+    /// Construye el menú de botones de categorías.
+    /// </summary>
+    private void BuildMenu()
+    {
+        if (m_categoryButtonContainer == null || m_CategoryButtonPrefab == null || m_ToolboxConfig == null) return;
+
+        ClearCategoryButtons(); // Limpiamos botones existentes
+
+        // Creamos Botones
+        ToggleGroup toggleGroup = Utilidades.GetOrAddComponent<ToggleGroup>(m_categoryButtonContainer.gameObject);
+        toggleGroup.allowSwitchOff = false; 
+
+        var categoriesToDisplay = m_ToolboxConfig.BlockCategoryList.Where(cat => cat?.Custom != "SEPARATOR").ToList(); // Excluir separadores
+
+        foreach (var categoryConfig in categoriesToDisplay)
         {
-            Debug.LogWarning("Adding ToggleGroup to CategoryButtonContainer dynamically.");
-            toggleGroup = m_categoryButtonContainer.gameObject.AddComponent<ToggleGroup>();
-            toggleGroup.allowSwitchOff = false; 
-        }
+            if (string.IsNullOrEmpty(categoryConfig.CategoryName)) continue;
 
-        ClearCategoryButtons(); 
+            // Creamos el botón UI para la categoría
+            GameObject buttonGO = CreateCategoryButtonUI(
+                I18n.Get(categoryConfig.CategoryName) ?? categoryConfig.CategoryName, // Nombre display (I18n)
+                categoryConfig.CategoryName, // Clave/Nombre interno
+                categoryConfig.Color,       // Color
+                toggleGroup
+            );
+            if (buttonGO == null) continue; // Si falla la creación
 
-        foreach (var category in m_Config.BlockCategoryList)
-        {
-            string categoryName = category.CategoryName;
-            string displayName = I18n.Contains(categoryName) ? I18n.Get(categoryName) : categoryName;
-            Color color = category.Color;
-
-            GameObject buttonGO = CreateCategoryButtonUI(displayName, categoryName, color, toggleGroup);
-
-            Toggle toggle = buttonGO.GetComponent<Toggle>(); 
+            // Obtenemos Toggle y asignamos listener
+            Toggle toggle = buttonGO.GetComponent<Toggle>();
             if (toggle != null)
             {
-                string currentCategoryName = categoryName; 
-                Color currentCategoryColor = color;       
-                toggle.onValueChanged.AddListener((isOn) => {
+                string currentCategoryName = categoryConfig.CategoryName; 
+
+                toggle.onValueChanged.AddListener((isOn) =>
+                {
                     if (isOn)
                     {
-                        ShowBlockCategory(currentCategoryName, currentCategoryColor);
+                        m_CategoryController.SelectCategory(currentCategoryName);
                     }
                 });
-                m_CategoryToggles[categoryName] = toggle;
+                m_CategoryToggles[currentCategoryName] = toggle; // Cacheamos el toggle
             }
-            else { Debug.LogError($"Failed to get Toggle component for category button '{categoryName}'!"); }
-
+            else { Debug.LogError($"Failed to get Toggle for category button '{categoryConfig.CategoryName}'!"); }
         }
 
+        // Forzamos Layout del contenedor de botones
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_categoryButtonContainer);
-        StartCoroutine(DelayedLayoutRebuild(m_categoryButtonContainer)); 
     }
 
+    // Creamos un botón individual
     private GameObject CreateCategoryButtonUI(string displayName, string categoryKey, Color color, ToggleGroup toggleGroup)
     {
-        if (m_CategoryButtonPrefab == null)
-        {
-            Debug.LogError("Category Button Prefab is not loaded/assigned!");
-            return null;
-        }
+        Debug.Log($"Creating button UI for Key: {categoryKey}, Display: '{displayName}', Color: {color}"); 
+
+        if (m_CategoryButtonPrefab == null) return null;
         GameObject buttonGO = Instantiate(m_CategoryButtonPrefab, m_categoryButtonContainer);
         buttonGO.name = $"CategoryBtn_{categoryKey}";
+        TextMeshProUGUI label = buttonGO.GetComponentInChildren<TextMeshProUGUI>();
 
-        Image bgImage = buttonGO.GetComponent<Image>(); 
-        Image iconImage = buttonGO.transform.Find("Icon")?.GetComponent<Image>();
-        TextMeshProUGUI labelText = buttonGO.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
+        if (label == null) { Debug.LogError($"!! TextMeshProUGUI not found in prefab instance for {categoryKey}"); }
+        else
+        {
+            label.text = displayName;
+        }
 
-        Toggle toggle = buttonGO.GetComponent<Toggle>();
-        if (toggle == null) toggle = buttonGO.AddComponent<Toggle>(); 
+        Image backgroundImage = buttonGO.GetComponent<Image>();
+        if (backgroundImage == null) { Debug.LogError($"!! Background Image not found in prefab instance for {categoryKey}"); }
+        else { backgroundImage.color = color; }
+
+        Toggle toggle = Utilidades.GetOrAddComponent<Toggle>(buttonGO);
         toggle.group = toggleGroup;
-        toggle.isOn = false; 
-
-        if (labelText != null) labelText.text = displayName;
-        else Debug.LogWarning($"Category Button Prefab missing 'Label' TextMeshProUGUI for {categoryKey}");
-
-        if (bgImage != null)
-        {
-            bgImage.color = color;
-            toggle.targetGraphic = bgImage; 
-        }
-        else { Debug.LogWarning($"Category Button Prefab missing background Image for {categoryKey}"); }
-
-        ColorBlock cb = toggle.colors;
-        cb.normalColor = Color.white * 0.8f; 
-        cb.highlightedColor = Color.white;
-        cb.pressedColor = Color.grey;
-        cb.selectedColor = Color.white;    
-        toggle.colors = cb;
-
-        if (iconImage != null)
-        {
-            toggle.graphic = iconImage; 
-            iconImage.color = Color.Lerp(color, Color.black, 0.3f);
-            iconImage.raycastTarget = false;
-        }
-        else { Debug.LogWarning($"Category Button Prefab missing 'Icon' Image for {categoryKey}"); }
+        toggle.isOn = false;
 
         return buttonGO;
     }
 
+    /// <summary>
+    /// Selecciona programáticamente el toggle de una categoría por su nombre.
+    /// Útil para la selección inicial o si otra parte de la UI quiere cambiar de categoría.
+    /// </summary>
+    public void SelectCategoryToggle(string categoryName)
+    {
+        if (m_CategoryToggles.TryGetValue(categoryName, out Toggle toggle))
+        {
+            if (toggle != null && !toggle.isOn)
+            {
+                toggle.isOn = true; // Activa el toggle (disparará el listener si no estaba ya activo)
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"BlockListView: Cannot select toggle for category '{categoryName}' - toggle not found in cache.", this);
+        }
+    }
+
+    /// <summary>
+    /// Corrutina para seleccionar la primera categoría después de que el layout del menú se estabilice.
+    /// </summary>
+    private IEnumerator SelectFirstCategoryAfterBuild()
+    {
+        yield return new WaitForEndOfFrame(); // Espera un poco más seguro que yield return null para layout
+        yield return null;
+
+        var firstValidCategory = m_ToolboxConfig?.BlockCategoryList.FirstOrDefault(c => c?.Custom != "SEPARATOR");
+        if (firstValidCategory != null)
+        {
+            SelectCategoryToggle(firstValidCategory.CategoryName); // Usa el método que activa el toggle
+        
+        }
+
+        else { Debug.LogWarning("No categories found to select initially."); }
+    }
+
+    /// <summary>
+    ///  Limpia y muestra las plantillas de bloques para la categoría especificada.
+    /// </summary>
     public void ShowBlockCategory(string categoryName, Color categoryColor)
     {
-        if (!isInitialized) { Debug.LogWarning("BlockListView not initialized. Cannot show category."); return; }
-        if (string.IsNullOrEmpty(categoryName)) { Debug.LogError("ShowBlockCategory called with null or empty category name."); return; }
-        if (m_BlockTemplateScrollRect == null) { Debug.LogError("BlockListView: m_BlockTemplateScrollRect is not assigned!"); return; }
+        if (!m_IsInitialized) { Debug.LogWarning("BlockListView not initialized.", this); return; }
+        if (string.IsNullOrEmpty(categoryName)) { Debug.LogWarning("ShowBlockCategory called with empty name.", this); return; }
+        if (m_BlockTemplateContainerRect == null) { Debug.LogError("ShowBlockCategory: Block Template Container is null!", this); return; }
 
-        if (m_BlockTemplateContainerRect == null)
-        {
-            if (m_BlockTemplateScrollRect.content != null)
-            {
-                m_BlockTemplateContainerRect = m_BlockTemplateScrollRect.content as RectTransform;
-                if (m_BlockTemplateContainerRect == null)
-                {
-                    Debug.LogError("ShowBlockCategory: ScrollRect content exists but is not a RectTransform!");
-                    return;
-                }
-            }
-            else
-            {
-                Debug.LogError("ShowBlockCategory: Both m_BlockTemplateContainerRect and ScrollRect.content are null!");
-                return;
-            }
-        }
+        Debug.Log($"<color=lightblue>BlockListView: ShowBlocks requested for Category: '{categoryName}'</color>", this);
 
-        if (categoryColor == default(Color))
-        {
-            ToolboxBlockCategory categoryConf = m_Config?.GetBlockCategory(categoryName);
-            categoryColor = categoryConf?.Color ?? Color.grey;
-        }
+        // Limpiamos completamente el contenedor de bloques plantilla
+        ClearBlockTemplates();
 
-        Debug.Log($"<color=#ADD8E6>BlockListView.ShowBlockCategory:</color> Switching to category '{categoryName}'. Color: {categoryColor}");
+        m_ActiveCategoryName = categoryName; // Actualizamos categoría activa
+        if (m_CategoryTitleText != null) // Actualizamos título
+            m_CategoryTitleText.text = I18n.Get(categoryName) ?? categoryName;
 
-        m_ActiveCategory = categoryName; 
-        if (m_CategoryTitleText != null)
-        {
-            m_CategoryTitleText.text = I18n.Contains(categoryName) ? I18n.Get(categoryName) : categoryName;
-        }
+        // Poblamos con los bloques correctos
+        PopulateContainer(categoryName, m_BlockTemplateContainerRect, categoryColor); // Pasamos contenedor y color
 
-        PopulateContainer(categoryName, m_BlockTemplateContainerRect, categoryColor);
+        // Ajustamos scroll y layout 
 
+        // 1. Forzamos el layout del contenedor para que se ajuste a los nuevos bloques
         StartCoroutine(DelayedLayoutRebuild(m_BlockTemplateContainerRect));
-        ScrollRect scrollRectComponent = m_BlockTemplateScrollRect.GetComponent<ScrollRect>();
-        if (scrollRectComponent != null)
+
+        // 2. Hacemos scroll hasta arriba del contenedor
+        if (m_BlockTemplateScrollRect != null)
         {
-            StartCoroutine(DelayedScrollToTop(scrollRectComponent));
+            StartCoroutine(DelayedScrollToTop(m_BlockTemplateScrollRect));
+        }
+    }
+
+    /// <summary>
+    /// Popula el contenedor de plantillas según el tipo de categoría (Estática, Variable, Procedimiento).
+    /// </summary>
+    private void PopulateContainer(string categoryName, RectTransform container, Color color)
+    {
+        if (container == null) return;
+
+        string variableCatName = GetVariableCategoryName(); // Obtenemos nombre cacheado
+        string procedureCatName = GetProcedureCategoryName(); // Obtenemos nombre cacheado
+
+        if (categoryName.Equals(variableCatName, StringComparison.OrdinalIgnoreCase))
+        {
+            BuildVariableBlocksInternal(container);
+        }
+        else if (categoryName.Equals(procedureCatName, StringComparison.OrdinalIgnoreCase))
+        {
+            BuildProcedureBlocksInternal(container);
+        }
+        else // Categoría Estática
+        {
+            BuildStaticCategoryBlocksInternal(categoryName, container, color);
+        }
+    }
+
+
+    /// <summary>
+    /// Crea las plantillas para una categoría estática (definida en toolbox.xml).
+    /// </summary>
+    private void BuildStaticCategoryBlocksInternal(string categoryName, RectTransform container, Color categoryColor)
+    {
+        if (m_ToolboxConfig == null) return;
+        var categoryConfig = m_ToolboxConfig.GetBlockCategory(categoryName);
+        if (categoryConfig == null || categoryConfig.BlockList == null || categoryConfig.BlockList.Count == 0)
+        {
+            ShowEmptyMessage($"No blocks defined for '{categoryName}'."); return;
+        }
+
+        //Debug.Log($"BuildStaticCategoryBlocksInternal: Creating {categoryConfig.BlockList.Count} template views for '{categoryName}'.");
+        foreach (string blockType in categoryConfig.BlockList)
+        {
+            if (string.IsNullOrEmpty(blockType)) continue;
+            // Creamos la vista plantilla
+            BlockView view = NewBlockView(blockType, container, categoryColor); // Pasamos color directamente
+            
+        }
+    }
+
+    /// <summary>
+    /// Obtiene el Color asociado a un nombre de categoría específico,
+    /// buscando en la configuración del toolbox (m_Config).
+    /// </summary>
+    /// <param name="categoryName">El nombre de la categoría a buscar.</param>
+    /// <returns>El Color de la categoría, o Color.grey si no se encuentra.</returns>
+    private Color GetColorOfCategory(string categoryName)
+    {
+        if (!m_IsInitialized || m_ToolboxConfig == null || string.IsNullOrEmpty(categoryName))
+        {
+            //Debug.LogWarning($"GetColorOfCategory: Cannot get color for '{categoryName}', Toolbox not ready or name empty.");
+            return Color.grey;
+        }
+
+        // Buscamos la configuración de la categoría por nombre
+        ToolboxBlockCategory categoryConfig = m_ToolboxConfig.GetBlockCategory(categoryName);
+
+        if (categoryConfig != null)
+        {
+            // Devolvemos el color que ya fue inicializado en la categoría
+            
+            return categoryConfig.Color;
         }
         else
         {
-            Debug.LogError("BlockListView: ScrollRect component missing!");
+            Debug.LogWarning($"GetColorOfCategory: Configuration not found for category '{categoryName}'. Using default grey.");
+            return Color.grey; // Fallback si no se encuentra
         }
     }
 
-    /*
-    private void ConfigureContainerLayout(GameObject containerGO)
-    {
-        VerticalLayoutGroup vlg = containerGO.GetComponent<VerticalLayoutGroup>();
-        if (vlg == null) vlg = containerGO.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset(5, 5, 5, 5);
-        vlg.spacing = 8f;                     
-        vlg.childControlWidth = true;         
-        vlg.childControlHeight = false;       
-        vlg.childAlignment = TextAnchor.UpperLeft; 
-        vlg.childForceExpandWidth = false;   
-        vlg.childForceExpandHeight = false;  
-
-        ContentSizeFitter csf = containerGO.GetComponent<ContentSizeFitter>();
-        if (csf == null) csf = containerGO.AddComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; 
-    }*/
-
-    private void PopulateContainer(string categoryName, RectTransform containerRectTransform, Color categoryColor)
-    {
-        Debug.Log($"<color=#ADD8E6>BlockListView.PopulateContainer:</color> Populating container for '{categoryName}'...");
-
-        foreach (Transform child in containerRectTransform) { Destroy(child.gameObject); }
-
-        if (categoryName.Equals(Define.VARIABLE_CATEGORY_NAME))
-        {
-            BuildVariableBlocksInternal(containerRectTransform);
-        }
-        else if (categoryName.Equals(Define.PROCEDURE_CATEGORY_NAME))
-        {
-            BuildProcedureBlocksInternal(containerRectTransform);
-        }
-        else
-        {
-            BuildBlockViewsForStaticCategory(categoryName, containerRectTransform, categoryColor);
-        }
-    }
-    private void BuildBlockViewsForStaticCategory(string categoryName, RectTransform containerRectTransform, Color categoryColor)
-    {
-        if (m_Config == null) { Debug.LogError("Cannot build static category blocks: ToolboxConfig is null."); return; }
-
-        var categoryConfig = m_Config.GetBlockCategory(categoryName);
-        if (categoryConfig == null || categoryConfig.BlockList == null)
-        {
-            Debug.LogWarning($"No category config or block list found for static category: {categoryName}");
-            ShowEmptyMessage($"No blocks defined for '{categoryName}'.", containerRectTransform);
-            return;
-        }
-
-        var blockTypes = categoryConfig.BlockList;
-        Debug.Log($"BuildBlockViewsForStaticCategory '{categoryName}': {blockTypes.Count} types.");
-
-        if (blockTypes.Count == 0)
-        {
-            ShowEmptyMessage($"Category '{I18n.Get(categoryName)}' is empty.", containerRectTransform);
-            return;
-        }
-
-        foreach (string blockType in blockTypes)
-        {
-            if (string.IsNullOrEmpty(blockType)) continue; 
-            BlockView view = NewBlockView(blockType, containerRectTransform);
-            if (view != null)
-            {
-                view.ChangeBgColor(categoryColor); 
-                if (view.transform.parent != containerRectTransform)
-                {
-                    view.transform.SetParent(containerRectTransform, false);
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to create BlockView for type '{blockType}' in category '{categoryName}'.");
-            }
-        }
-    }
-
+    /// <summary>
+    /// Crea las plantillas y el botón para la categoría Variables.
+    /// </summary>
     private void BuildVariableBlocksInternal(RectTransform container)
     {
-        if (container == null) { Debug.LogError("BuildVariableBlocksInternal: Target container is null!"); return; }
-        if (m_Workspace == null) { Debug.LogError("BuildVariableBlocksInternal: Workspace is null!"); return; }
+        Color categoryColor = GetColorOfCategory(m_CachedVariableCategoryName ?? Define.VARIABLE_CATEGORY_NAME);
+      }
 
-
-        GameObject createVarPrefab = BlockViewSettings.Get()?.PrefabBtnCreateVar;
-        if (createVarPrefab != null)
-        {
-            GameObject btnGO = Instantiate(createVarPrefab, container);
-            Text buttonText = btnGO.GetComponentInChildren<Text>();
-            if (buttonText != null) buttonText.text = I18n.Get(MsgDefine.NEW_VARIABLE);
-            else Debug.LogError("PrefabBtnCreateVar is missing Text component in children.", btnGO);
-
-            Color categoryColor = BlockDataLoader.GetColorForCategoryPublic(Define.VARIABLE_CATEGORY_NAME); 
-            Image buttonImage = btnGO.GetComponentInChildren<Image>();
-            if (buttonImage != null) buttonImage.color = categoryColor;
-            else Debug.LogWarning("PrefabBtnCreateVar missing Image component in children.");
-
-            Button button = btnGO.GetComponent<Button>();
-            if (button != null) button.onClick.AddListener(() => DialogFactory.CreateDialog(DialogFactory.VARIABLE_NAME_DIALOG_NAME));
-            else Debug.LogError("PrefabBtnCreateVar missing Button component.", btnGO);
-
-            CanvasGroup cg = btnGO.GetComponent<CanvasGroup>();
-            if (cg == null) cg = btnGO.AddComponent<CanvasGroup>();
-            cg.blocksRaycasts = true; 
-
-        }
-        else { Debug.LogWarning("PrefabBtnCreateVar not found in BlockViewSettings"); }
-
-        CreateVariableHelperViewsInternal(container);
-
-        mVariableGetterViews.Clear();
-        List<VariableModel> allVars = m_Workspace.GetAllVariables();
-        foreach (VariableModel variable in allVars)
-        {
-            CreateVariableGetterViewInternal(variable.Name, container);
-        }
-        Debug.Log($"BuildVariableBlocksInternal: Built helpers ({mVariableHelperViews.Count}) and getters ({mVariableGetterViews.Count})");
-    }
-
-    private void CreateVariableHelperViewsInternal(RectTransform container)
-    {
-
-        mVariableHelperViews.Clear();
-
-        List<VariableModel> allVars = m_Workspace.GetAllVariables();
-        if (allVars.Count == 0) return; 
-
-        string firstVarName = allVars[0].Name; 
-
-        List<string> helperBlockTypes = GetBlockTypesFromDefinitions(Define.VARIABLE_CATEGORY_NAME)
-                                       ?.Where(type => type != Define.VARIABLE_GET_BLOCK_TYPE)
-                                       .ToList() ?? new List<string>(); 
-
-        if (helperBlockTypes.Count == 0)
-        {
-            //Debug.Log("No variable helper block types found in definitions.");
-            return; 
-        }
-
-
-        Color variableCategoryColor = BlockDataLoader.GetColorForCategoryPublic(Define.VARIABLE_CATEGORY_NAME);
-
-        foreach (string blockType in helperBlockTypes)
-        {
-            BlockModel block = BlockFactory.Instance.CreateBlock(m_Workspace, blockType); 
-            if (block != null)
-            {
-                try { block.SetFieldValue("VAR", firstVarName); }
-                catch (Exception e) { Debug.LogWarning($"Failed to set default variable '{firstVarName}' on helper block '{blockType}': {e.Message}"); }
-
-                BlockView view = NewBlockView(blockType, container); 
-
-
-                if (view != null)
-                {
-                    view.ChangeBgColor(variableCategoryColor);
-                    mVariableHelperViews.Add(view);
-                }
-                else { block.Dispose(); } 
-            }
-            else { Debug.LogWarning($"Could not create block model for variable helper type {blockType}"); }
-
-        }
-    }
-
-    private void CreateVariableGetterViewInternal(string varName, RectTransform container)
-    {
-        if (mVariableGetterViews.ContainsKey(varName))
-        {
-          
-            return;
-        }
-
-        BlockModel block = BlockFactory.Instance.CreateBlock(m_Workspace, Define.VARIABLE_GET_BLOCK_TYPE);
-        if (block == null) { Debug.LogError("Failed to create VARIABLE_GET_BLOCK_TYPE model"); return; }
-        block.SetFieldValue("VAR", varName);
-
-        BlockView view = NewBlockView(Define.VARIABLE_GET_BLOCK_TYPE, container); 
-
-        if (view != null)
-        {
-            Color variableCategoryColor = BlockDataLoader.GetColorForCategoryPublic(Define.VARIABLE_CATEGORY_NAME);
-            view.ChangeBgColor(variableCategoryColor);
-            mVariableGetterViews[varName] = view;
-        }
-        else { block.Dispose(); } 
-    }
-
-    private void DeleteVariableGetterViewInternal(string varName)
-    {
-        if (mVariableGetterViews.TryGetValue(varName, out BlockView view))
-        {
-            mVariableGetterViews.Remove(varName); 
-            if (view != null && view.gameObject != null) 
-            {
-                // Debug.Log($"Destroying variable getter view for {varName}");
-                Destroy(view.gameObject);
-            }
-        }
-    }
-
+    /// <summary>
+    /// Crea las plantillas para la categoría Procedimientos.
+    /// </summary>
     protected void BuildProcedureBlocksInternal(RectTransform container)
     {
-        if (container == null) { Debug.LogError("BuildProcedureBlocksInternal: Target container is null!"); return; }
-        if (m_Workspace == null) { Debug.LogError("BuildProcedureBlocksInternal: Workspace is null!"); return; }
+        Color categoryColor = GetColorOfCategory(m_CachedProcedureCategoryName ?? Define.PROCEDURE_CATEGORY_NAME);
+      }
 
-
-        List<string> blockTypes = GetBlockTypesFromDefinitions(Define.PROCEDURE_CATEGORY_NAME);
-
-        if (blockTypes == null) return;
-
-        foreach (string blockType in blockTypes)
-        {
-            if (blockType.Equals(Define.DEFINE_NO_RETURN_BLOCK_TYPE) ||
-                 blockType.Equals(Define.DEFINE_WITH_RETURN_BLOCK_TYPE))
-            {
-                BlockView view = NewBlockView(blockType, container);
-                if (view != null)
-                {
-                    view.ChangeBgColor(BlockDataLoader.GetColorForCategoryPublic(Define.PROCEDURE_CATEGORY_NAME));
-
-                }
-            }
-        }
-
-        mProcedureCallerViews.Clear();
-
-        foreach (BlockModel procDefBlock in m_Workspace.ProcedureDB.GetDefinitionBlocks())
-        {
-            Procedure procedureInfo = null;
-            if (procDefBlock.Mutator is ProcedureDefinitionMutator definitionMutator)
-            {
-                procedureInfo = definitionMutator.ProcedureInfo;
-            }
-            else if (procDefBlock.Mutator is ProcedureMutator baseProcMutator)
-            {
-
-                try
-                {//TODO
-
-                }
-                catch
-                {
-                    //TODO
-                }
-
-
-                if (procedureInfo == null)
-                {
-                    BlockView associatedView = null;
-                    if (m_WorkspaceView != null) 
-                    {
-                        associatedView = m_WorkspaceView.GetBlockView(procDefBlock);
-                    }
-                    Debug.LogError($"Could not retrieve ProcedureInfo from the Mutator of definition block {procDefBlock.Type} ({procDefBlock.ID})",
-                                                 associatedView != null ? associatedView.gameObject : this.gameObject);
-                    continue;
-                }
-
-                bool hasReturn = ProcedureDB.HasReturn(procDefBlock); 
-
-                CreateProcedureCallerViewInternal(procedureInfo, hasReturn, container);
-            }
-            Debug.Log($"BuildProcedureBlocksInternal: Built defs and callers ({mProcedureCallerViews.Count})");
-
-        }
-    }
-
-    private void CreateProcedureCallerViewInternal(Procedure procedureInfo, bool hasReturn, RectTransform container)
+    /// <summary>
+    /// Crea la vista template para el Toolbox.
+    /// Incluye modelo plantilla, creación de vista via Factory, configuración para Toolbox, y trigger de drag.
+    /// </summary>
+    /// <param name="blockType">Tipo del bloque a crear.</param>
+    /// <param name="parent">Transform padre donde instanciar la plantilla.</param>
+    /// <param name="color">Color a aplicar al bloque.</param>
+    /// <param name="siblingIndex">Índice opcional para insertar en la jerarquía.</param>
+    /// <returns>La BlockView creada o null si falla.</returns>
+    private BlockView NewBlockView(string blockType, RectTransform parent, Color color, int siblingIndex = -1)
     {
-        if (procedureInfo == null) { Debug.LogError("CreateProcedureCallerViewInternal: procedureInfo is null!"); return; }
-        if (container == null) { Debug.LogError($"CreateProcedureCallerViewInternal: container is null for procedure {procedureInfo.Name}!"); return; }
-        if (mProcedureCallerViews.ContainsKey(procedureInfo.Name)) return;
+        if (string.IsNullOrEmpty(blockType)) return null;
 
+        // 1. Creamos Modelo Plantilla (SIN workspace)
+        BlockModel templateModel = BlockFactory.Instance.CreateBlock(null, blockType);
+        if (templateModel == null) { Debug.LogWarning($"Could not create template MODEL for type: {blockType}"); return null; }
 
-        string callBlockType = hasReturn ? Define.CALL_WITH_RETURN_BLOCK_TYPE : Define.CALL_NO_RETURN_BLOCK_TYPE;
-        BlockModel block = BlockFactory.Instance.CreateBlock(m_Workspace, callBlockType); 
-        if (block == null) { Debug.LogError($"Failed to create model for {callBlockType}"); return; }
-
-        if (block.Mutator is ProcedureMutator callerMutator) { callerMutator.Mutate(procedureInfo); }
-        else { block.SetFieldValue("NAME", procedureInfo.Name); } 
-
-        BlockView view = NewBlockView(callBlockType, container);
-
-        if (view != null)
-        {
-            view.ChangeBgColor(BlockDataLoader.GetColorForCategoryPublic(Define.PROCEDURE_CATEGORY_NAME));
-            mProcedureCallerViews[procedureInfo.Name] = view;
-        }
-        else { block.Dispose(); } 
-    }
-
-    private void DeleteVariableHelperViewsInternal()
-    {
-        foreach (BlockView view in mVariableHelperViews)
-        {
-            if (view != null && view.gameObject != null)
-            {
-                // Debug.Log($"Destroying variable helper view {view.gameObject.name}");
-                Destroy(view.gameObject);
-            }
-        }
-        mVariableHelperViews.Clear(); 
-    }
-
-    private void DeleteProcedureCallerViewInternal(Procedure procedureInfo)
-    {
-        if (procedureInfo == null) { Debug.LogError("DeleteProcedureCallerViewInternal: procedureInfo is null!"); return; }
-        if (mProcedureCallerViews.TryGetValue(procedureInfo.Name, out BlockView view))
-        {
-            mProcedureCallerViews.Remove(procedureInfo.Name);
-            if (view != null && view.gameObject != null)
-            {
-                //Debug.Log($"Destroying procedure caller view for {procedureInfo.Name}");
-                Destroy(view.gameObject);
-            }
-        }
-    }
-
-    public new void OnVariableUpdate(VariableUpdateData updateData)
-    {
-        if (!isInitialized || m_Workspace == null) return; 
-        if (m_ActiveCategory != Define.VARIABLE_CATEGORY_NAME) return;
-
-       /*if (!m_RootList.TryGetValue(Define.VARIABLE_CATEGORY_NAME, out GameObject containerGO) || containerGO == null)
-        {
-            //Debug.LogWarning("Variable update received, but Variables container not found or invalid. Cannot update UI.");
-            return;
-        }*/
-
-        RectTransform container = m_BlockTemplateContainerRect; //containerGO.GetComponent<RectTransform>();
-        if (container == null)
-        {
-            Debug.LogWarning("Variable container GameObject exists, but missing RectTransform.");
-            return;
-        }
-
-        //Debug.Log($"<color=orange>BlockListView.OnVariableUpdate: {updateData.Type} - {updateData.VarName} -> {updateData.NewVarName}</color> in container {container.name}");
-
-        int variableCountBefore = m_Workspace.GetAllVariables().Count - (updateData.Type == VariableUpdateData.Create ? 1 : 0) + (updateData.Type == VariableUpdateData.Delete ? 1 : 0);
-        int variableCountAfter = m_Workspace.GetAllVariables().Count;
-
-        switch (updateData.Type)
-        {
-            case VariableUpdateData.Create:
-                if (variableCountBefore == 0) 
-                {
-                    //Debug.Log("First variable created, building helper blocks.");
-                    CreateVariableHelperViewsInternal(container); 
-                }
-                CreateVariableGetterViewInternal(updateData.VarName, container); 
-                break;
-
-            case VariableUpdateData.Delete:
-                DeleteVariableGetterViewInternal(updateData.VarName); 
-                if (variableCountAfter == 0) 
-                {
-                    //Debug.Log("Last variable deleted, removing helper blocks.");
-                    DeleteVariableHelperViewsInternal(); 
-                }
-                else if (variableCountBefore > 0) 
-                {
-                    string remainingVarName = m_Workspace.GetAllVariables().FirstOrDefault()?.Name;
-                    if (remainingVarName != null)
-                    {
-                        foreach (BlockView helperView in mVariableHelperViews)
-                        {
-                            if (helperView.Block != null && helperView.Block.GetFieldValue("VAR").Equals(updateData.VarName))
-                            {
-                               
-                                //Debug.Log($"Updating helper block {helperView.Block.Type} from deleted var {updateData.VarName} to {remainingVarName}");
-                                helperView.Block.SetFieldValue("VAR", remainingVarName);
-                                FieldView fieldView = helperView.ChildViews.OfType<LineGroupView>().SelectMany(lg => lg.ChildViews.OfType<InputView>()).SelectMany(iv => iv.ChildViews.OfType<FieldView>()).FirstOrDefault(fv => fv.FieldModel != null && fv.FieldModel.Name == "VAR");
-                                fieldView?.ForceUpdateDisplayFromModel();
-                            }
-                        }
-                    }
-                }
-                break;
-
-            case VariableUpdateData.Rename:
-                if (mVariableGetterViews.TryGetValue(updateData.VarName, out BlockView viewToRename))
-                {
-                    mVariableGetterViews.Remove(updateData.VarName);
-                    mVariableGetterViews[updateData.NewVarName] = viewToRename;
-                    //Debug.Log($"BlockListView Cache: Renamed getter view entry {updateData.VarName} -> {updateData.NewVarName}");
-                }
-                else { Debug.LogWarning($"Rename: Could not find getter view for old name {updateData.VarName} in cache."); }
-                break;
-        }
-
-        StartCoroutine(DelayedLayoutRebuild(container));
-    }
-
-    protected new void OnProcedureUpdate(ProcedureUpdateData updateData)
-    {
-        if (!isInitialized || m_Workspace == null) return; 
-        if (m_ActiveCategory != Define.PROCEDURE_CATEGORY_NAME) return;
-
-        /*if (!m_RootList.TryGetValue(Define.PROCEDURE_CATEGORY_NAME, out GameObject containerGO) || containerGO == null)
-        {
-            Debug.LogWarning("Procedure update received, but Procedures container not found or invalid. Cannot update UI.");
-            return;
-        }*/
-
-        RectTransform container = m_BlockTemplateContainerRect; //containerGO.GetComponent<RectTransform>();
-        if (container == null)
-        {
-            Debug.LogWarning("Procedure container GameObject exists, but missing RectTransform.");
-            return;
-        }
-
-        //Debug.Log($"<color=purple>BlockListView.OnProcedureUpdate: {updateData.Type} - Info: {updateData.ProcedureInfo?.Name} -> NewInfo: {updateData.NewProcedureInfo?.Name}</color> in container {container.name}");
-
-
-        switch (updateData.Type)
-        {
-            case ProcedureUpdateData.Add:
-                if (updateData.ProcedureDefinitionBlock != null && updateData.ProcedureInfo != null)
-                    CreateProcedureCallerViewInternal(updateData.ProcedureInfo, ProcedureDB.HasReturn(updateData.ProcedureDefinitionBlock), container); 
-                else Debug.LogWarning("OnProcedureUpdate Add: Missing ProcedureInfo or DefinitionBlock");
-                break;
-            case ProcedureUpdateData.Remove:
-                if (updateData.ProcedureInfo != null)
-                    DeleteProcedureCallerViewInternal(updateData.ProcedureInfo); 
-                else Debug.LogWarning("OnProcedureUpdate Remove: Missing ProcedureInfo");
-                break;
-            case ProcedureUpdateData.Mutate:
-                if (updateData.ProcedureInfo != null) DeleteProcedureCallerViewInternal(updateData.ProcedureInfo);
-                if (updateData.NewProcedureInfo != null && updateData.ProcedureDefinitionBlock != null)
-                {
-                    CreateProcedureCallerViewInternal(updateData.NewProcedureInfo, ProcedureDB.HasReturn(updateData.ProcedureDefinitionBlock), container); 
-                }
-                else if (updateData.NewProcedureInfo == null) { Debug.LogWarning("Procedure mutate: NewProcedureInfo is null"); }
-                else { Debug.LogWarning("Procedure mutate: ProcedureDefinitionBlock is null"); }
-
-                break;
-        }
-
-        StartCoroutine(DelayedLayoutRebuild(container));
-    }
-
-    public  BlockView NewBlockView(string blockType, Transform parent = null, int index = -1)
-    {
-        //WorkSpaceModel workspace = m_WorkSpaceModel;
-        if (m_Workspace == null) { Debug.LogError("NewBlockView: Workspace model is null, cannot create block template."); return null; }
-        if (m_WorkspaceView == null) { Debug.LogError("NewBlockView: Workspace view is null, BlockViewFactory needs it."); return null; }
-
-        BlockModel blockTemplateModel = BlockFactory.Instance.CreateBlock(null, blockType); //Creo un modelo sin WorkSpace asociado
-        if (blockTemplateModel == null)
-        {
-            Debug.LogWarning($"Could not create template MODEL for type: {blockType}");
-            return null;
-        }
-        blockTemplateModel.IsShadow = true; 
-        blockTemplateModel.Movable = false; 
-        m_Workspace.RemoveTopBlock(blockTemplateModel);
-
-        BlockView view = BlockViewFactory.CreateView(blockTemplateModel, this); 
+        // 2. Creamos Vista desde el Modelo Plantilla
+        BlockView view = BlockViewFactory.CreateView(templateModel, this);
         if (view == null)
         {
-            Debug.LogError($"BlockViewFactory failed for block type {blockType}");
-            blockTemplateModel.Dispose(); 
+            Debug.LogError($"BlockViewFactory failed for template block type {blockType}. Disposing model.", this);
+            templateModel.Dispose(); // Limpiamos modelo si la vista falló
             return null;
         }
-       // m_TemplateViews.Add(view);
-        view.InToolbox = true;
 
-        if (parent == null) parent = m_BlockTemplateScrollRect.content; 
-        view.transform.SetParent(parent, false); 
-        view.transform.localScale = Vector3.one; 
+        // 3. Configuramos la Vista para el Toolbox
+        view.InToolbox = true;                  // Marcamos como plantilla
+        if (view.Block != null) view.Block.Movable = true; // El modelo asociado a la plantilla si es movible lógicamente
+        view.gameObject.name = $"Template_{blockType}"; // Nombre 
 
-        if (index >= 0) view.transform.SetSiblingIndex(index);
+        // 4. Asignamos padre y posición en UI
+        if (parent == null) parent = m_BlockTemplateContainerRect; // Usamos contenedor por defecto
+        view.ViewTransform.SetParent(parent, false);         // Establecemos padre visual
+        
+        if (siblingIndex >= 0) view.ViewTransform.SetSiblingIndex(siblingIndex); // Establecemos orden si se especifica
+        else view.ViewTransform.SetAsLastSibling(); // Ponemos al final por defecto
 
-        if (m_WorkspaceView != null)
-        {
-            ToolboxBlockDragger dragger = view.gameObject.GetComponent<ToolboxBlockDragger>();
-            if (dragger == null) dragger = view.gameObject.AddComponent<ToolboxBlockDragger>();
-            dragger.Init(m_WorkspaceView); 
-        }
-        else { Debug.LogError($"Cannot initialize ToolboxBlockDragger on block {blockType}, WorkspaceView reference is missing!", view.gameObject); }
+        // 5. Configuramos Color 
+        view.ChangeBgColor(color);
 
-        GameObject dragSourceGO = new GameObject("TemplateDragTrigger_" + blockTemplateModel.Type);
-        dragSourceGO.transform.SetParent(view.transform, false);
-        UnityEngine.UI.Image maskImage = dragSourceGO.AddComponent<UnityEngine.UI.Image>();
-        maskImage.color = Color.clear;
-        maskImage.raycastTarget = true;
-        RectTransform maskRect = dragSourceGO.GetComponent<RectTransform>() ?? dragSourceGO.AddComponent<RectTransform>();
-        maskRect.anchorMin = Vector2.zero; maskRect.anchorMax = Vector2.one;
-        maskRect.offsetMin = Vector2.zero; maskRect.offsetMax = Vector2.zero;
+        // 6. Añadimos Trigger de Drag (Máscara + Script)
+        GameObject dragTriggerGO = new GameObject($"DragTrigger_{blockType}");
+        dragTriggerGO.transform.SetParent(view.transform, false); // Hijo del BlockView
 
-        BlockTemplateDragSource dragSource = dragSourceGO.AddComponent<BlockTemplateDragSource>();
+        // Añadimos Image transparente como receptor de Raycast
+        Image triggerImage = dragTriggerGO.AddComponent<Image>();
+        triggerImage.color = Color.clear; // Invisible
+        triggerImage.raycastTarget = true; // para recibir eventos
+
+        // Hacemos que el trigger ocupe todo el espacio de la BlockView
+        RectTransform triggerRect = dragTriggerGO.GetComponent<RectTransform>();
+        triggerRect.anchorMin = Vector2.zero;
+        triggerRect.anchorMax = Vector2.one;
+        triggerRect.offsetMin = Vector2.zero;
+        triggerRect.offsetMax = Vector2.zero;
+        triggerRect.localScale = Vector3.one;
+
+        // Añadimos el script que iniciará el drag
+        BlockTemplateDragSource dragSource = Utilidades.GetOrAddComponent<BlockTemplateDragSource>(dragTriggerGO);
         dragSource.TemplateBlockView = view;
-        dragSource.SourceToolbox = this;
+        dragSource.SourceToolbox = this; // Pasamos referencia a este Toolbox
 
+        // Forzar un re-layout inicial si es necesario por Unity LayoutGroups
+        LayoutRebuilder.ForceRebuildLayoutImmediate(view.GetComponent<RectTransform>());
+
+        //Debug.Log($"BlockListView: Created Template BlockView: {view.gameObject.name}", view.gameObject);
         return view;
     }
 
-    protected override List<BlockView> BuildVariableBlocks()
+    /// <summary>
+    /// Inicia el proceso de clonar un bloque desde el toolbox y comenzar a arrastrar el clon.
+    /// </summary>
+    /// <param name="templateBlockView">La vista plantilla desde donde se inició el drag.</param>
+    /// <param name="eventData">Datos del evento de inicio de drag.</param>
+    public void StartDraggingFromToolbox(BlockView templateBlockView, PointerEventData eventData)
     {
-        if (m_ActiveCategory != Define.VARIABLE_CATEGORY_NAME)
+        if (!m_IsInitialized || templateBlockView?.Block == null || m_WorkspaceModel == null || m_WorkspaceView == null || BlockDragController.Instance == null)
         {
-            Debug.LogWarning("BuildVariableBlocks() called when Variable category not active. Returning potentially stale cache.");
+            Debug.LogError("StartDraggingFromToolbox: Preconditions not met (Not initialized, null view/model/workspace/controller).", this);
+            if (eventData != null) eventData.pointerDrag = null; // Cancelamos drag si podemos
+            return;
+        }
+        if (!templateBlockView.InToolbox) // Seguridad extra
+        {
+            Debug.LogWarning("Attempted to start drag from a non-toolbox block using toolbox logic.", templateBlockView);
+            if (eventData != null) eventData.pointerDrag = null;
+            return;
         }
 
-        List<BlockView> allVarViews = new List<BlockView>();
-        allVarViews.AddRange(mVariableHelperViews);
-        allVarViews.AddRange(mVariableGetterViews.Values);
-        return allVarViews;
-    }
+        string blockType = templateBlockView.BlockType;
+        Color blockColor = GetColorOfBlock(blockType); // Obtenemos color del bloque plantilla
+        Debug.Log($"<color=yellow>BlockListView: StartDraggingFromToolbox for type '{blockType}'</color>", this);
 
-    protected override List<BlockView> BuildProcedureBlocks()
-    {
-        if (m_ActiveCategory != Define.PROCEDURE_CATEGORY_NAME)
+        // 1. Creamos el model en el WS
+        BlockModel realBlockModel = BlockFactory.Instance.CreateBlock(m_WorkspaceModel, blockType);
+        if (realBlockModel == null)
         {
-            Debug.LogWarning("BuildProcedureBlocks() called when Procedure category not active. Returning potentially stale cache.");
+            Debug.LogError($"StartDraggingFromToolbox: Failed to create BlockModel for type '{blockType}' using BlockFactory.", this);
+            if (eventData != null) eventData.pointerDrag = null;
+            return;
+        }
+        // Darle posición inicial basada en el ratón
+        realBlockModel.XY = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_WorkspaceView.EventCamera);
+
+        // 2. Creamos la vista para el modelo 
+        BlockView cloneView = BlockViewFactory.CreateView(realBlockModel, this);
+        if (cloneView == null)
+        {
+            Debug.LogError($"StartDraggingFromToolbox: BlockViewFactory failed to create BlockView for model {realBlockModel.ID} ({blockType}). Disposing model.", this);
+            realBlockModel.Dispose(); // Limpiamos modelo huérfano
+            if (eventData != null) eventData.pointerDrag = null;
+            return;
         }
 
-        return new List<BlockView>(mProcedureCallerViews.Values);
+        // 3. Configuramos el Clon que ya NO está en toolbox, posicionamos
+        cloneView.InToolbox = false;
+        cloneView.transform.SetParent(m_WorkspaceView.CodingArea, true); // Ponerlo en el área de código (manteniendo pos global)
+        cloneView.transform.SetAsLastSibling(); // Ponemos encima visualmente
+
+        // Forzamos un re-layout inicial del clon para calcular su tamaño antes de calcular offset
+        LayoutRebuilder.ForceRebuildLayoutImmediate(cloneView.ViewTransform);
+
+        // 4. Informamos al BlockDragController que este clon es el que se va a empezar a arrastrar
+        Debug.Log($" - Notifying BlockDragController to start drag for clone: {cloneView.gameObject.name}", this);
+        // BlockDragController.Instance.PrepareForExternalDragStart(cloneView, eventData); // Un método para preparar antes de OnBeginDrag
+
+        // 5. Iniciamos el drag en el clon programáticamente. Esto simula el IBeginDragHandler
+        
+        cloneView.OnBeginDrag(eventData); 
+
     }
 
-    public override bool CheckBin(BlockView blockView)
+    /// <summary>
+    /// Obtiene el Color asociado a un tipo de bloque específico,
+    /// encontrando primero la categoría a la que pertenece en la configuración
+    /// del toolbox (m_ToolboxConfig).
+    /// </summary>
+    /// <param name="blockType">El tipo de bloque (ej. "motion_movesteps") a buscar.</param>
+    /// <returns>El Color de la categoría del bloque, o Color.grey si no se encuentra
+    /// o el toolbox no está inicializado.</returns>
+    public Color GetColorOfBlock(string blockType) 
     {
-        if (m_WorkspaceView == null || m_WorkspaceView.RootCanvas == null) { Debug.LogWarning("CheckBin: WorkspaceView/Canvas not ready."); return false; }
-        if (blockView == null || blockView.InToolbox) return false; 
-        if (m_BinArea == null) { Debug.LogWarning("CheckBin: Bin Area not assigned."); return false; }
+        // Verificamos la inicialización y las dependencias necesarias
+        if (!m_IsInitialized || m_ToolboxConfig == null || string.IsNullOrEmpty(blockType))
+        {
+            // Debug.LogWarning($"GetColorOfBlock: Cannot get color for '{blockType}', Toolbox not ready or type empty.");
+            return Color.grey; // Color por defecto
+        }
 
-        Camera eventCamera = m_WorkspaceView.RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : m_WorkspaceView.RootCanvas.worldCamera;
-      
+        ToolboxBlockCategory category = m_ToolboxConfig.GetBlockCategoryByType(blockType);
+
+        if (category != null)
+        {
+            return category.Color;
+        }
+        else
+        {
+            Debug.LogWarning($"GetColorOfBlock: Block type '{blockType}' not found in any category within ToolboxConfig. Returning default grey.");
+            return Color.grey; // Fallback a color por defecto
+        }
+    }
+
+    /// <summary>
+    /// Llamado por VariableObserver cuando el modelo de variables cambia.
+    /// Refresca la UI del Toolbox SI la categoría Variables está activa.
+    /// </summary>
+    public void OnVariableUpdate(VariableUpdateData updateData)
+    {
+        if (!m_IsInitialized || m_WorkspaceModel == null) return;
+        string variableCatName = GetVariableCategoryName();
+        if (m_ActiveCategoryName == null || !m_ActiveCategoryName.Equals(variableCatName, StringComparison.OrdinalIgnoreCase)) return; // No está visible
+        if (m_BlockTemplateContainerRect == null) return; // Sin contenedor
+
+        // Debug.Log($"<color=orange>BlockListView.OnVariableUpdate: Refreshing Variable Category UI due to {updateData.Type} event.</color>", this);
+
+        BuildVariableBlocksInternal(m_BlockTemplateContainerRect);
+        // Re-layout forzado
+        StartCoroutine(DelayedLayoutRebuild(m_BlockTemplateContainerRect));
+    }
+
+    /// <summary>
+    /// Llamado por ProcedureObserver cuando el modelo de procedimientos cambia.
+    /// Refresca la UI del Toolbox SI la categoría Procedimientos está activa.
+    /// </summary>
+    public void OnProcedureUpdate(ProcedureUpdateData updateData)
+    {
+        if (!m_IsInitialized || m_WorkspaceModel == null) return;
+        string procedureCatName = GetProcedureCategoryName();
+        if (m_ActiveCategoryName == null || !m_ActiveCategoryName.Equals(procedureCatName, StringComparison.OrdinalIgnoreCase)) return; // No está visible
+        if (m_BlockTemplateContainerRect == null) return; // Sin contenedor
+
+        // Debug.Log($"<color=purple>BlockListView.OnProcedureUpdate: Refreshing Procedure Category UI due to {updateData.Type} event.</color>", this);
+
+        BuildProcedureBlocksInternal(m_BlockTemplateContainerRect);
+        // Re-layout forzado
+        StartCoroutine(DelayedLayoutRebuild(m_BlockTemplateContainerRect));
+    }
+
+    /// <summary>
+    /// Comprueba si una BlockView (que se está arrastrando) está sobre el área de la papelera.
+    /// Muestra/oculta la papelera visualmente.
+    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
+    /// </summary>
+    public bool CheckBin(BlockView blockView) 
+    {
+        if (!m_IsInitialized || m_WorkspaceView == null || m_BinArea == null) return false;
+        if (blockView == null || blockView.InToolbox || !BlockDragController.Instance.IsDraggingBlock(blockView)) return false; 
+
+        RectTransform binRect = m_BinArea.transform as RectTransform;
+        if (binRect == null) return false;
+
+        Camera eventCamera = m_WorkspaceView.EventCamera;
         Vector2 screenPoint = Input.mousePosition;
 
-        bool contains = RectTransformUtility.RectangleContainsScreenPoint(m_BinArea.transform as RectTransform, screenPoint, eventCamera);
+        bool contains = RectTransformUtility.RectangleContainsScreenPoint(binRect, screenPoint, eventCamera);
 
-        if (m_BinArea.activeSelf != contains) m_BinArea.SetActive(contains);
+        if (m_BinArea.activeSelf != contains) m_BinArea.SetActive(contains); // Mostrar/ocultar visualmente
 
         return contains;
     }
 
-    public override void FinishCheckBin(BlockView blockView)
+    /// <summary>
+    /// Llamado al finalizar un drag (por BlockDragController) para completar la acción de la papelera.
+    /// Si el bloque estaba sobre la papelera, pide su eliminación al WorkspaceController.
+    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
+
+    /// </summary>
+    public void FinishCheckBin(BlockView blockView) 
     {
-        if (m_BinArea == null || blockView == null) return;
+        if (!m_IsInitialized || m_BinArea == null || blockView == null) return;
 
-        if (CheckBin(blockView))
+        bool wasOverBin = m_BinArea.activeSelf; // Usar el estado visual actual
+        m_BinArea.SetActive(false); // Ocultar la papelera
+
+        if (wasOverBin && !blockView.InToolbox && blockView.Block != null && blockView.Block.Deletable)
         {
-            Debug.Log($"Block {blockView.BlockType} ({blockView.Block?.ID}) dropped in Bin. Requesting delete via WorkspaceController.");
+            Debug.Log($"BlockListView: Block {blockView.BlockType} ({blockView.Block?.ID}) dropped in Bin. Requesting delete.", this);
             WorkspaceController.Instance?.RequestDeleteBlock(blockView.Block);
-         
         }
-
-        m_BinArea.SetActive(false); 
     }
 
-    private void ShowEmptyMessage(string message, RectTransform container)
+    //  Limpieza y Utilidades 
+    public void ClearBlockTemplates()
     {
-        if (container == null) { Debug.LogError("ShowEmptyMessage: container is null!"); return; }
+        if (m_BlockTemplateContainerRect == null) return;
+        foreach (Transform child in m_BlockTemplateContainerRect)
+        {
+            Destroy(child.gameObject); // Destruye todos los GameObjects de plantillas
+        }
+        // Limpiamos caches internos
+        m_VariableGetterTemplateViews.Clear();
+        m_VariableHelperTemplateViews.Clear();
+        m_ProcedureCallerTemplateViews.Clear();
+        // Debug.Log("BlockListView: Cleared block template area and caches.");
+    }
+    public void ClearCategoryButtons()
+    {
+        if (m_categoryButtonContainer == null) return;
+        foreach (Transform child in m_categoryButtonContainer) { Destroy(child.gameObject); }
+        m_CategoryToggles.Clear(); // Limpia la cache de toggles
+       // Debug.Log("BlockListView: Cleared category buttons.");
+    }
+
+    public void ShowEmptyMessage(string message)
+    {
+        RectTransform container = m_BlockTemplateContainerRect;
+
+        if (container == null) return;
+        // Limpiamos antes de mostrar mensaje
         foreach (Transform child in container) { Destroy(child.gameObject); }
 
         GameObject messageGO = new GameObject("EmptyCategoryMessage");
         messageGO.transform.SetParent(container, false);
+        // Añadimos TextMeshPro
         TextMeshProUGUI text = messageGO.AddComponent<TextMeshProUGUI>();
         text.text = message;
         text.color = Color.grey;
         text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = 14;
+        // Añadimos LayoutElement para darle tamaño
         LayoutElement le = messageGO.AddComponent<LayoutElement>();
-        le.minHeight = 50; 
+        le.minHeight = 50; // Un poco de espacio
+        le.preferredWidth = -1; // Ancho flexible
+        le.flexibleWidth = 1;
     }
 
-    private List<string> GetBlockTypesFromDefinitions(string categoryName)
-    {
-        var definitions = BlockFactory.Instance.GetAllBlockDefinitions();
-        if (definitions == null) { Debug.LogError("GetBlockTypesFromDefinitions: Cannot access Block Definitions!"); return null; }
-
-        List<string> types = new List<string>();
-        foreach (KeyValuePair<string, BlockDefinition> pair in definitions)
-        {
-            string blockType = pair.Key;
-            BlockDefinition definition = pair.Value;
-            if (definition != null && string.Equals(definition.category, categoryName, StringComparison.OrdinalIgnoreCase))
-            {
-                types.Add(blockType);
-            }
-        }
-        //if (types.Count == 0) { Debug.LogWarning($"GetBlockTypesFromDefinitions: No block types found for category '{categoryName}'.");}
-        return types;
-    }
-
-    void OnDestroy()
-    {
-        if (m_Workspace != null)
-        {
-            if (mVarObserver != null) m_Workspace.VariableMap?.RemoveObserver(mVarObserver);
-            if (mProcObserver != null) m_Workspace.ProcedureDB?.RemoveObserver(mProcObserver);
-        }
-
-        ClearCategoryButtons(); 
-      /*  foreach (GameObject container in m_RootList.Values) 
-        {
-            if (container != null) Destroy(container);
-        }
-        m_RootList.Clear();*/
-        mVariableGetterViews.Clear(); 
-        mVariableHelperViews.Clear();
-        mProcedureCallerViews.Clear();
-
-        ClearBlockTemplates();
-        
-    }
-
-    protected virtual void BuildBlockViewsForActiveCategory(RectTransform containerRectTransform)
-    {
-        if (string.IsNullOrEmpty(mActiveCategory) || !mRootList.ContainsKey(mActiveCategory)) return;
-
-        Transform contentTrans = mRootList[mActiveCategory].transform; 
-        var categoryConfig = mConfig.GetBlockCategory(mActiveCategory);
-        var blockTypes = categoryConfig.BlockList;
-
-        Debug.Log($"BuildBlockViewsForActiveCategory '{mActiveCategory}': {blockTypes.Count} types.");
-
-        foreach (Transform child in contentTrans) { Destroy(child.gameObject); }
-
-        if (blockTypes == null || blockTypes.Count == 0)
-        {
-            GameObject messageGO = new GameObject("EmptyCategoryMessage");
-            messageGO.transform.SetParent(contentTrans, false);
-            TextMeshProUGUI text = messageGO.AddComponent<TextMeshProUGUI>();
-            text.text = $"No blocks found for category '{I18n.Get(mActiveCategory)}'."; 
-            text.color = new Color(0.6f, 0.6f, 0.6f);
-            text.alignment = TextAlignmentOptions.Center;
-            return;
-        }
-
-        foreach (string blockType in blockTypes)
-        {
-            try
-            {
-               
-                BlockView view = NewBlockView(blockType,this, contentTrans); 
-                if (view != null)
-                {
-                  
-                    view.UpdateColor();
-                }
-                else
-                {
-                    Debug.LogWarning($"NewBlockView returned null for type: {blockType}");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error creating BlockView in Toolbox for type '{blockType}': {e.Message}\n{e.StackTrace}");
-            }
-        }
-       
-    }
-
-    protected void BuildVariableBlocks(RectTransform container)
-    {
-        if (container == null || mWorkspace == null) return;
-        foreach (Transform child in container) Destroy(child.gameObject);
-        List<BlockView> views = BuildVariableBlocks(); 
-        foreach (var view in views)
-        {
-            view.transform.SetParent(container, false);
-        }
-    }
-
-    protected virtual void BuildProcedureBlocks(RectTransform container)
-    {
-        if (container == null || mWorkspace == null) return;
-        foreach (Transform child in container) Destroy(child.gameObject);
-        List<BlockView> views = BuildProcedureBlocks(); 
-        foreach (var view in views)
-        {
-            view.transform.SetParent(container, false); 
-        }
-    }
-
-    // Corutinas para esperar al layout
+    /// <summary>
+    /// Corrutina que espera hasta el final del frame actual y luego fuerza
+    /// la reconstrucción inmediata del layout para el RectTransform dado.
+    /// Útil después de añadir/quitar/modificar elementos en un contenedor
+    /// gestionado por LayoutGroups o ContentSizeFitter para asegurar que
+    /// el layout de Unity UI se actualice correctamente.
+    /// </summary>
+    /// <param name="rect">El RectTransform cuyo layout se debe reconstruir.</param>
     private IEnumerator DelayedLayoutRebuild(RectTransform rect)
     {
-        yield return null;
-        if (rect != null && rect.gameObject.activeInHierarchy) LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+       
+        yield return new WaitForEndOfFrame();
 
-    }
- 
-    // Muestra los bloques para la categoría dada 
-    public void ShowBlocksForCategory(string categoryName, BaseToolbox sourceToolbox,  Color categoryColor, List<string> blockTypes)
-    {
-        if (!isInitialized) { Debug.LogWarning("BlockListView not initialized."); return; }
-        if (m_blockTemplateScrollAreaContent == null) { Debug.LogError("BlockModel Template container is null!"); return; }
-
-        m_ActiveCategory = categoryName;
-        if (m_CategoryTitleText != null) m_CategoryTitleText.text = categoryName; 
-
-        ClearBlockTemplates(); 
-
-        if (blockTypes == null || blockTypes.Count == 0)
+        // Verificamos si el RectTransform todavía existe y está activo antes de forzar el layout
+        if (rect != null && rect.gameObject != null && rect.gameObject.activeInHierarchy)
         {
-            Debug.Log($"No block types defined for category: {categoryName}");
-            ShowEmptyMessage($"No blocks in '{categoryName}' category.");
-            return;
+            // Forzar al sistema de Layout a recalcular tamaño y posición para este RectTransform y sus hijos 
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+            // Debug.Log($"DelayedLayoutRebuild: Forced rebuild for {rect.name}", rect.gameObject);
         }
-
-        Debug.Log($"Populating BlockListView for '{categoryName}' with {blockTypes.Count} block types.");
-
-        WorkSpaceModel workspace = m_Workspace;
-        if (workspace == null)
-        {
-            Debug.LogError("Cannot create block templates: UBlockly Workspace is not available.");
-            ShowEmptyMessage("Error: Workspace unavailable.");
-            return;
-        }
-
-        GameObject containerGO = CreateBlockTemplateContainer(categoryName); 
-
-        foreach (string type in blockTypes)
-        {
-            try
-            {
-                BlockModel templateModel = BlockFactory.Instance.CreateBlock(workspace, type, $"template_{type}");
-                if (templateModel == null)
-                {
-                    Debug.LogWarning($"Failed to create temporary model for template type: {type}");
-                    continue;
-                }
-                workspace.RemoveTopBlock(templateModel);
-
-                BlockView templateView = BlockViewFactory.CreateView(templateModel, this); 
-                if (templateView == null)
-                {
-                    Debug.LogWarning($"BlockViewFactory failed to create view for template type: {type}");
-                    templateModel.Dispose(false); 
-                    continue;
-                }
-
-                templateView.transform.SetParent(containerGO.transform, false); 
-                templateView.InToolbox = true; 
-                templateView.gameObject.name = $"Template_{type}"; 
-
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error creating template view for type '{type}': {e.Message}\n{e.StackTrace}");
-            }
-        }
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(containerGO.GetComponent<RectTransform>());
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_blockTemplateScrollAreaContent);
-        StartCoroutine(DelayedLayoutRebuild(m_blockTemplateScrollAreaContent));
+        // else { Debug.LogWarning($"DelayedLayoutRebuild: RectTransform '{rect?.name}' no longer valid. Skipping rebuild."); }
     }
 
-    // Crear contenedor de layout para los bloques de una categoría (código existente OK)
-    private GameObject CreateBlockTemplateContainer(string categoryName)
-    {
-        GameObject container = new GameObject($"BlockTemplateContainer_{categoryName}");
-        RectTransform rt = container.AddComponent<RectTransform>();
-        container.transform.SetParent(m_blockTemplateScrollAreaContent, false); 
-
-        rt.anchorMin = new Vector2(0, 1); rt.anchorMax = new Vector2(1, 1);
-        rt.pivot = new Vector2(0.5f, 1); // Centrado arriba
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = Vector2.zero; // Que se ajuste al contenido
-
-        VerticalLayoutGroup vlg = container.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset(10, 10, 10, 10); 
-        vlg.spacing = 10f;                       
-        vlg.childControlWidth = true;            
-        vlg.childControlHeight = false;           // Alto determinado por el bloque
-        vlg.childAlignment = TextAnchor.UpperLeft; // Alinear arriba izquierda
-        vlg.childForceExpandWidth = false;
-        vlg.childForceExpandHeight = false;
-
-        ContentSizeFitter csf = container.AddComponent<ContentSizeFitter>();
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize; // Crecer verticalmente
-        csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; // Ancho controlado por VLG
-
-        return container;
-    }
-    // Limpia solo los bloques
-    private void ClearBlockTemplates()
-    {
-        foreach (GameObject container in mRootList.Values) 
-        {
-            if (container != null) Destroy(container);
-        }
-        mRootList.Clear(); 
-        mActiveCategory = null; 
-
-        if (m_BlockTemplateScrollRect?.content != null)
-        {
-            foreach (Transform child in m_BlockTemplateScrollRect.content)
-            {
-                if (!mRootList.ContainsValue(child.gameObject))
-                {
-                    Destroy(child.gameObject);
-                }
-            }
-        }
-    }
-
-    // Limpia el área de plantillas de bloque y muestra un mensaje 
-    public void ShowEmptyMessage(string message)
-    {
-        if (!isInitialized) return;
-        if (!string.IsNullOrEmpty(mActiveCategory) && mRootList.ContainsKey(mActiveCategory))
-        {
-            Transform container = mRootList[mActiveCategory].transform;
-            foreach (Transform child in container) Destroy(child.gameObject);
-            GameObject messageGO = new GameObject("EmptyCategoryMessage");
-            messageGO.transform.SetParent(container, false);
-            TextMeshProUGUI text = messageGO.AddComponent<TextMeshProUGUI>();
-            text.text = message;
-            text.color = Color.grey; 
-        }
-        else
-        {
-            
-            Debug.LogWarning("ShowEmptyMessage called without active category/container.");
-        }
-        if (m_CategoryTitleText != null) m_CategoryTitleText.text = m_ActiveCategory ?? "Toolbox";
-    }
-    
-    //Destruye todos los GameObjects hijos del contenedor de botones de categoría.
-
-    private void ClearCategoryButtons()
-    {
-        if (m_categoryButtonContainer == null) return;
-        foreach (Transform child in m_categoryButtonContainer) { Destroy(child.gameObject); }
-        m_CategoryToggles.Clear();
-    }
+    /// <summary>
+    /// Corrutina que espera un frame y luego establece la posición normalizada vertical
+    /// de un ScrollRect a 1 (arriba del todo).
+    /// Útil después de un DelayedLayoutRebuild para asegurar que el tamaño del contenido
+    /// se ha calculado antes de intentar hacer scroll.
+    /// </summary>
+    /// <param name="scrollRect">El ScrollRect a desplazar.</param>
     private IEnumerator DelayedScrollToTop(ScrollRect scrollRect)
     {
         yield return null;
@@ -1221,6 +774,89 @@ public class BlockListView : BaseToolbox
         if (scrollRect != null && scrollRect.gameObject.activeInHierarchy)
             scrollRect.verticalNormalizedPosition = 1f;
     }
+    
 
+    void OnDestroy()
+    {
+        if (m_WorkspaceModel != null)
+        {
+            if (m_VariableObserver != null) m_WorkspaceModel.VariableMap?.RemoveObserver(m_VariableObserver);
+            if (m_ProcedureObserver != null) m_WorkspaceModel.ProcedureDB?.RemoveObserver(m_ProcedureObserver);
+        }
+    }
+
+    // Clase Interna Observer para Variables 
+    private class VariableObserver : MonoBehaviour, IObserver<VariableUpdateData>
+    {
+        private BlockListView m_TargetToolbox;
+        public void SetTargetToolbox(BlockListView toolbox) => m_TargetToolbox = toolbox;
+        public void OnUpdated(object subject, VariableUpdateData args) => m_TargetToolbox?.OnVariableUpdate(args);
+    }
+    //  Clase Interna Observer para Procedimientos 
+    private class ProcedureObserver : MonoBehaviour, IObserver<ProcedureUpdateData>
+    {
+        private BlockListView m_TargetToolbox;
+        public void SetTargetToolbox(BlockListView toolbox) => m_TargetToolbox = toolbox;
+        public void OnUpdated(object subject, ProcedureUpdateData args) => m_TargetToolbox?.OnProcedureUpdate(args);
+    }
+
+    /// <summary>
+    /// Método helper para encontrar el nombre de la primera categoría que
+    /// coincide con alguno de los tipos "custom" especificados en ToolboxConfig.
+    /// Utiliza comparación insensible a mayúsculas/minúsculas.
+    /// </summary>
+    /// <param name="customTypes">Uno o más strings que representan los valores del atributo 'custom' a buscar.</param>
+    /// <returns>El CategoryName de la primera categoría encontrada, o null si no se encuentra ninguna.</returns>
+    private string GetCategoryNameByCustomType(params string[] customTypes)
+    {
+        if (m_ToolboxConfig?.BlockCategoryList == null || customTypes == null || customTypes.Length == 0)
+        {
+            return null; // No hay configuración o tipos custom para buscar
+        }
+
+        // Buscamos en la lista de categorías de la configuración
+        foreach (var category in m_ToolboxConfig.BlockCategoryList)
+        {
+            // Validamos que la categoría y su campo 'Custom' no sean nulos
+            if (category != null && !string.IsNullOrEmpty(category.Custom))
+            {
+                // Comprobamos si el Custom de esta categoría coincide con alguno de los buscados
+                foreach (string customTypeToFind in customTypes)
+                {
+                    if (category.Custom.Equals(customTypeToFind, StringComparison.OrdinalIgnoreCase))
+                    {
+                        //Debug.Log($"Found category '{category.CategoryName}' for custom type '{customTypeToFind}'.");
+                        return category.CategoryName;
+                    }
+                }
+            }
+        }
+
+        //Debug.LogWarning($"No category found with custom type(s): {string.Join(", ", customTypes)}");
+        return null;
+    }
+
+    private string GetVariableCategoryName()
+    {
+        if (m_CachedVariableCategoryName == null && m_ToolboxConfig?.BlockCategoryList != null)
+        {
+            m_CachedVariableCategoryName = m_ToolboxConfig.BlockCategoryList
+                .FirstOrDefault(cat => "VARIABLE".Equals(cat?.Custom, StringComparison.OrdinalIgnoreCase))
+                ?.CategoryName;
+        }
+        return m_CachedVariableCategoryName;
+    }
+
+    private string GetProcedureCategoryName()
+    {
+        if (m_CachedProcedureCategoryName == null && m_ToolboxConfig?.BlockCategoryList != null)
+        {
+            m_CachedProcedureCategoryName = m_ToolboxConfig.BlockCategoryList
+                .FirstOrDefault(cat => "PROCEDURE".Equals(cat?.Custom, StringComparison.OrdinalIgnoreCase) ||
+                                        "MYBLOCKS".Equals(cat?.Custom, StringComparison.OrdinalIgnoreCase)) 
+                ?.CategoryName;
+        }
+        return m_CachedProcedureCategoryName;
+    }
 
 } // Fin de la clase BlockListView
