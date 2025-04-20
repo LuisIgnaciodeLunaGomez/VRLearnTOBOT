@@ -17,6 +17,10 @@ MonoBehaviour:
   - IndexName: en
     ResName: en
     TextFile: {fileID: 4900000, guid: fb2b240724f9d41aabcf2ca6e37be0b1, type: 3}
+    Selected: 0
+  - IndexName: es
+    ResName: es
+    TextFile: {fileID: 4900000, guid: 6f6fa0bf8282e27449dd6ee23a2d98fa, type: 3}
     Selected: 1
   m_BlockJsonFiles:
   - IndexName: 
@@ -27,6 +31,12 @@ MonoBehaviour:
     ResName: 
     TextFile: {fileID: 4900000, guid: ebe24642ec8df2b4095ddbd1699d7e20, type: 3}
     Selected: 1
-  m_BlockViewPrefabPath: 
-  m_BlockViewPrefabs: []
+  m_BlockViewPrefabPath: Assets/Resources/Prefabs/Blocks
+  m_BlockViewPrefabs:
+  - IndexName: motion_movesteps
+    ResName: 
+    Prefab: {fileID: 1047204425220112, guid: f1adb66dc990b4a1dbd299062b2a0ec9, type: 3}
+  - IndexName: event_whenflagclicked
+    ResName: 
+    Prefab: {fileID: 1047204425220112, guid: c51b9e37dffd220498ec9a8d5b46e98d, type: 3}
   m_DialogPrefabs: []

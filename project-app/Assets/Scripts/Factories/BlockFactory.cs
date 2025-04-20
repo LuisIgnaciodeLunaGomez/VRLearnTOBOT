@@ -20,8 +20,6 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine; 
 
-
-// crea los bloques en tiempo de ejecución, asegurando que todos sigan la estructura definida en BlockDefinition
 public class BlockFactory
 {
     private static BlockFactory mInstance = null;
@@ -76,7 +74,6 @@ public class BlockFactory
                 Debug.LogWarning($"Block definition in JSON array has duplicated type name: {typeName}. Overwriting or Skipping?");
                 
                 continue;
-                // Para sobrescribir: // mDefinitions.Remove(typeName);
             }
 
             int length = typeName.IndexOf("_");
@@ -86,7 +83,6 @@ public class BlockFactory
             mPrefixCategories[prefix].Add(typeName);
         }
     }
-
 
     // Crea un bloque basado en su tipo
     public BlockModel CreateBlock(WorkSpaceModel workspace, string type, string uid = null)
@@ -135,7 +131,7 @@ public class BlockFactory
                 block.SetInputsInline(inputsInline);
             }
 
-            // Asignar el SourceBlock a inputs/connections creados
+            // Asignamos el SourceBlock a inputs/connections creados
             foreach (var input in inputs) { input.SourceBlock = block; }
             if (output != null) output.SourceBlock = block;
             if (prev != null) prev.SourceBlock = block;
@@ -144,7 +140,7 @@ public class BlockFactory
         return block;
     }
 
-    //Crea un Bloque desde el XML
+    //Creamos un Bloque desde el XML
     public static BlockModel CreateFromXml(WorkSpaceModel workspace, XElement xmlBlock)
     {
         if (workspace == null || xmlBlock == null) return null;
@@ -209,7 +205,6 @@ public class BlockFactory
             }
         }
 
-
         foreach (XElement inputContainerNode in xmlBlock.Elements())
         {
             BlockModel childBlock = null; 
@@ -225,7 +220,6 @@ public class BlockFactory
                     Debug.LogWarning($"CreateFromXml: Input '{inputName}' not found or has no connection in block model '{blockType}'. Skipping XML input container.");
                     continue;
                 }
-
                
                 XElement childNode = inputContainerNode.Elements().FirstOrDefault(); 
                 if (childNode != null && (childNode.Name.LocalName == "block" || childNode.Name.LocalName == "shadow"))
@@ -250,14 +244,13 @@ public class BlockFactory
                 }
                     }
                 }
-                // TODO: Manejar Shadow DOM  (crear shadow si childBlock es null y el input acepta shadows)
             }
         }
 
         XElement nextContainerNode = xmlBlock.Element("next");
         if (nextContainerNode != null)
         {
-            // Buscar un block o shadow dentro de next
+            // Buscams un block o shadow dentro de next
             XElement nextBlockNode = nextContainerNode.Elements().FirstOrDefault();
             if (nextBlockNode != null && (nextBlockNode.Name.LocalName == "block" || nextBlockNode.Name.LocalName == "shadow"))
             {
@@ -275,12 +268,11 @@ public class BlockFactory
             }
         }
 
-        // REVISAR Procesar Mutator 
+        // REVISAR Procesar Mutator si en Scratch es necesario
         // XElement mutationNode = xmlBlock.Element("mutation");
         // block.Mutator?.FromXml(mutationNode); // El mutator aplica los cambios al bloque
         // block.Reshape? - Mutator.FromXml debería manejarlo
 
-       
         return block; 
     }
 
@@ -308,6 +300,5 @@ public class BlockFactory
         if (!mPrefixCategories[prefix].Contains(typeName)) 
             mPrefixCategories[prefix].Add(typeName);
     }
-
 
 }// Fin de la clase BlockFactory
