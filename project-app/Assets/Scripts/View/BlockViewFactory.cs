@@ -9,141 +9,103 @@
  * 
  * Fecha: 22/02/2025
  * 
- * Versión: 2.0.1
+ * Versión: 2.0.2
  * 
- * Descripción: Clase que crea las vistas de los bloques y las plantillas de bloques.
+ * Descripción: Clase que crea las vistas de los bloques y las plantillas de bloques cargando el prefab correcto según la información
  */
 
+using System;
 using UnityEngine;
 public static class BlockViewFactory
 {
-    public static BlockView CreateView(BlockModel blockModel, BaseToolbox sourceToolbox)
+    /// <summary>
+    /// Crea y configura la vista para un BlockModel dado.
+    /// Carga el prefab usando convención de nombres (o BlockResMgr), lo instancia,
+    /// obtiene el componente BlockView y llama a su BindModel.
+    /// </summary>
+    /// <param name="blockModel">El modelo de datos del bloque a visualizar.</param>
+    /// <param name="sourceToolbox">Referencia al Toolbox (para obtener WorkspaceView y Color).
+    /// Puede ser null si se crea un bloque directamente en el workspace sin pasar por el toolbox,
+    /// en cuyo caso se intentará obtener el WorkspaceView activo.</param>
+    /// <returns>La BlockView creada y vinculada, o null si falla.</returns>
+    public static BlockView CreateView(BlockModel blockModel, BlockListView sourceToolbox )
     {
         if (blockModel == null)
         {
             Debug.LogError("BlockViewFactory.CreateView: BlockModel is null!");
             return null;
         }
-        if (sourceToolbox == null)
+
+        // Obtener la referencia necesaria a WorkSpaceView
+        WorkSpaceView workspaceView = WorkSpaceView.Active; 
+        if (workspaceView == null && sourceToolbox is BlockListView scrollList)
         {
-           
-            Debug.LogError($"BlockViewFactory.CreateView: sourceToolbox is null for block {blockModel.Type}! Cannot reliably get WorkspaceView.");
+            workspaceView = scrollList.WorkspaceViewForFactory; 
+        }
+        if (workspaceView == null)
+        {
+              Debug.LogWarning($"BlockViewFactory: Could not get WorkspaceView for block {blockModel.Type}. Some interactions might fail if it's not a template.");
+
+        }
+
+        //  Carga e Instanciaciación del Prefab 
+        BlockView blockView = null;
+        GameObject blockInstance = null;
+
+        // 1. Obtener el Prefab 
+        string blockType = blockModel.Type;
+        GameObject blockPrefab = BlockResMgr.Get()?.LoadBlockViewPrefab(blockType);
+
+        if (blockPrefab == null)
+        {
+            Debug.LogError($"BlockViewFactory: Prefab NOT FOUND for block type '{blockType}'. Check BlockResSettings config or Resources/Prefabs/Blocks path.", workspaceView?.gameObject);
             return null;
         }
 
-        BlockListView sourceBlockListView = sourceToolbox as BlockListView; //Por si es necesario más adelante
-
-        WorkSpaceView workspaceView = null;
-
-        if (sourceToolbox is BlockListView scrollList)
+        // 2. Instanciar el Prefab encontrado
+        try
         {
-            workspaceView = scrollList.WorkspaceViewForFactory;
-            if (workspaceView == null)
-            {
-                Debug.LogError($"BlockViewFactory: Source BlockScrollListView '{sourceToolbox.name}' has null WorkspaceViewForFactory!", sourceToolbox);
-                return null; 
-            }
-        }
+            // Instanciar sin padre inicial. 
+            blockInstance = GameObject.Instantiate(blockPrefab);
+            blockInstance.name = $"BlockView_{blockType}_{blockModel.ID}"; 
 
-        else
-        {
-           
-            Debug.LogError($"BlockViewFactory: SourceToolbox ('{sourceToolbox.name}') is not a BlockScrollListView! Cannot get WorkspaceView ref.", sourceToolbox);
-                 return null;
-        }
+            // Obtener el componente BlockView del Prefab instanciado
+            blockView = blockInstance.GetComponent<BlockView>();
 
-        BlockView blockView=null;
-        GameObject blockPrefab = BlockResMgr.Get().LoadBlockViewPrefab(blockModel.Type);
-        GameObject blockInstance = null;
-
-        if (blockPrefab != null)
-        {
-            try
+            if (blockView == null)
             {
-                blockInstance = GameObject.Instantiate(blockPrefab);
-                blockInstance.name = $"Block_{blockModel.Type}"; 
-                blockView = blockInstance.GetComponent<BlockView>();
-
-                if (blockView == null)
-                {
-                    Debug.LogWarning($"Prefab for {blockModel.Type} loaded, but it's missing the BlockView component. Adding it.", blockInstance);
-                    blockView = blockInstance.AddComponent<BlockView>(); 
-                }
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error instantiating prefab for {blockModel.Type}: {e.Message}", blockPrefab);
-                if (blockInstance != null) GameObject.Destroy(blockInstance); 
-                return null; 
-            }
-        }
-
-        if (blockView == null)
-        {
-            if (blockPrefab == null)
-            {
-                Debug.Log($"Prefab for {blockModel.Type} not found. Using BlockViewBuilder.");
-            }
-            else
-            {
-                Debug.LogWarning($"Using BlockViewBuilder for {blockModel.Type} because BlockView component was missing on prefab.");
-            }
-
-            try
-            {
-                blockInstance = BlockViewBuilder.BuildBlockView(blockModel);
-                if (blockInstance != null)
-                {
-                    blockView = blockInstance.GetComponent<BlockView>(); 
-                    if (blockView == null)
-                    {
-                        Debug.LogError($"BlockViewBuilder created instance for {blockModel.Type} but it's missing the BlockView component! Check BuildBlockView implementation.", blockInstance);
-                     
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"BlockViewBuilder failed to build view instance for {blockModel.Type}");
-                }
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"Error during BlockViewBuilder.BuildBlockView for {blockModel.Type}: {e.Message}");
-                if (blockInstance != null) GameObject.Destroy(blockInstance); 
+                Debug.LogError($"BlockViewFactory: Prefab for '{blockType}' ({blockPrefab.name}) IS MISSING the BlockView component! Fix the prefab.", blockPrefab);
+                GameObject.Destroy(blockInstance); 
                 return null;
             }
         }
-
-        /* if (blockView == null)
-         {
-             Debug.LogError($"BlockViewFactory: CRITICAL - Failed to obtain BlockView component for {block.Type} after trying Prefab and Builder.");
-             if (blockInstance != null) GameObject.Destroy(blockInstance);
-             return null;
-         }*/
-        //blockView.InToolbox = isToolboxTemplate;
-
-        Debug.Log($"BlockViewFactory: Assigning WorkspaceView (InstanceID: {workspaceView?.GetInstanceID()}) to BlockView '{blockView.gameObject.name}' BEFORE BindModel.", blockView.gameObject);
-       // blockView.workSpaceView = workspaceView;
-
-        blockView.BindModel(blockModel, workspaceView);
-
-        if (blockPrefab != null)
+        catch (Exception e)
         {
-            if (blockModel.Mutator != null)
-            {
-                Debug.Log($"BlockViewFactory: Prefab used for {blockModel.Type}, checking if InputViews needed for Mutator.");
-               
-                BlockViewBuilder.BuildInputViews(blockModel, blockView);
-            }
+            Debug.LogError($"BlockViewFactory: Error INSTANTIATING prefab '{blockPrefab?.name}' for block '{blockModel.Type}': {e.Message}\n{e.StackTrace}", blockPrefab);
+            if (blockInstance != null) GameObject.Destroy(blockInstance); 
+            return null;
         }
 
-        blockView.ChangeBgColor(sourceToolbox.GetColorOfBlock(blockModel.Type));
-        blockView.BuildLayout(); 
-        blockView.QueueForceLayoutUpdate();
+        //  Vinculación y Configuración Inicial 
 
-        Debug.Log($"BlockViewFactory: Successfully created and bound BlockView for {blockModel.Type}.", blockView.gameObject);
+        // 3. Vincular la vista creada a su modelo
+       
+        blockView.BindModel(blockModel, workspaceView); // Pasar modelo y contexto
 
-        return blockView;
+        // 4. Aplicar Configuración Visual Inicial
+     
+        Color blockColor = Color.grey; // Default
+        if (sourceToolbox != null)
+        {
+            blockColor = sourceToolbox.GetColorOfBlock(blockType);
+        }
+        else if (workspaceView?.Toolbox != null)
+        { 
+            blockColor = workspaceView.Toolbox.GetColorOfBlock(blockType);
+        }
+        blockView.ChangeBgColor(blockColor);
+
+        return blockView; 
     }
 } //Fin clase BlockViewFactory
     
