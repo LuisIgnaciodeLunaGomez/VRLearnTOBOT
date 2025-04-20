@@ -1,48 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Categories>
 	<Category>
-		<Name>Movimiento</Name>
-		<InternalName>Motion</InternalName>
+		<Name>MOTION</Name>
+		<InternalName>MOTION</InternalName>
 		<Color>#4C97FF</Color>
 	</Category>
 	<Category>
-		<Name>Apariencia</Name>
-		<InternalName>Looks</InternalName>
+		<Name>LOOKS</Name>
+		<InternalName>LOOKS</InternalName>
 		<Color>#9966FF</Color>
 	</Category>
 	<Category>
-		<Name>Sonido</Name>
-		<InternalName>Sound</InternalName>
+		<Name>SOUND</Name>
+		<InternalName>SOUND</InternalName>
 		<Color>#CF63CF</Color>
 	</Category>
 	<Category>
-		<Name>Eventos</Name>
-		<InternalName>Events</InternalName>
+		<Name>EVENTS</Name>
+		<InternalName>EVENTS</InternalName>
 		<Color>#FFBF00</Color>
 	</Category>
 	<Category>
-		<Name>Control</Name>
-		<InternalName>Control</InternalName>
+		<Name>CONTROL</Name>
+		<InternalName>CONTROL</InternalName>
 		<Color>#FFAB19</Color>
 	</Category>
 	<Category>
-		<Name>Sensores</Name>
-		<InternalName>Sensing</InternalName>
+		<Name>SENSING</Name>
+		<InternalName>SENSING</InternalName>
 		<Color>#5CB1D6</Color>
 	</Category>
 	<Category>
-		<Name>Operadores</Name>
-		<InternalName>Operators</InternalName>
+		<Name>OPERATORS</Name>
+		<InternalName>OPERATORS</InternalName>
 		<Color>#59C059</Color>
 	</Category>
 	<Category>
-		<Name>Variables</Name>
-		<InternalName>Variables</InternalName>
+		<Name>VARIABLES</Name>
+		<InternalName>VARIABLES</InternalName>
 		<Color>#FF8C1A</Color>
 	</Category>
 	<Category>
-		<Name>MisBloques</Name>
-		<InternalName>MyBlocks</InternalName>
+		<Name>MY_BLOCKS</Name>
+		<InternalName>MY_BLOCKS</InternalName>
 		<Color>#FF6680</Color>
 	</Category>
 </Categories>
