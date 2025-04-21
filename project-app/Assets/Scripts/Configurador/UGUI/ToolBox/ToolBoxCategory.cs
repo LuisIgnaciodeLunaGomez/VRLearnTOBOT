@@ -22,7 +22,8 @@ using UnityEngine;
 public class ToolboxBlockCategory
 {
     public string CategoryName;
-    public string Colour; public string Custom;
+    //public string Colour;
+    public string Custom;
     public string BlockTypePrefix;
     public List<string> BlockList;
 
@@ -31,52 +32,20 @@ public class ToolboxBlockCategory
     public Color Color { get; private set; }
 
 
-    public void Init()
+    /// <summary>
+    /// Inicializa la categoría con el Color procesado externamente.
+    /// Llamado desde UICanvasView.InitializeCategoryColors después de leer Categories.xml.
+    /// </summary>
+    /// <param name="categoryColor">El Color real para esta categoría.</param>
+    public void Init(Color categoryColor) 
     {
         if (mInited) return;
+        this.Color = categoryColor; 
+        if (BlockList == null) BlockList = new List<string>();
 
-      
-       /* if (!string.IsNullOrEmpty(BlockTypePrefix)) 
-        {
-            var typesFromPrefix = BlockFactory.Instance.GetBlockTypesOfPrefix(BlockTypePrefix);
-            if (typesFromPrefix != null)
-            {
-                // Solo añade si BlockList está realmente vacío para evitar duplicados
-                if (BlockList == null || BlockList.Count == 0)
-                {
-                    if (BlockList == null) BlockList = new List<string>();
-                    BlockList.AddRange(typesFromPrefix);
-                }
-                // else Debug.LogWarning($"BlockList for '{CategoryName}' already populated. Ignoring prefix '{BlockTypePrefix}'.");
-            }
-            else
-                Debug.LogWarning($"No block types found for prefix '{BlockTypePrefix}' in category '{CategoryName}'");
-        }*/
-        if (BlockList == null)
-        {
-            BlockList = new List<string>(); 
-        }
-
-
-        if (!string.IsNullOrEmpty(Colour))
-        {
-          
-            if (ColorUtility.TryParseHtmlString(Colour, out Color parsedColor))
-            {
-                Color = parsedColor;
-            }
-            else
-            {
-                Color = UnityEngine.Color.grey; 
-                Debug.LogWarning($"Failed to parse ColorHex '{Colour}' for category '{CategoryName}'. Using default grey.");
-            }
-        }
-        else
-        {
-            Color = UnityEngine.Color.grey; 
-            Debug.LogWarning($"No ColorHex defined for category '{CategoryName}'. Using default grey.");
-        }
         mInited = true;
     }
+
+
 
 }

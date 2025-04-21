@@ -31,18 +31,7 @@ public class ToolboxConfig
             throw new Exception(string.Format("Can\'t find category configuration for \"{0}\" in Toolbox json configuration.", categoryName));
         return category;
     }
-
-    public static ToolboxConfig Load()
-    {
-        ToolboxConfig config = BlockResMgr.Get().LoadToolboxConfig();
-        foreach (var category in config.BlockCategoryList)
-        {
-            category.Init();
-        }
-        return config;
-    }
-
-
+  
     /** 
      * Descripción: Encuentra la categoría a la que pertenece un tipo de bloque específico.
      * @param blockType El tipo de bloque que se desea buscar.
