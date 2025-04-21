@@ -20,11 +20,10 @@ using UnityEngine;
 public class WorkSpaceView : MonoBehaviour
 {
     private RectTransform m_codingArea;        
-    private BaseToolbox m_toolbox;           
+    private BlockListView m_toolbox;           
     private BlockStatusView m_blockStatusView;
-    //[SerializeField] private PlayControlView m_playControlView; //Los controles de ejecución TODO:revisar
 
-    public BaseToolbox Toolbox => m_toolbox;
+    public BlockListView Toolbox => m_toolbox;
     public BlockStatusView BlockStatusView => m_blockStatusView;
     //public PlayControlView PlayControlView => m_playControlView; 
     public RectTransform CodingArea => m_codingArea;
@@ -62,7 +61,7 @@ public class WorkSpaceView : MonoBehaviour
      * @param codingAreaRect RectTransform del área de código donde se colocarán los bloques.
      * @param statusViewRef Referencia opcional al BlockStatusView para mostrar el estado de ejecución.
      */
-    public void BindModel(WorkSpaceModel workspace, BaseToolbox toolboxRef, RectTransform codingAreaRect, BlockStatusView statusViewRef = null)
+    public void BindModel(WorkSpaceModel workspace, BlockListView toolboxRef, RectTransform codingAreaRect, BlockStatusView statusViewRef = null)
     {
         Debug.Log($"<color=cyan>WorkSpaceView ({GetInstanceID()}): BindModel called.</color>", this);
 
@@ -139,7 +138,7 @@ public class WorkSpaceView : MonoBehaviour
         if (m_WorkspaceModel == null) return;
         Debug.Log($"WorkSpaceView: Unbinding from Workspace {m_WorkspaceModel.Id}...");
        // m_playControlView?.Reset(); 
-        m_toolbox?.Clean();       
+        m_toolbox?.ClearBlockTemplates();       
         CleanViews();
         m_WorkspaceModel.Dispose(); 
         m_WorkspaceModel = null;
@@ -189,47 +188,7 @@ public class WorkSpaceView : MonoBehaviour
         }
     }
 
-    /**
-     * Descripción: Clona el modelo y crea una nueva vista para él en la posición dada.
-     * @param originalBlockView La BlockView original que se quiere clonar.
-     * @param logicalPosition La posición lógica donde se colocará la nueva vista.
-     * @return La nueva BlockView clonada, o null si hubo un error.
-     */
-    public BlockView CloneBlockView(BlockView originalBlockView, BaseToolbox sourceToolbox, Vector2 logicalPosition)
-    {
-        if (originalBlockView?.Block == null)
-        {
-            Debug.LogError("CloneBlockView: Original BlockModel or its model is null");
-            return null;
-        }
-
-        BlockModel newBlockModel = originalBlockView.Block.Clone();
-        if (newBlockModel == null)
-        {
-            Debug.LogError($"Failed to clone BlockModel Model {originalBlockView.Block.ID}");
-            return null;
-        }
-
-        newBlockModel.XY = logicalPosition; 
-        BlockView newView = BlockViewFactory.CreateView(newBlockModel, sourceToolbox);
-
-        if (newView != null)
-        {
-            newView.InToolbox = false;
-            newView.transform.SetParent(m_codingArea, false); 
-            newView.XY = logicalPosition;
-                                          
-            Debug.Log($"Cloned block {originalBlockView.Block.ID} -> New block {newBlockModel.ID} with View {newView.name}");
-        }
-        else
-        {
-            Debug.LogError($"BlockViewFactory failed to create view for cloned block {newBlockModel.ID}");
-            newBlockModel.Dispose(false); 
-        }
-
-        return newView;
-    }
-
+ 
     /**
      * Descripción: Construye las vistas para todos los bloques Top existentes en el modelo Workspace.
      */ 
@@ -252,7 +211,7 @@ public class WorkSpaceView : MonoBehaviour
      * @param block El bloque lógico del que se quiere construir la vista.
      * @return La BlockView creada, o null si hubo un error.
      */
-    private BlockView BuildBlockViewRecursive(BlockModel block, BaseToolbox sourceToolbox)
+    private BlockView BuildBlockViewRecursive(BlockModel block, BlockListView sourceToolbox)
     {
         if (block == null) return null;
         if (m_blockViews.ContainsKey(block.ID)) return m_blockViews[block.ID];
