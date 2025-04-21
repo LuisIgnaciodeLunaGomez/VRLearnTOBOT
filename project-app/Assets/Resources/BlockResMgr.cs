@@ -44,7 +44,7 @@ public class BlockTextResWithSelectionParam : BlockTextResParam
     public bool Selected;
 }
 
- 
+
 [CreateAssetMenu(menuName = "UBlockly/BlockResSettings", fileName = "BlockResSettings")]
 public class BlockResMgr : ScriptableObject
 {
@@ -60,7 +60,7 @@ public class BlockResMgr : ScriptableObject
     private Func<string, UnityEngine.Object> mABSyncLoad;
     private Action<string, Action<UnityEngine.Object>> mABASyncLoad;
     private Action<string> mABUnload;
-   
+
 
     #region I18n Files
 
@@ -109,7 +109,7 @@ public class BlockResMgr : ScriptableObject
     }
 
     #endregion
-    
+
 
     #region Block View Prefabs
     public GameObject LoadBlockViewPrefab(string blockType)
@@ -137,7 +137,7 @@ public class BlockResMgr : ScriptableObject
         }
         return blockPrefab;
     }
- 
+
     #endregion
 
     #region Dialog Prefabs
@@ -167,7 +167,7 @@ public class BlockResMgr : ScriptableObject
         }
         return dialogPrefab;
     }
-  
+
     private static BlockResMgr mInstance = null;
     public static BlockResMgr Get()
     {
@@ -183,4 +183,5 @@ public class BlockResMgr : ScriptableObject
     {
         mInstance = null;
     }
+    #endregion
 }
