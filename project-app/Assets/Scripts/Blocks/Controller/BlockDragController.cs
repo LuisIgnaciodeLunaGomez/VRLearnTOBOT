@@ -256,7 +256,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         ClearHighlight(); 
     }
 
-    public void StartDraggingTemplate(BlockView templateBlockView, BaseToolbox sourceToolbox, PointerEventData eventData)
+    public void StartDraggingTemplate(BlockView templateBlockView, BlockListView sourceToolbox, PointerEventData eventData)
     {
         if (m_IsDragging) {  eventData.pointerDrag = null; return; }
         if (templateBlockView?.Block == null) { eventData.pointerDrag = null; return; }
@@ -340,7 +340,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         }
     }
 
-    private void TryStartDrag(BlockView blockView, PointerEventData eventData, bool isTemplate, BaseToolbox sourceToolbox = null)
+    private void TryStartDrag(BlockView blockView, PointerEventData eventData, bool isTemplate, BlockListView sourceToolbox = null)
     {
         if (!m_IsPotentialDrag || m_IsDragging) return;
 
@@ -394,7 +394,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         PrepareVisualDrag(eventData);
     }
 
-    public void StartDraggingTemplateInternal(BlockView templateBlockView, BaseToolbox sourceToolbox, PointerEventData eventData)
+    public void StartDraggingTemplateInternal(BlockView templateBlockView, BlockListView sourceToolbox, PointerEventData eventData)
     {
         if (templateBlockView?.Block == null || sourceToolbox == null)
         {
