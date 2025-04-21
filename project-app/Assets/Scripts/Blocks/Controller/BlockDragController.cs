@@ -14,11 +14,12 @@
  * Descripción:
  */
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems; 
-using System;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {   
@@ -72,7 +73,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             Debug.LogError("BlockDragController: Missing core references after initialization!");
         else
         {
-            m_CodingAreaRect = m_WorkspaceView.CodingArea; 
+            m_CodingAreaRect = m_WorkspaceView.CodingArea;
+            Debug.Log($"BlockDragController Initialized: m_CodingAreaRect is {(m_CodingAreaRect == null ? "NULL" : m_CodingAreaRect.name)}", this);
             m_RootCanvas = m_WorkspaceView.RootCanvas;     
             m_CachedCamera = m_WorkspaceView.EventCamera; 
         }
@@ -394,29 +396,38 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         PrepareVisualDrag(eventData);
     }
 
-    public void StartDraggingTemplateInternal(BlockView templateBlockView, BlockListView sourceToolbox, PointerEventData eventData)
+    public IEnumerator StartDraggingTemplateInternal(BlockView templateBlockView, BlockListView sourceToolbox, PointerEventData eventData)
     {
         if (templateBlockView?.Block == null || sourceToolbox == null)
         {
             Debug.LogError("StartDraggingTemplateInternal: templateBlockView, its model, or sourceToolbox is null.");
             ResetDragState(eventData);
-            return;
+            yield break; ;
         }
 
         BlockModel templateModel = templateBlockView.Block;
+        string cloneModelId = "UNKNOWN_ID";
+        string cloneViewName = "UNKNOWN_VIEW";
+        int cloneInstanceId = 0;
         Debug.Log($"<color=yellow>BlockDragController: Starting drag - TEMPLATE for {templateModel.Type}</color>");
 
-        Vector2 startPosLogical = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_CachedCamera);
+        //Creamos model Clon
+        Vector2 startPosLogical = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);
 
-        m_PendingCloneModel = m_workspaceController.RequestCloneBlockBegin(templateModel, startPosLogical);
-        if (m_PendingCloneModel == null)
+        BlockModel CloneModel = m_workspaceController.RequestCloneBlockBegin(templateModel, startPosLogical);
+
+        if (CloneModel == null)
         {
             Debug.LogError("Failed to create clone model from WorkspaceController.");
             ResetDragState(eventData);
-            return;
+            yield break; ;
         }
 
-        //BlockView cloneView = BlockViewFactory.CreateView(m_PendingCloneModel, sourceToolbox);
+        cloneModelId = CloneModel.ID; // Para debug
+        m_PendingCloneModel = CloneModel;
+
+
+        //Creamos la vista del clon
         BlockView cloneView = BlockViewFactory.CreateView(m_PendingCloneModel, sourceToolbox);
         if (cloneView == null)
         {
@@ -424,64 +435,180 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             m_PendingCloneModel.Dispose(false);
             m_PendingCloneModel = null;
             ResetDragState(eventData);
-            return;
+            yield break; ;
         }
+        cloneViewName = cloneView.gameObject.name; 
+        cloneInstanceId = cloneView.gameObject.GetInstanceID();
 
         m_WasTemplateClone = true;
         m_DraggingBlockView = cloneView;
-        m_DraggingBlockModel = m_PendingCloneModel;
-        m_PendingCloneModel = null; 
+        m_DraggingBlockModel = CloneModel;
+        m_PendingCloneModel = null;
+        m_IsDragging = true;
 
-        m_DraggingBlockView.InToolbox = false;
-        m_DraggingBlockView.ViewTransform.SetParent(m_CodingAreaRect, true);
-        m_DraggingBlockView.XY = startPosLogical; 
+        m_DraggingBlockView.InToolbox = false; //No está en la toolbox
+
+        Debug.Log($"<color=orange>Assigning Parent: m_CodingAreaRect is {(m_CodingAreaRect == null ? "NULL" : m_CodingAreaRect.name)} for {cloneView.name}</color>", this);
+
+        if (m_CodingAreaRect == null)
+        {
+            Debug.LogError("CANNOT SetParent: m_CodingAreaRect is NULL!", this);
+            ResetDragState(eventData); 
+           // m_DraggingBlockModel?.Dispose(false);
+            yield break;
+        }
+
+        Transform targetParentTransform = m_CodingAreaRect.transform;
+        Transform viewTransform = m_DraggingBlockView.ViewTransform;
+
+        if (viewTransform == null)
+        {
+            Debug.LogError($"CANNOT SetParent: ViewTransform of '{cloneViewName}' is NULL!", this);
+            ResetDragState(eventData); yield break;
+        }
+
+        Debug.Log($"   - Before SetParent: Current Parent='{viewTransform.parent?.name ?? "NULL"}'", this);
+        viewTransform.SetParent(targetParentTransform, true); // true = worldPositionStays
+        yield return new WaitForEndOfFrame();
+
+        Transform parentAfterWait = viewTransform.parent; // Volver a obtener el padre
+        string parentNameAfterWait = parentAfterWait?.name ?? "NULL";
+        Debug.Log($"<color=cyan>...Resumed after WaitForEndOfFrame. Parent check: Current Parent is '{parentNameAfterWait}' ({parentAfterWait?.GetInstanceID()})</color>", this);
+
+        // Validar si el parenting FUNCIONÓ
+        if (parentAfterWait != targetParentTransform)
+        {
+            Debug.LogError($"BlockDragController: PARENTING FAILED for clone {cloneModelId} ({cloneViewName}) EVEN AFTER WaitForEndOfFrame! Expected '{targetParentTransform.name}', got '{parentNameAfterWait}'. Drag aborted.", this);
+            ResetDragState(eventData);
+           
+            if (m_DraggingBlockView?.gameObject != null) { Destroy(m_DraggingBlockView.gameObject); }
+            m_DraggingBlockModel?.Dispose(false);
+            m_DraggingBlockView = null;
+            m_DraggingBlockModel = null;
+            yield break; // Salir de la corutina
+        }
+        else
+        {
+            Debug.Log("<color=green>...Parenting check SUCCESSFUL after WaitForEndOfFrame.</color>");
+        }
+
+
+        // Forzar layout y establecer posición AHORA que tiene padre y esperamos
+        Debug.Log($"   - Forcing layout and setting XY for {cloneViewName}...", this);
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_DraggingBlockView.GetComponent<RectTransform>());
+        m_DraggingBlockView.XY = startPosLogical;
 
+        Debug.Log($"<color=yellow>BlockDragController: Clone {cloneModelId} configuration AFTER parent check complete. Proceeding to PrepareVisualDrag. m_IsDragging={m_IsDragging}.</color>", this);
 
-        Debug.Log($"<color=yellow>BlockDragController: Created clone {m_DraggingBlockModel.ID}, preparing visual drag.</color>");
-
-        PrepareVisualDrag(eventData);
+        // Llamamos a PrepareVisualDrag SÓLO si todo sigue bien
+        if (m_IsDragging && m_DraggingBlockView == cloneView && m_DraggingBlockView.gameObject != null)
+        {
+            PrepareVisualDrag(eventData);
+        }
+        else
+        {
+            Debug.LogWarning($"BlockDragController: Drag state changed unexpectedly after WaitForEndOfFrame! View: {m_DraggingBlockView?.name}, Expected View: {cloneViewName}, IsDragging: {m_IsDragging}. Drag might have been cancelled.", this);
+            // El ResetDragState apropiado debería haberse llamado ya si el drag se canceló.
+        }
+    
     }
 
+    private bool IsPointerOverCodingArea(PointerEventData eventData)
+    {
+        if (m_CodingAreaRect == null) return false; // Si no hay área, no está encima
+
+        // Comprueba si la posición del puntero en pantalla está dentro del RectTransform del CodingArea
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            m_CodingAreaRect,
+            eventData.position,
+            null // Usamos null para cámara con ScreenSpaceOverlay
+        );
+    }
+    /// <summary>
+    /// Prepara visualmente la BlockView para ser arrastrada. Calcula el offset inicial,
+    /// ajusta el CanvasGroup y el orden en la jerarquía.
+    /// </summary>
+    /// <param name="eventData">Los datos del evento de puntero que iniciaron el drag.</param>
     private void PrepareVisualDrag(PointerEventData eventData)
     {
-        if (m_DraggingBlockView == null || m_DraggingBlockView.ViewTransform == null)
+        if (m_DraggingBlockView == null)
         {
-            Debug.LogError("PrepareVisualDrag: DraggingBlockView or its transform is null!");
+            ResetDragState(eventData);
+            return;
+        } 
+                       
+       if(m_DraggingBlockView.ViewTransform == null)
+        {
+            Debug.LogError($"PrepareVisualDrag: DraggingBlockView '{m_DraggingBlockView.name}' has a null ViewTransform! Cannot calculate position.", this);
+            ResetDragState(eventData);
             return;
         }
+
         if (m_DraggingBlockView.gameObject == null)
         {
             Debug.LogError("PrepareVisualDrag: DraggingBlockView GameObject has been destroyed!");
             m_IsDragging = false; 
             return;
         }
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-           (RectTransform)m_DraggingBlockView.ViewTransform.parent, 
-           eventData.position,
-           m_CachedCamera,
-           out Vector2 localPointerPos);
 
+        //Obtener el parent
+
+        RectTransform parentRect = m_DraggingBlockView.ViewTransform.parent as RectTransform;
+
+        if (parentRect == null)
+        {
+            Debug.LogError($"PrepareVisualDrag: Parent RectTransform is NULL for '{m_DraggingBlockView.name}'! Check block's parent in hierarchy.", this);
+            ResetDragState(eventData);
+
+        }
+
+        Vector2 localPointerPos;
+
+        bool conversionSuccess = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+       parentRect,           // El RectTransform del padre donde se calculará la coordenada local
+       eventData.position,   // La posición del puntero en la pantalla
+       null,                 // <- Pasamos null explícitamente como cámara para ScreenSpaceOverlay
+       out localPointerPos);
+        if (!conversionSuccess)
+        {
+            localPointerPos = Vector2.zero;
+            Debug.LogError($"PrepareVisualDrag: ScreenPointToLocalPointInRectangle FAILED for {m_DraggingBlockView.name} in parent {parentRect.name}. Pointer might be off-canvas/parent bounds."); return;
+            
+        }
+
+        //Cálculo del offset
         m_DragOffsetViewSpace = m_DraggingBlockView.ViewTransform.anchoredPosition - localPointerPos;
 
+        //Preparación del bloque para arrastrar
+
         m_DraggingBlockView.transform.SetAsLastSibling();
+
+        //Añadimos CanvasGroup si no existe
         var cg = m_DraggingBlockView.GetComponent<CanvasGroup>();
         if (cg == null) cg = m_DraggingBlockView.gameObject.AddComponent<CanvasGroup>();
-        cg.blocksRaycasts = false; 
+        cg.blocksRaycasts = false; //Desactivar raycasts para evitar interacciones mientras se arrastra
 
         ClearHighlight();
-        Debug.Log($"<color=lightblue>BlockDragController: Visual drag prepared for {m_DraggingBlockModel?.ID ?? "UNKNOWN"}.</color>");
+        Debug.Log($"<color=lightblue>BlockDragController: Visual drag prepared for {m_DraggingBlockModel?.ID ?? "UNKNOWN"} (View: {m_DraggingBlockView.name}). Offset: {m_DragOffsetViewSpace}</color>");
     }
 
     public void HandleDrag(BlockView blockView, PointerEventData eventData)
     {
-        if (!m_IsDragging && m_IsPotentialDrag && blockView != null)
+        if (!m_IsDragging || m_DraggingBlockView == null)
         {
-            TryStartDrag(blockView, eventData, blockView.InToolbox, m_WorkspaceView?.Toolbox);
-            if (!m_IsDragging) return; 
+             Debug.LogWarning($"HandleDrag called while m_IsDragging=true but m_DraggingBlockView is null!");
+
+            return; 
         }
 
-        if (!m_IsDragging || m_DraggingBlockView != blockView || m_DraggingBlockView == null) return;
+        if (blockView != null && m_DraggingBlockView != blockView)
+        {
+            Debug.Log($"HandleDrag ignoring event from {blockView.name}, currently dragging {m_DraggingBlockView.name}");
+            return;
+        }
+
+        Debug.Log($"HandleDrag: Processing drag for {m_DraggingBlockView.name}");
+
 
         Vector2 localPointerPosition;
         RectTransform parentRect = m_DraggingBlockView.ViewTransform.parent as RectTransform;
@@ -489,7 +616,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parentRect,
                 eventData.position,
-                m_CachedCamera, 
+                null,//m_CachedCamera, 
                 out localPointerPosition))
         {
             m_DraggingBlockView.ViewTransform.anchoredPosition = localPointerPosition + m_DragOffsetViewSpace;
@@ -500,7 +627,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return; 
         }
 
-        Vector2 currentLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_CachedCamera);
+        Vector2 currentLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);//m_CachedCamera);
         ConnectionModel oldBestTarget = m_BestTargetConnection; 
         m_BestTargetConnection = null;
         m_SourceDragConnection = null;
@@ -566,14 +693,19 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     public void HandleEndDrag(BlockView blockView, PointerEventData eventData)
     {
-        if (!m_IsDragging || m_DraggingBlockView != blockView || m_DraggingBlockView == null)
+        if (!m_IsDragging || m_DraggingBlockView /*!= blockView || m_DraggingBlockView */== null)
         {
-            m_IsPotentialDrag = false; 
+            m_IsPotentialDrag = false;
+            return;
+        }
+
+        if (blockView != null && m_DraggingBlockView != blockView)
+        {
             return;
         }
 
         Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {m_DraggingBlockModel?.ID ?? "UNKNOWN"}</color>");
-        m_IsPotentialDrag = false; 
+        m_IsPotentialDrag = false;
 
         bool connected = false;
         bool deleted = false;
@@ -607,41 +739,49 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 Debug.Log($"<color=red>... Requesting deletion of block {m_DraggingBlockModel.ID}.</color>");
                 m_workspaceController.RequestDeleteBlock(m_DraggingBlockModel);
             }
-            deleted = true; 
+            deleted = true;
         }
 
         if (!connected && !deleted)
         {
-            Vector2 finalLogicalPosition = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_CachedCamera);
-
-        
-            Vector2 viewSize = m_DraggingBlockView.ViewTransform.rect.size;
-            // Vector2 pivotOffset = new Vector2(viewSize.x * m_DraggingBlockView.ViewTransform.pivot.x, viewSize.y * (1 - m_DraggingBlockView.ViewTransform.pivot.y)); // Offset del pivote
-            
-            // float scale = 1.0f; // Asumiendo escala 1 por ahora
-            // Vector2 logicalOffset = new Vector2(pivotOffset.x / scale, pivotOffset.y / scale); 
-            // finalLogicalPosition -= logicalOffset; // Ajustar para centrar
-
-            finalLogicalPosition += m_DragOffsetViewSpace; 
-
-            if (m_WasTemplateClone)
+            if (!IsPointerOverCodingArea(eventData))
             {
-                Debug.Log($"<color=blue>... Confirming add & move for CLONE {m_DraggingBlockModel.ID} to {finalLogicalPosition}.</color>");
-               
-                m_workspaceController.RequestBlockMove(m_DraggingBlockModel, finalLogicalPosition);
-                m_workspaceController.ConfirmAddBlock(m_DraggingBlockModel); 
-
+                Debug.Log($"<color=orange>... Dropped OUTSIDE coding area ({m_CodingAreaRect.name}).</color>");
+                if (m_WasTemplateClone)
+                {
+                    Debug.Log("<color=orange>... Cancelling pending clone (dropped outside).</color>");
+                    CancelPendingClone(m_DraggingBlockModel, "Dropped outside coding area");
+                }
+                else
+                {
+                    Debug.Log($"<color=orange>... Requesting deletion of block {m_DraggingBlockModel.ID} (dropped outside).</color>");
+                    m_workspaceController.RequestDeleteBlock(m_DraggingBlockModel);
+                }
+                deleted = true;
             }
-            else
+
+            else if (!deleted)
             {
-                Debug.Log($"<color=blue>... Requesting move for BLOCK {m_DraggingBlockModel.ID} to {finalLogicalPosition}.</color>");
-                m_workspaceController.RequestBlockMove(m_DraggingBlockModel, finalLogicalPosition);
+                Vector2 finalLogicalPosition = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_CachedCamera);
+                finalLogicalPosition += m_DragOffsetViewSpace;
+
+                if (m_WasTemplateClone)
+                {
+                    Debug.Log($"<color=blue>... Confirming add & move for CLONE {m_DraggingBlockModel.ID} to {finalLogicalPosition}.</color>");
+                    m_workspaceController.RequestBlockMove(m_DraggingBlockModel, finalLogicalPosition);
+                    m_workspaceController.ConfirmAddBlock(m_DraggingBlockModel);
+                }
+                else
+                {
+                    Debug.Log($"<color=blue>... Requesting move for BLOCK {m_DraggingBlockModel.ID} to {finalLogicalPosition}.</color>");
+                    m_workspaceController.RequestBlockMove(m_DraggingBlockModel, finalLogicalPosition);
+                }
             }
         }
-
-        ClearHighlight();
-        ResetDragState(eventData);
-        Debug.Log("<color=cyan>BlockDragController: Drag sequence finished.</color>");
+            ClearHighlight();
+            ResetDragState(eventData);
+            Debug.Log("<color=cyan>BlockDragController: Drag sequence finished.</color>");
+        
     }
 
     private void ResetDragState(PointerEventData eventData = null)

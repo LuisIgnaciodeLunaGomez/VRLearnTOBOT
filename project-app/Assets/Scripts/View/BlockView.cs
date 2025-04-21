@@ -390,16 +390,16 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (!InToolbox) // Delegar si NO está en el toolbox
-            BlockDragController.Instance?.HandleDrag(this, eventData);
+        //if (!InToolbox) // Delegar si NO está en el toolbox
+        BlockDragController.Instance?.HandleDrag(this, eventData);
 
    
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!InToolbox) // Delegar si NO está en el toolbox
-            BlockDragController.Instance?.HandleEndDrag(this, eventData);
+       // if (!InToolbox) // Delegar si NO está en el toolbox
+       BlockDragController.Instance?.HandleEndDrag(this, eventData);
         
     }
 

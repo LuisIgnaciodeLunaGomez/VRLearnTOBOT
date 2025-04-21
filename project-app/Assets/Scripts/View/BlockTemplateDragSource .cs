@@ -60,10 +60,17 @@ public void OnBeginDrag(PointerEventData eventData)
         eventData.pointerDrag = null;
         return;
     }
-    BlockDragController.Instance?.StartDraggingTemplateInternal(TemplateBlockView, SourceToolbox, eventData);
-}
+   
+        var dragController = BlockDragController.Instance;
+        if (dragController == null)
+        { 
+            Debug.LogError("BlockTemplateDragSource: BlockDragController not found in scene. Cannot start drag.", this);
+        }
+            dragController.StartCoroutine(dragController.StartDraggingTemplateInternal(TemplateBlockView, SourceToolbox, eventData));
 
-public void OnDrag(PointerEventData eventData)
+    }
+
+    public void OnDrag(PointerEventData eventData)
 {
 
     BlockDragController.Instance?.HandleDrag(null, eventData);

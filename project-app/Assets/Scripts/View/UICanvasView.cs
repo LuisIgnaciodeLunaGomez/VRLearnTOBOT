@@ -38,7 +38,16 @@ public class UICanvasView : MonoBehaviour
     private ToolboxConfig m_ToolboxConfiguration;
     [SerializeField] private GameObject categoryButtonPrefab; // Prefab  botón de categoría - Cargar en Inspector
     private RectTransform m_CategoryButtonContainerRect; //Contenedor de botones
+    private RectTransform BlockListAreaRect;
+    private RectTransform WorkSpaceAreaRect;
     private ScrollRect m_MiddlePanelScrollRect;
+
+    public GameObject CategoryButtonPrefab => categoryButtonPrefab; 
+    public RectTransform CodingAreaPanelRect => m_RightPanelRect;
+    public RectTransform BlockListPanelRect => m_MiddlePanelRect;
+    public RectTransform CategoryButtonContainerRect => m_CategoryButtonContainerRect;
+    public ScrollRect MiddlePanelScrollRect => m_MiddlePanelScrollRect;
+
     public ToolboxConfig ToolboxConfig => m_ToolboxConfiguration;
     public WorkSpaceModel Workspace => m_WorkspaceModel;
     public WorkSpaceView WorkSpaceView => m_WorkSpaceView;

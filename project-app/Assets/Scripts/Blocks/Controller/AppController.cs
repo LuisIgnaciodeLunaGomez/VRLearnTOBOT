@@ -15,6 +15,7 @@
  */
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AppController : MonoBehaviour
 {
@@ -86,8 +87,10 @@ public class AppController : MonoBehaviour
             Debug.LogError("AppController: UICanvasManager not found!");
             yield break;
         }
-        Debug.Log("AppController: Waiting for UICanvasView core components...");
+        Debug.Log("AppController: Found UICanvasView. Waiting for its core UI/View components to be ready (Awake phase)...", this);
+        
         yield return new WaitUntil(() => m_uiManager.IsCoreComponentsReady()); 
+
         Debug.Log("AppController: UICanvasView components ready.");
 
         m_categoryController = FindFirstObjectByType<CategoryController>();
@@ -101,7 +104,7 @@ public class AppController : MonoBehaviour
 
         m_workspaceModel = m_uiManager.Workspace;
         m_workspaceView = m_uiManager.WorkSpaceView;
-        m_blockListView = m_uiManager.Toolbox;       // Obtener la BlockListView (Toolbox)
+        m_blockListView = m_uiManager.Toolbox;       
         m_toolboxConfig = m_uiManager.ToolboxConfig;
 
         if (m_workspaceModel == null || m_workspaceView == null)
@@ -117,23 +120,77 @@ public class AppController : MonoBehaviour
         }
         Debug.Log($"AppController: Got Model (ID: {m_workspaceModel.Id}) and View components from UICanvasView.");
 
+
+        RectTransform codingAreaRect = m_uiManager.CodingAreaPanelRect;
+        RectTransform blockListAreaRect = m_uiManager.BlockListPanelRect;
+        RectTransform categoryButtonContainer = m_uiManager.CategoryButtonContainerRect;
+        ScrollRect middlePanelScrollRect = m_uiManager.MiddlePanelScrollRect;
+         GameObject catButtonPrefab = m_uiManager.CategoryButtonPrefab; 
+
+        if (codingAreaRect == null || blockListAreaRect == null || categoryButtonContainer == null || middlePanelScrollRect == null || catButtonPrefab == null)
+        {
+            Debug.LogError("AppController: Failed to get required UI element references from UICanvasView Properties! Check UICanvasView Awake/Properties.", this);
+            enabled = false; yield break;
+        }
+
+        m_workspaceView.BindModel(
+          m_workspaceModel,
+          m_blockListView,
+          codingAreaRect, 
+          null
+      );
+        Debug.Log("<color=green>AppController: WorkSpaceView bound to Model and RectTransform.</color>", this);
+
+
         m_categoryController = FindFirstObjectByType<CategoryController>() ?? gameObject.AddComponent<CategoryController>();
+
+        if (m_categoryController == null) m_categoryController = gameObject.AddComponent<CategoryController>();
+        m_categoryController.InitializeController(m_blockListView, m_toolboxConfig); 
+        Debug.Log("AppController: CategoryController initialized.");
+
         m_workspaceController = FindFirstObjectByType<WorkspaceController>() ?? gameObject.AddComponent<WorkspaceController>();
+
+        if (m_workspaceController == null) m_workspaceController = gameObject.AddComponent<WorkspaceController>();
+        m_workspaceController.InitializeController(m_workspaceModel, m_workspaceView);
+        Debug.Log("AppController: WorkspaceController initialized.");
+
         m_executionController = FindFirstObjectByType<ExecutionController>() ?? gameObject.AddComponent<ExecutionController>();
+        if (m_executionController == null) m_executionController = gameObject.AddComponent<ExecutionController>();
+        
+        // m_executionController.Initialize(m_workspaceModel);
+        Debug.Log("AppController: ExecutionController found/created.");
+
         m_inputController = FindFirstObjectByType<InputController>() ?? gameObject.AddComponent<InputController>();
-        m_blockDragController = FindFirstObjectByType<BlockDragController>() ?? gameObject.AddComponent<BlockDragController>();
 
-        if (m_categoryController != null)
-            m_categoryController.InitializeController(m_blockListView, m_toolboxConfig); 
-        else Debug.LogError("AppC: Failed to init CategoryController");
+        if (m_inputController == null) m_inputController = gameObject.AddComponent<InputController>();
+        
+        //m_inputController.Initialize(m_workspaceView);
+        Debug.Log("AppController: InputController found/created.");
 
-        if (m_workspaceController != null)
-            m_workspaceController.InitializeController(m_workspaceModel, m_workspaceView);
-        else Debug.LogError("AppC: Failed to init WorkspaceController");
+        BlockDragController dragController = FindFirstObjectByType<BlockDragController>(); // ?? gameObject.AddComponent<BlockDragController>();
 
-        if (m_blockDragController != null)
-            m_blockDragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController);
-        else Debug.LogError("AppC: Failed to init BlockDragController");
+        if (dragController == null)
+        {
+            Debug.LogWarning("AppController: BlockDragController not found in scene. Adding one to AppController GameObject.");
+           
+            dragController = gameObject.AddComponent<BlockDragController>();
+        }
+
+        m_blockDragController = dragController;
+
+        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController);
+        Debug.Log("AppController: BlockDragController initialized.");
+
+        m_blockListView.InitializeToolbox(
+            m_workspaceModel,
+            m_toolboxConfig,
+            m_workspaceView,
+            categoryButtonContainer, 
+            middlePanelScrollRect,   
+            catButtonPrefab,         
+            m_categoryController
+        );
+       // Debug.Log("<color=green>AppController: BlockListView initialized.</color>", this);
 
         Debug.Log("<color=green>AppController: Initialization of dependent controllers complete.</color>");
         

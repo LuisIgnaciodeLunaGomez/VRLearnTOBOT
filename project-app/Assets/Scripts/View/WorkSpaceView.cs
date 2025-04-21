@@ -22,7 +22,6 @@ public class WorkSpaceView : MonoBehaviour
     private RectTransform m_codingArea;        
     private BlockListView m_toolbox;           
     private BlockStatusView m_blockStatusView;
-
     public BlockListView Toolbox => m_toolbox;
     public BlockStatusView BlockStatusView => m_blockStatusView;
     //public PlayControlView PlayControlView => m_playControlView; 
@@ -77,6 +76,9 @@ public class WorkSpaceView : MonoBehaviour
 
         m_codingArea = codingAreaRect;
 
+        Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
+
+
         if (m_codingArea == null)
         {
             Debug.LogError("WorkSpaceView.BindModel: CodingArea reference is null! This is essential.", this);
@@ -96,7 +98,10 @@ public class WorkSpaceView : MonoBehaviour
 
         m_WorkspaceModel = workspace;
         m_toolbox = toolboxRef;
-        m_codingArea = codingAreaRect;     
+        m_codingArea = codingAreaRect;
+
+        Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
+
         m_blockStatusView = statusViewRef;  
 
         if (m_WorkspaceModel == null)
