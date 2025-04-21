@@ -39,8 +39,8 @@ public class FieldLabelView : FieldView
         m_TextMeshPro.overflowMode = TextOverflowModes.Overflow; 
         m_TextMeshPro.alignment = TextAlignmentOptions.Left; 
         //m_TextMeshPro.enableWordWrapping = false; 
-        m_TextMeshPro.fontSize = BlockViewSettings.Instance.DefaultFontSize;
-        m_TextMeshPro.color = BlockViewSettings.Instance.DefaultFieldColor;
+        //m_TextMeshPro.fontSize = BlockViewSettings.Instance.DefaultFontSize;
+        //m_TextMeshPro.color = BlockViewSettings.Instance.DefaultFieldColor;
         // m_LayoutElement.flexibleWidth = 0; 
         // m_LayoutElement.flexibleHeight = 0;
     }

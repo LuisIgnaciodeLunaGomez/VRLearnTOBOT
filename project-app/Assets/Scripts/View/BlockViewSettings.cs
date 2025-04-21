@@ -29,7 +29,7 @@ public class BlockViewSettings : ScriptableObject
         {
             if (m_instance == null)
             {
-                m_instance = Resources.Load<BlockViewSettings>("Settings/BlockViewSettings"); 
+                m_instance = Resources.Load<BlockViewSettings>("BlockViewSettings"); 
 
                 if (m_instance == null)
                 {
@@ -46,14 +46,19 @@ public class BlockViewSettings : ScriptableObject
  
     [Header("Layout & Spacing")]
     [Tooltip("Spacing between elements within a line (fields, inputs) and between lines (statement inputs). X=Horizontal, Y=Vertical.")]
-    public Vector2 ContentSpace = new Vector2(5f, 5f); 
+    public Vector2 ContentSpace = new Vector2(5f, 5f);
+
+    [Tooltip("Espaciado horizontal entre campos/elementos en la misma línea.")]
+    public float HorizontalElementSpacing = 5f;
+
+    [Tooltip("Espaciado vertical entre LineGroups (líneas visuales).")]
+    public float VerticalLineSpacing = 5f;
 
     [Tooltip("Minimum size for any block or visual element unit.")]
     public Vector2 MinUnitSize = new Vector2(20f, 20f);
 
     [Tooltip("Horizontal and vertical padding inside the block borders.")]
     public Vector2 InternalPadding = new Vector2(8f, 4f); // X = padding izq/der, Y = padding arr/abj
-
 
     [Header("Connection Shapes")]
     [Tooltip("Width of the connection notch/tab.")]
@@ -65,14 +70,12 @@ public class BlockViewSettings : ScriptableObject
     [Tooltip("Defines the rectangle for the NextStatement connection point relative to its parent block's layout origin (often top-left). Used for positioning.")]
     public Rect StatementConnectPointRect = new Rect(15f, 0f, 20f, 5f); 
 
-
     [Header("Connection Interaction")]
     [Tooltip("Visual size for hit detection of connections.")]
     public Vector2 ConnectionSize = new Vector2(12f, 12f);
 
     [Tooltip("Offset to bump blocks away upon disconnection.")]
     public Vector2 BumpAwayOffset = new Vector2(10f, 10f);
-
 
     [Header("Rendering & Prefabs")]
     [Tooltip("Prefab used to visually highlight a potential connection.")]
@@ -82,8 +85,7 @@ public class BlockViewSettings : ScriptableObject
     public float BlockCornerRadius = 5f;
 
     [Tooltip("Maximum distance (in workspace units/pixels) to search for a compatible connection when dragging a block.")]
-    public float ConnectSearchRange = 50f; //
-    
+    public float ConnectSearchRange = 50f; 
     private void OnEnable()
     {
    
@@ -129,7 +131,7 @@ public class BlockViewSettings : ScriptableObject
     [SerializeField] public Color DefaultFieldColor = Color.black; 
 
     [Tooltip("Default font size for text fields and labels.")]
-    [SerializeField] public int DefaultFontSize = 14; 
+    [SerializeField] public int DefaultFontSize = 36; 
 
     [Tooltip("Default color for text INSIDE editable input fields.")]
     [SerializeField] public Color EditableFieldColor = new Color(0.1f, 0.1f, 0.1f, 1f); 
@@ -145,23 +147,6 @@ public class BlockViewSettings : ScriptableObject
 
     [Tooltip("Ancho visual asignado para la flecha/botón del desplegable en campos de variable.")]
     [SerializeField] public float DropdownArrowWidth = 18f; 
-
-    [SerializeField] public GameObject PrefabRoot;
-    [SerializeField] public GameObject PrefabRootOutput;
-    [SerializeField] public GameObject PrefabRootPrev;
-    [SerializeField] public GameObject PrefabRootNext;
-    [SerializeField] public GameObject PrefabRootPrevNext;
-    [SerializeField] public GameObject PrefabInputValue;
-    [SerializeField] public GameObject PrefabInputValueSlot;
-    [SerializeField] public GameObject PrefabInputStatement;
-    [SerializeField] public GameObject PrefabFieldLabel;
-    [SerializeField] public GameObject PrefabFieldInput;
-    [SerializeField] public GameObject PrefabFieldImage;
-    [SerializeField] public GameObject PrefabFieldButton;
-    [SerializeField] public GameObject PrefabFieldVariable;
-    [SerializeField] public GameObject PrefabFieldCheckbox;
-    [SerializeField] public GameObject PrefabBtnCreateVar;
-    [SerializeField] public GameObject PrefabStatusLight;
 
     public float ContentHeight
     {

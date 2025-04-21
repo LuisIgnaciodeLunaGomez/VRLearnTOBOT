@@ -130,13 +130,13 @@ public class FieldInputView : FieldView
 
     protected override void OnValueChanged(string newValue)
     {
-        throw new System.NotImplementedException();
+       // throw new System.NotImplementedException();
     }
 
-    protected override void RegisterInputListeners()
+   /* protected override void RegisterInputListeners()
     {
         throw new System.NotImplementedException();
-    }
+    }*/
 
     public void SetDisplayText(string text)
     {
@@ -153,5 +153,10 @@ public class FieldInputView : FieldView
         
         // m_InputField.ForceLabelUpdate(); 
         // QueueForceLayoutUpdate(); 
+    }
+
+    protected override void RegisterInputListeners()
+    {
+       // throw new System.NotImplementedException();
     }
 }//Fin clase FielInputView

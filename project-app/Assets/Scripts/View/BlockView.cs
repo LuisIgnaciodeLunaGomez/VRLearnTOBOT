@@ -150,8 +150,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         Debug.Log($"BlockView ({BlockType}): BindModel completed fully.");
 
     }
-   
-    
+  
     public void NotifyLayoutDirty()
     {
         if (!m_LayoutIsDirty) 
@@ -315,16 +314,22 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         });
     }
 
-    
-    
-    
     public void BuildLayout()
     {
-        BaseView startView = this.GetLineGroup(0).GetTopmostChild();
-        startView.UpdateLayout(startView.HeaderXY);
-    }
+        if (mBlock == null || !m_LayoutIsDirty) return;
 
-    
+        Debug.Log($"BlockView ({BlockType}): ---> Building Layout <---", this);
+
+        if (gameObject.activeInHierarchy)
+
+        {
+            ManualLayoutRecursive(this.XY);
+            
+        }
+        m_LayoutIsDirty = false;
+        //BaseView startView = this.GetLineGroup(0).GetTopmostChild();
+       // startView.UpdateLayout(startView.HeaderXY);
+    }
    
     public void AddBgImage(Image image)
     {
@@ -356,7 +361,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             );
         }
     }
-
    
     public void SetOrphan()
     {
@@ -379,7 +383,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         }
         else
         {
-            eventData.pointerDrag = null; // No permitir drag si está en toolbox o no es movible
+            eventData.pointerDrag = null; // No permitiremos drag si está en toolbox o no es movible
         }
         
     }
@@ -396,11 +400,8 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     {
         if (!InToolbox) // Delegar si NO está en el toolbox
             BlockDragController.Instance?.HandleEndDrag(this, eventData);
-
         
     }
-
-
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -409,28 +410,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             BlocklyUI.WorkspaceView.CloneBlockView(this, XYInCodingArea + BlockViewSettings.Get().BumpAwayOffset);*/
     }
 
-    #endregion
-
-    #region Block State Update
-
-    protected void OnBlockUpdated(UpdateStates updateState)
-    {
-        switch (updateState)
-        {
-            case UpdateStates.Inputs:
-                {
-                    BlockViewBuilder.BuildInputViews(mBlock, this);
-
-                    BuildLayout();
-
-                    this.OnXYUpdated();
-                    this.ChangeBgColor(m_BgImages[0].color);
-
-                    break;
-                }
-        }
-    }
-  
     #endregion
 
     #region Child View Getter
@@ -696,7 +675,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 break;
 
             case BlockUpdateType.Structure_Inputs:
-                BlockViewBuilder.BuildInputViews(mBlock, this); 
+              //  BlockViewBuilder.BuildInputViews(mBlock, this); 
                 MarkDirty(); 
                 break;
             case BlockUpdateType.Structure_Connections:

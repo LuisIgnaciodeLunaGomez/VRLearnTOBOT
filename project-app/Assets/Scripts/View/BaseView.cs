@@ -124,7 +124,7 @@ public abstract class BaseView : MonoBehaviour
             // Si cambió, notificar
 
             if (changed)
-                OnSizeUpdated(); // El handler debe marcar como sucio si el cambio afecta layout
+                OnSizeUpdated(); // El handler debe marcar como sucio si el cambio afecta al layout
         }
     }
 
@@ -144,7 +144,7 @@ public abstract class BaseView : MonoBehaviour
             if (this is BlockView && BlockViewSettings.Instance != null)
             {
                 // Para BlockView, los hijos empiezan después del padding superior e izquierdo
-                return new Vector2(BlockViewSettings.Instance.InternalPadding.left, -BlockViewSettings.Instance.InternalPadding.top);
+                return new Vector2(BlockViewSettings.Instance.InternalPadding.x, -BlockViewSettings.Instance.InternalPadding.y);
             }
             return Vector2.zero; // Otros tipos no tienen padding interno por defecto
         }
@@ -163,7 +163,7 @@ public abstract class BaseView : MonoBehaviour
     /// </summary>
     protected internal virtual void OnXYUpdated()
     {
-        // Los hijos (como ConnectionView) necesitan saber que el padre se movió para actualizar, su posición en el ConnectionDB.
+        // REVISAR si los hijos (como ConnectionView) necesitan saber que el padre se movió para actualizar, su posición en el ConnectionDB.
         //foreach(var child in ChildViews.Where(c => c != null)) child.OnXYUpdated(); 
     }
 
@@ -206,19 +206,18 @@ public abstract class BaseView : MonoBehaviour
             {
                 BaseView child = activeChildren[i];
 
-                // Llamamos a UpdateLayout del hijo - El hijo hará lo mismo.
-                // startXY es la posición actual acumulada.
+                // Llamamos a UpdateLayout del hijo - El hijo hará lo mismo. StartXY es la posición actual acumulada.
                 child.UpdateLayout(currentChildLayoutStart); // Lanza el layout del hijo
 
                 // Calculamos la posición de inicio para el *siguiente* hermano
-                if (child.Type != ViewType.LineGroup && child.Type != ViewType.Block) // Asumimos que estos inician una nueva línea, los demás son inline.
+                if (child.Type != ViewType.LineGroup && child.Type != ViewType.Block) 
                 {
                     // Elementos en la misma línea horizontal
-                    currentChildLayoutStart.x += child.Size.x + (BlockViewSettings.Instance?.HorizontalFieldSpacing ?? 0);
-                    accumulatedWidthInLine += child.Size.x + (BlockViewSettings.Instance?.HorizontalFieldSpacing ?? 0);
+                    currentChildLayoutStart.x += child.Size.x + (BlockViewSettings.Instance?.HorizontalElementSpacing ?? 0);
+                    accumulatedWidthInLine += child.Size.x + (BlockViewSettings.Instance?.HorizontalElementSpacing ?? 0);
                     maxItemHeightInLine = Mathf.Max(maxItemHeightInLine, child.Size.y);
                 }
-                else // El hijo  define una nueva "línea" visual verticalmente
+                else 
                 {
                     // El siguiente hermano empieza debajo de este hijo (LineGroup), reiniciando X.
                     currentChildLayoutStart.x = this.XY.x + this.ChildStartXY.x; // Reiniciar X
@@ -231,9 +230,7 @@ public abstract class BaseView : MonoBehaviour
         }
 
     }
-    // Jerarquía Visual Lógica (Gestión interna de links entre vistas) 
-
-
+   
     public void AddChild(BaseView childView, int index = -1)
     {
         if (childView == null) return;
@@ -255,7 +252,7 @@ public abstract class BaseView : MonoBehaviour
         if (prevSibling != null) prevSibling.m_NextView = childView;
         if (nextSibling != null) nextSibling.m_PreviousView = childView;
 
-        MarkDirty(); // Añadir a un hijo puede requerir hacer un re-layout del padre
+        MarkDirty(); 
     }
 
     public void RemoveChild(BaseView childView)
@@ -277,10 +274,8 @@ public abstract class BaseView : MonoBehaviour
         childView.m_PreviousView = null;
         childView.m_NextView = null;
 
-        MarkDirty(); // Quitar a un hijo puede requerir hacer un re-layout del padre
+        MarkDirty(); 
     }
-
-    // Sistema Dirty para Layout 
 
     // Marca la vista y propaga hacia arriba para que el BlockView se recalcule en LateUpdate.
     public virtual void MarkDirty()
@@ -319,8 +314,6 @@ public abstract class BaseView : MonoBehaviour
         m_NextView = null;
         if (m_ChildViews != null) m_ChildViews.Clear(); // Limpia la lista de referencias
     }
-
-    // Utilidades de Búsqueda 
 
     // Buscamos el BlockView ancestro 
     protected BlockView FindAncestorBlockView()

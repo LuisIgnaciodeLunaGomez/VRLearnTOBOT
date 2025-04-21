@@ -330,7 +330,7 @@ public class ConnectionView : BaseView
 
         if (m_TargetBlockView != null)
         {
-            m_SourceBlockView.AddChildView(m_TargetBlockView);
+            m_SourceBlockView.AddChild(m_TargetBlockView);
             // m_TargetBlockView.XY = this.ChildStartXY; 
             m_SourceBlockView.UpdateLayout(m_SourceBlockView.XY); 
         }
@@ -342,7 +342,7 @@ public class ConnectionView : BaseView
     protected virtual void OnDetached()
     {
         if (m_TargetBlockView != null)
-        {       m_SourceBlockView.RemoveChildView(m_TargetBlockView);
+        {       m_SourceBlockView.RemoveChild(m_TargetBlockView);
 
                   m_TargetBlockView.SetOrphan();
 

@@ -654,7 +654,7 @@ public class BlockListView : MonoBehaviour
     /// Muestra/oculta la papelera visualmente.
     /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
     /// </summary>
-    public bool CheckBin(BlockView blockView) 
+    /*public bool CheckBin(BlockView blockView) 
     {
         if (!m_IsInitialized || m_WorkspaceView == null || m_BinArea == null) return false;
         if (blockView == null || blockView.InToolbox || !BlockDragController.Instance.IsDraggingBlock(blockView)) return false; 
@@ -670,7 +670,7 @@ public class BlockListView : MonoBehaviour
         if (m_BinArea.activeSelf != contains) m_BinArea.SetActive(contains); // Mostrar/ocultar visualmente
 
         return contains;
-    }
+    }*/
 
     /// <summary>
     /// Llamado al finalizar un drag (por BlockDragController) para completar la acción de la papelera.
@@ -678,7 +678,7 @@ public class BlockListView : MonoBehaviour
     /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
 
     /// </summary>
-    public void FinishCheckBin(BlockView blockView) 
+    /*public void FinishCheckBin(BlockView blockView) 
     {
         if (!m_IsInitialized || m_BinArea == null || blockView == null) return;
 
@@ -690,7 +690,7 @@ public class BlockListView : MonoBehaviour
             Debug.Log($"BlockListView: Block {blockView.BlockType} ({blockView.Block?.ID}) dropped in Bin. Requesting delete.", this);
             WorkspaceController.Instance?.RequestDeleteBlock(blockView.Block);
         }
-    }
+    }*/
 
     //  Limpieza y Utilidades 
     public void ClearBlockTemplates()
