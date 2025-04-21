@@ -166,7 +166,8 @@ public class WorkspaceController : MonoBehaviour
 
         Debug.Log($"WorkspaceController: Requesting Clone of {templateModelSource.Type}");
 
-        BlockModel clonedModel = templateModelSource.Clone();
+        //BlockModel clonedModel = templateModelSource.Clone();
+        BlockModel clonedModel = BlockFactory.Instance.CreateBlock(m_WorkspaceModel, templateModelSource.Type, Utilidades.GenUid());
         clonedModel.XY = initialPosition; 
 
         if (clonedModel != null)

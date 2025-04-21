@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 public class Define
 {
-
+    
     public static EConnection OppositeConnection(EConnection connectionType)
     {
         switch (connectionType)

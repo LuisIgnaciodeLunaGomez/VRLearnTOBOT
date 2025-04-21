@@ -14,22 +14,36 @@
  * Descripción: 
  */
 
+using Newtonsoft.Json.Linq;
 using UnityEngine.Diagnostics;
 
 
 public class FieldTextInputModel : FieldModel
 {
-    /*[FieldCreator(FieldType = "field_input")]
+    [FieldCreator(FieldType = "field_input")]
     private static FieldTextInputModel CreateFromJson(JObject json)
     {
-        string fieldName = json["name"].IsString() ? json["name"].ToString() : "FIELDNAME_DEFAULT";
-        var text = json["text"].IsString() ? Utils.ReplaceMessageReferences(json["text"].ToString()) : "";
+        string fieldName = "FIELDNAME_DEFAULT";
+        if (json.TryGetValue("name", out JToken nameToken) && nameToken != null && nameToken.Type == JTokenType.String)
+        {
+            // Si es un String, conviértelo a string C#
+            fieldName = nameToken.ToString();
+        }
+
+        string text = "";
+        
+        if (json.TryGetValue("text", out JToken textToken) && textToken != null && textToken.Type == JTokenType.String)
+        {
+            
+            text = textToken.ToString();
+          
+        }
         return new FieldTextInputModel(fieldName, text);
     }
 
-    /// <summary>
-    /// Empty constructor for inheritance use
-    /// </summary>
+        /// <summary>
+        /// Empty constructor for inheritance use
+        /// </summary>
     protected FieldTextInputModel(string fieldName) : base(fieldName) { }
 
     /// <summary>
@@ -55,8 +69,7 @@ public class FieldTextInputModel : FieldModel
         }
 
         base.SetValue(newValue);
-    }*/
-    public FieldTextInputModel(string fieldName) : base(fieldName)
-    {
     }
+
+
 } //Fin clase FieldTextInputModel

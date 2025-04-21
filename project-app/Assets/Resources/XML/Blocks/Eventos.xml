@@ -2,15 +2,20 @@
 <Blocks category="EVENTS" color="#FFBF00">
 	<!-- Color Naranja para Eventos -->
 
-	<Block type="event_whenflagclicked" spriteName="Hat_block_grey">>
+	<Block type="event_whenflagclicked" spriteName="Hat_block_grey">
 		<!-- Los bloques Hat (sombrero) NO tienen PreviousStatement -->
 		<NextStatement check="Statement"/>
 		<Tooltip>Runs the script below when the green flag is clicked.</Tooltip>
+		
+		<!-- Opcional -->
+		<HelpUrl>...</HelpUrl>
+		
+		
 		<Args>
 			<Arg type="field_label" value="al hacer click en"/>
-			<!-- La imagen es más un Field que un Input directo -->
-			<Arg type="field_image" name="FLAG_ICON" value="GreenFlag"/>
-			</Args>
+			 
+			<Arg type="field_image" name="FLAG_ICON" value="GreenFlag"/> 
+		</Args>
 		<!-- <SpriteName>Hat_block_grey</SpriteName> -->
 		<!-- Se podría definir esto basadonoso en si el bloque tiene PreviousStatement o no -->
 	</Block>

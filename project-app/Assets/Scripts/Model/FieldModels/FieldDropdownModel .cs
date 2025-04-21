@@ -262,7 +262,6 @@ public class FieldDropdownModel : FieldModel
         }
     }
 
-    
     private bool SetValueInternal(string newValue)
     {
         for (int i = 0; i < m_Options.Count; i++)
@@ -281,7 +280,6 @@ public class FieldDropdownModel : FieldModel
         return false; 
     }
 
-   
     public virtual void OnItemSelected(int selectedIndex) 
     {
          var options = GetOptions(); 
@@ -292,7 +290,6 @@ public class FieldDropdownModel : FieldModel
              Debug.LogWarning($"FieldDropdown '{Name}': Invalid item index selected: {selectedIndex}");
         }
     }
-
 
     public override void Dispose()
     {

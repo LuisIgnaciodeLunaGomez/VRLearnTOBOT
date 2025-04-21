@@ -23,7 +23,7 @@ public class ScratchBlocks
     public static void Init()
     {
         BlockResMgr.Get().LoadI18n();
-       // BlockResMgr.Get().LoadJsonDefinitions();
+        BlockDefinition.LoadAllDefinitionsFromXml("XML/Blocks");
     }
 
     

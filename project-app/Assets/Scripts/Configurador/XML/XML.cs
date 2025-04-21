@@ -293,6 +293,7 @@ using UnityEngine;
             var topBlock = DomToBlockHeadless(xmlBlock, workspace);
             return topBlock;
         }
+
         public static BlockModel DomToBlockHeadless(XmlNode xmlBlock, WorkSpaceModel workspace)
         {
             var prototypeName = xmlBlock.GetAttribute("type");

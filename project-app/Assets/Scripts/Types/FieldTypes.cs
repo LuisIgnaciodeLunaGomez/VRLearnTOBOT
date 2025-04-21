@@ -16,10 +16,14 @@
 
 public static class FieldTypes
 {
-    public const string Label = "field_label"; 
-    public const string Input = "field_input";
+    public const string Label = "field_label";
+    public const string TextInput = "field_input";
+    public const string Number = "field_number";
     public const string Dropdown = "field_dropdown";
-    // TODO otros tipos 
     public const string Variable = "field_variable";
+    public const string Checkbox = "field_checkbox";
+    public const string Image = "field_image";
+    // public const string Angle = "field_angle";
+    // public const string Colour = "field_colour";
 
 }

@@ -20,6 +20,7 @@ using UnityEngine;
 
 public partial class ArgumentDefinition
 {
+
     [Tooltip("Tipo del argumento: input_value, input_statement, input_dummy, o un tipo de field (field_label, field_input, etc.)")]
     public string type;
 
@@ -74,7 +75,15 @@ public partial class ArgumentDefinition
     [Tooltip("Obtiene el nombre del campo si IsField es true, sino null (es el mismo que 'name')")]
     public string FieldName => IsField ? name : null;
 
-    
+    [Header("Imagen (si type='field_image')")]
+    [Tooltip("Ancho deseado de la imagen (parseado del atributo 'width' en XML).")]
+    public float imageWidth = Define.FIELD_IMAGE_WIDTH_DEFAULT; 
+
+    [Tooltip("Alto deseado de la imagen (parseado del atributo 'height' en XML).")]
+    public float imageHeight = Define.FIELD_IMAGE_HEIGHT_DEFAULT; //
+
+    [Tooltip("Texto alternativo (parseado del atributo 'alt' en XML).")]
+    public string imageAltText;
     public ArgumentDefinition()
     {
         checks = new List<string>();
