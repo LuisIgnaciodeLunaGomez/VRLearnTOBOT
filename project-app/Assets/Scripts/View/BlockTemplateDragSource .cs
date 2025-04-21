@@ -22,7 +22,7 @@ public class BlockTemplateDragSource : MonoBehaviour, IBeginDragHandler, IDragHa
 [Tooltip("Asigna aquí la BlockView de la plantilla asociada a esta máscara")]
 public BlockView TemplateBlockView;
 [Tooltip("Asigna aquí el BaseToolbox (o tu equivalente) que contiene esta plantilla")]
-public BaseToolbox SourceToolbox; 
+public BlockListView SourceToolbox; 
 
 void Start()
 {

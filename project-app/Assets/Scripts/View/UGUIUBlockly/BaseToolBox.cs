@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public abstract class BaseToolbox : MonoBehaviour
@@ -28,6 +27,7 @@ public abstract class BaseToolbox : MonoBehaviour
     /// </summary>
     protected string mActiveCategory;
 
+    private BlockListView m_OwningBlockListView; //Referencia a instancia qeu lo va a usar
     /// <summary>
     /// root objects of block views for different category
     /// </summary>
@@ -42,6 +42,8 @@ public abstract class BaseToolbox : MonoBehaviour
     protected ToolboxConfig mConfig;
     protected Transform mHiddenCache;
     protected WorkSpaceView WorkspaceView => WorkSpaceView.Active;
+
+    private WorkSpaceModel m_WorkpaceModel => mWorkspace; //Referencia a la instancia del workspace
 
     protected abstract void Build();
     protected virtual void OnPickBlockView() { }
@@ -76,7 +78,7 @@ public abstract class BaseToolbox : MonoBehaviour
     /// <summary>
     /// Create a new block view in toolbox 
     /// </summary>
-    protected BlockView NewBlockView(string blockType, BaseToolbox sourceToolbox, Transform parent = null) 
+    protected BlockView NewBlockView(string blockType, BlockListView sourceToolbox, Transform parent = null) 
     {
         if (mWorkspace == null) return null;
         if (parent == null) parent = mHiddenCache; 
@@ -93,12 +95,12 @@ public abstract class BaseToolbox : MonoBehaviour
                 view.InToolbox = true;
                 view.BuildLayout();
                 
-                if (parent != mHiddenCache) 
+               /* if (parent != mHiddenCache) 
                 {
                     ToolboxBlockDragger dragger = view.GetComponent<ToolboxBlockDragger>();
                     if (dragger == null) dragger = view.gameObject.AddComponent<ToolboxBlockDragger>();
                     dragger.Init(this.WorkspaceView); 
-                }
+                }*/
 
             }
             return view;
@@ -109,130 +111,92 @@ public abstract class BaseToolbox : MonoBehaviour
     /// <summary>
     /// Create a new block view in toolbox 
     /// </summary>
-    protected BlockView NewBlockView(BlockModel block, BaseToolbox sourceToolbox, Transform parent, int index = -1)
+    protected BlockView NewBlockView(BlockModel block, BlockListView sourceToolbox, Transform parent, int index = -1)
     {
+        if (block == null)
+        {
+            Debug.LogError("BaseToolbox.NewBlockView(BlockModel): Received null block model.");
+            return null;
+        }
+        if (sourceToolbox == null)
+        {
+            Debug.LogError($"BaseToolbox.NewBlockView(BlockModel {block.Type}): Received null sourceToolbox (BlockListView).");
+            return null;
+        }
+        if (parent == null)
+        {
+            Debug.LogWarning($"BaseToolbox.NewBlockView(BlockModel {block.Type}): Parent transform is null. Using hidden cache if available.");
+            parent = mHiddenCache ?? sourceToolbox.transform; 
+        }
         mWorkspace.RemoveTopBlock(block);
 
         BlockView view = BlockViewFactory.CreateView(block, sourceToolbox);
+
+        if (view == null)
+        {
+            Debug.LogError($"BaseToolbox.NewBlockView(BlockModel): BlockViewFactory failed for block {block.Type}/{block.ID}");
+            
+            return null;
+        }
         view.InToolbox = true;
         view.ViewTransform.SetParent(parent, false);
 
         if (index >= 0)
             view.ViewTransform.SetSiblingIndex(index);
 
-        GameObject maskObj = new GameObject("ToolboxMask");
-        maskObj.transform.SetParent(view.ViewTransform, false);
-        RectTransform maskTrans = maskObj.AddComponent<RectTransform>();
-        maskTrans.sizeDelta = view.Size;
-        Image maskImage = maskObj.AddComponent<Image>();
-        maskImage.color = new Color(1, 1, 1, 0);
-        UIEventListener.Get(maskObj).onBeginDrag = data => PickBlockView(data, view);
-        if (!BlockViewSettings.Get().MaskedInToolbox)
-            maskTrans.SetAsFirstSibling();
+        GameObject dragTriggerGO = new GameObject($"DragTrigger_{block.Type}_{block.ID}");
+        dragTriggerGO.transform.SetParent(view.transform, false); // Hijo del BlockView
 
+        // Configuramos RectTransform del trigger para cubrir la vista
+        RectTransform triggerRect = dragTriggerGO.AddComponent<RectTransform>();
+        triggerRect.anchorMin = Vector2.zero;
+        triggerRect.anchorMax = Vector2.one;
+        triggerRect.offsetMin = Vector2.zero;
+        triggerRect.offsetMax = Vector2.zero;
+        triggerRect.localScale = Vector3.one;
+
+        // Añadimos imagen transparente para capturar eventos
+        Image triggerImage = dragTriggerGO.AddComponent<Image>();
+        triggerImage.color = Color.clear;
+        triggerImage.raycastTarget = true;
+
+        // Añadimos el componente que inicia el drag
+        BlockTemplateDragSource dragSource = Utilidades.GetOrAddComponent<BlockTemplateDragSource>(dragTriggerGO);
+        dragSource.TemplateBlockView = view;       //  vista plantilla
+        dragSource.SourceToolbox = sourceToolbox; //  BlockListView que lo contiene
+
+        // Forzamos cálculo inicial de layout 
+        if (view.gameObject.activeInHierarchy)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(view.ViewTransform);
+        }
         return view;
     }
+ 
 
-    protected void PickBlockView(PointerEventData data, BlockView blockView)
-    {
-        Vector3 localPos = WorkspaceView.CodingArea.InverseTransformPoint(blockView.ViewTransform.position);
-
-       
-        BlockView newBlockView = WorkspaceView.CloneBlockView(blockView,this, new Vector2(localPos.x, localPos.y));
-        newBlockView.OnBeginDrag(data);
-
-      
-        data.pointerDrag = newBlockView.gameObject;
-
-        OnPickBlockView();
-    }
-
-    /// <summary>
-    /// Get the category name for block view
-    /// </summary>
-    public string GetCategoryNameOfBlockView(BlockView view)
-    {
-        foreach (var category in mConfig.BlockCategoryList)
-        {
-            foreach (string type in category.BlockList)
-            {
-                if (string.Equals(view.BlockType, type))
-                {
-                    return category.CategoryName;
-                }
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Get the background color for block view
-    /// </summary>
-    public Color GetColorOfBlockView(BlockView view)
-    {
-        if (view == null)
-        {
-            Debug.LogWarning("GetColorOfBlockView called with null view.");
-            return Color.white; 
-        }
-       
-        return GetColorOfBlock(view.BlockType);
-    }
 
     #region Variables
 
     protected Dictionary<string, BlockView> mVariableGetterViews = new Dictionary<string, BlockView>();
     protected List<BlockView> mVariableHelperViews = new List<BlockView>();
 
-    protected virtual List<BlockView> BuildVariableBlocks()
-    {
-       
-        List<BlockView> createdViews = new List<BlockView>(); 
-        if (mWorkspace == null) return createdViews; 
-
-        var variables = mWorkspace.GetAllVariables(); 
-        if (variables.Count > 0)
-        {
-            
-            BlockView getBlockView = NewBlockView(Define.VARIABLE_GET_BLOCK_TYPE,this, mHiddenCache); 
-            if (getBlockView != null)
-            {
-                createdViews.Add(getBlockView);
-               
-            }
-            else { Debug.LogWarning("Failed to create base view for VARIABLE_GET_BLOCK_TYPE"); }
-
-            BlockView setBlockView = NewBlockView(Define.VARIABLE_SET_BLOCK_TYPE,this, mHiddenCache); 
-            if (setBlockView != null)
-            {
-                createdViews.Add(setBlockView);
-                // setBlockView.transform.SetParent(null);
-            }
-            else { Debug.LogWarning("Failed to create base view for VARIABLE_SET_BLOCK_TYPE"); }
-
-        }
-        else // No hay variables
-        {
-            // BuildButton(Define.CREATE_VARIABLE_TITLE);
-        }
-
-
-
-        return createdViews; 
-    }
-
-    protected void CreateVariableGetterView(string varName)
+    protected void CreateVariableGetterView(string varName, BlockListView specificListView)
     {
         if (mVariableGetterViews.ContainsKey(varName))
             return;
 
+        if (m_OwningBlockListView == null) // << Necesitamos el dueño
+        {
+            Debug.LogError("BaseToolbox: Owning BlockListView not set!");
+            return;
+        }
         GameObject parentObj;
         if (!mRootList.TryGetValue(Define.VARIABLE_CATEGORY_NAME, out parentObj))
             return;
 
         BlockModel block = mWorkspace.NewBlock(Define.VARIABLE_GET_BLOCK_TYPE);
         block.SetFieldValue("VAR", varName);
-        BlockView view = NewBlockView(block,this, parentObj.transform);
+        BlockView view = NewBlockView(block, specificListView, parentObj.transform);
         mVariableGetterViews[varName] = view;
     }
 
@@ -246,22 +210,33 @@ public abstract class BaseToolbox : MonoBehaviour
             view.Dispose();
         }
     }
-
-    protected void CreateVariableHelperViews()
+    
+    protected void CreateVariableHelperViews(BlockListView specificListView)
     {
         GameObject parentObj;
         if (!mRootList.TryGetValue(Define.VARIABLE_CATEGORY_NAME, out parentObj))
             return;
 
+       // if (m_WorkpaceModel == null || m_WorkpaceModel.VariableMap.Count == 0) return; //Chequeamos si hay variables
         string varName = mWorkspace.GetAllVariables()[0].Name;
         List<string> blockTypes = mConfig.GetBlockCategory(Define.VARIABLE_CATEGORY_NAME).BlockList;
+        if (blockTypes == null)
+        {
+            Debug.LogError($"CreateVariableHelperViews: Could not get BlockList for category '{Define.VARIABLE_CATEGORY_NAME}'.");
+            return;
+        }
         foreach (string blockType in blockTypes)
         {
             if (!blockType.Equals(Define.VARIABLE_GET_BLOCK_TYPE))
             {
                 BlockModel block = mWorkspace.NewBlock(blockType);
+                if (block == null)
+                {
+                    Debug.LogWarning($"CreateVariableHelperViews: Failed to create BlockModel for type '{blockType}'.");
+                    continue; 
+                }
                 block.SetFieldValue("VAR", varName);
-                BlockView view = NewBlockView(block,this, parentObj.transform);
+                BlockView view = NewBlockView(block, specificListView, parentObj.transform);
                 mVariableHelperViews.Add(view);
             }
         }
@@ -282,9 +257,8 @@ public abstract class BaseToolbox : MonoBehaviour
         {
             case VariableUpdateData.Create:
                 {
-                    if (mVariableHelperViews.Count == 0)
-                        CreateVariableHelperViews();
-                    CreateVariableGetterView(updateData.VarName);
+                   // if (mVariableHelperViews.Count == 0) CreateVariableHelperViews();
+                  //  CreateVariableGetterView(updateData.VarName);
                     break;
                 }
             case VariableUpdateData.Delete:
@@ -367,7 +341,7 @@ public abstract class BaseToolbox : MonoBehaviour
 
         return createdViews; 
     } 
-
+    /*
     protected void CreateProcedureCallerView(Procedure procedureInfo, bool hasReturn)
     {
         if (mProcedureCallerViews.ContainsKey(procedureInfo.Name))
@@ -382,7 +356,7 @@ public abstract class BaseToolbox : MonoBehaviour
         block.SetFieldValue("NAME", procedureInfo.Name);
         BlockView view = NewBlockView(block,this, parentObj.transform);
         mProcedureCallerViews[procedureInfo.Name] = view;
-    }
+    }*/
 
     protected void DeleteProcedureCallerView(Procedure procedureInfo)
     {
@@ -394,7 +368,7 @@ public abstract class BaseToolbox : MonoBehaviour
             view.Dispose();
         }
     }
-
+    /*
     public void OnProcedureUpdate(ProcedureUpdateData updateData)
     {
         switch (updateData.Type)
@@ -425,7 +399,7 @@ public abstract class BaseToolbox : MonoBehaviour
                 }
         }
     }
-
+    */
 
     #endregion
 
