@@ -763,5 +763,8 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
+
+  
+
 }//fin de la clase BlockView
 

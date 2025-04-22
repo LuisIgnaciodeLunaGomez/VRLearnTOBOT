@@ -178,7 +178,7 @@ public class AppController : MonoBehaviour
 
         m_blockDragController = dragController;
 
-        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController);
+        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController, m_uiManager.DragLayer);
         Debug.Log("AppController: BlockDragController initialized.");
 
         m_blockListView.InitializeToolbox(

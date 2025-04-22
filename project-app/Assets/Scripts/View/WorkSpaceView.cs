@@ -404,6 +404,23 @@ public class WorkSpaceView : MonoBehaviour
 
         return logicalPosition;
     }
+
+    public Vector2 LogicalXYToVisualPosition(Vector2 logicalXY, RectTransform parent)
+    {
+        
+        Vector2 visualPos = Vector2.zero; 
+        Debug.LogError("LogicalXYToVisualPosition conversion logic NOT IMPLEMENTED YET!"); 
+        return visualPos;
+    }
+
+
+    public Vector2 VisualAnchoredPositionToLogicalXY(Vector2 visualAnchoredPos, RectTransform parent)
+    {
+       
+        Vector2 logicalPos = Vector2.zero; 
+        Debug.LogError("VisualAnchoredPositionToLogicalXY conversion logic NOT IMPLEMENTED YET!"); 
+        return logicalPos; 
+    }
 } // Fin Clase WorkSpaceView
 
    

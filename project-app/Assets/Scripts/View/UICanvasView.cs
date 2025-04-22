@@ -38,12 +38,14 @@ public class UICanvasView : MonoBehaviour
     private ToolboxConfig m_ToolboxConfiguration;
     [SerializeField] private GameObject categoryButtonPrefab; // Prefab  botón de categoría - Cargar en Inspector
     private RectTransform m_CategoryButtonContainerRect; //Contenedor de botones
-    private RectTransform BlockListAreaRect;
-    private RectTransform WorkSpaceAreaRect;
+    //private RectTransform BlockListAreaRect;
+    //private RectTransform WorkSpaceAreaRect;
     private ScrollRect m_MiddlePanelScrollRect;
 
-    public GameObject CategoryButtonPrefab => categoryButtonPrefab; 
+    public GameObject CategoryButtonPrefab => categoryButtonPrefab;
+    private RectTransform m_RightPanelRect;
     public RectTransform CodingAreaPanelRect => m_RightPanelRect;
+    private RectTransform m_MiddlePanelRect;
     public RectTransform BlockListPanelRect => m_MiddlePanelRect;
     public RectTransform CategoryButtonContainerRect => m_CategoryButtonContainerRect;
     public ScrollRect MiddlePanelScrollRect => m_MiddlePanelScrollRect;
@@ -55,11 +57,11 @@ public class UICanvasView : MonoBehaviour
     public BlockListView Toolbox => m_Toolbox;
     private GameObject m_CanvasGO;
     private GameObject m_UiManagerView;
-    private RectTransform m_RightPanelRect;
-    private RectTransform m_MiddlePanelRect;
+    private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
+    public RectTransform DragLayer => m_DragLayerRect;
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
-
-    private bool m_isCoreComponentsReady = false;
+      
+    private bool m_isCoreComponentsReady = false;//<-----Bandera para indicar que los componentes principales están listos.
     public bool IsCoreComponentsReady() => m_isCoreComponentsReady; //
     //Dimensiones estimadas de la pantalla
     private const int m_screenWidth = 1200;
@@ -86,6 +88,8 @@ public class UICanvasView : MonoBehaviour
         else { Debug.LogError("SetupLeftPanel failed to return content panel GO!"); }
 
         CreateWorkspacePanels(); // Middle y Right Panels
+
+        CreateDragLayer(); // Panel para el arrastre de bloques
 
         if (m_RightPanelRect != null && m_MiddlePanelRect != null)
         {
@@ -143,6 +147,7 @@ public class UICanvasView : MonoBehaviour
         Debug.Log("<color=cyan>UICanvasView: Start - Waiting for AppController initialization...</color>");
         // Esperamos a que AppController esté listo y tenga los controladores
         yield return new WaitUntil(() => AppController.Instance != null && AppController.Instance.IsInitialized());
+        
         Debug.Log("<color=cyan>UICanvasView: AppController ready. Initializing Toolbox UI...</color>");
 
         //Obtenemos el CategoryController 
@@ -157,7 +162,9 @@ public class UICanvasView : MonoBehaviour
         if (m_Toolbox != null && m_WorkspaceModel != null && m_ToolboxConfiguration != null && m_WorkSpaceView != null && m_CategoryButtonContainerRect != null && m_MiddlePanelScrollRect != null && m_CategoryController == null /* Asegurar que no se inicialice dos veces */)
         {
             m_CategoryController = categoryControllerInstance; 
+
             Debug.Log("<color=yellow>UICanvasView: Calling InitializeToolbox on BlockListView...</color>");
+
             m_Toolbox.InitializeToolbox(
                 m_WorkspaceModel,
                 m_ToolboxConfiguration,
@@ -330,6 +337,40 @@ public class UICanvasView : MonoBehaviour
         img.color = color;
 
         return panel;
+    }
+
+    public void CreateDragLayer() {
+
+        if (m_CanvasGO == null) { Debug.LogError("Cannot create DragLayer, Canvas is null!"); return; }
+
+        Debug.Log("<color=yellow>UICanvasView: Creating Drag Layer Panel...</color>");
+
+        GameObject dragLayerGO = CreatePanel(
+            "DragLayerPanel",             // Nombre
+            m_CanvasGO.transform,         // Padre = Canvas principal
+            new Vector2(0.15f, 0f),       // Anchor Min: Igual que WorkArea (derecha del Left Panel, abajo)
+            new Vector2(1f, 0.90f),       // Anchor Max: Igual que WorkArea (derecha total, abajo del Top Panel)
+            Vector2.zero, Vector2.zero,   // Offsets: Estirar completamente a los anchors
+            new Vector2(0.5f, 0.5f),      // Pivot: Centro (estándar para capas)
+            Color.clear                   // Color: Totalmente transparente
+        );
+
+        // Configuración específica de la Drag Layer:
+        Image dragImage = dragLayerGO.GetComponent<Image>();
+        if (dragImage != null)
+        {
+            dragImage.raycastTarget = false; // IMPORTANTE: No debe bloquear clics a paneles inferiores cuando NADA se arrastra
+        }
+
+        // Cachear la referencia
+        m_DragLayerRect = dragLayerGO.GetComponent<RectTransform>();
+        if (m_DragLayerRect == null)
+        {
+            Debug.LogError("Failed to get RectTransform for DragLayerPanel!", dragLayerGO);
+        }
+
+        Debug.Log($"<color=green>UICanvasView: DragLayerPanel created. Rect: {m_DragLayerRect?.rect}</color>", dragLayerGO);
+
     }
 
     /** Añade un logo al panel indicado
