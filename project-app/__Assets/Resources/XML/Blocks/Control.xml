@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Blocks category="Control" color="#FFAB19">
+	<!-- Añadir definiciones de <Block> aquí -->
+	<!-- Elemento Raíz ÚNICO 
+	<Block type="control_wait">
+		<PreviousStatement/>
+		<NextStatement/>
+		<Args>
+			<Arg type="field_label" value="esperar"/>
+			<Arg type="input_value" name="DURATION">
+				<Check>Number</Check>
+				<Field type="field_number" name="DEFAULT_SECS" defaultValue="1"/>
+			</Arg>
+			<Arg type="field_label" value="segundos"/>
+		</Args>
+	</Block>
+	<Block type="control_repeat">
+		<PreviousStatement/>
+		<NextStatement/>
+		<Args>
+			<Arg type="field_label" value="repetir"/>
+			<Arg type="input_value" name="TIMES">
+				<Check>Number</Check>
+				<Field type="field_number" name="DEFAULT_TIMES" defaultValue="10"/>
+			</Arg>
+			<Arg type="field_label" value="veces"/>
+			<Arg type="input_statement" name="DO">
+				<Check>Statement</Check>
+			</Arg>
+		</Args>
+	</Block>-->
+	<!-- Otros bloques de Control irían aquí -->
+</Blocks>
+<!-- Cierre del Elemento Raíz -->

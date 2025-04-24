@@ -1,0 +1,154 @@
+0 FILE Milo
+0 Untitled Model
+0 Name:  Milo
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  46
+1 10 0 -8 20 1 0 0 0 1 0 0 0 1 3738.dat
+1 10 0 -8 -20 1 0 0 0 1 0 0 0 1 3738.dat
+0 STEP
+1 27 40 -16 0 0 0 1 0 1 0 -1 0 0 32059.dat
+0 STEP
+1 0 20 -24 10 1 0 0 0 1 0 0 0 1 32530.dat
+1 0 20 -24 -10 1 0 0 0 1 0 0 0 1 32530.dat
+0 STEP
+1 27 -80 -32 30 1 0 0 0 1 0 0 0 1 3702.dat
+0 STEP
+1 16 -120 0 0 1 0 0 0 1 0 0 0 1 uni?n
+0 STEP
+1 322 -20 -32 0 1 0 0 0 1 0 0 0 1 3003.dat
+0 STEP
+1 0 -60 -22 61.43 0 0 1 0 1 0 -1 0 0 3706.dat
+1 71 -60 -22.0028 1.43 1 0 0 0 1 0 0 0 1 59443.dat
+0 STEP
+1 27 -80 -32 -30 1 0 0 0 1 0 0 0 1 3702.dat
+0 STEP
+1 0 -60 -22 -66.9 0 0 -1 0 1 0 1 0 0 3706.dat
+1 71 -60 -22 -52.09 1 0 0 0 1 0 0 0 1 3713.dat
+0 STEP
+1 71 -60 -22 46.25 1 0 0 0 1 0 0 0 1 3713.dat
+0 STEP
+1 16 60 -16 60 0 0 1 0 1 0 -1 0 0 motor
+0 STEP
+0 STEP
+1 15 -40 0 10 1 0 0 0 1 0 0 0 1 60479.dat
+1 15 -40 0 -10 1 0 0 0 1 0 0 0 1 60479.dat
+0 STEP
+1 0 -140 8 0 1 0 0 0 1 0 0 0 1 2654.dat
+0 STEP
+1 16 60 24 0 1 0 0 0 1 0 0 0 1 placa
+0 STEP
+1 43 -60 -22 -67.4697 1 0 0 0 1 0 0 0 1 4185.dat
+1 43 -60 -22 63.7 1 0 0 0 1 0 0 0 1 4185.dat
+0 STEP
+1 16 -60 23.8975 -93.51 1 0 0 0 1 0 0 0 1 rueda
+0 STEP
+1 16 -60 23.8975 87.84 -1 0 0 0 1 0 0 0 -1 rueda
+0 STEP
+1 16 -340.5149 -174.406 -93.7052 -0.611755 -0.38952 -0.688498 -0.185007 0.916677 -0.354227 0.769108 -0.089323 -0.632846 cabeza
+0 STEP
+1 16 -236.7429 -117.5831 -38.9451 0.569285 0.77761 -0.266904 0.773196 -0.396052 0.495289 0.279434 -0.48833 -0.826711 cuello
+0 STEP
+1 7 -80 -104 0 0 0 1 0 1 0 -1 0 0 19071.dat
+0 NOFILE
+0 FILE Unión
+0 Unión
+0 Name:  Unión
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  4
+1 191 0 -8 20 1 0 0 0 1 0 0 0 1 3709b.dat
+1 191 0 -8 -20 1 0 0 0 1 0 0 0 1 3709b.dat
+0 STEP
+1 0 20 -32 0 1 0 0 0 1 0 0 0 1 3003.dat
+0 STEP
+1 43 -20 -32 0 -1 0 0 0 1 0 0 0 -1 92013.dat
+0 STEP
+0 NOFILE
+0 FILE Motor
+0 Motor
+0 Name:  Motor
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  3
+1 15 20 -56 0 0 0 1 0 1 0 -1 0 0 21980.dat
+0 STEP
+1 4 0 -30 0 1 0 0 0 1 0 0 0 1 32062.dat
+0 STEP
+1 15 -18.39 -30 0 0 0 1 0 1 0 -1 0 0 55982.dat
+0 STEP
+0 NOFILE
+0 FILE Placa
+0 Placa
+0 Name:  Placa
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  2
+1 10 0 -16 0 1 0 0 0 1 0 0 0 1 4032a.dat
+0 STEP
+1 0 0 -8 0 1 0 0 0 1 0 0 0 1 2654.dat
+0 STEP
+0 NOFILE
+0 FILE Rueda
+0 Rueda
+0 Name:  Rueda
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  2
+1 15 0 -45.8975 0 1 0 0 0 1 0 0 0 1 55982.dat
+0 STEP
+1 0 0 -45.8975 0 0 1 0 -1 0 0 0 0 1 56891.dat
+0 STEP
+0 NOFILE
+0 FILE Cabeza
+0 Cabeza
+0 Name:  Cabeza
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  11
+1 191 0 -8.0005 -18.1818 1 0 0 0 1 0 0 0 1 3709b.dat
+1 43 0 -32.0005 -18.1818 0 0 1 0 1 0 -1 0 0 92013.dat
+0 STEP
+1 15 -30 -32.0005 -8.1818 0 0 1 0 1 0 -1 0 0 87087.dat
+1 15 30 -32.0005 -8.1818 0 0 -1 0 1 0 1 0 0 87087.dat
+0 STEP
+1 15 20 -40.0005 -8.1818 -1 0 0 0 1 0 0 0 -1 44728.dat
+1 15 -20 -40.0005 -8.1818 -1 0 0 0 1 0 0 0 -1 44728.dat
+0 STEP
+1 15 48 -22.0005 -8.1818 0 -1 0 0 0 1 -1 0 0 73587p01.dat copy
+1 15 -48 -22.0005 -8.1818 0 1 0 0 0 1 1 0 0 73587p01.dat copy
+0 STEP
+1 322 30 -20.0005 13.8182 0 0 1 -1 0 0 0 -1 0 3069b.dat
+1 322 -30 -20.0005 13.8181 0 0 1 -1 0 0 0 -1 0 3069b.dat
+1 15 0 -20.0005 13.8182 1 0 0 0 0 1 0 -1 0 14769p01.dat
+0 STEP
+0 NOFILE
+0 FILE 73587p01.dat Copy
+0 Antenna Small Base with Black Lever (4592 / 4593)
+0 Name:  4592c02
+0 Author:  Magnus Forsberg [MagFors]
+0 FlexibleBrick:  73587p01.dat
+0 FlexibleBrickControlPointUnitLength -1
+1 16 0 0 0 1 0 0 0 1 0 0 0 1 4592.dat
+1 0 0 -2 0 1 0 0 0 0.573576 -0.819152 0 0.819152 0.573576 4593.dat
+0 NOFILE
+0 FILE Cuello
+0 Cuello
+0 Name:  Cuello
+0 Author: 
+0 CustomBrick
+0 FlexibleBrickControlPointUnitLength -1
+0 NumOfBricks:  3
+1 191 117.59 -12.75 0 0 -1 0 0 0 -1 1 0 0 32474.dat
+0 STEP
+1 0 19.36 -12.75 0 1 0 0 0 1 0 0 0 1 3737.dat
+0 STEP
+1 191 -79.95 -12.75 0 0 1 0 0 0 -1 -1 0 0 32474.dat
+0 STEP
+0 NOFILE

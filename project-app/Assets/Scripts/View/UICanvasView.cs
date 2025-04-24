@@ -269,7 +269,9 @@ public class UICanvasView : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
         CanvasScaler canvasScaler = m_CanvasGO.AddComponent<CanvasScaler>();
-        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;// ScaleWithScreenSize;
+        canvasScaler.scaleFactor = 1f;
+
         canvasScaler.referenceResolution = new Vector2(m_screenWidth, m_screenHeight);
         canvasScaler.matchWidthOrHeight = 1f;
 

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Blocks category="EVENTS" color="#FFBF00">
+	<!-- Color Naranja para Eventos -->
+
+	<Block type="event_whenflagclicked" spriteName="Hat_block_grey">
+		<!-- Los bloques Hat (sombrero) NO tienen PreviousStatement -->
+		<NextStatement check="Statement"/>
+		<Tooltip>Runs the script below when the green flag is clicked.</Tooltip>
+		
+		<!-- Opcional -->
+		<HelpUrl>...</HelpUrl>
+		
+		
+		<Args>
+			<Arg type="field_label" value="al hacer click en"/>
+			 
+			<Arg type="field_image" name="FLAG_ICON" value="GreenFlag"/> 
+		</Args>
+		<!-- <SpriteName>Hat_block_grey</SpriteName> -->
+		<!-- Se podría definir esto basadonoso en si el bloque tiene PreviousStatement o no -->
+	</Block>
+
+	<!-- Otros bloques de Events... -->
+	<!--
+	<Block type="event_whenkeypressed" spriteName="Hat_block_grey">>
+		<NextStatement check="Statement"/>
+		<Args>
+			<Arg type="field_label" value="al presionar tecla"/>
+			<Arg type="field_dropdown" name="KEY_OPTION" defaultValue="space">
+				<Options>
+					<Option display="espacio">space</Option>
+					<Option display="flecha arriba">up arrow</Option>
+					<Option display="flecha abajo">down arrow</Option>-->
+					<!-- otras  -->
+	<!--				</Options>
+			</Arg>
+		</Args>
+	</Block>
+-->
+</Blocks>

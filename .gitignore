@@ -38,3 +38,11 @@ project-app/Assembly-CSharp.csproj
 project-app/ProjectSettings/Packages/com.unity.muse.common/Settings.json
 project-app/Assembly-CSharp.csproj
 project-app/ProjectSettings/Packages/com.unity.muse.common/Settings.json
+/project-app/__Assets/Settings
+/project-app/__Assets/TextMesh Pro/Resources
+/project-app/__Assets/TextMesh Pro
+project-app/__Assets/App UI Settings.asset
+project-app/__Assets/App UI Settings.asset.meta
+project-app/ProjectSettings/EditorBuildSettings.asset
+project-app/ProjectSettings/Packages/com.unity.muse.common/Settings.json
+project-app/ProjectSettings/ShaderGraphSettings.asset

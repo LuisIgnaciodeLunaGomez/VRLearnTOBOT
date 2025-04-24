@@ -177,7 +177,6 @@ MonoBehaviour:
   - FlagIcon
   - stopFlag
   categoryButtonPrefab: {fileID: 7487428553154889496, guid: 06209eb2731f2c94caaf13b780e89f39, type: 3}
-  BlockViewPrefab: {fileID: 1047204425220112, guid: f1adb66dc990b4a1dbd299062b2a0ec9, type: 3}
 --- !u!114 &524822159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -299,6 +298,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7128415968506536020, guid: 6ec370f8c7de141499582b667951b118, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7128415968506536020, guid: 6ec370f8c7de141499582b667951b118, type: 3}
+      propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7466824153428478113, guid: 6ec370f8c7de141499582b667951b118, type: 3}

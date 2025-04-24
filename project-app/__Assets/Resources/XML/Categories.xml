@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Categories>
+	<Category>
+		<Name>MOTION</Name>
+		<InternalName>MOTION</InternalName>
+		<Color>#4C97FF</Color>
+	</Category>
+	<Category>
+		<Name>LOOKS</Name>
+		<InternalName>LOOKS</InternalName>
+		<Color>#9966FF</Color>
+	</Category>
+	<Category>
+		<Name>SOUND</Name>
+		<InternalName>SOUND</InternalName>
+		<Color>#CF63CF</Color>
+	</Category>
+	<Category>
+		<Name>EVENTS</Name>
+		<InternalName>EVENTS</InternalName>
+		<Color>#FFBF00</Color>
+	</Category>
+	<Category>
+		<Name>CONTROL</Name>
+		<InternalName>CONTROL</InternalName>
+		<Color>#FFAB19</Color>
+	</Category>
+	<Category>
+		<Name>SENSING</Name>
+		<InternalName>SENSING</InternalName>
+		<Color>#5CB1D6</Color>
+	</Category>
+	<Category>
+		<Name>OPERATORS</Name>
+		<InternalName>OPERATORS</InternalName>
+		<Color>#59C059</Color>
+	</Category>
+	<Category>
+		<Name>VARIABLES</Name>
+		<InternalName>VARIABLES</InternalName>
+		<Color>#FF8C1A</Color>
+	</Category>
+	<Category>
+		<Name>MY_BLOCKS</Name>
+		<InternalName>MY_BLOCKS</InternalName>
+		<Color>#FF6680</Color>
+	</Category>
+</Categories>
+

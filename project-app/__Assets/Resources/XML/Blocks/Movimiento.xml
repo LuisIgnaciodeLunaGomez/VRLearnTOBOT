@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Blocks category="MOTION" color="#4C97FF">
+	<!-- Atributos globales para la categoría-->
+	<Block type="motion_movesteps" spriteName="Stack_block_grey">>
+		<!-- Tipo único del bloque -->
+		<!-- Conexiones Principales -->
+		<PreviousStatement check="Statement"/>
+			<NextStatement check="Statement"/>
+		<!-- Se permite cualquier statement abajo -->
+		<!-- <Output check="Number"/> -->
+		<!-- Se descomentaría si este bloque devolviera un valor -->
+
+		<!-- Atributos del Bloque -->
+		<Colour>%{MOTION_HUE}</Colour>
+		<!-- Opcional: se puedes usar Hue o #RRGGBB -->
+		<Tooltip>Moves the sprite forward...</Tooltip>
+		<!-- Opcional -->
+		<HelpUrl>...</HelpUrl>
+		<!-- Opcional -->
+		<InputsInline>false</InputsInline>
+		<!-- Opcional: Predeterminado a false si no existe -->
+
+		<!-- Definición de la apariencia y lógica interna -->
+		
+		<Args>
+			<Arg type="field_label" value="mover"/>
+			<Arg type="input_value" name="STEPS">
+				<!-- Input de Valor -->
+				<Check>Number</Check>
+				<!-- Tipo(s) permitido(s) -->
+				<DefaultValue>10</DefaultValue>
+				<!-- Valor para el bloque sombra/inicial -->
+				<Field type="field_number" name="NUM_FIELD"/>
+				<!-- Campo interno si el input está vacío (shadow) permite que se le inyecten otros bloques -->
+				<!--  -->
+			</Arg>
+			<Arg type="field_label" value="pasos"/>
+		</Args>
+
+		<!-- Añadir SpriteName si es diferente al default/categoría -->
+		<!-- <SpriteName>specific_stack_sprite</SpriteName> -->
+		<!-- añadir Mutator o Extensions -->
+		<!-- <Mutator name="if_else_mutator"/> -->
+	</Block>
+<!--Block type="motion_goto" spriteName="Stack_block_grey">>
+		<PreviousStatement check="Statement"/>
+		<NextStatement check="Statement"/>
+		<Colour>%{MOTION_HUE}</Colour>
+		<InputsInline>true</InputsInline>
+		
+		<Args>
+			<Arg type="field_label" value="ir a x:"/>
+			<Arg type="input_value" name="X">
+				<Check>Number</Check>
+				<DefaultValue>0</DefaultValue>
+				<Field type="field_number" name="DEFAULT_X"/>
+			</Arg>
+			<Arg type="field_label" value="y:"/>
+			<Arg type="input_value" name="Y">
+				<Check>Number</Check>
+				<DefaultValue>0</DefaultValue>
+				<Field type="field_number" name="DEFAULT_Y"/>
+			</Arg>
+		</Args>
+	</Block>-->
+
+	<!-- Bloque con Salida (Output) -->
+	<!--<Block type="math_number" spriteName="Stack_block_grey">>
+		<Output check="Number"/>-->
+		<!-- Devuelve un Número -->
+	<!--	<Colour>%{MATH_HUE}</Colour>
+		<Args>
+			<Arg type="field_number" name="NUM" defaultValue="0"/>
+		</Args>
+	</Block>-->
+
+	<!-- Bloque con Dropdown -->
+	<!--<Block type="logic_boolean" spriteName="Stack_block_grey">>
+		<Output check="Boolean"/>
+		<Colour>%{LOGIC_HUE}</Colour>
+		<Args>
+			<Arg type="field_dropdown" name="BOOL" defaultValue="TRUE">
+				<Options>
+					<Option display="true">TRUE</Option>
+					<Option display="false">FALSE</Option>
+				</Options>
+			</Arg>
+		</Args>
+	</Block>-->
+
+	<!-- Bloque con Input de Statement -->
+	<!--<Block type="controls_repeat" spriteName="Stack_block_grey">
+		<PreviousStatement check="Statement"/>
+		<NextStatement check="Statement"/>
+		<Colour>%{LOOPS_HUE}</Colour>
+		<Args>
+			<Arg type="field_label" value="repetir"/>
+			<Arg type="input_value" name="TIMES">
+				<Check>Number</Check>
+				<DefaultValue>10</DefaultValue>
+				<Field type="field_number" name="DEFAULT_TIMES"/>
+			</Arg>
+			<Arg type="field_label" value="veces"/>
+			<Arg type="input_statement" name="DO">-->
+				<!-- Input de Statement -->
+	<!--	<Check>Statement</Check>-->
+				<!-- Tipos permitidos dentro -->
+	<!--		</Arg>
+		</Args>
+	</Block>-->
+
+
+</Blocks>
