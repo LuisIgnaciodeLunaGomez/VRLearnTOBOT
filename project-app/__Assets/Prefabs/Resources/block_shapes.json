@@ -1,0 +1,58 @@
+{
+    "blocks": {
+        "Boolean_block_grey": {
+            "width": 391,
+            "height": 125,
+            "rect_x": 330,
+            "rect_y": 64,
+            "rect_width": 61,
+            "rect_height": 61,
+            "spriteName": "Boolean_block_grey"
+        },
+        "Cap_block_grey": {
+            "width": 316,
+            "height": 150,
+            "rect_x": 43,
+            "rect_y": 0,
+            "rect_width": 101,
+            "rect_height": 25,
+            "spriteName": "C_block_grey"
+        },
+        "C_block_grey": {
+            "width": 500,
+            "height": 350,
+            "rect_x": 118,
+            "rect_y": 318,
+            "rect_width": 382,
+            "rect_height": 32,
+            "spriteName": "C_block_grey"
+        },
+        "Hat_block_grey": {
+            "width": 338,
+            "height": 227,
+            "rect_x": 118,
+            "rect_y": 195,
+            "rect_width": 220,
+            "rect_height": 32,
+            "spriteName": "Hat_block_grey"
+        },
+        "Reporter_block_grey": {
+            "width": 341,
+            "height": 125,
+            "rect_x": 305,
+            "rect_y": 74,
+            "rect_width": 36,
+            "rect_height": 46,
+            "spriteName": "C_block_grey"
+        },
+        "Stack_block_grey": {
+            "width": 316,
+            "height": 175,
+            "rect_x": 120,
+            "rect_y": 143,
+            "rect_width": 196,
+            "rect_height": 31,
+            "spriteName": "Stack_block_grey"
+        }
+    }
+}

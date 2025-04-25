@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25e0c2162fdf4072833530d6c74a579, type: 3}
+  m_Name: BlockResSettings
+  m_EditorClassIdentifier: 
+  m_LoadType: 1
+  m_I18nFiles:
+  - IndexName: en
+    ResName: en
+    TextFile: {fileID: 4900000, guid: fb2b240724f9d41aabcf2ca6e37be0b1, type: 3}
+    Selected: 0
+  - IndexName: es
+    ResName: es
+    TextFile: {fileID: 4900000, guid: 6f6fa0bf8282e27449dd6ee23a2d98fa, type: 3}
+    Selected: 1
+  m_BlockJsonFiles:
+  - IndexName: 
+    ResName: 
+    TextFile: {fileID: 0}
+  m_ToolboxFiles:
+  - IndexName: ToolBox Default
+    ResName: 
+    TextFile: {fileID: 4900000, guid: ebe24642ec8df2b4095ddbd1699d7e20, type: 3}
+    Selected: 1
+  m_BlockViewPrefabPath: Assets/Resources/Prefabs/Blocks
+  m_BlockViewPrefabs:
+  - IndexName: motion_movesteps
+    ResName: 
+    Prefab: {fileID: 1047204425220112, guid: f1adb66dc990b4a1dbd299062b2a0ec9, type: 3}
+  - IndexName: event_whenflagclicked
+    ResName: 
+    Prefab: {fileID: 1047204425220112, guid: c51b9e37dffd220498ec9a8d5b46e98d, type: 3}
+  m_DialogPrefabs: []
