@@ -74,18 +74,24 @@ public class BlockViewSettings : ScriptableObject
     [Tooltip("Visual size for hit detection of connections.")]
     public Vector2 ConnectionSize = new Vector2(12f, 12f);
 
-    [Tooltip("Offset to bump blocks away upon disconnection.")]
-    public Vector2 BumpAwayOffset = new Vector2(10f, 10f);
-
     [Header("Rendering & Prefabs")]
     [Tooltip("Prefab used to visually highlight a potential connection.")]
     public GameObject PrefabConnectHighlight;
 
+    [Header("Connection Interaction")] // Quizás ya tengas esta sección
+    [Tooltip("Offset to bump blocks away upon disconnection.")]
+    public Vector2 BumpAwayOffset = new Vector2(10f, 10f);
+
     [Tooltip("Radius for the rounded corners when drawing blocks.")]
     public float BlockCornerRadius = 5f;
 
+    [Tooltip("Max distance in Workspace logical units for a valid snap after a connection is deemed compatible.")]
+    [SerializeField] public float ConnectionSnapDistance = 40f;
+
     [Tooltip("Maximum distance (in workspace units/pixels) to search for a compatible connection when dragging a block.")]
-    public float ConnectSearchRange = 50f; 
+    public float ConnectionSearchRange = 50f; 
+
+
     private void OnEnable()
     {
    

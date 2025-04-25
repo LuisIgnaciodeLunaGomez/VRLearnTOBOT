@@ -729,7 +729,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         }
     }
    
-
     public static void EditorInitialDisplayUpdate(FieldView fieldView, FieldModel fieldModel, string errorText = null)
     {
         if (fieldView == null || fieldModel == null) return;
