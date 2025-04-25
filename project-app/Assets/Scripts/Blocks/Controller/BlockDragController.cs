@@ -504,12 +504,12 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         // Calculamos la posición local en DragLayer
         Vector2 localPointerPosition;
         RectTransform parentRect = m_DragLayerRect; //<----Padre es el Drag Layer cuando inicio el movimiento en la toolbox
-        if (parentRect != null)
+      /*  if (parentRect != null)
         {
             Debug.LogError($"HandleDrag: Drag parent ({parentRect?.name}) or camera ({m_CachedCamera?.name}) is null!");
             ResetDragState(eventData);
             return;
-        }
+        }*/
 
       //  if (parentRect == null) parentRect = m_CodingAreaRect; 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -545,7 +545,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 Debug.LogWarning("HandleDrag: Failed to convert to CodingArea local space.");
             }
 
-            blockView.OnXYUpdated(); // Fuerzo la actualización de la posición lógica en el modelo antes de que se ponga a buscar.
+           // blockView.OnXYUpdated(); // Fuerzo la actualización de la posición lógica en el modelo antes de que se ponga a buscar.
 
         }
         else
@@ -687,6 +687,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
          {
              deleted = true; 
              Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
+            m_DraggingBlockView.Dispose();
+            m_DraggingBlockModel.Dispose();
+
              HandleInvalidDrop(); 
          }
 
