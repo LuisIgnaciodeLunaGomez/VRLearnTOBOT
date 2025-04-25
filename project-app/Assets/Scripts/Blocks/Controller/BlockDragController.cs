@@ -30,7 +30,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     //Referncia a controladores
     private WorkspaceController m_workspaceController;
-    private BlockConnectionController m_connectionController;
+    private BlockConnectionController m_connectionController; //Inyecto el controlador
 
 
     private BlockView m_DraggingBlockView = null; //Clon o bloque arrastrado A

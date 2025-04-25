@@ -15,7 +15,7 @@
  * 
  * TODO: REVISAR si la disposición del drag and drop generado guarda las conexiones en la base de datos ya que se trabaja con dos paneles y practicamente estamos en el DragLayer
  * aunque si deposito el bloque en el CodingAreaPanel tendrá otra localización por lo que habrá que revisar que se guardan dos conexiones pero claramente identificada para que no se
- * mezclen entre los paneles.
+ * mezclen entre los paneles. Hay que revisar como se cogen las conexiones y almacenar cada conexíón en la base de datos y depurarlas para verlas en los logs panel y location.
  */
 
 using System;
