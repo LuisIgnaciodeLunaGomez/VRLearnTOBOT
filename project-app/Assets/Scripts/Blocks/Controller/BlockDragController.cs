@@ -9,9 +9,9 @@
  * 
  * Fecha: 28/03/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
- * Descripción:
+ * Descripción: Controlador de arrastre de bloques en el espacio de trabajo.
  */
 
 using System;
@@ -47,8 +47,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     //Depuración
     private RectTransform m_RootCanvasRect;
-    private BlockView m_DebugCloneBView = null; //clon B
-
+   
     private float dragThreshold = 5f; //Umbral para el inicio del arrastre
     private Vector2 m_PointerDownPosition;
 
@@ -85,7 +84,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         {
             m_CodingAreaRect = m_WorkspaceView.CodingArea;
             Debug.Log($"BlockDragController Initialized: m_CodingAreaRect is {(m_CodingAreaRect == null ? "NULL" : m_CodingAreaRect.name)}", this);
-            //   m_RootCanvas = m_WorkspaceView.RootCanvas;     
+   
             m_CachedCamera = m_WorkspaceView.EventCamera;
             Canvas rootCanvas = m_WorkspaceView.GetComponentInParent<Canvas>();
             if (rootCanvas != null && rootCanvas.isRootCanvas)
@@ -97,7 +96,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             else
             {
                 Debug.LogError("BlockDragController: Could not find root Canvas!", this);
-                // Podrías intentar buscarlo de otra forma si falla
+   
             }
 
         }
@@ -116,10 +115,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             if (cg != null) cg.blocksRaycasts = true; 
         }
 
-        // Limpiar Clon B ANTES de limpiar la referencia principal
-        DestroyDebugCloneB();
-
-        // Limpiar Clon A (oficial)
+        // Limpiar Clon A 
         BlockView wasDragging = m_DraggingBlockView;
 
         m_DraggingBlockView = null;
@@ -138,21 +134,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         ClearHighlight(); 
         m_WasTemplateClone = false;
     }
-
-    /// <summary>
-    /// Destruye de forma segura la vista de depuración (Clon B).
-    /// </summary>
-    private void DestroyDebugCloneB()
-    {
-        if (m_DebugCloneBView != null)
-        {
-            Debug.Log($"<color=grey>Destroying Debug Clone B: {m_DebugCloneBView.name}</color>");
-            if (m_DebugCloneBView.gameObject != null) 
-                Destroy(m_DebugCloneBView.gameObject);
-            m_DebugCloneBView = null;
-        }
-    }
-
     private void ClearHighlight()
     {
         if (m_HighlightedTargetView != null)
@@ -296,6 +277,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             ResetDragState(eventData);
             return;
         }
+     
         //Posición del puntero del ratón
 
         Debug.Log($"---> PointerDown Screen Position (Block): {eventData.position} <---");
@@ -349,15 +331,14 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         m_WasTemplateClone = true;
         BlockModel templateModel = templateBlockView.Block;
-        Debug.Log($"<color=yellow>BlockDragController: Starting drag - TEMPLATE '{templateModel.Type}'</color>");
         Vector2 initialPointerScreenPos = eventData.position;
-        Debug.Log($"<color=#FF9900>BlockDragController: Start Drag TEMPLATE '{templateModel.Type}'</color>"); // Naranja
+        Debug.Log($"<color=#FF9900>BlockDragController: Start Drag TEMPLATE '{templateModel.Type}'</color>");
 
         //Posición del puntero del ratón
 
         // Debug.Log($"---> PointerDown Screen Position (Template): {eventData.position} <---");
 
-        // Creo modelo su vista Clonada
+        // Creo modelo y su vista Clonada
         Vector2 logicalStartPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(initialPointerScreenPos, m_CachedCamera);
         BlockModel cloneModel = m_workspaceController.RequestCloneBlockBegin(templateModel, logicalStartPos);
         if (cloneModel == null) { yield break; }
@@ -373,133 +354,39 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         m_DraggingBlockModel = cloneModel;
         m_DraggingBlockView.InToolbox = false;
 
-        // Clon B 
-        
-        GameObject cloneBPrefab = BlockResMgr.Get()?.LoadBlockViewPrefab(templateModel.Type); 
-        GameObject cloneBGO = null;
-        if (cloneBPrefab != null)
-        {
-            cloneBGO = Instantiate(cloneBPrefab);
-            m_DebugCloneBView = cloneBGO.GetComponent<BlockView>(); 
-            if (m_DebugCloneBView != null)
-            {
-                cloneBGO.name = cloneViewA.name.Replace("_CloneA_DragLayer", "_CloneB_Canvas");
-                var cgB = cloneBGO.GetComponent<CanvasGroup>(); 
-                if (cgB == null)
-                {
-                    cgB = cloneBGO.AddComponent<CanvasGroup>();
-                    Debug.LogWarning($"Added CanvasGroup dynamically to Clone B prefab instance ({cloneBGO.name}) as it was missing.", cloneBGO);
-                }
+        Vector3 templateWorldPos = CalculateWorldPosition(templateBlockView.ViewTransform, Vector2.up);
 
-                cgB.blocksRaycasts = false;
-                cgB.interactable = false;
-                Debug.Log($"<color=grey>...Created Debug Clone B View: {cloneBGO.name}</color>");
-            }
-            else
-            {
-                Debug.LogError($"Prefab for {templateModel.Type} is MISSING BlockView Component! Cannot create debug view B properly.");
-                Destroy(cloneBGO);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Could not load prefab to create Debug Clone B view.");
-        }
-        
-        //  Calcular Posiciones Objetivo Iniciales 
-        Vector3 templateWorldPos = templateBlockView.transform.position; // Pivot de la plantilla
+        Vector2 targetAnchoredPosTopLeft;
 
-        // Posición objetivo para Clon A en DragLayer
-        Vector2 targetLocalPosInDragLayer;
+        RectTransform parentTarget = m_DragLayerRect; // DragLayer
 
-        if (!ScreenPosToLocalPosInTarget(templateWorldPos, m_DragLayerRect, out targetLocalPosInDragLayer))
-        {
-            Debug.LogError("Failed to calculate target pos for Clone A!"); /* cleanup */ yield break;
-        }
-
-
-        // Posición objetivo para Clon B en Canvas Raíz
-        Vector2 targetLocalPosInCanvas;
-        if (!ScreenPosToLocalPosInTarget(templateWorldPos, m_RootCanvasRect, out targetLocalPosInCanvas))
+        if (!ScreenPosToLocalPosInTarget(templateWorldPos, parentTarget, out targetAnchoredPosTopLeft))
         {
             Debug.LogError("Failed to calculate target pos for Clone B!"); /* cleanup */ yield break;
         }
-        Debug.Log($"   Target Local Pos In DragLayer: {targetLocalPosInDragLayer}");
-        Debug.Log($"   Target Local Pos In RootCanvas: {targetLocalPosInCanvas}");
-
 
         // Clon A (DragLayer)
-        //m_DraggingBlockView.transform.SetParent(m_RootCanvasRect, false);
-        m_DraggingBlockView.transform.SetParent(m_DragLayerRect, false);
-       // 
-        Debug.Log($"   Clone A Configured: Pivot={m_DraggingBlockView.ViewTransform.pivot}, Anchors={m_DraggingBlockView.ViewTransform.anchorMin}, Scale={m_DraggingBlockView.transform.localScale}");
-        // StandardizeRectTransform(m_DraggingBlockView.ViewTransform); // Forzar Pivot/Anchor=Center
+        m_DraggingBlockView.transform.SetParent(parentTarget, false);
 
-        m_DraggingBlockView.ViewTransform.anchoredPosition = targetLocalPosInDragLayer;
+        SetRectTransformTopLeft(m_DraggingBlockView.ViewTransform);
+        m_DraggingBlockView.ViewTransform.anchoredPosition = targetAnchoredPosTopLeft;
         m_DraggingBlockView.transform.SetAsLastSibling(); // Poner A encima
-        Debug.Log($"   Clone A AnchoredPos SET to: {targetLocalPosInDragLayer} (Parent: DragLayer)");
+        // Debug.Log($"   Clone A AnchoredPos SET to: {targetLocalPosInDragLayer} (Parent: DragLayer)");
 
-        // Clon B (Canvas)
-        if (m_DebugCloneBView != null)
-        {
+        Debug.Log($"   DraggingBlock AnchoredPos(0,1 ref / 0.5 anchors) SET to: {targetAnchoredPosTopLeft} (Parent: RootCanvas)");
 
-            Debug.Log("<color=grey>--- Positioning Debug Clone B (Top-Left Reference) ---</color>");
-
-            Vector3 templatePivotWorldPos = templateBlockView.transform.position; // Pivot central plantilla
-            Debug.Log($"   Template Pivot World Pos: {templatePivotWorldPos}");
-
-          //  m_DebugCloneBView.ViewTransform.localScale = Vector3.one; // Asegurar escala
-
-           
-            Vector3[] canvasCorners = new Vector3[4];
-            m_RootCanvasRect.GetWorldCorners(canvasCorners);
-            Vector3 canvasTopLeftWorld = canvasCorners[1]; // Índice 1 suele ser Top-Left
-            Debug.Log($"   Root Canvas Top-Left World Pos: {canvasTopLeftWorld}");
-
-            Vector3 offsetWorld = templatePivotWorldPos - canvasTopLeftWorld;
-
-            m_DebugCloneBView.transform.SetParent(m_RootCanvasRect, false);
-
-            // Calculemos dónde estaría el PIVOT(0,1) de la PLANTILLA en mundo.
-            RectTransform templateRect = templateBlockView.ViewTransform;
-            Vector3 templateTopLeftOffsetLocal = new Vector3(
-               templateRect.rect.width * (0.0f - templateRect.pivot.x), // Dist X del pivot (0.5) al borde izq (0)
-               templateRect.rect.height * (1.0f - templateRect.pivot.y), // Dist Y del pivot (0.5) al borde sup (1)
-               0);
-            
-            Vector3 templateTopLeftOffsetWorld = templateRect.TransformVector(templateTopLeftOffsetLocal);
-            Vector3 templateTopLeftWorldPos = templatePivotWorldPos + templateTopLeftOffsetWorld;
-
-            //Debug.Log($"   Template Approx Top-Left World Pos: {templateTopLeftWorldPos}");
-
-            Vector3 offsetTopLeftWorld = templateTopLeftWorldPos - canvasTopLeftWorld;
-            Vector2 targetAnchoredPosTopLeft = new Vector2(offsetTopLeftWorld.x, offsetTopLeftWorld.y);
-
-            Debug.Log($"   Target AnchoredPos for Clone B (Pivot 0,1 relative to Canvas 0,1): {targetAnchoredPosTopLeft}");
-            
-            SetRectTransformTopLeft(m_DebugCloneBView.ViewTransform); // Colocar en Canvas
-            //StandardizeRectTransform(m_DebugCloneBView.ViewTransform); // Forzar Pivot/Anchor=Center
-             m_DebugCloneBView.ViewTransform.anchoredPosition = targetLocalPosInCanvas;
-            Debug.Log($"   Debug Clone B AnchoredPos SET to: {targetLocalPosInCanvas} (Parent: RootCanvas)");
-            Image imgB = m_DebugCloneBView.GetComponentInChildren<Image>(includeInactive: true); // Buscar imagen fondo
-            if (imgB != null) imgB.color = new Color(1f, 0f, 0f, 0.5f); // Rojo semitransparente
-        }
-
-       //  Calcular Offset (Pantalla) para Clon A 
-        Vector2 cloneAPivotScreenPos = RectTransformUtility.WorldToScreenPoint(m_CachedCamera, m_DraggingBlockView.transform.position);
-        m_ScreenSpaceDragOffset = cloneAPivotScreenPos - initialPointerScreenPos;
-        Debug.Log($"---> Screen Space Drag Offset (Clone A): {m_ScreenSpaceDragOffset}");
-
-        // Setup Final Clon A 
-        var cgA = m_DraggingBlockView.GetComponent<CanvasGroup>() ?? m_DraggingBlockView.gameObject.AddComponent<CanvasGroup>();
-        cgA.blocksRaycasts = false;
+        //Calculamos Offset Pantalla 
+        Vector2 cloneActualPivotScreenPos = RectTransformUtility.WorldToScreenPoint(m_CachedCamera, m_DraggingBlockView.transform.position); // Pos pantalla del pivote
+        m_ScreenSpaceDragOffset = cloneActualPivotScreenPos - initialPointerScreenPos; // Offset desde ratón a pivot
+        
+        // Configuración final
+        var cg = m_DraggingBlockView.GetComponent<CanvasGroup>() ?? m_DraggingBlockView.gameObject.AddComponent<CanvasGroup>();
+        cg.blocksRaycasts = false;
         ClearHighlight();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_DraggingBlockView.ViewTransform); // Forzar layout A
-
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_DraggingBlockView.ViewTransform);
         m_IsDragging = true;
-        Debug.Log($"<color=green>BlockDragController: Drag successfully initiated for CLONE {m_DraggingBlockModel.ID} (A). Screen Offset: {m_ScreenSpaceDragOffset}</color>");
-        if (m_DebugCloneBView != null) Debug.Log($"<color=grey>Debug Clone B ({m_DebugCloneBView.name}) positioned for comparison.</color>");
-
+        //Debug.Log($"<color=green>BlockDragController: Drag initiated for scaled/offset CLONE {m_DraggingBlockModel.ID}. Offset Refers to TopLeft Pivot.</color>");
+        
     }
 
     private bool IsPointerOverCodingArea(PointerEventData eventData)
@@ -536,7 +423,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         }
         //Vector2 currentAnchoredPos = m_DraggingBlockView.ViewTransform.anchoredPosition;
 
-        // Recalcula la posición del puntero relativa al padre actual
+        // Recalculamos la posición del puntero relativa al padre actual
 
         RectTransform parentRect = m_DraggingBlockView.ViewTransform.parent as RectTransform;
         if (parentRect == null) {
@@ -563,7 +450,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         Debug.Log($"PrepareVisualDrag: Pointer Local Pos in Parent '{parentRect.name}': {localPointerPosInParent}");
 
-        //Determinar la AnchoredPosition  del Bloque
+        //Determinamos la AnchoredPosition  del Bloque
 
         Vector2 currentBlockAnchoredPos = m_DraggingBlockView.ViewTransform.anchoredPosition;
         Debug.Log($"PrepareVisualDrag: Block's current AnchoredPosition: {currentBlockAnchoredPos}");
@@ -581,7 +468,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         cg.blocksRaycasts = false; //Desactivar raycasts para evitar interacciones mientras se arrastra
 
         ClearHighlight();
-        Debug.Log($"<color=lightblue>BlockDragController: Visual drag prepared for {m_DraggingBlockModel?.ID ?? "UNKNOWN"} (View: {m_DraggingBlockView.name}). Offset: {m_ScreenSpaceDragOffset}</color>");
+        //Debug.Log($"<color=lightblue>BlockDragController: Visual drag prepared for {m_DraggingBlockModel?.ID ?? "UNKNOWN"} (View: {m_DraggingBlockView.name}). Offset: {m_ScreenSpaceDragOffset}</color>");
         return true;
 
     }
@@ -634,9 +521,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                     out codingAreaLocalPos))
             {
                 Vector2 codingAreaAnchoredPos = codingAreaLocalPos + m_ScreenSpaceDragOffset;
-                Debug.Log($"Calling ScreenPointToLocalPointInRectangle with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}");
+          //      Debug.Log($"Calling ScreenPointToLocalPointInRectangle with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}");
 
-                Debug.Log($"  - Equivalent CodingArea LocalPos: {codingAreaLocalPos}, AnchoredPos: {codingAreaAnchoredPos}");
+            //    Debug.Log($"  - Equivalent CodingArea LocalPos: {codingAreaLocalPos}, AnchoredPos: {codingAreaAnchoredPos}");
             }
             else
             {
@@ -652,16 +539,14 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         // Calculamos la posición lógica para búsqueda de conexiones
         Vector2 currentLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);
-        Debug.Log($"Calling ScreenPointToWorkspaceLogicalPosition with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}"); 
-
-
-        Debug.Log($"  - Current Logical Pos: {currentLogicalPos}");
+        //Debug.Log($"Calling ScreenPointToWorkspaceLogicalPosition with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}"); 
+        //Debug.Log($"  - Current Logical Pos: {currentLogicalPos}");
 
         ConnectionModel oldBestTarget = m_BestTargetConnection;
 
        // FindBestConnection(currentLogicalPos);
 
-        FindConnectionView(oldBestTarget);
+        FindConnectionView(oldBestTarget); //<---- revisar para conexiones
 
         UpdateHighlighting(oldBestTarget);
 
@@ -720,7 +605,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             }
         }
 
-        if (!connected && overTrash) //No va a ser necesario tras la lógica de si no esta en el RightPanel desaparece imitando comportamiento scratch
+        if (!connected && overTrash)  //Revisar el comportamiento del block si cae en otra zona y no está conectado
         {
             deleted = true;
             Debug.Log("<color=red>... Dropped over Trash Bin.</color>");
@@ -746,12 +631,12 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
             //RectTransformUtility.ScreenPointToLocalPointInRectangle(m_CodingAreaRect, eventData.position, null, out finalPointerLocalInCodingArea);
 
-            // Calcular la posición final en el CodingArea usando el offset original
+            // Calculamos la posición final en el CodingArea usando el offset original
             Vector2 finalAnchoredPosInCodingArea = finalPointerLocalInCodingArea + m_ScreenSpaceDragOffset; // Usa el mismo offset global
 
             Debug.Log($"   Pointer Local in CodingArea: {finalPointerLocalInCodingArea}, Offset: {m_ScreenSpaceDragOffset}, Final AnchoredPos: {finalAnchoredPosInCodingArea}");
 
-            //Cambiamos el padre 
+            //Cambiamos el padre a CodingArea definitivo 
             if (m_DraggingBlockView.transform.parent != m_CodingAreaRect) //<---- Padre_ codingArea
             {
                 Debug.Log($"   Reparenting '{viewName}' to CodingArea '{m_CodingAreaRect.name}'.");
@@ -763,17 +648,17 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             Debug.Log($"Block RectTransform after reparent: anchoredPosition={m_DraggingBlockView.ViewTransform.anchoredPosition}, localPosition={m_DraggingBlockView.ViewTransform.localPosition}, parent={m_DraggingBlockView.transform.parent.name}");
             m_DraggingBlockView.transform.SetAsLastSibling();
 
-            // Aplicar Posición Final
+            // Aplicamos Posición Final
             m_DraggingBlockView.ViewTransform.anchoredPosition = finalAnchoredPosInCodingArea;
             Debug.Log($"   Final AnchoredPos in CodingArea set to: {finalAnchoredPosInCodingArea}");
 
-            // Actualizar la posición lógica en el modelo
+            // Actualizamos la posición lógica en el modelo
             Vector2 finalLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);
             HandleValidWorkspaceDrop(finalLogicalPos);
 
         }
 
-        if (!connected && !deleted && !overCodingArea)
+        if (!connected && !deleted && !overCodingArea) //Revisar eliminación del bloque si no esta conectado y no esta en el coding Area
         {
             deleted = true; 
             Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
@@ -895,7 +780,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             var cg = m_DraggingBlockView.GetComponent<CanvasGroup>();
             if (cg != null) cg.blocksRaycasts = true;
 
-            
             var le = m_DraggingBlockView.GetComponent<LayoutElement>();
             if (le != null) le.ignoreLayout = false;
  
@@ -911,7 +795,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     }
 
     /// <summary>
-    /// Busca la mejor conexión candidata basada en la posición lógica actual.
+    /// Busca la mejor conexión candidata basada en la posición lógica actual. REVISAR Y METER EN UN CONTROLADOR ESPECIFICO
     /// </summary>
     private void FindBestConnection(Vector2 currentLogicalPos)
     {
@@ -1009,7 +893,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     {
         if (!m_IsDragging || m_DraggingBlockView == null)
         {
-            DestroyDebugCloneB(); 
+            //DestroyDebugCloneB(); 
             ResetDragState(eventData);
             return;
         }
@@ -1035,7 +919,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         //  Intentar Conexión
         if (finalTargetConnection != null && finalSourceConnection != null)
         {
-            // ... (Reparentar blockToPlaceOrConnect a CodingArea, RequestConnection) ...
             blockToPlaceOrConnect.transform.SetParent(m_CodingAreaRect, true);
             blockToPlaceOrConnect.transform.SetAsLastSibling();
             if (m_workspaceController.RequestConnection(finalSourceConnection, finalTargetConnection))
@@ -1077,7 +960,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         //  Limpieza FINAL 
         ClearHighlight(); 
-        DestroyDebugCloneB(); 
+        //DestroyDebugCloneB(); 
                           
         ResetDragStateInternalsOnly(eventData);
 
@@ -1141,13 +1024,12 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             eventData.pointerPress = null;
             eventData.pointerDrag = null;
         }
-      
 
         m_BestTargetConnection = null;
         m_SourceDragConnection = null;
         m_WasTemplateClone = false;
 
-        DestroyDebugCloneB();
+        //DestroyDebugCloneB();
     }
 
     /// <summary>
@@ -1163,7 +1045,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return false;
         }
 
-        // Usar m_CachedCamera (que puede ser null para Overlay)
         return RectTransformUtility.ScreenPointToLocalPointInRectangle(
           targetParent,
           screenPos,
@@ -1237,7 +1118,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return;
         }
         
-
         // Debug.Log($"Setting Top-Left: {rect.name}. Initial Pivot={rect.pivot}, Anchors Min={rect.anchorMin}, Max={rect.anchorMax}, Scale={rect.localScale}");
         rect.pivot = new Vector2(0f, 1f);
         rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -1245,6 +1125,44 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         rect.localScale = new Vector2(0.5f, 0.5f); // Asegurar escala unitaria también
         // Debug.Log($"   ... Set Pivot={rect.pivot}, Anchors Min={rect.anchorMin}, Max={rect.anchorMax}, Scale={rect.localScale}");
     }
+
+    /// <summary>
+    /// Calcula la posición en el espacio mundial de un punto normalizado
+    /// dentro del rectángulo de un RectTransform.
+    /// (0,0) = Abajo-Izquierda, (1,1) = Arriba-Derecha, (0.5,0.5) = Centro (Pivot independiente)
+    /// </summary>
+    /// <param name="rectTransform">El RectTransform de referencia.</param>
+    /// <param name="normalizedPoint">El punto normalizado (valores de 0 a 1) dentro del rectángulo.</param>
+    /// <returns>La posición mundial del punto normalizado.</returns>
+    public static Vector3 CalculateWorldPosition(RectTransform rectTransform, Vector2 normalizedPoint)
+    {
+        if (rectTransform == null)
+        {
+            Debug.LogError("CalculateWorldPosition: rectTransform is null!");
+            return Vector3.zero;
+        }
+
+        // Obtener las esquinas locales del rectángulo (relativas al pivot)
+        // rect.rect devuelve { x: posXLocalRelativaAlPivotDeMinX, y: posYLocalRelativaAlPivotDeMinY, width: ..., height: ... }
+        Rect rect = rectTransform.rect;
+
+        // Calcular la posición local del punto normalizado RELATIVA AL PIVOT
+        // Encontrar la esquina inferior izquierda local (relativa al pivot)
+        float localMinX = rect.x;
+        float localMinY = rect.y;
+        // Calcular la posición dentro del rect basada en el punto normalizado
+        float localX = localMinX + rect.width * normalizedPoint.x;
+        float localY = localMinY + rect.height * normalizedPoint.y;
+
+        Vector3 localPointPosition = new Vector3(localX, localY, 0); // Z es 0 en espacio local 2D
+
+        // Convertir la posición local (relativa al pivot) a posición mundial
+        // transform.TransformPoint hace exactamente esto.
+        Vector3 worldPosition = rectTransform.TransformPoint(localPointPosition);
+
+        return worldPosition;
+    }
+
 
 }//fin clase BlockDragController
 
