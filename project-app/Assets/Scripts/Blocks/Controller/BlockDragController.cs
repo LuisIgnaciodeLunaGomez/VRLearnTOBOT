@@ -27,7 +27,11 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     private WorkSpaceModel m_Workspace; 
     private WorkSpaceView m_WorkspaceView;
+
+    //Referncia a controladores
     private WorkspaceController m_workspaceController;
+    private BlockConnectionController m_connectionController;
+
 
     private BlockView m_DraggingBlockView = null; //Clon o bloque arrastrado A
     private BlockModel m_DraggingBlockModel = null; //Modelo clon A
@@ -41,9 +45,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     private RectTransform m_DragLayerRect;
 
     //Conexiones
-    private ConnectionModel m_BestTargetConnection = null;      
-    private ConnectionModel m_SourceDragConnection = null;      
-    private ConnectionView m_HighlightedTargetView = null;
+   // private ConnectionModel m_BestTargetConnection = null;      
+   // private ConnectionModel m_SourceDragConnection = null;      
+   // private ConnectionView m_HighlightedTargetView = null;
 
     //Depuración
     private RectTransform m_RootCanvasRect;
@@ -73,11 +77,13 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// <param name="WorkSpaceView"> The workspace view to be used.</param>
     /// <param name="wsController"> The workspace controller to be used.</param>
     /// <param name="dragLayerRect"> The RectTransform of the drag layer where blocks will be dragged.</param>"
-    public void InitializeController(WorkSpaceModel Workspace, WorkSpaceView WorkSpaceView, WorkspaceController wsController, RectTransform dragLayerRect)
+    public void InitializeController(WorkSpaceModel Workspace, WorkSpaceView WorkSpaceView, WorkspaceController wsController, BlockConnectionController connController, RectTransform dragLayerRect)
     {
         m_Workspace = Workspace ?? throw new ArgumentNullException(nameof(Workspace));
         m_workspaceController = wsController ?? throw new ArgumentNullException(nameof(wsController));
         m_WorkspaceView = WorkSpaceView ?? throw new ArgumentNullException(nameof(WorkSpaceView));
+        m_connectionController = connController ?? throw new ArgumentNullException(nameof(connController));
+
         m_DragLayerRect = dragLayerRect;
 
         if (m_WorkspaceView != null)
@@ -129,11 +135,13 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         m_PendingCloneModel = null; 
 
-        m_BestTargetConnection = null;
-        m_SourceDragConnection = null;
-        ClearHighlight(); 
+       // m_BestTargetConnection = null;
+       // m_SourceDragConnection = null;
+       // ClearHighlight(); 
         m_WasTemplateClone = false;
     }
+
+    /*
     private void ClearHighlight()
     {
         if (m_HighlightedTargetView != null)
@@ -141,7 +149,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             m_HighlightedTargetView.Highlight(false); 
             m_HighlightedTargetView = null;
         }
-    }
+    }*/
 
     private ConnectionView FindConnectionView(ConnectionModel model)
     {
@@ -179,15 +187,15 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         Debug.LogWarning($"FindConnectionView: Could not find view for connection type {model.Type} on block {model.SourceBlock.ID}");
         return null;
     }
-
+    /*
     private void HighlightConnection(ConnectionView targetView)
     {
         if (targetView != null)
         {
             targetView.Highlight(true);
-            m_HighlightedTargetView = targetView;
+          //  m_HighlightedTargetView = targetView;
         }
-    }
+    }*/
 
     public void RegisterPendingClone(BlockModel clonedModel)
     {
@@ -382,7 +390,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         // Configuración final
         var cg = m_DraggingBlockView.GetComponent<CanvasGroup>() ?? m_DraggingBlockView.gameObject.AddComponent<CanvasGroup>();
         cg.blocksRaycasts = false;
-        ClearHighlight();
+       // ClearHighlight();
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_DraggingBlockView.ViewTransform);
         m_IsDragging = true;
         //Debug.Log($"<color=green>BlockDragController: Drag initiated for scaled/offset CLONE {m_DraggingBlockModel.ID}. Offset Refers to TopLeft Pivot.</color>");
@@ -467,7 +475,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         if (cg == null) cg = m_DraggingBlockView.gameObject.AddComponent<CanvasGroup>();
         cg.blocksRaycasts = false; //Desactivar raycasts para evitar interacciones mientras se arrastra
 
-        ClearHighlight();
+       // ClearHighlight();
         //Debug.Log($"<color=lightblue>BlockDragController: Visual drag prepared for {m_DraggingBlockModel?.ID ?? "UNKNOWN"} (View: {m_DraggingBlockView.name}). Offset: {m_ScreenSpaceDragOffset}</color>");
         return true;
 
@@ -496,6 +504,13 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         // Calculamos la posición local en DragLayer
         Vector2 localPointerPosition;
         RectTransform parentRect = m_DragLayerRect; //<----Padre es el Drag Layer cuando inicio el movimiento en la toolbox
+        if (parentRect != null)
+        {
+            Debug.LogError($"HandleDrag: Drag parent ({parentRect?.name}) or camera ({m_CachedCamera?.name}) is null!");
+            ResetDragState(eventData);
+            return;
+        }
+
       //  if (parentRect == null) parentRect = m_CodingAreaRect; 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parentRect,
@@ -530,6 +545,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 Debug.LogWarning("HandleDrag: Failed to convert to CodingArea local space.");
             }
 
+            blockView.OnXYUpdated(); // Fuerzo la actualización de la posición lógica en el modelo antes de que se ponga a buscar.
+
         }
         else
         {
@@ -542,16 +559,22 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         //Debug.Log($"Calling ScreenPointToWorkspaceLogicalPosition with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}"); 
         //Debug.Log($"  - Current Logical Pos: {currentLogicalPos}");
 
-        ConnectionModel oldBestTarget = m_BestTargetConnection;
+        //ConnectionModel oldBestTarget = m_BestTargetConnection;
 
-       // FindBestConnection(currentLogicalPos);
+        /* FindBestConnection(currentLogicalPos);
 
-        FindConnectionView(oldBestTarget); //<---- revisar para conexiones
+         FindConnectionView(oldBestTarget); //<---- revisar para conexiones
 
-        UpdateHighlighting(oldBestTarget);
+         UpdateHighlighting(oldBestTarget);*/
 
-        m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView);
+        List<ConnectionModel> dragginConnections = m_DraggingBlockModel.GetDraggingConnections();
+
+        m_connectionController.ProcessDrag(m_DraggingBlockModel, dragginConnections, m_DraggingBlockModel.XY);
+
+        
+        m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); //Revisar la lógica de la papelera ya que si no cae en CodingArea se debe de borrar, ahora mismo no se borra 
     }
+
 
     public void HandleEndDrag(BlockView blockView, PointerEventData eventData)
     {
@@ -575,95 +598,99 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         m_IsPotentialDrag = false;
 
-        ConnectionModel finalTargetConnection = m_BestTargetConnection; // La conexión encontrada
-        ConnectionModel finalSourceConnection = m_SourceDragConnection; // La conexión que quería conectar
+       // ConnectionModel finalTargetConnection = m_BestTargetConnection; // La conexión encontrada
+      //  ConnectionModel finalSourceConnection = m_SourceDragConnection; // La conexión que quería conectar
         bool overTrash = m_WorkspaceView.IsOverTrashBin(m_DraggingBlockView);
         bool overCodingArea = IsPointerOverCodingArea(eventData);
+
+      //  bool actionHandled = m_connectionController.TryConnectAndPlace(m_DraggingBlockModel, m_WasTemplateClone, overTrash);
 
         bool connected = false;
         bool deleted = false;
         bool placedInWorkspace = false;
 
         // 1. ¿Hay conexión válida?
-        if (finalTargetConnection != null && finalSourceConnection != null)
-        {
-            Debug.Log($"<color=green>... Drop detected over connection. Attempting: {finalSourceConnection.SourceBlock.Type} -> {finalTargetConnection.SourceBlock.Type}</color>");
+        /* if (finalTargetConnection != null && finalSourceConnection != null)
+         {
+             Debug.Log($"<color=green>... Drop detected over connection. Attempting: {finalSourceConnection.SourceBlock.Type} -> {finalTargetConnection.SourceBlock.Type}</color>");
 
-            Debug.Log($"   Reparenting '{viewName}' to CodingArea '{m_CodingAreaRect.name}' before connecting.");
-            m_DraggingBlockView.transform.SetParent(m_CodingAreaRect, true); //<----Padre: CodingArea
-            m_DraggingBlockView.transform.SetAsLastSibling(); 
+             Debug.Log($"   Reparenting '{viewName}' to CodingArea '{m_CodingAreaRect.name}' before connecting.");
+             m_DraggingBlockView.transform.SetParent(m_CodingAreaRect, true); //<----Padre: CodingArea
+             m_DraggingBlockView.transform.SetAsLastSibling(); 
 
-            if (m_workspaceController.RequestConnection(finalSourceConnection, finalTargetConnection))
-            {
-                connected = true;
-                placedInWorkspace = true; 
-                Debug.Log("<color=green>... Connection SUCCESSFUL.</color>");
-            }
-            else
-            {
-                Debug.LogWarning("<color=yellow>... Connection FAILED (Controller/Model Rejected). Treating as free drop.</color>");
-            }
-        }
+             if (m_workspaceController.RequestConnection(finalSourceConnection, finalTargetConnection))
+             {
+                 connected = true;
+                 placedInWorkspace = true; 
+                 Debug.Log("<color=green>... Connection SUCCESSFUL.</color>");
+             }
+             else
+             {
+                 Debug.LogWarning("<color=yellow>... Connection FAILED (Controller/Model Rejected). Treating as free drop.</color>");
+             }
+         }
 
-        if (!connected && overTrash)  //Revisar el comportamiento del block si cae en otra zona y no está conectado
-        {
-            deleted = true;
-            Debug.Log("<color=red>... Dropped over Trash Bin.</color>");
-            HandleTrashDrop();
-        }
+         if (!connected && overTrash)  //Revisar el comportamiento del block si cae en otra zona y no está conectado
+         {
+             deleted = true;
+             Debug.Log("<color=red>... Dropped over Trash Bin.</color>");
+             HandleTrashDrop();
+         }
 
-        if (!connected && !deleted && overCodingArea)
-        {
-            placedInWorkspace = true;
-            Debug.Log($"<color=blue>... Dropped inside CodingArea '{m_CodingAreaRect.name}'. Placing block.</color>");
+         if (!connected && !deleted && overCodingArea)
+         {
+             placedInWorkspace = true;
+             Debug.Log($"<color=blue>... Dropped inside CodingArea '{m_CodingAreaRect.name}'. Placing block.</color>");
 
-            // Calculamos  la posición del bloque en el DragLayer (posición actual)
-            Vector2 currentAnchoredPosInDragLayer = m_DraggingBlockView.ViewTransform.anchoredPosition;
+             // Calculamos  la posición del bloque en el DragLayer (posición actual)
+             Vector2 currentAnchoredPosInDragLayer = m_DraggingBlockView.ViewTransform.anchoredPosition;
 
-            // Calculamos la posición local final dentro del CodingArea
-            Vector2 finalPointerLocalInCodingArea;
+             // Calculamos la posición local final dentro del CodingArea
+             Vector2 finalPointerLocalInCodingArea;
 
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(m_CodingAreaRect, eventData.position, null, out finalPointerLocalInCodingArea))
-            {
-                Debug.Log($"Calling ScreenPointToLocalPointInRectangle with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}");
-                finalPointerLocalInCodingArea = Vector2.zero; // Fallback
-            }
+             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(m_CodingAreaRect, eventData.position, null, out finalPointerLocalInCodingArea))
+             {
+                 Debug.Log($"Calling ScreenPointToLocalPointInRectangle with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}");
+                 finalPointerLocalInCodingArea = Vector2.zero; // Fallback
+             }
 
-            //RectTransformUtility.ScreenPointToLocalPointInRectangle(m_CodingAreaRect, eventData.position, null, out finalPointerLocalInCodingArea);
+             //RectTransformUtility.ScreenPointToLocalPointInRectangle(m_CodingAreaRect, eventData.position, null, out finalPointerLocalInCodingArea);
 
-            // Calculamos la posición final en el CodingArea usando el offset original
-            Vector2 finalAnchoredPosInCodingArea = finalPointerLocalInCodingArea + m_ScreenSpaceDragOffset; // Usa el mismo offset global
+             // Calculamos la posición final en el CodingArea usando el offset original
+             Vector2 finalAnchoredPosInCodingArea = finalPointerLocalInCodingArea + m_ScreenSpaceDragOffset; // Usa el mismo offset global
 
-            Debug.Log($"   Pointer Local in CodingArea: {finalPointerLocalInCodingArea}, Offset: {m_ScreenSpaceDragOffset}, Final AnchoredPos: {finalAnchoredPosInCodingArea}");
+             Debug.Log($"   Pointer Local in CodingArea: {finalPointerLocalInCodingArea}, Offset: {m_ScreenSpaceDragOffset}, Final AnchoredPos: {finalAnchoredPosInCodingArea}");
 
-            //Cambiamos el padre a CodingArea definitivo 
-            if (m_DraggingBlockView.transform.parent != m_CodingAreaRect) //<---- Padre_ codingArea
-            {
-                Debug.Log($"   Reparenting '{viewName}' to CodingArea '{m_CodingAreaRect.name}'.");
-                m_DraggingBlockView.transform.SetParent(m_CodingAreaRect, false); // worldPositionStays = false
+             //Cambiamos el padre a CodingArea definitivo 
+             if (m_DraggingBlockView.transform.parent != m_CodingAreaRect) //<---- Padre_ codingArea
+             {
+                 Debug.Log($"   Reparenting '{viewName}' to CodingArea '{m_CodingAreaRect.name}'.");
+                 m_DraggingBlockView.transform.SetParent(m_CodingAreaRect, false); // worldPositionStays = false
 
 
-            }
+             }
 
-            Debug.Log($"Block RectTransform after reparent: anchoredPosition={m_DraggingBlockView.ViewTransform.anchoredPosition}, localPosition={m_DraggingBlockView.ViewTransform.localPosition}, parent={m_DraggingBlockView.transform.parent.name}");
-            m_DraggingBlockView.transform.SetAsLastSibling();
+             Debug.Log($"Block RectTransform after reparent: anchoredPosition={m_DraggingBlockView.ViewTransform.anchoredPosition}, localPosition={m_DraggingBlockView.ViewTransform.localPosition}, parent={m_DraggingBlockView.transform.parent.name}");
+             m_DraggingBlockView.transform.SetAsLastSibling();
 
-            // Aplicamos Posición Final
-            m_DraggingBlockView.ViewTransform.anchoredPosition = finalAnchoredPosInCodingArea;
-            Debug.Log($"   Final AnchoredPos in CodingArea set to: {finalAnchoredPosInCodingArea}");
+             // Aplicamos Posición Final
+             m_DraggingBlockView.ViewTransform.anchoredPosition = finalAnchoredPosInCodingArea;
+             Debug.Log($"   Final AnchoredPos in CodingArea set to: {finalAnchoredPosInCodingArea}");
 
-            // Actualizamos la posición lógica en el modelo
-            Vector2 finalLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);
-            HandleValidWorkspaceDrop(finalLogicalPos);
+             // Actualizamos la posición lógica en el modelo
+             Vector2 finalLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, null);
+             HandleValidWorkspaceDrop(finalLogicalPos);
 
-        }
+         }
+        */
+         if (!connected && !deleted && !overCodingArea) //Revisar eliminación del bloque si no esta conectado y no esta en el coding Area
+         {
+             deleted = true; 
+             Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
+             HandleInvalidDrop(); 
+         }
 
-        if (!connected && !deleted && !overCodingArea) //Revisar eliminación del bloque si no esta conectado y no esta en el coding Area
-        {
-            deleted = true; 
-            Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
-            HandleInvalidDrop(); 
-        }
+       // Debug.Log($"BlockDragController: Action Handled? {actionHandled}");
 
         CleanUpAfterDrag(placedInWorkspace, eventData);
 
@@ -732,7 +759,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// </summary>
     private void CleanUpAfterDrag(bool wasPlacedOrConnected, PointerEventData eventData)
     {
-        ClearHighlight();
+        //ClearHighlight();
 
         BlockView justDraggedView = m_DraggingBlockView;
 
@@ -787,9 +814,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         m_DraggingBlockView = null;
         m_DraggingBlockModel = null; 
-        m_BestTargetConnection = null;
-        m_SourceDragConnection = null;
-        ClearHighlight(); 
+      //  m_BestTargetConnection = null;
+      //  m_SourceDragConnection = null;
+      //  ClearHighlight(); 
         m_WasTemplateClone = false;
 
     }
@@ -799,8 +826,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// </summary>
     private void FindBestConnection(Vector2 currentLogicalPos)
     {
-        m_BestTargetConnection = null;
-        m_SourceDragConnection = null;
+      //  m_BestTargetConnection = null;
+       // m_SourceDragConnection = null;
         if (m_DraggingBlockModel == null || m_Workspace == null) return;
 
         float closestRadiusSq = m_SnapDistance * m_SnapDistance;
@@ -823,8 +850,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 if (myConn.CanConnectWithReason(neighbour) == ConnectionModel.CAN_CONNECT)
                 {
                     closestRadiusSq = radiusSq;
-                    m_BestTargetConnection = neighbour;
-                    m_SourceDragConnection = myConn;
+              //      m_BestTargetConnection = neighbour;
+               //     m_SourceDragConnection = myConn;
                 }
             }
         }
@@ -833,7 +860,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// <summary>
     /// Actualiza el estado visual del resaltado de conexiones.
     /// </summary>
-    private void UpdateHighlighting(ConnectionModel oldBestTarget)
+   /* private void UpdateHighlighting(ConnectionModel oldBestTarget)
     {
         if (oldBestTarget != m_BestTargetConnection) 
         {
@@ -843,7 +870,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 oldView?.Highlight(false);
             }
 
-            if (m_HighlightedTargetView != null /*&& m_HighlightedTargetView.Model != m_BestTargetConnection*/)
+            if (m_HighlightedTargetView != null /*&& m_HighlightedTargetView.Model != m_BestTargetConnection*//*)
             {
                 m_HighlightedTargetView.Highlight(false); 
                 m_HighlightedTargetView = null;
@@ -863,7 +890,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 }
             }
         }
-    }
+    }*/
 
     public void OnDragBlock(PointerEventData eventData)
     {
@@ -883,9 +910,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
       
         Vector2 currentLogicalPos = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_CachedCamera);
-        ConnectionModel oldBestTarget = m_BestTargetConnection;
-        FindBestConnection(currentLogicalPos);
-        UpdateHighlighting(oldBestTarget);
+       // ConnectionModel oldBestTarget = m_BestTargetConnection;
+        //FindBestConnection(currentLogicalPos);
+     //   UpdateHighlighting(oldBestTarget);
         m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); 
     }
 
@@ -904,8 +931,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         BlockView blockToPlaceOrConnect = m_DraggingBlockView; // Clon A
         BlockModel modelToUpdate = m_DraggingBlockModel;
         bool wasClone = m_WasTemplateClone; 
-        ConnectionModel finalTargetConnection = m_BestTargetConnection;
-        ConnectionModel finalSourceConnection = m_SourceDragConnection;
+    //    ConnectionModel finalTargetConnection = m_BestTargetConnection;
+   //     ConnectionModel finalSourceConnection = m_SourceDragConnection;
 
         Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({viewNameA})</color>");
         Vector2 finalPointerScreenPos = eventData.position;
@@ -917,7 +944,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         bool placedInWorkspace = false;
 
         //  Intentar Conexión
-        if (finalTargetConnection != null && finalSourceConnection != null)
+    /*    if (finalTargetConnection != null && finalSourceConnection != null)
         {
             blockToPlaceOrConnect.transform.SetParent(m_CodingAreaRect, true);
             blockToPlaceOrConnect.transform.SetAsLastSibling();
@@ -926,7 +953,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
                 connected = true;
                 placedInWorkspace = true;
             } // else { log warning }
-        }
+        }*/
 
         // Colocar en Workspace
         if (!connected && overCodingArea)
@@ -958,8 +985,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             HandleInvalidDrop(modelToUpdate, blockToPlaceOrConnect, wasClone); // Pasar modelo, vista y flag
         }
 
-        //  Limpieza FINAL 
-        ClearHighlight(); 
+        //  Limpieza  
+        //ClearHighlight(); 
         //DestroyDebugCloneB(); 
                           
         ResetDragStateInternalsOnly(eventData);
@@ -1025,8 +1052,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             eventData.pointerDrag = null;
         }
 
-        m_BestTargetConnection = null;
-        m_SourceDragConnection = null;
+       // m_BestTargetConnection = null;
+       // m_SourceDragConnection = null;
         m_WasTemplateClone = false;
 
         //DestroyDebugCloneB();
@@ -1079,7 +1106,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// <param name="pointerScreenPos">La posición del puntero en coordenadas de pantalla.</param>
     /// <param name="areaRect">El RectTransform del área a comprobar.</param>
     /// <returns>True si el puntero está sobre el área, False en caso contrario.</returns>
-    private bool IsPointerOverArea(Vector2 pointerScreenPos, RectTransform areaRect)
+    public bool IsPointerOverArea(Vector2 pointerScreenPos, RectTransform areaRect)
     {
         if (areaRect == null)
         {

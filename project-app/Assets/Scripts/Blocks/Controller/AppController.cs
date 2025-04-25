@@ -33,6 +33,7 @@ public class AppController : MonoBehaviour
     private CategoryController m_categoryController;   
     private WorkspaceController m_workspaceController;
     private BlockDragController m_blockDragController;
+    private BlockConnectionController m_connectionController;
 
     private bool m_IsInitialized = false;
 
@@ -178,7 +179,13 @@ public class AppController : MonoBehaviour
 
         m_blockDragController = dragController;
 
-        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController, m_uiManager.DragLayer);
+        m_connectionController = FindFirstObjectByType<BlockConnectionController>() ?? gameObject.AddComponent<BlockConnectionController>();
+
+        m_connectionController.InitializeController(m_workspaceModel, m_workspaceView, m_blockDragController);
+
+        Debug.Log("AppController: ConnectionController initialized.");
+
+        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController, m_connectionController, m_uiManager.DragLayer);
         Debug.Log("AppController: BlockDragController initialized.");
 
         m_blockListView.InitializeToolbox(
