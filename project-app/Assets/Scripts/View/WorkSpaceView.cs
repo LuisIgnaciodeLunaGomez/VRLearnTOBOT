@@ -50,7 +50,7 @@ public class WorkSpaceView : MonoBehaviour
             return;
         }
 
-        Debug.Log("WorkSpaceView: Awake starting...");
+      //  Debug.Log("WorkSpaceView: Awake starting...");
     }
 
     /**
@@ -62,7 +62,7 @@ public class WorkSpaceView : MonoBehaviour
      */
     public void BindModel(WorkSpaceModel workspace, BlockListView toolboxRef, RectTransform codingAreaRect, BlockStatusView statusViewRef = null)
     {
-        Debug.Log($"<color=cyan>WorkSpaceView ({GetInstanceID()}): BindModel called.</color>", this);
+        //Debug.Log($"<color=cyan>WorkSpaceView ({GetInstanceID()}): BindModel called.</color>", this);
 
         RootCanvas = GetComponentInParent<Canvas>(); 
         if (RootCanvas == null)
@@ -76,7 +76,7 @@ public class WorkSpaceView : MonoBehaviour
 
         m_codingArea = codingAreaRect;
 
-        Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
+       // Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
 
 
         if (m_codingArea == null)
@@ -92,7 +92,7 @@ public class WorkSpaceView : MonoBehaviour
         }
         else if (m_WorkspaceModel == workspace && m_WorkspaceModel != null)
         {
-            Debug.LogWarning($"WorkSpaceView: BindModel called with the same workspace model {workspace.Id}. Rebinding/refreshing.", this);
+           // Debug.LogWarning($"WorkSpaceView: BindModel called with the same workspace model {workspace.Id}. Rebinding/refreshing.", this);
             CleanViews();
         }
 
@@ -100,38 +100,38 @@ public class WorkSpaceView : MonoBehaviour
         m_toolbox = toolboxRef;
         m_codingArea = codingAreaRect;
 
-        Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
+       // Debug.Log($"WorkSpaceView: CodingArea assigned: {(this.m_codingArea == null ? "NULL" : this.m_codingArea.name)}", this);
 
         m_blockStatusView = statusViewRef;  
 
         if (m_WorkspaceModel == null)
         {
-            Debug.LogError("WorkSpaceView.BindModel: Cannot bind a null workspace!", this);
+           // Debug.LogError("WorkSpaceView.BindModel: Cannot bind a null workspace!", this);
             return;
         }
         if (m_toolbox == null)
         {
             
-            Debug.LogWarning("WorkSpaceView.BindModel: Toolbox reference is null!", this);
+          //  Debug.LogWarning("WorkSpaceView.BindModel: Toolbox reference is null!", this);
         }
       
         if (m_blockStatusView == null) {
-            Debug.LogWarning("WorkSpaceView.BindModel: BlockStatusView reference is null.", this);
+           // Debug.LogWarning("WorkSpaceView.BindModel: BlockStatusView reference is null.", this);
          }
 
-        Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.GetType().Name ?? "NULL"}, CodingArea: {m_codingArea?.name ?? "NULL"}</color>");
+       // Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.GetType().Name ?? "NULL"}, CodingArea: {m_codingArea?.name ?? "NULL"}</color>");
 
         if (workspace.TopBlocks.Count > 0)
         {
-            Debug.Log($"<color=lightblue>WorkSpaceView: Model has {workspace.TopBlocks.Count} top blocks. Building views...</color>");
+           // Debug.Log($"<color=lightblue>WorkSpaceView: Model has {workspace.TopBlocks.Count} top blocks. Building views...</color>");
             BuildViews(); 
         }
         else
         {
-            Debug.Log("<color>WorkSpaceView: Model is empty, no initial views to build.</color>");
+            //Debug.Log("<color>WorkSpaceView: Model is empty, no initial views to build.</color>");
         }
 
-        Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.GetType().Name ?? "NULL"}, CodingArea: {m_codingArea?.name ?? "NULL"}, RootCanvas: {RootCanvas?.name ?? "NULL"}</color>");
+        //Debug.Log($"<color=lightblue>WorkSpaceView: Binding to Workspace {workspace.Id}, Toolbox: {m_toolbox?.GetType().Name ?? "NULL"}, CodingArea: {m_codingArea?.name ?? "NULL"}, RootCanvas: {RootCanvas?.name ?? "NULL"}</color>");
     }
 
     /**
