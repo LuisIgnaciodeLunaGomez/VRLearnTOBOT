@@ -99,13 +99,13 @@ public class BlockTemplateDragSource : MonoBehaviour, IBeginDragHandler, IDragHa
     public void OnDrag(PointerEventData eventData)
 {
 
-    BlockDragController.Instance?.HandleDrag(null, eventData);
+    BlockDragController.Instance?.HandleDrag(/*null,*/ eventData);
 }
 
     public void OnEndDrag(PointerEventData eventData)
     {
 
-        BlockDragController.Instance?.HandleEndDrag(null, eventData);
+        BlockDragController.Instance?.HandleEndDrag(/*null,*/ eventData);
     }
 
    // public bool IsDragging => BlockDragController.Instance != null && BlockDragController.Instance.IsDragging && BlockDragController.Instance.DraggingView == TemplateBlockView;

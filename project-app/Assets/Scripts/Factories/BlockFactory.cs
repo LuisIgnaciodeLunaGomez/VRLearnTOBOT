@@ -14,7 +14,6 @@
  * Descripción: Clase que se encarga de la creación de los bloques para cada categoría
  */
 
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -55,45 +54,18 @@ public class BlockFactory
         mPrefixCategories.Clear();
     }
 
-    // Carga bloques desde un archivo JSON
-    public void AddJsonDefinitions(string jsonText)
-    {
-        JArray jsonArray = JArray.Parse(jsonText);
-        for (int i = 0; i < jsonArray.Count; i++)
-        {
-            JObject element = jsonArray[i] as JObject;
-            string typeName = element["type"].ToString();
-            if (string.IsNullOrEmpty(typeName))
-            {
-                Debug.LogError("Block definition in JSON is missing 'type' attribute. Skipping.");
-                continue;
-            }
-
-            if (mDefinitions.ContainsKey(typeName))
-            {
-                Debug.LogWarning($"Block definition in JSON array has duplicated type name: {typeName}. Overwriting or Skipping?");
-                
-                continue;
-            }
-
-            int length = typeName.IndexOf("_");
-            string prefix = length > 0 ? typeName.Substring(0, length) : typeName;
-            if (!mPrefixCategories.ContainsKey(prefix))
-                mPrefixCategories[prefix] = new List<string>();
-            mPrefixCategories[prefix].Add(typeName);
-        }
-    }
-
     // Crea un bloque basado en su tipo
     public BlockModel CreateBlock(WorkSpaceModel workspace, string type, string uid = null)
     {
-        BlockModel block;
+        
+        BlockModel block; 
+
         string finalUid = string.IsNullOrEmpty(uid) ? Utilidades.GenUid() : uid; 
 
         if (workspace == null)
         {
-            //Creando una plantilla para el Toolbox (sin workspace)
-            Debug.Log($"BlockFactory: Creating TEMPLATE block: {type} (ID: {finalUid})");
+            //Creando una plantilla para el Toolbox (sin ws)
+           // Debug.Log($"BlockFactory: Creating TEMPLATE block: {type} (ID: {finalUid})");
             block = BlockModel.CreateTemplate(type, finalUid);                                               
         }
         else
@@ -105,7 +77,7 @@ public class BlockFactory
                 finalUid = Utilidades.GenUid();
             }
             Debug.Log($"BlockFactory: Creating workspace block: {type} (ID: {finalUid}) for Workspace {workspace.Id}");
-            block = new BlockModel(workspace, type, finalUid); // Usa el constructor original que registra en el workspace
+            block = new BlockModel(workspace, type, finalUid); // constructor original que registra en el workspace
         }
 
         BlockDefinition definition;
@@ -116,15 +88,51 @@ public class BlockFactory
         else
         {
             List<InputModel> inputs = definition.CreateInputList();
+         //   Debug.Log("BlockFactory: Created InputModel list for block: " + string.Join(", ", inputs.Select(i => i.Name).ToArray()));
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            if (inputs != null)
+            {
+                for (int i = 0; i < inputs.Count; i++)
+                {
+                    sb.Append(inputs[i]?.Name ?? "NULL_INPUT");
+                    if (i < inputs.Count - 1) sb.Append(", ");
+                }
+            }
+          //  Debug.Log($"BlockFactory: Corrected InputModel List: [{sb.ToString()}] (Count: {inputs?.Count ?? 0})");
             ConnectionModel output = definition.CreateOutputConnection();
+
+           // Debug.Log($"BlockFactory: Created OutputConnectionModel for block '{type}' (ID: {block.ID}). Has output connection: {(output != null)}.");
             ConnectionModel prev = definition.CreatePreviousStatementConnection();
+
+           // Debug.Log($"BlockFactory: Created PreviousStatementConnectionModel for block '{type}' (ID: {block.ID}). Has previous connection: {(prev != null)}.");   
             ConnectionModel next = definition.CreateNextStatementConnection();
-            Mutator mutator = definition.CreateMutator();
+
+          //  Debug.Log($"BlockFactory: Created NextStatementConnectionModel for block '{type}' (ID: {block.ID}). Has next connection: {(next != null)}.");
+           // Mutator mutator = definition.CreateMutator();
             bool inputsInline = definition.GetInputsInlineDefault();
+            // Debug.Log($"BlockFactory: Created Mutator for block '{type}' (ID: {block.ID}). Has mutator: {(mutator != null)}. Inputs inline default: {inputsInline}.");
+
+           // Debug.Log($"BlockFactory: Created BlockModel '{type}' (ID: {block.ID}). Created Connections: Output={output != null}, Prev={prev != null}, Next={next != null}. Inputs Count={inputs?.Count ?? 0}.");
 
             block.Reshape(inputs, output, prev, next);
 
-            if (mutator != null) block.SetMutator(mutator);
+            if (inputs != null)
+            {
+                foreach (InputModel input in inputs)
+                {
+                    input.SourceBlock = block; // Set Input's SourceBlock
+                    if (input.Connection != null) input.Connection.SourceBlock = block; 
+                                                                                        
+                    if (input.FieldRow != null) foreach (FieldModel field in input.FieldRow) field.SourceBlock = block; 
+                }
+            }
+            foreach (InputModel input in block.InputList)
+            {
+               // Debug.Log($"  InputModel '{input.Name}' (Type:{input.Type}) assigned to Block. Has ConnectionModel: {(input.Connection != null)}", null);
+            }
+
+          //  if (mutator != null) block.SetMutator(mutator);
             //if (inputsInline) block.SetInputsInline(true);
             if (inputsInline != block.GetInputsInline())
             {
@@ -137,6 +145,9 @@ public class BlockFactory
             if (prev != null) prev.SourceBlock = block;
             if (next != null) next.SourceBlock = block;
         }
+      //  Debug.Log($"BlockFactory: Finished creating BlockModel '{type}' (ID: {block.ID}).", null);
+        //Debug.Log($"BlockFactory: Finished creating BlockModel '{type}' (ID: {block.ID}). Final Block Connections: Output={(block.OutputConnection != null)}, Prev={(block.PreviousConnection != null)}, Next={(block.NextConnection != null)}. Inputs Count={(block.InputList != null ? block.InputList.Count : 0)}.");
+
         return block;
     }
 

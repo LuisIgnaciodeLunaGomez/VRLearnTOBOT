@@ -46,12 +46,13 @@ public class BlockConnectionController : MonoBehaviour
         m_WorkspaceView = workspaceView ?? throw new ArgumentNullException(nameof(workspaceView));
         m_BlockDragController = blockDragController ?? throw new ArgumentNullException(nameof(blockDragController));
 
-        Debug.Log("ConnectionController Initialized");
+       // Debug.Log("ConnectionController Initialized");
 
     }
 
     public void ProcessDrag(BlockModel draggingBlock, List<ConnectionModel> draggingConnections, Vector2 dragginblockBaseLogicalPosition)
     {
+        //Debugging
 
         if (draggingBlock == null || m_Workspace == null) return;
 
@@ -63,6 +64,11 @@ public class BlockConnectionController : MonoBehaviour
         float m_ConnectionSearchRadius = BlockViewSettings.Instance.ConnectionSearchRange;
 
         float closestRadiusSq = m_ConnectionSnapDistance * m_ConnectionSnapDistance; //Calculo la distancia cuadrada
+
+        //Debug.Log($"ConnectionController.ProcessDrag: Dragging block {draggingBlock.ID} ({draggingBlock.Type})");
+      //  Debug.Log($"  Dragging Block Model Logical XY: ({draggingBlock.XY.x:F2}, {draggingBlock.XY.y:F2})");
+       // Debug.Log($"  Current Best Target (Before Search): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}");
+       // Debug.Log($"  Search Radius: {m_ConnectionSearchRadius}, Snap Distance: {m_ConnectionSnapDistance}");
 
         ConnectionModel oldBestTarget = m_CurrentBestTargetConnection;
 
@@ -114,7 +120,7 @@ public class BlockConnectionController : MonoBehaviour
         }
         else
         {
-            Debug.Log("ConnectionController: No potential snap target found.");
+           // Debug.Log("ConnectionController: No potential snap target found.");
         }
 
     }
@@ -205,15 +211,15 @@ public class BlockConnectionController : MonoBehaviour
 
             bool wasDeleted = false;
 
-            if (overTrasBin) //Revisar esta lógica 
+            /*if (overTrasBin) //Revisar esta lógica 
             {
                 Debug.Log($"ConnectionController: Drop over trash bin. Disposing block {draggingBlock.ID}");
                 draggingBlock.Dispose(false);
                 wasDeleted = true;
 
-            }
-            else if (isOverCodingArea) //Cae fuera del codingArea lógica más sensata con scratch 
-            {
+            }*/
+            /*else*/ if (isOverCodingArea) //Cae fuera del codingArea lógica más sensata con scratch 
+            {//
                 Debug.LogWarning($"ConnectionController: Invalid drop location (outside CodingArea and not in trash). Disposing block {draggingBlock.ID}");
 
                 draggingBlock.Dispose(false);
@@ -225,7 +231,7 @@ public class BlockConnectionController : MonoBehaviour
 
                 //Cae en un espacio libre dentro del CodingArea --- OJO a las posiciones en los dos paneles....
 
-                Debug.Log($"ConnectionController: Confirming add for template clone {draggingBlock.ID} dropped in free space.");
+                //Debug.Log($"ConnectionController: Confirming add for template clone {draggingBlock.ID} dropped in free space.");
 
                 if (isTemplateClone)
                 {
@@ -263,12 +269,10 @@ public class BlockConnectionController : MonoBehaviour
             {
                 //TODO: revisar si hay que configurar algún trigger.
             }
-
-                
+       
         }
 
         return connected;
     }
 
-
-}
+}//fin clase BlockController

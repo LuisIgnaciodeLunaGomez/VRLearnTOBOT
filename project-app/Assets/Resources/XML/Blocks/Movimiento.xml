@@ -28,9 +28,9 @@
 				<!-- Input de Valor -->
 				<Check>Number</Check>
 				<!-- Tipo(s) permitido(s) -->
-				<DefaultValue>10</DefaultValue>
+				<!--<DefaultValue>10</DefaultValue>-->
 				<!-- Valor para el bloque sombra/inicial -->
-				<Field type="field_number" name="NUM_FIELD"/>
+				<Field type="field_number" name="NUM_FIELD" value="10"/>
 				<!-- Campo interno si el input está vacío (shadow) permite que se le inyecten otros bloques -->
 				<!--  -->
 			</Arg>

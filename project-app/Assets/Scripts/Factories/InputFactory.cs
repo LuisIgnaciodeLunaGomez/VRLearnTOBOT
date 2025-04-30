@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.MemoryProfiler;
+using UnityEngine;
 public static class InputFactory
 {
     public static InputModel CreateFromJson(JObject json)
@@ -63,9 +64,12 @@ public static class InputFactory
                 input.SetCheck(json["check"].ToString());
             }
         }
+
+        //Debug.Log($"InputFactory: Created InputModel '{inputName}' (Type:{inputType}). Has Connection: {(input.Connection != null)}", null); 
+
         return input;
     }
-
+    
    
     public static InputModel Create(EConnection type, string name, EAlign align, List<string> check)
     {

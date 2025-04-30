@@ -110,8 +110,8 @@ public class ConnectionModel : Observable<UpdateState>
     /// <param name="type">The type of the connection.</param>
     public ConnectionModel(BlockModel source, EConnection type)
     {
-        Type = type; //type of the connection
-        SourceBlock = source;//block that is the parent of this connection
+        Type = type; 
+        SourceBlock = source;
     }
 
     /// <summary>
@@ -122,7 +122,6 @@ public class ConnectionModel : Observable<UpdateState>
     {
     }
 
-    //Constants for checking whether two connections are compatible.
     public const int CAN_CONNECT = 0;
     public const int REASON_SELF_CONNECTION = 1;
     public const int REASON_WRONG_TYPE = 2;
@@ -187,12 +186,12 @@ public class ConnectionModel : Observable<UpdateState>
     /// <summary>
     /// Connection database for connections of this type on the current workspace.
     /// </summary>
-    public BlockConnectionDB DB { get; private set; } //connection database for connections of this type on the current workspace
+    public BlockConnectionDB DB { get; private set; } 
 
     /// <summary>
     /// Connection database for connections compatible with this type on the current workspace.
     /// </summary>
-    public BlockConnectionDB DBOpposite { get; private set; } //connection database for connections compatible with this type on the current workspace
+    public BlockConnectionDB DBOpposite { get; private set; }
 
     public EConnection OppositeType
     {
@@ -250,12 +249,10 @@ public class ConnectionModel : Observable<UpdateState>
         var parentBlock = parentConnection.SourceBlock; //superior block
         var childBlock = childConnection.SourceBlock; //inferior block
 
-        // Disconnect any existing parent on the child connection.
         if (childConnection.IsConnected)
             childConnection.Disconnect();
 
-        // Other connection is already connected to something.
-        // Disconnect it and reattach it or bump it as needed.
+        
         if (parentConnection.IsConnected)
         {
             BlockModel orphanBlock = parentConnection.TargetBlock;
@@ -264,20 +261,16 @@ public class ConnectionModel : Observable<UpdateState>
 
             if (orphanBlock.IsShadow)
             {
-                // Save the shadow block so that field values are preserved.
                 shadowDom = Xml.BlockToDom(orphanBlock);
                 orphanBlock.Dispose();
                 orphanBlock = null;
             }
             else if (parentConnection.Type == EConnection.InputValue)
             {
-                //value connnections
                 if (orphanBlock.OutputConnection == null)
                     throw new Exception("Orphan block does not have an output connection.");
 
-                // Attempt to reattach the orphan at the end of the newly inserted
-                // block.  Since this block may be a row, walk down to the end
-                // or to the first (and only) shadow block.
+             
                 var connection = ConnectionModel.LastConnectionInRow(childBlock, orphanBlock);
                 if (connection != null)
                 {
@@ -287,14 +280,11 @@ public class ConnectionModel : Observable<UpdateState>
             }
             else if (parentConnection.Type == EConnection.NextStatement)
             {
-                // Statement connections.
-                // Statement blocks may be inserted into the middle of a stack.
-                // Split the stack.
+               
                 if (orphanBlock.PreviousConnection == null)
                     throw new Exception("Orphan block does not have a previous connection.");
 
-                // Attempt to reattach the orphan at the bottom of the newly inserted
-                // block.  Since this block may be a stack, walk down to the end.
+               
                 var newBlock = childBlock;
                 while (newBlock.NextConnection != null)
                 {
@@ -429,7 +419,6 @@ public class ConnectionModel : Observable<UpdateState>
         if (canConnect != ConnectionModel.CAN_CONNECT)
             return false;
 
-        // Don't connect to its sourceblock's children
         BlockModel candidateParent = candidate.SourceBlock.ParentBlock;
         while (candidateParent != null)
         {
@@ -438,28 +427,18 @@ public class ConnectionModel : Observable<UpdateState>
             candidateParent = candidateParent.ParentBlock;
         }
 
-        // Don't offer to connect an already connected left (male) value plug to
-        // an available right (female) value plug.  Don't offer to connect the
-        // bottom of a statement block to one that's already connected.
         if (candidate.Type == EConnection.OutputValue || candidate.Type == EConnection.PrevStatement)
         {
             if (candidate.IsConnected || this.IsConnected)
                 return false;
         }
 
-        // Offering to connect the left (male) of a value block to an already
-        // connected value pair is ok, we'll splice it in.
-        // However, don't offer to splice into an immovable block.
         if (candidate.Type == EConnection.InputValue && candidate.IsConnected
             && !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
         {
             return false;
         }
 
-        // Don't let a block with no next connection bump other blocks out of the
-        // stack.  But covering up a shadow block or stack of shadow blocks is fine.
-        // Similarly, replacing a terminal statement with another terminal statement
-        // is allowed.
         if (this.Type == EConnection.PrevStatement && candidate.IsConnected
             && this.SourceBlock.NextConnection == null && !candidate.TargetBlock.IsShadow
             && candidate.TargetBlock.NextConnection != null)
@@ -681,5 +660,33 @@ public class ConnectionModel : Observable<UpdateState>
     {
         return DBOpposite.GetNeighbours(this, maxLimit);
     }
+
+    // Añade este método estático dentro de la clase ConnectionModel:
+    /// <summary>
+    /// Genera un identificador de depuración para un ConnectionModel.
+    /// </summary>
+    /// <param name="conn">El ConnectionModel (puede ser null).</param>
+    /// <returns>Un string identificador de depuración.</returns>
+    public static string GetConnectionModelID(ConnectionModel conn)
+    {
+        if (conn == null) return "NULL_CONN";
+
+        string sourceId = conn.SourceBlock?.ID ?? "NO_BLOCK";
+
+        // Verifico si el Input está asociado directamente a esta conexión
+        // Esto suele ser para EConnection.InputValue y EConnection.NextStatement dentro de inputs
+        string inputName = conn.Input?.Name;
+
+        if (!string.IsNullOrEmpty(inputName))
+        {
+            return $"Conn->{sourceId}.Input.{inputName}.{conn.Type}";
+        }
+        
+        else
+        {
+            return $"Conn->{sourceId}.Direct.{conn.Type}";
+        }
+    }
+
 
 }//fin clase ConnectionModel
