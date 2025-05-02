@@ -16,6 +16,8 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public class InputModel
 {
@@ -23,7 +25,7 @@ public class InputModel
     public readonly EConnection Type;
     public readonly ConnectionModel Connection;
     public readonly List<FieldModel> FieldRow;
-
+   // private Align mAlign = Align.Left;
     private BlockModel mSourceBlock;
 
     public BlockModel SourceBlock
@@ -31,15 +33,24 @@ public class InputModel
         get { return mSourceBlock; }
         set
         {
-            if (mSourceBlock == value) return;
-            if (mSourceBlock != null && value != null)
-                throw new Exception("Input is already a member of another block.");
-            mSourceBlock = value;
-            if (Connection != null)
-                Connection.SourceBlock = value;
-            foreach (FieldModel field in FieldRow)
+            if (mSourceBlock == value)
             {
-                field.SetSourceBlock(value);
+                //   Debug.Log($"[InputModel.SourceBlock Setter '{this.Name}'] Skip: Same value ({value?.ID ?? "NULL"})");
+                return;
+            }
+            if (mSourceBlock != null && value != null && mSourceBlock != value)
+            {
+                Debug.LogError($"[InputModel.SourceBlock Setter '{this.Name}'] Input is already a member of block {mSourceBlock.ID}. Attempting to reassign to {value.ID}.");
+               
+            }
+
+            // Debug.Log($"[InputModel.SourceBlock Setter '{this.Name}'] Setting SourceBlock from '{mSourceBlock?.ID ?? "NULL"}' to '{value?.ID ?? "NULL"}'");
+            mSourceBlock = value;
+
+            if (this.Connection != null)
+            {
+                // Debug.Log($"  -> Propagating SourceBlock '{mSourceBlock?.ID ?? "NULL"}' to internal Connection...");
+                this.Connection.SourceBlock = mSourceBlock;
             }
         }
     }
@@ -62,13 +73,29 @@ public class InputModel
         FieldRow = new List<FieldModel>();
 
         Align = EAlign.Left;
+
+        if (type == EConnection.InputValue || type == EConnection.NextStatement)
+        {
+           
+            this.Connection = new ConnectionModel(mSourceBlock, type);
+
+            this.Connection.Input = this; 
+
+           this.SetAlign(Align); 
+        }
+        else
+        {
+            this.Connection = null; 
+        }
+
+        Debug.Log($"[InputModel Ctor] Created Input: '{this.Name}', Type: {this.Type}. Connection Created? {this.Connection != null}. Connection.Input set? {this.Connection?.Input != null}");
     }
 
-    public InputModel(EConnection type, string name, ConnectionModel connection = null) : this(type, name, null, connection)
+    private InputModel(EConnection type, string name, ConnectionModel connection = null) : this(type, name, null, connection)
     {
     }
 
-    public InputModel(EConnection type, string name) 
+    private InputModel(EConnection type, string name) 
     {
         this.Type = type;
         this.Name = name; 
@@ -78,7 +105,7 @@ public class InputModel
         if (type != EConnection.None)
         {
             EConnection connectionType = (type == EConnection.NextStatement) ? EConnection.PrevStatement : EConnection.InputValue;
-            this.Connection = new ConnectionModel(connectionType);
+            this.Connection = new ConnectionModel(mSourceBlock,connectionType);
             this.Connection.Input = this; 
         }
     }
@@ -95,9 +122,9 @@ public class InputModel
   
     public InputModel SetAlign(EAlign align)
     {
-        if (this.Align != align)
+        if (Align != align)
         {
-            this.Align = align;
+            Align = align;
         }
         return this;
     }
@@ -173,9 +200,9 @@ public class InputModel
     {
         if (check == null || check.Count == 0)
             return;
-        if (this.Connection == null)
+        if (Connection == null)
             throw new Exception("This input does not have a connection.");
-        this.Connection.SetCheck(check);
+        Connection.SetCheck(check);
     }
 
     public void Dispose()
@@ -191,12 +218,12 @@ public class InputModel
             Connection.Dispose();
         }
 
-        this.mSourceBlock = null;
+        mSourceBlock = null;
     }
 
     public void SetSourceBlock(BlockModel block)
     {
-        this.SourceBlock = block;
+        SourceBlock = block;
         if (Connection != null)
         {
             Connection.SourceBlock = block;
@@ -208,6 +235,25 @@ public class InputModel
                 field.SetSourceBlock(block); 
             }
         }
+    }
+
+    public void AppendField(FieldModel field, int index = -1)
+    {
+        if (field == null) return;
+
+        field.SetSourceBlock(this.mSourceBlock);
+
+        if (index >= 0 && index < FieldRow.Count)
+        {
+            FieldRow.Insert(index, field);
+        }
+        else
+        {
+            FieldRow.Add(field);
+        }
+
+       
+        // mSourceBlock?.FireUpdate(1 << (int)UpdateStates.Fields); 
     }
 }//fin clase InputModel
 

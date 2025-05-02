@@ -25,20 +25,34 @@ public class BlockConnectionDB : List<ConnectionModel>
     {
     }
 
-   
-    public void AddConnection(ConnectionModel connection)
+    public void AddConnection(ConnectionModel connectionToAdd)
     {
-        if (connection.InDB)
+        if (connectionToAdd == null)
         {
-            throw new Exception("Connection already in database.");
+            Debug.LogError($"BlockConnectionDB: Attempted to add a null connection.");
+            return;
         }
 
-        var position = this.FindPositionForConnection(connection);
-        this.Insert(position, connection);
-        connection.InDB = true;
+        // Compruebo si ya existe en la lista (comparando referencias)
+        if (this.Contains(connectionToAdd))
+        {
+            Debug.LogWarning($"BlockConnectionDB: Connection '{ConnectionModel.GetConnectionModelID(connectionToAdd)}' is already in the DB list. Ensuring InDB flag is set.");
+           
+            if (!connectionToAdd.InDB)
+            {
+                connectionToAdd.InDB = true;
+            }
+        }
+        else
+        {
+         
+            this.Add(connectionToAdd);
+            connectionToAdd.InDB = true; 
+            // Debug.Log($"ConnectionDB [{this}]: Added connection '{ConnectionModel.GetConnectionModelID(connectionToAdd)}'. Current count: {this.Count}");
+        }
     }
 
-  
+
     public int FindConnection(ConnectionModel connection)
     {
         if (this.Count == 0)
@@ -99,20 +113,34 @@ public class BlockConnectionDB : List<ConnectionModel>
         return pointerMin;
     }
 
- 
-    public void RemoveConnection(ConnectionModel connection)
+  
+    public void RemoveConnection(ConnectionModel connectionToRemove)
     {
-        if (!connection.InDB) return;
+        if (connectionToRemove == null)
+        {
+            Debug.LogWarning($"BlockConnectionDB: Attempted to remove a null connection.");
+            return;
+        }
 
-        var removeIndex = FindConnection(connection);
-        if (removeIndex == -1)
-            throw new Exception("Unable to find connection in connectionDB, but the connection's property \"InDB\" is true");
+        // Intento eliminar de la lista usando el método Remove heredado (busca el objeto)
+        bool removed = this.Remove(connectionToRemove);
 
-        connection.InDB = false;
-        this.RemoveAt(removeIndex);
+        if (removed)
+        {
+            connectionToRemove.InDB = false; 
+        // Debug.Log($"ConnectionDB [{this}]: Removed connection '{ConnectionModel.GetConnectionModelID(connectionToRemove)}'. Current count: {this.Count}");
+        }
+        else
+        {
+          
+            if (connectionToRemove.InDB)
+            {
+                connectionToRemove.InDB = false;
+            }
+        }
     }
 
-   
+
     public List<ConnectionModel> GetNeighbours(ConnectionModel connection, int maxRadius)
     {
         var currentX = connection.Location.x;
@@ -217,5 +245,41 @@ public class BlockConnectionDB : List<ConnectionModel>
         dbList.Add(EConnection.PrevStatement, new BlockConnectionDB());
         return dbList;
     }
+
+
+    public void UpdateConnectionLocation(ConnectionModel connectionToUpdate)
+    {
+        if (connectionToUpdate == null)
+        {
+            Debug.LogError("BlockConnectionDB.UpdateConnectionLocation: Received a null connection.");
+            return;
+        }
+
+        // Busco la instancia específica en la lista.
+        // El enfoque más simple y generalmente seguro es buscar la misma referencia de objeto.
+        bool found = false;
+        for (int i = 0; i < this.Count; i++)
+        {
+            // Comparar referencias directamente
+            if (this[i] == connectionToUpdate)
+            {
+               
+                // Debug.Log($"ConnectionDB [{this}]: Confirmed connection '{ConnectionModel.GetConnectionModelID(connectionToUpdate)}' exists in list. Location ({this[i].Location.x:F2}, {this[i].Location.y:F2}).");
+                found = true;
+                break; 
+            }
+        }
+
+        // Si después de recorrer la lista, no se encontró la referencia...
+        if (!found)
+        {
+            Debug.LogWarning($"BlockConnectionDB: UpdateConnectionLocation - Connection '{ConnectionModel.GetConnectionModelID(connectionToUpdate)}' reported InDB=true but was NOT found in the list. Forcing InDB=false.");
+            // Fuerzo el flag a false para corregir el estado
+            connectionToUpdate.InDB = false;
+
+         
+        }
+    }
+
 }//fin clase BlockConnectionDB
 

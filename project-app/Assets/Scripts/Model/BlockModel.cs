@@ -125,39 +125,95 @@ public class BlockModel : Observable<int>
     {
         if (null == this.Workspace)
         {
+            Debug.LogWarning($"[Block Dispose {this.ID}] Dispose called but Workspace is already null. Skipping.");
+
             return;
         }
+
+        //Para saber quien llama a Dispose
+        try { Debug.LogError($"BLOCK DISPOSE ENTERED for Block ID: {this.ID}. HealStack={healStack}\n" + Environment.StackTrace); } catch { }
 
         UnPlug(healStack);
 
         Workspace.RemoveTopBlock(this);
-        Workspace.BlockDB.Remove(this.ID);
+        if (Workspace != null && Workspace.BlockDB != null && !string.IsNullOrEmpty(this.ID)) 
+        {
+            bool removedFromDB = Workspace.BlockDB.Remove(this.ID);
+            Debug.Log($"[Block Dispose {this.ID}] Removed from Workspace.BlockDB? {removedFromDB}");
+        }
         Workspace = null;
 
-        // First,dispose of all mychildren.
-        for (int i = ChildBlocks.Count - 1; i >= 0; i--)
+       
+        if (this.ChildBlocks != null)
         {
-            this.ChildBlocks[i].Dispose(false);
+            Debug.Log($"[Block Dispose {this.ID}] Disposing {this.ChildBlocks.Count} child blocks...");
+            // Itero desde el final - es más seguro si la lista se modifica durante la iteración
+            for (int i = this.ChildBlocks.Count - 1; i >= 0; i--)
+            {
+                BlockModel child = this.ChildBlocks[i]; // Guardar referencia
+                if (child != null)
+                {
+                    // Debug.Log($"  - Disposing Child {i}: {child.ID}");
+                    child.Dispose(false); 
+                }
+                else
+                {
+                    Debug.LogWarning($"  - Found NULL child block at index {i}!");
+                }
+            }
         }
 
-        // Then dispose of myself.
-        // Dispose of all inputs and theri fields.
-        foreach (var input in InputList)
-        {
-            input.Dispose();
+        Debug.Log($"[Block Dispose {this.ID}] Disposing InputModels...");
+        if (this.InputList != null)
+        { // Check si la lista existe
+            foreach (var input in this.InputList)
+            {
+                if (input != null)
+                {
+                    // Debug.Log($"  - Disposing Input: {input.Name}");
+                    input.Dispose(); 
+                }
+                else
+                {
+                    Debug.LogWarning("  - Found NULL InputModel in InputList!");
+                }
+            }
         }
 
-        var connections = this.GetConnections();
-        foreach (var connection in connections)
+        // Obtengo las conexiones que son propiedad DIRECTA del bloque, NO las de los inputs.
+        List<ConnectionModel> directConnections = new List<ConnectionModel>();
+        if (this.OutputConnection != null) directConnections.Add(this.OutputConnection);
+        if (this.PreviousConnection != null) directConnections.Add(this.PreviousConnection);
+        if (this.NextConnection != null) directConnections.Add(this.NextConnection);
+
+        Debug.Log($"[Block Dispose {this.ID}] Disposing {directConnections.Count} DIRECT connections (Output/Prev/Next). Checking state BEFORE dispose:");
+        foreach (var c in directConnections)
         {
-            connection.Disconnect();
-            connection.Dispose();
+            if (c != null)
+            {
+                Debug.Log($"   - Direct Conn: {ConnectionModel.GetConnectionModelID(c)}, Has SourceBlock? {c.SourceBlock != null} (ID: {c.SourceBlock?.ID ?? "NULL"}), InDB? {c.InDB}, DB Ref Null? {c.DB == null}");
+            }
+            else
+            {
+                Debug.LogWarning("   - Found a NULL direct connection reference (Output/Prev/Next)!");
+            }
         }
+
+        // Disponer las conexiones directas
+        foreach (var connection in directConnections)
+        {
+            if (connection != null) // Siempre seguro hacer null check
+            {
+                // Debug.Log($"  - Disposing Direct Connection: {ConnectionModel.GetConnectionModelID(connection)}");
+                // connection.Disconnect(); 
+                connection.Dispose();
+            }
+        }
+
     }
 
-    
     // Sets the mutator for this block.  Called from BlockFractory, and can only be called once (for now).
-   
+
     public void SetMutator(Mutator mutator)
     {
         if (this.Mutator != null)
@@ -166,7 +222,6 @@ public class BlockModel : Observable<int>
         mutator.AttachToBlock(this);
     }
 
-   
     // updates the inputs and all connections with potentially new values,
     // changing the shape of the block. This method should only be called by the constructor, or Mutators.
     
@@ -286,6 +341,21 @@ public class BlockModel : Observable<int>
                 }
             }
         }
+
+        Debug.LogWarning($"[Unplug Block:{ID}] START. Prev Conn Source Before: {this.PreviousConnection?.SourceBlock?.ID ?? "NULL"}");
+        if (this.ParentBlock != null) { /* ... desconectar de padre ... */ }
+        if (optHealStack && this.PreviousConnection?.TargetConnection != null)
+        {
+            Debug.LogWarning($" - Healing stack, disconnecting Prev from {ConnectionModel.GetConnectionModelID(this.PreviousConnection.TargetConnection)}");
+            this.PreviousConnection.Disconnect(); // ¿Esto modifica SourceBlock?
+        }
+        if (this.NextConnection?.TargetConnection != null)
+        {
+            Debug.LogWarning($" - Disconnecting Next from {ConnectionModel.GetConnectionModelID(this.NextConnection.TargetConnection)}");
+            this.NextConnection.Disconnect(); // ¿Esto modifica SourceBlock?
+                                              // ... conectar sucesor ...
+        }
+        Debug.LogWarning($"[Unplug Block:{ID}] END. Prev Conn Source After: {this.PreviousConnection?.SourceBlock?.ID ?? "NULL"}"); // Verificar si cambió
     }
 
     /// <summary>
@@ -552,19 +622,70 @@ public class BlockModel : Observable<int>
     /// <returns>A list containing the possible initiating connections.</returns>
     public List<ConnectionModel> GetDraggingConnections() // Nombre como en tu error
     {
+        Debug.Log($"<color=orange>GetDraggingConnections() called for Block ID: {ID} ({Type})</color>");
         var draggingConnections = new List<ConnectionModel>();
 
         // Si el bloque tiene una conexión de salida, es un punto de inicio de drag
-        if (this.OutputConnection != null)
+        if (OutputConnection != null)
         {
-            draggingConnections.Add(this.OutputConnection);
+            Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(OutputConnection)}");
+
+            if (this.OutputConnection.SourceBlock == this) draggingConnections.Add(OutputConnection);
         }
         // Si el bloque tiene una conexión anterior (puede apilarse encima), es un punto de inicio
-        else if (this.PreviousConnection != null) 
+        else if (PreviousConnection != null) 
         {
-            draggingConnections.Add(this.PreviousConnection);
+            Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(this.OutputConnection)}");
+            if (this.PreviousConnection.SourceBlock == this) draggingConnections.Add(PreviousConnection);
         }
-        
+
+       else  if (NextConnection != null)
+        {
+            Debug.Log($"  - Considering Next: {ConnectionModel.GetConnectionModelID(NextConnection)}");
+            if (this.NextConnection.SourceBlock == this) draggingConnections.Add(this.NextConnection);
+        }
+
+        foreach (var input in this.InputList)
+        {
+           
+            if (input != null && input.Connection != null)
+            {
+                if (input.Name == "STEPS") // Filtra solo para el input STEPS
+                {
+                    // Log existente
+                    Debug.Log($"[GetDraggingConn:{this.ID}] Checking SPECIFIC Input 'STEPS'. ConnectionType={input.Connection.Type}. Found SourceBlock ID = {input.Connection.SourceBlock?.ID ?? "NULL"}");
+
+                        Debug.Log($"[GetDraggingConn Check] Block: {this.ID}, Input: '{input.Name}'. Conn Hash: {input.Connection.GetHashCode()}, Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                }
+                
+                // Solo considera conexiones de tipo InputValue (las que aceptan bloques con Output)
+                if (input.Connection.Type == EConnection.InputValue)
+                {
+                    Debug.Log($"  - Considering Input '{input.Name}' (Type:InputValue): {ConnectionModel.GetConnectionModelID(input.Connection)} -> Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+
+                    // Añade a la lista SÓLO si el SourceBlock está asignado correctamente a este bloque
+                    if (input.Connection.SourceBlock == this)
+                    {
+                       
+                        Debug.LogWarning($"[GetDraggingConn:{this.ID}] ADDING InputValue Connection '{input.Name}' to dragging list because SourceBlock matches. Is this intended?");
+                        draggingConnections.Add(input.Connection);
+                    }
+                    else
+                    {
+                        // Solo un aviso si el SourceBlock no coincide 
+                        Debug.LogWarning($"[GetDraggingConn:{this.ID}] InputValue '{input.Name}' Connection has WRONG SourceBlock ID: {input.Connection.SourceBlock?.ID ?? "NULL"} (Expected: {this.ID}). Not adding.");
+                    }
+                }
+              
+
+            } // Fin if input y connection no son null
+        }
+
+        Debug.Log($"<color=orange> GetDraggingConnections() returning LIST with {draggingConnections.Count} connections:</color>");
+        for (int i = 0; i < draggingConnections.Count; i++)
+        {
+            Debug.Log($"   - FinalList[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}");
+        }
 
         return draggingConnections;
     }

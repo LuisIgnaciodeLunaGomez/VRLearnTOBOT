@@ -31,9 +31,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     [Tooltip("Asigna aquí la Imagen principal que muestra el color del bloque")]
     [SerializeField] private Image m_PrimaryBackground;
     private bool m_LayoutIsDirty = false;
-
     public override ViewType Type => ViewType.Block;
-
     public string BlockType => mBlock?.Type ?? "NULL_BLOCK_TYPE"; 
 
     private BlockModel mBlock;
@@ -82,7 +80,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         if (mBlock != null) UnBindModel();
 
         mBlock = block;
-        m_WorkspaceView = workspaceView;
+       m_WorkspaceView = this.InToolbox ? null : workspaceView;
 
         // Debug.Log($"BlockView ({BlockType}): Assigning WorkspaceView (InstanceID: {m_WorkspaceView?.GetInstanceID()})", this.gameObject);
 
@@ -109,16 +107,12 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         {
             foreach (var v in ChildViews)
             {
-                Debug.Log($"    - ChildView Found: Name='{v.gameObject.name}', Type='{v.GetType().Name}'");
+               // Debug.Log($"    - ChildView Found: Name='{v.gameObject.name}', Type='{v.GetType().Name}'");
             }
         }
 
         int inputModelIndex = 0;
-        // Limpiamos referencias antiguas (por si acaso es un re-bind)
-        /*OutputConnectionView = null;
-        PreviousConnectionView = null;
-        NextConnectionView = null;
-        mLineGroupViews.Clear();*/
+     
 
         foreach (BaseView childView in ChildViews.Where(c => c != null))
         {
@@ -127,7 +121,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             //Proceso las conexiones hijas directas - OutputValue, PrevStatemnet y NextStatement
             if (childView is ConnectionView conView && !(conView is ConnectionInputView))
             {
-                Debug.Log($"BlockView ({BlockType}): Found direct ConnectionView: {conView.gameObject.name} (Type:{conView.ConnectionType})", this.gameObject);
+              //  Debug.Log($"BlockView ({BlockType}): Found direct ConnectionView: {conView.gameObject.name} (Type:{conView.ConnectionType})", this.gameObject);
                 //ConnectionView conView = childView as ConnectionView;
                 //Obtengo el modelo conexión de BlockModel
                 ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
@@ -135,7 +129,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 //Verifico el modelo antes de bindear e informa de error solo si falla
                 if (conModel != null)
                 {
-                    Debug.Log($" -> Found matching Model: {ConnectionModel.GetConnectionModelID(conModel)}. Binding...", conView.gameObject);
+                   // Debug.Log($" -> Found matching Model: {ConnectionModel.GetConnectionModelID(conModel)}. Binding...", conView.gameObject);
                     conView.BindModel(conModel, this);
                     /*    // Guarda la referencia específica (Output/Prev/Next)
                         if (conView.ConnectionType == EConnection.OutputValue) OutputConnectionView = conView;
@@ -155,7 +149,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             //  else if (childView.Type == ViewType.LineGroup)
             else if (childView is LineGroupView groupView) //Si ChildeView es un LineGroup
             {
-                Debug.Log($"BlockView ({BlockType}): Found LineGroupView: {groupView.gameObject.name}. Binding Inputs within...", groupView.gameObject);
+               // Debug.Log($"BlockView ({BlockType}): Found LineGroupView: {groupView.gameObject.name}. Binding Inputs within...", groupView.gameObject);
 
                 // mLineGroupViews.Add(groupView);
 
@@ -183,7 +177,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                         }
                         else
                         {
-                            Debug.LogError($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}' but NO corresponding InputModel at index {inputModelIndex} (Model has only {mBlock.InputList.Count} inputs). Binding view to NULL.", inputViewVisual.gameObject);
+                        //    Debug.LogError($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}' but NO corresponding InputModel at index {inputModelIndex} (Model has only {mBlock.InputList.Count} inputs). Binding view to NULL.", inputViewVisual.gameObject);
                             inputViewVisual.BindModel(null, this); // Bindea a null
                         }
                         inputModelIndex++; // Incremento el índice del modelo lógico
@@ -195,9 +189,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                     }
                 }
               
-
             }
-
          
            // Debug.Log($"---> BlockView.BindModel ({this.gameObject.name}): Finished processing ChildViews. Processed InputViews: {inputModelIndex}");
 

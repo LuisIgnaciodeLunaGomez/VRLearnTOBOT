@@ -25,10 +25,23 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 {   
     public static BlockDragController Instance { get; private set; }
 
-    private WorkSpaceModel m_Workspace; 
+    private WorkSpaceModel _workspace;
+
+    private WorkSpaceModel m_Workspace {
+        get { return _workspace; }
+        set
+        {
+            
+         //   Debug.LogError($"<color=red>HASHCODE_CHECK - BlockDragController - m_Workspace Setter Called!");
+            Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
+            Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
+
+            _workspace = value; 
+        }
+    } 
     private WorkSpaceView m_WorkspaceView;
 
-    //Referncia a controladores
+    //Referencia a controladores
     private WorkspaceController m_workspaceController;
     private BlockConnectionController m_connectionController; //Inyecto el controlador
 
@@ -66,6 +79,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     void Awake()
     {
+
+        //Debug.LogError("HASHCODE_CHECK - MiControlador - AWAKE - HashCode(this): " + this.GetHashCode());
         if (Instance == null) Instance = this; else Destroy(gameObject);
     }
 
@@ -110,6 +125,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         {
             Debug.LogError("BlockDragController: WorkspaceView is null, cannot get RootCanvas or CodingArea!");
         }
+
+        //Debug.LogError($"<color=red>HASHCODE_CHECK - BlockDragController Initialize - Received/Stored Workspace HashCode: {m_Workspace?.GetHashCode()}");
+
     }
 
     private void ResetDragState()
@@ -306,11 +324,11 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return;
         }
 
-        Debug.Log($"<color=magenta>BlockDragController: Starting drag - BLOCK {m_DraggingBlockModel.ID}</color>");
+       // Debug.Log($"<color=magenta>BlockDragController: Starting drag - BLOCK {m_DraggingBlockModel.ID}</color>");
 
         m_workspaceController.RequestBlockUnplug(m_DraggingBlockModel, true);
 
-        Debug.Log($"   Reparenting '{blockView.name}' to DragLayer '{m_DragLayerRect.name}'", this);
+     //  Debug.Log($"   Reparenting '{blockView.name}' to DragLayer '{m_DragLayerRect.name}'", this);
         m_DraggingBlockView.transform.SetParent(m_DragLayerRect, true);
 
         if (!PrepareVisualDrag(eventData)) 
@@ -322,7 +340,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         }
 
         m_IsDragging = true; // Marcar como arrastrando 
-        Debug.Log($"<color=green>BlockDragController: Drag successfully initiated for BLOCK {m_DraggingBlockModel.ID}. Offset: {m_ScreenSpaceDragOffset}</color>", this);
+      //  Debug.Log($"<color=green>BlockDragController: Drag successfully initiated for BLOCK {m_DraggingBlockModel.ID}. Offset: {m_ScreenSpaceDragOffset}</color>", this);
     }
 
     //Método que se encarga de arrastrar una plantilla de bloque que está en la ToolBox y lo posiciona en la DragLayer
@@ -425,7 +443,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     {
         if (m_DraggingBlockView == null || m_DraggingBlockView.ViewTransform == null || m_DraggingBlockView.gameObject == null)
         {
-            Debug.LogError("PrepareVisualDrag: Invalid dragging block view state.");
+           // Debug.LogError("PrepareVisualDrag: Invalid dragging block view state.");
             ResetDragState(eventData); 
             return false;
         }
@@ -444,7 +462,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         }
 
-        //Calculamos posición Local del Puntero en el Padre
+        //Calculo posición Local del Puntero en el Padre
         Vector2 localPointerPosInParent;
 
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, eventData.position, null,/*m_CachedCamera, <--- null por screen.Overlay*/ out localPointerPosInParent))
@@ -463,7 +481,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         Vector2 currentBlockAnchoredPos = m_DraggingBlockView.ViewTransform.anchoredPosition;
   //      Debug.Log($"PrepareVisualDrag: Block's current AnchoredPosition: {currentBlockAnchoredPos}");
 
-        //Calculamos el Offset Visual 
+        //Calculo el Offset Visual 
         m_ScreenSpaceDragOffset = currentBlockAnchoredPos - localPointerPosInParent;
 
       //  Debug.Log($"PrepareVisualDrag: Calculated Offset = BlockPivot ({currentBlockAnchoredPos}) - PointerLocal ({localPointerPosInParent}) = {m_ScreenSpaceDragOffset}");
@@ -486,6 +504,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// </summary>
     public void HandleDrag(/*BlockView blockView,*/ PointerEventData eventData)
     {
+        //Debug.LogError($"<color=red>HASHCODE_CHECK - HandleDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
+
         if (!m_IsDragging || m_DraggingBlockView == null)
         {
             //Debug.LogWarning($"HandleDrag called while m_IsDragging=true but m_DraggingBlockView is null!");
@@ -500,27 +520,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         }
 
-        // Log para confirmar que procesamos el drag del bloque correcto
-       // Debug.Log($"HandleDrag processing drag for {m_DraggingBlockView.gameObject.name} (Internal m_DraggingBlockView).", m_DraggingBlockView.gameObject);
-
-
-        /*
-        if (blockView != null && m_DraggingBlockView != blockView)
-        {
-            Debug.Log($"HandleDrag ignoring event from {blockView.name}, currently dragging {m_DraggingBlockView.name}");
-            return;
-        }
-        */
-        /* if (!m_IsDragging || m_DraggingBlockView == null || m_DraggingBlockView != blockView)
-         {
-           
-             Debug.LogWarning($"HandleDrag skipping. isDragging:{m_IsDragging}, m_DraggingBlockView is null: {m_DraggingBlockView == null}, blockView mismatch: {m_DraggingBlockView != blockView}", this.gameObject);
-             if (m_IsDragging && m_DraggingBlockView == null) ResetDragState(eventData); // Auto-limpiar estado si se corrompio
-             return; // No procesar drag si el estado no es el correcto o blockView no es el arrastrado.
-         }*/
-
-        // Debug.Log($"HandleDrag: Processing drag for {m_DraggingBlockView.name}");
-
         // Calculamos la posición local en DragLayer
         Vector2 localPointerPosition;
         RectTransform parentRect = m_DragLayerRect; //<----Padre es el Drag Layer cuando inicio el movimiento en la toolbox
@@ -529,22 +528,13 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         Camera currentCamera = m_CachedCamera; 
         if (m_WorkspaceView?.RootCanvas != null && m_WorkspaceView.RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay) currentCamera = null;
 
-        /*  if (parentRect != null)
-          {
-              Debug.LogError($"HandleDrag: Drag parent ({parentRect?.name}) or camera ({m_CachedCamera?.name}) is null!");
-              ResetDragState(eventData);
-              return;
-          }*/
-
-        //  if (parentRect == null) parentRect = m_CodingAreaRect; 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                  parentRect,
                  eventData.position,
                  null,//null,//m_CachedCamera, <--- null por screen.Overlay 
                  out localPointerPosition))
         {
-            //   Debug.Log($"Calling ScreenPointToLocalPointInRectangle with Camera: {((m_CachedCamera == null) ? "NULL" : m_CachedCamera.name)}");
-            //m_DraggingBlockView.ViewTransform.anchoredPosition = localPointerPosition + m_DragOffsetViewSpace;
+          
             Vector2 newAnchoredPos = localPointerPosition + m_ScreenSpaceDragOffset;
 
             m_DraggingBlockView.XY = newAnchoredPos;
@@ -557,8 +547,10 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
          List<ConnectionModel> dragginConnections = m_DraggingBlockModel.GetDraggingConnections();
 
         Vector2 blockModelCurrentLogicalPosition = m_DraggingBlockModel.XY;
-        m_connectionController.ProcessDrag(m_DraggingBlockModel, dragginConnections, m_DraggingBlockModel.XY);
 
+       // Debug.LogError($"HASHCODE_CHECK - HandleDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
+
+        m_connectionController.ProcessDrag(m_DraggingBlockModel, dragginConnections, m_DraggingBlockModel.XY);
         
         m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); //Revisar la lógica de la papelera ya que si no cae en CodingArea se debe de borrar, ahora mismo no se borra 
     }
@@ -566,6 +558,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
     public void HandleEndDrag(/*BlockView blockView,*/ PointerEventData eventData)
     {
+        //Debug.Log($"<color=red>BlockDragController.HandleEndDrag: Entered. IsDragging={m_IsDragging}. DraggingView={m_DraggingBlockView?.name}</color>");
+
+       // Debug.LogError($"<color=red> HASHCODE_CHECK - HandleEndDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
 
         if (!m_IsDragging || m_DraggingBlockView /*!= blockView || m_DraggingBlockView */== null)
         {
@@ -576,14 +571,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         }
 
 
-        /*
-        if (blockView != null && m_DraggingBlockView != blockView)
-        {
-            return;
-        }
-        */
+     
         string blockId = m_DraggingBlockModel?.ID ?? "UNKNOWN";
-        string viewName = m_DraggingBlockView.name;
 
         Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({m_DraggingBlockView.name})</color>");
         Debug.Log($"    Pointer Screen Pos: {eventData.position}");
@@ -592,16 +581,27 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
        // ConnectionModel finalTargetConnection = m_BestTargetConnection; // La conexión encontrada
       //  ConnectionModel finalSourceConnection = m_SourceDragConnection; // La conexión que quería conectar
-       // bool overTrash = m_WorkspaceView.IsOverTrashBin(m_DraggingBlockView);
+        //bool overTrash = m_WorkspaceView.IsOverTrashBin(m_DraggingBlockView);
         bool overCodingArea = IsPointerOverCodingArea(eventData);
 
-      //  bool actionHandled = m_connectionController.TryConnectAndPlace(m_DraggingBlockModel, m_WasTemplateClone, overTrash);
+        //Debug.LogError($"HASHCODE_CHECK - HandleEndDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
+
+        bool actionHandled = m_connectionController.TryConnectAndPlace(m_DraggingBlockModel, m_WasTemplateClone, eventData.position);
+
+        Debug.Log("<color=orange> - Now attempting to finalize placement/connection via BlockConnectionController...</color>");
+
+        
+        if (actionHandled && m_WasTemplateClone)
+        { // Solo si fue exitoso Y era un clon pendiente
+            Debug.Log($"[HandleEndDrag] Clearing m_PendingCloneModel ({m_PendingCloneModel?.ID}) due to successful place/connect.");
+            m_PendingCloneModel = null; 
+        }
 
         bool connected = false;
         bool deleted = false;
         bool placedInWorkspace = false;
 
-         if (!connected && !deleted && !overCodingArea) //Revisar eliminación del bloque si no esta conectado y no esta en el coding Area
+         if (!connected && !deleted && !overCodingArea) 
          {
              deleted = true; 
              Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
@@ -863,19 +863,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         //  Lógica de Decisión Final 
         bool connected = false;
         bool placedInWorkspace = false;
-
-        //  Intento Conexión
-    /*    if (finalTargetConnection != null && finalSourceConnection != null)
-        {
-            blockToPlaceOrConnect.transform.SetParent(m_CodingAreaRect, true);
-            blockToPlaceOrConnect.transform.SetAsLastSibling();
-            if (m_workspaceController.RequestConnection(finalSourceConnection, finalTargetConnection))
-            {
-                connected = true;
-                placedInWorkspace = true;
-            } // else { log warning }
-        }*/
-
         // Colocar en Workspace
         if (!connected && overCodingArea)
         {
@@ -1090,7 +1077,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return Vector3.zero;
         }
 
-        // Obtener las esquinas locales del rectángulo (relativas al pivot
+        // Obtener las esquinas locales del rectángulo relativas al pivot
         // rect.rect devuelve { x: posXLocalRelativaAlPivotDeMinX, y: posYLocalRelativaAlPivotDeMinY, width: ..., height: ... }
         Rect rect = rectTransform.rect;
 

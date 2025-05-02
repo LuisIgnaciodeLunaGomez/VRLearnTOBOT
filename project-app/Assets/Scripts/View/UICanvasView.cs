@@ -69,8 +69,8 @@ public class UICanvasView : MonoBehaviour
 
     void Awake()
     {
-       // Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
-
+        // Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
+        Debug.LogError("---- UICanvasView Awake() START ---- Instance ID: " + this.GetInstanceID());
         m_isCoreComponentsReady = false;
 
         InitializeCore();
@@ -105,11 +105,13 @@ public class UICanvasView : MonoBehaviour
                 m_MiddlePanelScrollRect = m_MiddlePanelRect.gameObject.GetComponent<ScrollRect>();
                 if (m_MiddlePanelScrollRect == null) { }
 
-
                 // Creamos Modelo
                 WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions();
                 m_WorkspaceModel = new WorkSpaceModel(options);
-               // Debug.Log($"<color=green>UICanvasView: WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
+
+               // Debug.LogError($"HASHCODE_CHECK - WorkSpaceModel UICanvasView CONSTRUCTOR - ID: {m_WorkspaceModel.Id} - Instance HashCode: {m_WorkspaceModel.GetHashCode()}");
+
+                // Debug.Log($"<color=green>UICanvasView: WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
 
                 // Marcamos componentes listos 
                 if (m_WorkspaceModel != null && m_WorkSpaceView != null && m_Toolbox != null)
@@ -837,6 +839,8 @@ public class UICanvasView : MonoBehaviour
      */
     public void LoadWorkspace()
     {
+        Debug.LogError("!!!!!!!! UICanvasView.LoadWorkspace() CALLED !!!!!!!!");
+
         if (m_WorkspaceModel == null || m_WorkSpaceView == null) return;
 
         string savedXml = PlayerPrefs.GetString("SavedWorkspace_UBlockly", "");

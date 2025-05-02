@@ -90,9 +90,11 @@ public class AppController : MonoBehaviour
         }
        // Debug.Log("AppController: Found UICanvasView. Waiting for its core UI/View components to be ready (Awake phase)...", this);
         
-        yield return new WaitUntil(() => m_uiManager.IsCoreComponentsReady()); 
+        yield return new WaitUntil(() => m_uiManager.IsCoreComponentsReady());
 
-      //  Debug.Log("AppController: UICanvasView components ready.");
+        //  Debug.Log("AppController: UICanvasView components ready.");
+
+        m_workspaceModel = m_uiManager.Workspace;
 
         m_categoryController = FindFirstObjectByType<CategoryController>();
         if (m_categoryController == null) m_categoryController = gameObject.AddComponent<CategoryController>();
@@ -120,7 +122,6 @@ public class AppController : MonoBehaviour
             yield break;
         }
        // Debug.Log($"AppController: Got Model (ID: {m_workspaceModel.Id}) and View components from UICanvasView.");
-
 
         RectTransform codingAreaRect = m_uiManager.CodingAreaPanelRect;
         RectTransform blockListAreaRect = m_uiManager.BlockListPanelRect;

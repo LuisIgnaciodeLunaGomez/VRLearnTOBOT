@@ -25,7 +25,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using static Unity.VisualScripting.Member;
 
 public class WorkspaceController : MonoBehaviour
 {
@@ -39,6 +39,7 @@ public class WorkspaceController : MonoBehaviour
 
     void Awake()
     {
+        //Debug.LogError("<color=red>HASHCODE_CHECK - MiControlador - AWAKE - HashCode(this): " + this.GetHashCode());
         if (Instance == null)
         {
             Instance = this; 
@@ -57,7 +58,9 @@ public class WorkspaceController : MonoBehaviour
         m_WorkspaceView = view;
         if (m_WorkspaceView == null) m_WorkspaceView = FindFirstObjectByType<WorkSpaceView>();
         if (m_WorkspaceView == null) Debug.LogError("WorkspaceController: WorkSpaceView reference is missing!", this.gameObject);
-      //  Debug.Log("WorkspaceController Initialized with UBlockly.Workspace.");
+        //  Debug.Log("WorkspaceController Initialized with UBlockly.Workspace.");
+       // Debug.LogError($"<color=red>HASHCODE_CHECK - WorkspaceController Initialize - Received/Stored Workspace HashCode: {m_WorkspaceModel?.GetHashCode()}");
+
     }
 
     #region API para Otros Controladores
@@ -370,11 +373,23 @@ public class WorkspaceController : MonoBehaviour
     private string GetConnectionModelID(ConnectionModel conn)
     {
         if (conn == null) return "NULL_CONN";
-        // No hay ID propio en ConnectionModel, uso una combinación de SourceBlock ID, Type y Input Name si aplica
-        string sourceId = conn.SourceBlock?.ID ?? "NO_BLOCK";
-        if (conn.Type == EConnection.InputValue || conn.Type == EConnection.NextStatement && conn.Input != null)
+       
+        string sourceId = conn.SourceBlock?.ID ?? "SOURCE_BLOCK_NULL";
+
+
+        if (conn.Type == EConnection.InputValue || conn.Type == EConnection.NextStatement)
         {
-            return $"{sourceId}.{conn.Type}.{conn.Input.Name}";
+          
+            string inputName = conn.Input?.Name ?? "INPUT_OR_NAME_NULL";
+
+           
+            if (conn.Input == null)
+            {
+                Debug.LogWarning($"GetConnectionModelID: Connection (Source: {sourceId}, Type: {conn.Type}) has NULL Input field!");
+            }
+            
+
+            return $"{sourceId}.{conn.Type}.{inputName}"; 
         }
         else
         {
@@ -421,6 +436,8 @@ public class WorkspaceController : MonoBehaviour
     // Método público para exportar el estado de las DBs a un archivo JSON
     public void ExportConnectionDBState(string filename = "ConnectionDB_Debug_State")
     {
+        //Debug.LogError($"HASHCODE_CHECK - ExportConnectionDBState - Using WorkspaceModel Instance HashCode: {m_WorkspaceModel?.GetHashCode()}");
+
         if (m_WorkspaceModel?.ConnectionDBList == null)
         {
             Debug.LogWarning("Connection DBs are not initialized. Cannot export.");
@@ -428,6 +445,8 @@ public class WorkspaceController : MonoBehaviour
         }
 
         DebugConnectionDBsState debugState = new DebugConnectionDBsState();
+
+        Debug.Log("<color=grey>ExportConnectionDBState: Preparing export...</color>");
 
         // Convierto la BlockConnectionDB a un array de DebugConnectionData
         Func<BlockConnectionDB, DebugConnectionData[]> convertDBToArray = (db) =>
@@ -442,13 +461,34 @@ public class WorkspaceController : MonoBehaviour
         };
 
         // Lleno las listas de conexiones por tipo de DB
+        Debug.Log($" - InputValuesDB Count (in Model): {m_WorkspaceModel.ConnectionDBList.GetValueOrDefault(EConnection.InputValue)?.Count ?? 0}");
+
         debugState.InputValuesDB = convertDBToArray(m_WorkspaceModel.ConnectionDBList.ContainsKey(EConnection.InputValue) ? m_WorkspaceModel.ConnectionDBList[EConnection.InputValue] : null);
+
+        Debug.Log($" - OutputValuesDB Count (in Model): {m_WorkspaceModel.ConnectionDBList.GetValueOrDefault(EConnection.OutputValue)?.Count ?? 0}");
+
         debugState.OutputValuesDB = convertDBToArray(m_WorkspaceModel.ConnectionDBList.ContainsKey(EConnection.OutputValue) ? m_WorkspaceModel.ConnectionDBList[EConnection.OutputValue] : null);
+
+        Debug.Log($" - NextStatementsDB Count (in Model): {m_WorkspaceModel.ConnectionDBList.GetValueOrDefault(EConnection.NextStatement)?.Count ?? 0}");
+
         debugState.NextStatementsDB = convertDBToArray(m_WorkspaceModel.ConnectionDBList.ContainsKey(EConnection.NextStatement) ? m_WorkspaceModel.ConnectionDBList[EConnection.NextStatement] : null);
+       
+        Debug.Log($" - PrevStatementsDB Count (in Model): {m_WorkspaceModel.ConnectionDBList.GetValueOrDefault(EConnection.PrevStatement)?.Count ?? 0}");
+
         debugState.PrevStatementsDB = convertDBToArray(m_WorkspaceModel.ConnectionDBList.ContainsKey(EConnection.PrevStatement) ? m_WorkspaceModel.ConnectionDBList[EConnection.PrevStatement] : null);
 
         //Guardo también todos los BlockModels
         var allBlocks = m_WorkspaceModel.GetAllBlocks();
+
+        Debug.Log($" - Found {allBlocks.Count} blocks via m_WorkspaceModel.GetAllBlocks()");
+
+        if (allBlocks.Count > 0)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder("   - Blocks found for export:");
+            foreach (var b in allBlocks) { sb.Append($" {b.ID}({b.Type}),"); }
+            Debug.Log(sb.ToString());
+        }
+
         debugState.AllBlocks = new DebugBlockData[allBlocks.Count];
         for (int i = 0; i < allBlocks.Count; i++)
         {

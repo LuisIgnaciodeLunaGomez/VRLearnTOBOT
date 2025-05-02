@@ -24,7 +24,6 @@ using System.Collections;
 using System.Linq;
 using UnityEngine.EventSystems;
 
-
 public class BlockListView : MonoBehaviour
 {
     [Header("UI Assignments")]
@@ -114,7 +113,7 @@ public class BlockListView : MonoBehaviour
             }
             else
             {
-                Debug.Log("BlockListView: Found existing RectTransform child for ScrollRect content.", m_BlockTemplateContainerRect);
+              //  Debug.Log("BlockListView: Found existing RectTransform child for ScrollRect content.", m_BlockTemplateContainerRect);
                 m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
             }
 
@@ -479,7 +478,7 @@ public class BlockListView : MonoBehaviour
 
         // 3. Configuramos la Vista para el Toolbox
         view.InToolbox = true;                  // Marcamos como plantilla
-        Debug.Log($"NewBlockView: Setting InToolbox = TRUE for Template BlockView '{view.gameObject.name}'");
+       // Debug.Log($"NewBlockView: Setting InToolbox = TRUE for Template BlockView '{view.gameObject.name}'");
         if (view.Block != null) view.Block.Movable = true; // El modelo asociado a la plantilla si es movible lógicamente
         view.gameObject.name = $"Template_{blockType}"; // Nombre 
 
@@ -651,49 +650,7 @@ public class BlockListView : MonoBehaviour
         StartCoroutine(DelayedLayoutRebuild(m_BlockTemplateContainerRect));
     }
 
-    /// <summary>
-    /// Comprueba si una BlockView (que se está arrastrando) está sobre el área de la papelera.
-    /// Muestra/oculta la papelera visualmente.
-    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
-    /// </summary>
-    /*public bool CheckBin(BlockView blockView) 
-    {
-        if (!m_IsInitialized || m_WorkspaceView == null || m_BinArea == null) return false;
-        if (blockView == null || blockView.InToolbox || !BlockDragController.Instance.IsDraggingBlock(blockView)) return false; 
-
-        RectTransform binRect = m_BinArea.transform as RectTransform;
-        if (binRect == null) return false;
-
-        Camera eventCamera = m_WorkspaceView.EventCamera;
-        Vector2 screenPoint = Input.mousePosition;
-
-        bool contains = RectTransformUtility.RectangleContainsScreenPoint(binRect, screenPoint, eventCamera);
-
-        if (m_BinArea.activeSelf != contains) m_BinArea.SetActive(contains); // Mostrar/ocultar visualmente
-
-        return contains;
-    }*/
-
-    /// <summary>
-    /// Llamado al finalizar un drag (por BlockDragController) para completar la acción de la papelera.
-    /// Si el bloque estaba sobre la papelera, pide su eliminación al WorkspaceController.
-    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
-
-    /// </summary>
-    /*public void FinishCheckBin(BlockView blockView) 
-    {
-        if (!m_IsInitialized || m_BinArea == null || blockView == null) return;
-
-        bool wasOverBin = m_BinArea.activeSelf; // Usar el estado visual actual
-        m_BinArea.SetActive(false); // Ocultar la papelera
-
-        if (wasOverBin && !blockView.InToolbox && blockView.Block != null && blockView.Block.Deletable)
-        {
-            Debug.Log($"BlockListView: Block {blockView.BlockType} ({blockView.Block?.ID}) dropped in Bin. Requesting delete.", this);
-            WorkspaceController.Instance?.RequestDeleteBlock(blockView.Block);
-        }
-    }*/
-
+    
     //  Limpieza y Utilidades 
     public void ClearBlockTemplates()
     {

@@ -68,7 +68,7 @@ public class CategoryController : MonoBehaviour
             yield break;
         }
 
-        Debug.Log("<color=purple>CategoryController: Selecting initial category...</color>");
+       // Debug.Log("<color=purple>CategoryController: Selecting initial category...</color>");
 
         // Encontramos la primera categoría real 
         ToolboxBlockCategory firstCategory = m_ToolboxConfig.BlockCategoryList.FirstOrDefault(c => c?.Custom != "SEPARATOR");

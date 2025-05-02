@@ -96,46 +96,9 @@ public abstract class BaseView : MonoBehaviour
             }
         }
 
-        /*
-        // Recorremos los hijos visuales
-        if (m_ViewTransform != null)
-        {
-            List<BaseView> foundChildren = new List<BaseView>(); // Lista temporal
-            for (int i = 0; i < m_ViewTransform.childCount; i++)
-            {
-                Transform childTransform = m_ViewTransform.GetChild(i);
-                BaseView childBaseView = childTransform.GetComponent<BaseView>();
-
-                // Si el hijo visual tiene un componente BaseView
-                if (childBaseView != null)
-                {
-                    foundChildren.Add(childBaseView); // Añadir a lista temporal para evitar modificar mientras se itera childCount/GetChild(i)
-                }
-            }
-
-            // Ahora que tenemos la lista temporal, añadir a la lista principal y setear parent.
-            foreach (BaseView childBaseView in foundChildren)
-            {
-                //  REGISTRAR EL HIJO LÓGICO Y ESTABLECER SU PADRE LÓGICO 
-                // Add the child to the logical list
-                int index = m_ChildViews.Count; // Añadir al final
-                m_ChildViews.Insert(index, childBaseView);
-
-                InternalAddLogicalChildReference(childBaseView); // <--- Usamos este nuevo helper
-                Debug.Log($"  {gameObject.name}: Added logical child reference {childBaseView.gameObject.name}.", this.gameObject); // Log de adición
-        }
-        }
-        else
-        {
-            Debug.LogError($"BaseView ({gameObject.name}): ViewTransform is null during InitializeView scan for children.", this.gameObject);
-        }
-        */
-
-
-       // Debug.Log($"BaseView ({gameObject.name}): Initialization finished. Populated ChildViews Count: {m_ChildViews.Count}", this.gameObject);
+      
     }
 
-    /// NUEVO METODO INTERNO PARA AÑADIR A HIJO LÓGICO SIN MANIPULAR VISUAL
     
     /// <summary>
     /// Método interno para añadir un hijo a la lista m_ChildViews
@@ -148,22 +111,16 @@ public abstract class BaseView : MonoBehaviour
         if (childView == null || childView == this || m_ChildViews.Contains(childView))
         {
             // Debug.LogWarning("Skipping adding null, self, or already present child.", this.gameObject);
-            return; // No añadir si es nulo, esta vista misma, o ya está
+            return; 
         }
 
-        // Añadir a la lista de hijos LÓGICOS
-        int index = m_ChildViews.Count; // Generalmente añadir al final al poblar desde prefab
+        int index = m_ChildViews.Count;
         m_ChildViews.Insert(index, childView);
 
-        // Establecer la referencia de padre LÓGICO en el HIJO
-        // !!! ESTA ES LA LÍNEA CRUCIAL QUE FALTABA !!!
+      
         childView.m_ParentView = this;
 
-        // No necesitamos manejar PreviousView/NextView aquí a menos que las uses explícitamente para iterar.
-
-        // No llamar MarkDirty, OnXYUpdated, SetParent aquí.
-        // Esta adición lógica solo establece la estructura para cuando BuildLayout/UpdateLayout/OnXYUpdated
-        // sean llamados después por el controlador o el sistema.
+       
     }
 
     protected virtual void Awake()
@@ -299,7 +256,7 @@ public abstract class BaseView : MonoBehaviour
 
         else
         {
-            Debug.Log("No hay hijos en " + gameObject.name);
+           // Debug.Log("No hay hijos en " + gameObject.name);
         }
        // Debug.Log($"BaseView::OnXYUpdated END for {gameObject.name}.", this.gameObject);
     }
@@ -465,7 +422,6 @@ public abstract class BaseView : MonoBehaviour
     protected virtual void OnDestroy()
     {
         // Debug.Log($"BaseView ({gameObject.name}) OnDestroy.", this);
-        // Desvincularse del padre LÓGICO al ser destruido físicamente.
 
         m_ParentView?.RemoveChild(this); // La vista le dice al padre lógico que ya no es su hijo/a
 
@@ -551,8 +507,6 @@ public abstract class BaseView : MonoBehaviour
             return endPos;
         }
     }
-
-
 }// Fin de la clase BaseView
 
 

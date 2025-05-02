@@ -170,14 +170,14 @@ namespace UBlockly
                 {
                     if (atInput == null)
                     {
-                        atInput = InputFactory.Create(EConnection.InputValue, data.inputName, EAlign.Left, CHECK);
+                        atInput = InputFactory.Create(EConnection.InputValue, data.inputName, EAlign.Left, CHECK, mBlock);
                         mBlock.AppendInput(atInput, data.atInputIndex);
                     }
                     else if (atInput.Type == EConnection.DummyInput)
                     {
                         //remove dummy input first
                         mBlock.RemoveInput(atInput);
-                        atInput = InputFactory.Create(EConnection.InputValue, data.inputName, EAlign.Left, CHECK);
+                        atInput = InputFactory.Create(EConnection.InputValue, data.inputName, EAlign.Left, CHECK, mBlock);
                         mBlock.AppendInput(atInput, data.atInputIndex);
                     }
                 }

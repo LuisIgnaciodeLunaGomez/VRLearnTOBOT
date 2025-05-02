@@ -27,7 +27,6 @@ public class WorkSpaceModel
 
     public class WorkspaceOptions
     {
-
         public int MaxBlocks = -1;
         public bool ReadOnly = false;
         public bool Synchronous = false;
@@ -41,8 +40,30 @@ public class WorkSpaceModel
     public ProcedureDB ProcedureDB { get; private set; }
     private const int MAX_UNDO = 1024;
     private const int SCAN_ANGLE = 3;
+
+    private static WorkSpaceModel _instance;
+    public static WorkSpaceModel Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                Debug.LogError("WorkSpaceModel INSTANCE WAS NULL! Creating new default one.");
+                _instance = new WorkSpaceModel(); 
+            }
+            return _instance;
+        }
+    }
+
     public WorkSpaceModel(WorkspaceOptions options = null, string optId = null)
     {
+        if (_instance != null && _instance != this)
+        {
+            Debug.LogError("!!! Singleton Pattern Violated! Creating a second WorkSpaceModel instance. !!!");
+        }
+
+        if (_instance == null) _instance = this; // Asigno la primera instancia creada
+
         if (string.IsNullOrEmpty(optId))
         {
             Id = Utilidades.GenUid();
@@ -51,6 +72,8 @@ public class WorkSpaceModel
         {
             Id = optId;
         }
+
+        //Debug.LogError($"HASHCODE_CHECK - WorkSpaceModel CONSTRUCTOR - ID: {Id} - Instance HashCode: {this.GetHashCode()}");
 
         if (mWorkspaceDB.ContainsKey(Id))
         {
@@ -69,15 +92,30 @@ public class WorkSpaceModel
         VariableMap = new VariableMap(this);
         ConnectionDBList = BlockConnectionDB.Build();
         ProcedureDB = new ProcedureDB(this);
+
+       // Debug.LogError($"HASHCODE_CHECK - WorkSpaceModel CONSTRUCTOR - ID: {Id} - Instance HashCode: {this.GetHashCode()}");
+
+    }
+
+    public static void EnsureInitialized(WorkspaceOptions options = null, string optId = null)
+    {
+        if (_instance == null)
+        {
+            _instance = new WorkSpaceModel(options, optId);
+        }
     }
     public void Dispose()
     {
+        Debug.LogError("!!!!!!!! WorkSpaceModel.Dispose() CALLED !!!!!!!!");
+
         this.Clear();
         mWorkspaceDB.Remove(this.Id);
     }
 
     public void Clear()
     {
+        Debug.LogError("!!!!!!!! WorkSpaceModel.Clear() CALLED !!!!!!!!");
+        Debug.LogError("Stack Trace:\n" + Environment.StackTrace);
         while (TopBlocks.Count > 0)
         {
             TopBlocks[TopBlocks.Count - 1].Dispose();
@@ -85,6 +123,7 @@ public class WorkSpaceModel
 
         VariableMap.Clear();
         ConnectionDBList.Clear();
+        Debug.LogError("!!!!!!!! dentro de WorkSpaceModel.Clear() ->ConnectionDBList.Clear(); CALLED !!!!!!!!");
         ProcedureDB.Clear();
     }
 
@@ -108,7 +147,6 @@ public class WorkSpaceModel
         else if (ProcedureDB.IsCaller(block)) ProcedureDB.AddCaller(block);
     }
 
-
     public void RemoveTopBlock(BlockModel block)
     {
         TopBlocks.Remove(block);
@@ -117,7 +155,6 @@ public class WorkSpaceModel
         else if (ProcedureDB.IsCaller(block)) ProcedureDB.RemoveCaller(block);
     }
 
-  
     public List<BlockModel> GetTopBlocks(bool ordered)
     {
         var blocks = new List<BlockModel>();
@@ -138,13 +175,14 @@ public class WorkSpaceModel
 
     public List<BlockModel> GetAllBlocks()
     {
-        var topBlocks = this.GetTopBlocks(false);
+       /* var topBlocks = GetTopBlocks(false);
         List<BlockModel> blocks = new List<BlockModel>();
         foreach (BlockModel topBlock in topBlocks)
         {
             blocks.AddRange(topBlock.GetDescendants());
-        }
-        return blocks;
+        }*/
+        Debug.Log($"GetAllBlocks(): Returning {BlockDB.Count} blocks directly from BlockDB.Values.");
+        return new List<BlockModel>(BlockDB.Values);
     }
 
     #endregion
@@ -410,26 +448,82 @@ public class WorkSpaceModel
             Debug.Log("Delete cancelled.");
         }
     }
+
     public void AddBlock(BlockModel block)
     {
+       // Debug.Log($"<color=magenta>WorkspaceModel.AddBlock ENTERED.</color> Block: {block?.Type} (ID: {block?.ID})");
+
+      //  Debug.LogError($"HASHCODE_CHECK - WorkspaceModel AddBlock - Instance HashCode: {this.GetHashCode()} - Adding Block ID: {block?.ID}");
+
         if (block == null)
         {
             Debug.LogError("WorkSpaceModel.AddBlock: Attempted to add a null block.");
             return;
         }
 
-            if (!BlockDB.ContainsKey(block.ID))
+        if (!BlockDB.ContainsKey(block.ID))
         {
             Debug.LogWarning($"WorkSpaceModel.AddBlock: Block '{block.Type}' (ID: {block.ID}) was not in BlockDB. Adding it now. BlockFactory should ideally handle this upon creation.");
             BlockDB.Add(block.ID, block);
         }
-       bool isTopBlock = block.ParentBlock == null;
+        else
+        {
+            Debug.Log($" - Block ID {block.ID} already exists in BlockDB.");
+        }
+
+        bool isTopBlock = block.ParentBlock == null;
 
 
         if (isTopBlock)
         {
-            AddTopBlock(block);
+            if (!TopBlocks.Contains(block)) // Solo añade si no está ya
+            {
+                Debug.Log($" - Adding Block ID {block.ID} to TopBlocks list.");
+                AddTopBlock(block); 
+            }
+            else
+            {
+                Debug.Log($" - Block ID {block.ID} is already in TopBlocks list.");
+            }
         }
-    
+        else // No es top block
+        {
+            if (TopBlocks.Contains(block))
+            {
+                Debug.LogWarning($" - Block ID {block.ID} is NOT a TopBlock (has parent) but was found in TopBlocks list! Removing.");
+                RemoveTopBlock(block); 
+            }
+            else
+            {
+                Debug.Log($" - Block ID {block.ID} is not a TopBlock (Parent: {block.ParentBlock?.ID}). Not added to TopBlocks list.");
+            }
+        }
+
+        List<ConnectionModel> connectionsToRegister = block.GetConnections();
+
+        foreach (ConnectionModel conn in connectionsToRegister)
+        {
+            if (conn == null || conn.SourceBlock != block) continue;
+
+            if (conn.DB != null)
+            {
+                if (!conn.DB.Contains(conn)) 
+                {
+                    Debug.Log($"<color=lime>   - Registering Conn LIST: {ConnectionModel.GetConnectionModelID(conn)} into DB List.</color>");
+                    conn.DB.AddConnection(conn); 
+                }
+                else
+                {
+                    Debug.LogWarning($"[AddBlock REGISTERING LISTS] Conn {ConnectionModel.GetConnectionModelID(conn)} already in DB list. Ensuring InDB=true.");
+                    if (!conn.InDB) conn.InDB = true; 
+                }
+            }
+            else 
+            {
+                if (conn.InDB) conn.InDB = false;
+            }
+        }
+       // Debug.Log($"<color=yellow> - [AddBlock REGISTERING LISTS] Finished processing connections for Block ID: {block.ID}</color>");
+        //Debug.Log($"<color=magenta>WorkspaceModel.AddBlock EXITED.</color> Block ID: {block.ID}. BlockDB count: {BlockDB.Count}, TopBlocks count: {TopBlocks.Count}");
     }
 }//fin clase WorkSpaceModel

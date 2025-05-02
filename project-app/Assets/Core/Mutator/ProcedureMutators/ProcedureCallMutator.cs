@@ -67,7 +67,7 @@ public class ProcedureCallMutator : ProcedureMutator
         // Argument inputs
         for (int i = 0; i < argCount; ++i)
         {
-            InputModel stackInput = InputFactory.Create(EConnection.InputValue, "ARG" + i, EAlign.Right, null);
+            InputModel stackInput = InputFactory.Create(EConnection.InputValue, "ARG" + i, EAlign.Right, null, mBlock);
 
             // add "with: " label
             if (i == 0)

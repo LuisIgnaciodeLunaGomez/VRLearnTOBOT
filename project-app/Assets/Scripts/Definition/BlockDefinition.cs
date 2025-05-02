@@ -65,9 +65,10 @@ public class BlockDefinition
     }
 
     // Crea la lista de modelos de Input basándose en las definiciones de argumentos
-    public List<InputModel> CreateInputList()
+    public List<InputModel> CreateInputList(BlockModel sourceBlock)
     {
-       // Debug.Log($"-->> CreateInputList START for Block: {type}. Initial Arg Count: {Arguments?.Count ?? 0}");
+        Debug.Log($"-->> CreateInputList START for Block ID: {sourceBlock?.ID ?? "NULL_BLOCK_PASSED"} (DefType: {type}). Arg Count: {Arguments?.Count ?? 0}");
+
         List<InputModel> inputList = new List<InputModel>();
         if (Arguments == null || this.Arguments.Count == 0)
         {
@@ -93,7 +94,10 @@ public class BlockDefinition
                 else if (argDef.IsValue) inputType = EConnection.InputValue;
                 else inputType = EConnection.None; // Dummy
 
-                currentInput = new InputModel(inputType, inputName); // Crea el Input
+                currentInput = new InputModel(inputType, inputName, sourceBlock); // Crea el Input
+
+                Debug.Log($"[CreateInputList:{type}] Created Input '{inputName}'. Its Connection SourceBlock is INITIALLY: {currentInput?.Connection?.SourceBlock?.ID ?? "NULL"}");
+
                 currentInput.SetAlign(argDef.align);
 
              //   Debug.Log($"    Created InputModel: Name='{currentInput.Name}', Type={currentInput.Type}");
@@ -138,7 +142,7 @@ public class BlockDefinition
                 {
                    // Debug.Log($"    Dummy Input needed or previous input wasn't dummy. Creating Dummy Input...");
 
-                    currentInput = new InputModel(EConnection.None, $"DUMMY_INPUT_{inputList.Count}");
+                    currentInput = new InputModel(EConnection.None, $"DUMMY_INPUT_{inputList.Count}", sourceBlock);
                     currentInput.SetAlign(argDef.align); 
                     inputList.Add(currentInput);
 
@@ -167,7 +171,7 @@ public class BlockDefinition
             }
         } // Fin del foreach
 
-       // Debug.Log($"-->> CreateInputList FINISHED for Block: {type}. Returning list with Count: {inputList.Count}");
+        Debug.Log($"-->> CreateInputList FINISHED for Block: {type}. Returning list with Count: {inputList.Count}");
         return inputList;
     }
 
@@ -272,11 +276,11 @@ public class BlockDefinition
 
     // Crea el ConnectionModel para la salida (Output) si está definido.
 
-    public ConnectionModel CreateOutputConnection()
+    public ConnectionModel CreateOutputConnection(BlockModel sourceBlock)
     {
         if (this.hasOutput)
         {
-            ConnectionModel outputConnection = new ConnectionModel(EConnection.OutputValue);
+            ConnectionModel outputConnection = new ConnectionModel(sourceBlock, EConnection.OutputValue);
             // Añade los checks de tipo leídos del XML/JSON
             if (this.outputChecks != null)
             {
@@ -286,15 +290,14 @@ public class BlockDefinition
         }
         return null;
     }
-
     
     // Crea el ConnectionModel para la conexión superior (Previous Statement) si está definida.
     
-    public ConnectionModel CreatePreviousStatementConnection()
+    public ConnectionModel CreatePreviousStatementConnection(BlockModel sourceBlock)
     {
         if (this.hasPreviousStatement)
         {
-            ConnectionModel prevConnection = new ConnectionModel(EConnection.PrevStatement);
+            ConnectionModel prevConnection = new ConnectionModel(sourceBlock,EConnection.PrevStatement);
             if (this.previousChecks != null)
             {
                 prevConnection.SetCheck(this.previousChecks);
@@ -303,16 +306,15 @@ public class BlockDefinition
         }
         return null;
     }
-
    
     // Crea el ConnectionModel para la conexión inferior (Next Statement) si está definida.
     
-    public ConnectionModel CreateNextStatementConnection()
+    public ConnectionModel CreateNextStatementConnection(BlockModel sourceBlock)
     {
        // Debug.Log($"BlockDefinition.CreateNextStatementConnection() called for type '{this.type}'. Internal hasNextStatement flag: {this.hasNextStatement}", null);
         if (this.hasNextStatement)
         {
-            ConnectionModel nextConnection = new ConnectionModel(EConnection.NextStatement);
+            ConnectionModel nextConnection = new ConnectionModel(sourceBlock, EConnection.NextStatement);
             if (this.nextChecks != null) 
             {
                 nextConnection.SetCheck(this.nextChecks);
@@ -321,7 +323,6 @@ public class BlockDefinition
         }
         return null;
     }
-
 
     //Crea una instancia del Mutator si está definido.
     /*public Mutator CreateMutator()
@@ -512,7 +513,7 @@ public class BlockDefinition
 
                 if (argDef.IsValue)
                 {
-                    Debug.Log("   - Argument IsValue. Checking for Shadow Field...");
+                   // Debug.Log("   - Argument IsValue. Checking for Shadow Field...");
                     XElement shadowFieldElement = argElement.Element("Field");
                     if (shadowFieldElement != null)
                     {

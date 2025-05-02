@@ -175,7 +175,7 @@ public class LineGroupView : BaseView
     }
     protected internal override void OnXYUpdated()
     {
-        Debug.Log($"LineGroupView::OnXYUpdated calling base.OnXYUpdated().", this.gameObject);
+       // Debug.Log($"LineGroupView::OnXYUpdated calling base.OnXYUpdated().", this.gameObject);
     }
 
     public Vector2 GetDrawSize()
