@@ -34,7 +34,7 @@ public class CategoryController : MonoBehaviour
     {
         if (m_IsInitialized) return; // Evitar re-inicialización
 
-        Debug.Log("<color=purple>CategoryController: Initializing...</color>");
+      //  Debug.Log("<color=purple>CategoryController: Initializing...</color>");
 
         // Recibir y validar dependencias
         m_BlockListView = blockListView ?? throw new System.ArgumentNullException(nameof(blockListView), "BlockListView cannot be null for CategoryController");
@@ -50,7 +50,7 @@ public class CategoryController : MonoBehaviour
             return;
         }
         m_IsInitialized = true;
-        Debug.Log("<color=purple>CategoryController: Initialized successfully.</color>");
+       // Debug.Log("<color=purple>CategoryController: Initialized successfully.</color>");
 
         //Selecciona la primera categoría inmediatamente después de inicializar
         StartCoroutine(SelectInitialCategoryCoroutine());
@@ -68,7 +68,7 @@ public class CategoryController : MonoBehaviour
             yield break;
         }
 
-        Debug.Log("<color=purple>CategoryController: Selecting initial category...</color>");
+       // Debug.Log("<color=purple>CategoryController: Selecting initial category...</color>");
 
         // Encontramos la primera categoría real 
         ToolboxBlockCategory firstCategory = m_ToolboxConfig.BlockCategoryList.FirstOrDefault(c => c?.Custom != "SEPARATOR");

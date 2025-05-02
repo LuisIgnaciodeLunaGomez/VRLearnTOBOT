@@ -32,6 +32,8 @@ public class ConnectionView : BaseView
 
     public Image BgImage => m_BgImage;
     private ConnectionModel m_ConnectionModel;
+
+
     public ConnectionModel ConnectionModel => m_ConnectionModel;
 
     protected BlockView m_TargetBlockView;
@@ -41,14 +43,12 @@ public class ConnectionView : BaseView
     protected BlockView m_SourceBlockView;
     private GameObject m_HighlightObject; 
 
-
     public override ViewType Type => ViewType.Connection;
 
     [Tooltip("Prefab to instantiate for highlighting this connection.")]
     [SerializeField] private GameObject m_HighlightPrefab; 
     private GameObject m_HighlightInstance;
     private MemorySafeConnectionObserver m_Observer; 
-
 
     public override Vector2 ChildStartXY
     {
@@ -74,49 +74,59 @@ public class ConnectionView : BaseView
         if (foundImage != null && foundImage.gameObject != null) 
         {
             m_BgImage = foundImage;
-            Debug.Log($"ConnectionView ({gameObject.name}): InitializeView found AND assigned BgImage: {m_BgImage.gameObject.name} (InstanceID: {m_BgImage.GetInstanceID()})", gameObject);
+          //  Debug.Log($"ConnectionView ({gameObject.name}): InitializeView found AND assigned BgImage: {m_BgImage.gameObject.name} (InstanceID: {m_BgImage.GetInstanceID()})", gameObject);
         }
         else
         {
             m_BgImage = null; 
             if (foundImage == null)
             {
-                Debug.LogError($"ConnectionView ({gameObject.name}): Standard Image component NOT found on self! Check prefab.", gameObject);
+              //  Debug.LogError($"ConnectionView ({gameObject.name}): Standard Image component NOT found on self! Check prefab.", gameObject);
             }
             else
             { 
-                Debug.LogError($"ConnectionView ({gameObject.name}): Found Image component but its GameObject is NULL! Possible corruption or timing issue?", gameObject);
+              //  Debug.LogError($"ConnectionView ({gameObject.name}): Found Image component but its GameObject is NULL! Possible corruption or timing issue?", gameObject);
             }
         }
-
     }
 
     public virtual void BindModel(ConnectionModel connectionModel, BlockView sourceBlockView)
     {
-        if (m_ConnectionModel == connectionModel && m_SourceBlockView == sourceBlockView) return;
+       // Debug.Log($"ConnectionView ({gameObject.name}): BindModel START. Model ID received: {ConnectionModel.GetConnectionModelID(connectionModel)}, SourceView: {sourceBlockView?.gameObject.name}", this.gameObject);
+
+        if (m_ConnectionModel == connectionModel && m_SourceBlockView == sourceBlockView && m_ConnectionModel != null) return;
 
         if (m_ConnectionModel != null) UnBindModel();
 
+       // Debug.Log($"ConnectionView ({gameObject.name}): Assigning m_ConnectionModel.", this.gameObject);
 
         m_SourceBlockView = sourceBlockView;
+        m_ConnectionModel = connectionModel;
+
+       // Debug.Log($"ConnectionView ({gameObject.name}): m_ConnectionModel assigned: {ConnectionModel.GetConnectionModelID(m_ConnectionModel)}.", this.gameObject);
+
+        if (m_ConnectionModel == null)
+        {
+            Debug.Log($"ConnectionView ('{gameObject.name}'): Bound with NULL model. No observers.", this.gameObject);
+            Highlight(false);
+            gameObject.SetActive(false);
+            return; // Salir.
+        }
+        gameObject.SetActive(true);
+
         if (m_SourceBlockView == null)
         {
-
             Debug.LogError($"ConnectionView ({gameObject.name}): BindModel called without a valid sourceBlockView!", this);
+            
             // throw new ArgumentNullException(nameof(sourceBlockView), "ConnectionView requires a valid source BlockView during BindModel.");
             return;
         }
 
-        if (connectionModel.Type != this.ConnectionType)
+      /*  if (connectionModel.Type != this.ConnectionType)
             throw new ArgumentException($"ConnectionView type mismatch! View is {ConnectionType}, Model is {connectionModel.Type}", nameof(connectionModel));
-
-        m_ConnectionModel = connectionModel;
-
-
-        if (m_ConnectionModel.SourceBlock == null && m_SourceBlockView?.Block != null)
-            m_ConnectionModel.SourceBlock = m_SourceBlockView.Block;
-        else if (m_ConnectionModel.SourceBlock != m_SourceBlockView?.Block)
-            Debug.LogError($"ConnectionView on {m_SourceBlockView?.name} bound to model from a different block!", this);
+      */
+       // if (m_ConnectionModel.SourceBlock == null && m_SourceBlockView?.Block != null) m_ConnectionModel.SourceBlock = m_SourceBlockView.Block;
+        //else if (m_ConnectionModel.SourceBlock != m_SourceBlockView?.Block) Debug.LogError($"ConnectionView on {m_SourceBlockView?.name} bound to model from a different block!", this);
 
         m_Observer = new MemorySafeConnectionObserver(this);
         m_ConnectionModel.AddObserver(m_Observer);
@@ -128,6 +138,8 @@ public class ConnectionView : BaseView
                                    UpdateState.AcceptConnection);
         }
         OnXYUpdated();
+
+      //  Debug.Log($"ConnectionView ({gameObject.name}): BindModel END. m_ConnectionModel is {(m_ConnectionModel == null ? "NULL" : "Assigned")}.", this.gameObject);
     }
 
     public virtual void UnBindModel()
@@ -173,100 +185,63 @@ public class ConnectionView : BaseView
     }
     protected internal override void OnXYUpdated()
     {
-        // if (m_ConnectionModel == null || m_SourceBlockView?.WorkSpaceView == null) // Necesitamos WorkspaceView
-        //     return;
-        if (m_SourceBlockView != null && m_SourceBlockView.InToolbox) return;
+        //Debug.Log($"OnXYUpdated START for {gameObject.name}. Model:{ConnectionModel.GetConnectionModelID(m_ConnectionModel)}. SourceView Valid: {m_SourceBlockView != null}. Is InToolbox: {m_SourceBlockView?.InToolbox}", this.gameObject);
 
+        if (m_SourceBlockView != null && m_SourceBlockView.InToolbox)
+        {
+            //  Debug.Log($"OnXYUpdated para ConnectionView de Plantilla '{gameObject.name}'. Saltando DB.", this.gameObject);
+            if (m_ConnectionModel != null && m_ConnectionModel.InDB) m_ConnectionModel.InDB = false;
+            return;
+        }
         if (m_ConnectionModel == null) { Debug.LogError("OnXYUpdated: m_ConnectionModel is NULL!", this); return; }
-        if (m_SourceBlockView == null) { Debug.LogError("OnXYUpdated: m_SourceBlockView is NULL!", this); return; }
-        if (m_SourceBlockView.WorkspaceView == null) { Debug.LogError($"OnXYUpdated: m_SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView!", this); return; }
-
+        if (m_SourceBlockView == null) { Debug.LogError($"OnXYUpdated: m_SourceBlockView is NULL for connection {ConnectionModel.GetConnectionModelID(m_ConnectionModel)}!", this); return; }
         WorkSpaceView workspaceView = m_SourceBlockView.WorkspaceView;
+        if (workspaceView == null) { Debug.LogError($"OnXYUpdated: SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView (and not InToolbox)!", this); return; }
 
-        if (workspaceView == null)
-        {
-            Debug.LogError($"OnXYUpdated: m_SourceBlockView '{m_SourceBlockView.gameObject.name}' HAS NULL WorkspaceView property! Check BindModel chain.", this);
-            return; 
-        }
-
-        RectTransform codingArea = workspaceView.CodingArea;
+        //Debug.Log($"OnXYUpdated START calculation for Workspace Connection '{gameObject.name}'. InDB Flag: {m_ConnectionModel.InDB}.", this.gameObject);
         Canvas canvas = workspaceView.RootCanvas;
+        Camera eventCamera = workspaceView.EventCamera;
+        if (canvas == null) { Debug.LogError($"OnXYUpdated ({gameObject.name}): RootCanvas is NULL!", this); return; }
+        if (workspaceView.CodingArea == null) { Debug.LogError($"OnXYUpdated ({gameObject.name}): CodingArea is NULL!", this); return; }
 
-        if (codingArea == null) { Debug.LogError($"OnXYUpdated ({m_ConnectionModel.Type} on {m_SourceBlockView.BlockType}): CodingArea is NULL in WorkspaceView '{workspaceView.gameObject.name}'!", this); return; }
-        if (canvas == null) { Debug.LogError($"OnXYUpdated ({m_ConnectionModel.Type} on {m_SourceBlockView.BlockType}): RootCanvas is NULL in WorkspaceView '{workspaceView.gameObject.name}'!", this); return; }
+        Vector2 screenPoint;
+        if (canvas.renderMode == RenderMode.ScreenSpaceOverlay) screenPoint = RectTransformUtility.WorldToScreenPoint(null, ViewTransform.position);
+        else screenPoint = RectTransformUtility.WorldToScreenPoint(eventCamera, ViewTransform.position);
+        Vector2 newLocation = workspaceView.ScreenPointToWorkspaceLogicalPosition(screenPoint, eventCamera);
+        m_ConnectionModel.Location = newLocation;
+        // Debug.Log($"  Calculated ScreenPoint: {screenPoint}, New Logical Location in Model: ({m_ConnectionModel.Location.x:F2}, {m_ConnectionModel.Location.y:F2})", this.gameObject);
 
-        //BlockConnectionDB db = m_ConnectionModel.DB; 
-        //if (db != null && m_ConnectionModel.InDB)
-        //    db.RemoveConnection(m_ConnectionModel);
+        BlockConnectionDB db = m_ConnectionModel.DB;
 
-        Vector2 relativePos;
-        Vector2 screenPoint = Vector2.zero; 
-        Debug.Log($"OnXYUpdated for {m_ConnectionModel.Type} on {m_SourceBlockView.BlockType}: \n" +
-           $"  - workspaceView Null? {workspaceView == null}\n" +
-           $"  - codingArea Null? {codingArea == null}\n" +
-           $"  - canvas Null? {canvas == null}\n" +
-           $"  - canvas.worldCamera Null? {canvas?.worldCamera == null} (RenderMode: {canvas?.renderMode})\n" +
-           $"  - ViewTransform Null? {ViewTransform == null}\n" +
-           $"  - ViewTransform.position: {ViewTransform?.position}\n" +
-           $"  - ScreenPoint (antes de calcular): {screenPoint}" 
-           , this.gameObject);
-
-        try
+        if (db != null)
         {
-            // Camera eventCamera = canvas.worldCamera;
+            if (!m_ConnectionModel.Hidden)
+            {
+                if (m_ConnectionModel.InDB)
+                {
+                    // Debug.Log($"  DB exists. InDB=true. Calling UpdateConnectionLocation.", this.gameObject);
+                    db.UpdateConnectionLocation(m_ConnectionModel);
+                }
 
-            Camera eventCamera = (canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : canvas.worldCamera;
+            }
+            else
+            {
+                if (m_ConnectionModel.SourceBlock?.Workspace != null)
+                {
+                    Debug.LogError($"OnXYUpdated ({gameObject.name}, Model:{ConnectionModel.GetConnectionModelID(m_ConnectionModel)}): CRITICAL - Block BELONGS TO Workspace '{m_ConnectionModel.SourceBlock.Workspace.Id}' BUT ConnectionModel.DB is NULL! Type: {m_ConnectionModel.Type}", this);
+                    if (m_ConnectionModel.InDB) m_ConnectionModel.InDB = false;
+                }
 
-            if (canvas.renderMode != RenderMode.ScreenSpaceOverlay && eventCamera == null)
-            {
-                Debug.LogError($"Canvas {canvas.name} is in ScreenSpaceCamera mode but worldCamera is null!", canvas);
-                return; 
-            }
-            try
-            {
-                screenPoint = RectTransformUtility.WorldToScreenPoint(eventCamera, ViewTransform.position);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"WorldToScreenPoint failed for {gameObject.name}: {e.Message}\nCam: {eventCamera}, Pos: {ViewTransform?.position}", this);
-                return;
             }
 
-            // if (ViewTransform == null) { throw new NullReferenceException("ViewTransform is null!"); }
-            // Vector3 worldPos = ViewTransform.position;
 
-            // Intento  Calcular screenPoint 
-            // Debug.Log($"  - Calculating screenPoint... worldPos={worldPos}, eventCamera is null? {eventCamera == null}"); 
-            // screenPoint = RectTransformUtility.WorldToScreenPoint(eventCamera, worldPos); 
-            //  Debug.Log($"  - screenPoint Calculated: {screenPoint}"); 
-
-            // }
-            // catch (Exception e) { /* ... LogError y return ... */ }
-
-            // Debug.Log($"  - Converting screenPoint {screenPoint} to LocalPoint in codingArea '{codingArea.name}' using camera is null? {canvas?.worldCamera == null}...");
-
-        }
-        catch (Exception e) 
-        {
-            Debug.LogError($"OnXYUpdated: Exception calculating screenPoint: {e.Message}", this); return;
-        }
-        
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(codingArea,
-                RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, ViewTransform.position),
-                canvas.worldCamera,
-                out relativePos))
-        {
-            m_ConnectionModel.Location = relativePos; 
-
-           // if (db != null && !m_ConnectionModel.Hidden)
-           //     db.AddConnection(m_ConnectionModel);
-
-            if (m_ConnectionModel.IsSuperior && m_TargetBlockView != null)
-                m_TargetBlockView.OnXYUpdated(); 
-        }
-        else
-        {
-            Debug.LogError("Failed to convert ScreenPointToLocalPointInRectangle in OnXYUpdated.", this);
+            
+            /* if (m_ConnectionModel.IsSuperior && m_TargetBlockView != null)
+             {
+                 Debug.Log($"  Propagating OnXYUpdated from {gameObject.name} to Target Block View '{m_TargetBlockView.gameObject.name}'.", this.gameObject);
+                 m_TargetBlockView.OnXYUpdated();
+             }*/
+            //  Debug.Log($"OnXYUpdated END for {gameObject.name}.", this.gameObject);
         }
     }
 
@@ -430,7 +405,6 @@ public class ConnectionView : BaseView
         }
     }
 
-   
     public void SetHighlight(bool show)
     {
         if (m_HighlightObject != null)

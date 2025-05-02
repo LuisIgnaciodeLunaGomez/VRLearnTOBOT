@@ -9,7 +9,7 @@
  * 
  * Fecha: 27/03/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.1
  * 
  * Descripción: interpreta los bloques desde JSON, permitiendo definir nuevos bloques sin modificar código
  */
@@ -51,7 +51,7 @@ public class BlockDefinition
     public List<string> nextChecks = new List<string>();           // atributo check en <NextStatement>
 
     // Argumentos/Entradas
-    public List<ArgumentDefinition> args; // Lista de argumentos parseados 
+   // public List<ArgumentDefinition> args; // Lista de argumentos parseados 
 
     [Tooltip("Indica si este bloque tiene asociado un Mutator.")]
     public bool hasMutator; //  Determinado al parsear <Mutator>
@@ -64,23 +64,29 @@ public class BlockDefinition
         Arguments = new List<ArgumentDefinition>();
     }
 
-
     // Crea la lista de modelos de Input basándose en las definiciones de argumentos
-    public List<InputModel> CreateInputList()
+    public List<InputModel> CreateInputList(BlockModel sourceBlock)
     {
+        Debug.Log($"-->> CreateInputList START for Block ID: {sourceBlock?.ID ?? "NULL_BLOCK_PASSED"} (DefType: {type}). Arg Count: {Arguments?.Count ?? 0}");
+
         List<InputModel> inputList = new List<InputModel>();
-        if (this.args == null || this.args.Count == 0)
+        if (Arguments == null || this.Arguments.Count == 0)
         {
+            Debug.Log("-->> CreateInputList: No args defined for this block. Returning empty list.");
             return inputList;
         }
 
+        int argIndex = 0; //<---para seguinmiento de los logs
         InputModel currentInput = null; // Referencia  último InputModel creado
 
-        foreach (ArgumentDefinition argDef in this.args)
+        foreach (ArgumentDefinition argDef in Arguments)
         {
+            //Debug.Log($"-->> Processing ArgDef #{argIndex}: Name='{argDef.name}', Type='{argDef.type}', IsInputDef={argDef.IsInputDefinition}, IsValue={argDef.IsValue}, IsField={argDef.IsField}");
+
             //  Manejo de INPUTS (Value, Statement, Dummy implícito) 
             if (argDef.IsInputDefinition) 
             {
+              //  Debug.Log($"  --> IsInputDefinition is TRUE. Creating InputModel...");
                 //  Creación del InputModel (Value/Statement/Dummy) 
                 string inputName = string.IsNullOrEmpty(argDef.name) ? $"INPUT_{inputList.Count}" : argDef.name;
                 EConnection inputType;
@@ -88,8 +94,13 @@ public class BlockDefinition
                 else if (argDef.IsValue) inputType = EConnection.InputValue;
                 else inputType = EConnection.None; // Dummy
 
-                currentInput = new InputModel(inputType, inputName); // Crea el Input
-                currentInput.SetAlign(argDef.align); 
+                currentInput = new InputModel(inputType, inputName, sourceBlock); // Crea el Input
+
+                Debug.Log($"[CreateInputList:{type}] Created Input '{inputName}'. Its Connection SourceBlock is INITIALLY: {currentInput?.Connection?.SourceBlock?.ID ?? "NULL"}");
+
+                currentInput.SetAlign(argDef.align);
+
+             //   Debug.Log($"    Created InputModel: Name='{currentInput.Name}', Type={currentInput.Type}");
 
                 // Establecer Checks para inputs de conexión (Value/Statement)
                 if (argDef.IsValue || argDef.IsStatement)
@@ -97,59 +108,70 @@ public class BlockDefinition
                     if (argDef.checks != null && argDef.checks.Count > 0)
                     {
                         currentInput.SetCheck(argDef.checks); // Establece los tipos permitidos
-                    }
-                    // else //check por defecto si no se especifica
-                    //    currentInput.SetCheck(argDef.IsValue ? new List<string>{"Value"} : new List<string>{"Statement"});
 
+                    }
+                  
                     //  Crear campos sombra (Shadow Field) para inputs que continene valores
-                    
+
                     if (argDef.IsValue && !string.IsNullOrEmpty(argDef.shadowFieldType))
                     {
+                       // Debug.Log($"    Input is Value AND has shadowFieldType: '{argDef.shadowFieldType}'. Attempting to create shadow field...");
                         // Creamos el FieldModel correspondiente con la información del Shado Field
                         FieldModel shadowField = CreateFieldModelFromArg(argDef.shadowFieldType, argDef.shadowFieldName, argDef.defaultValue, argDef);
                         if (shadowField != null)
                         {
                             currentInput.AppendField(shadowField); // Añadimos el campo sombra al input para contener un valor
-                                                                   
+                           // Debug.Log($"    -> Appended Shadow Field {shadowField.GetType().Name} ('{shadowField.Name}') to InputModel '{currentInput.Name}'. FieldRow Count: {currentInput.FieldRow.Count}");
                         }
                         else
                         {
-                            Debug.LogWarning($"BlockDefinition {this.type}: Failed to create SHADOW field of type {argDef.shadowFieldType} for input '{argDef.name}'");
+                            Debug.LogWarning($"BlockDefinition {this.type}: FAILED to create SHADOW field of type {argDef.shadowFieldType} for input '{argDef.name}'");
                         }
                     }
                 }
-                inputList.Add(currentInput); 
+                inputList.Add(currentInput);
+
+                //Debug.Log($"  ++ ADDED InputModel '{currentInput.Name}' (Type: {currentInput.Type}) to inputList. New List Count: {inputList.Count}");
             }
             // Manejo de FIELDS (Label, Input Text, Dropdown, etc.) 
             else if (argDef.IsField) // Es un campo (field_label, field_input, etc.)
             {
+                //Debug.Log($"  --> IsField is TRUE. Checking if Dummy Input is needed...");
                 // Nos aseguramos que tenemos un Input (Dummy) para contener este Field
                 if (currentInput == null || currentInput.Type != EConnection.None)
                 {
-                    currentInput = new InputModel(EConnection.None, $"DUMMY_INPUT_{inputList.Count}");
+                   // Debug.Log($"    Dummy Input needed or previous input wasn't dummy. Creating Dummy Input...");
+
+                    currentInput = new InputModel(EConnection.None, $"DUMMY_INPUT_{inputList.Count}", sourceBlock);
                     currentInput.SetAlign(argDef.align); 
-                    inputList.Add(currentInput); 
+                    inputList.Add(currentInput);
+
+                   // Debug.Log($"  ++ ADDED *Dummy* InputModel '{currentInput.Name}' (Type: {currentInput.Type}) to inputList. New List Count: {inputList.Count}");
                 }
 
+               // Debug.Log($"    Creating FieldModel for field type '{argDef.FieldType}' with name '{argDef.FieldName}'...");
                 //  Creamos el FieldModel basado en la definición del argumento 
                 FieldModel fieldModel = CreateFieldModelFromArg(argDef.FieldType, argDef.FieldName, argDef.value, argDef);
 
                 //  Añadimos el Field al Input actual 
                 if (fieldModel != null)
                 {
+                   // Debug.Log($"      Appending FieldModel '{fieldModel.Name}' ({fieldModel.GetType().Name}) to InputModel '{currentInput.Name}'. Current FieldRow Count: {currentInput.FieldRow.Count}");
                     currentInput.AppendField(fieldModel); // Añade el campo al Input actual
+                   // Debug.Log($"      -> Field '{fieldModel.Name}' Appended. New FieldRow Count: {currentInput.FieldRow.Count}");
                 }
                 else
                 {
-                    Debug.LogWarning($"BlockDefinition {this.type}: Could not create field of type '{argDef.FieldType}' with name '{argDef.FieldName}'");
+                    Debug.LogWarning($"BlockDefinition {type}: Could not create field of type '{argDef.FieldType}' with name '{argDef.FieldName}'");
                 }
             }
             else // tipo de <Arg> desconocido
             {
-                Debug.LogError($"BlockDefinition {this.type}: Unknown argument type '{argDef.type}' in CreateInputList.");
+                Debug.LogError($"BlockDefinition {type}: Unknown argument type '{argDef.type}' in CreateInputList.");
             }
         } // Fin del foreach
 
+        Debug.Log($"-->> CreateInputList FINISHED for Block: {type}. Returning list with Count: {inputList.Count}");
         return inputList;
     }
 
@@ -232,7 +254,10 @@ public class BlockDefinition
                 Vector2 size = new Vector2(fullArgDef.imageWidth, fullArgDef.imageHeight);
                 string altText = fullArgDef.imageAltText; // Puede ser null
 
-                newField = new FieldImageModel(fieldName, imageSrc, size, altText); break;
+                newField = new FieldImageModel(fieldName, imageSrc, size, altText);
+                break;
+
+            
 
             default:
                 Debug.LogWarning($"BlockDefinition {this.type}: Unhandled Field Type '{fieldType}' in CreateFieldModelFromArg.");
@@ -244,17 +269,18 @@ public class BlockDefinition
           
         }
 
+       // Debug.Log($"   << CreateFieldModelFromArg RESULT for type '{fieldType}', name '{fieldName}': {(newField == null ? "NULL" : newField.GetType().Name)}");
         return newField;
     }
 
 
     // Crea el ConnectionModel para la salida (Output) si está definido.
 
-    public ConnectionModel CreateOutputConnection()
+    public ConnectionModel CreateOutputConnection(BlockModel sourceBlock)
     {
         if (this.hasOutput)
         {
-            ConnectionModel outputConnection = new ConnectionModel(EConnection.OutputValue);
+            ConnectionModel outputConnection = new ConnectionModel(sourceBlock, EConnection.OutputValue);
             // Añade los checks de tipo leídos del XML/JSON
             if (this.outputChecks != null)
             {
@@ -264,15 +290,14 @@ public class BlockDefinition
         }
         return null;
     }
-
     
     // Crea el ConnectionModel para la conexión superior (Previous Statement) si está definida.
     
-    public ConnectionModel CreatePreviousStatementConnection()
+    public ConnectionModel CreatePreviousStatementConnection(BlockModel sourceBlock)
     {
         if (this.hasPreviousStatement)
         {
-            ConnectionModel prevConnection = new ConnectionModel(EConnection.PrevStatement);
+            ConnectionModel prevConnection = new ConnectionModel(sourceBlock,EConnection.PrevStatement);
             if (this.previousChecks != null)
             {
                 prevConnection.SetCheck(this.previousChecks);
@@ -281,15 +306,15 @@ public class BlockDefinition
         }
         return null;
     }
-
    
     // Crea el ConnectionModel para la conexión inferior (Next Statement) si está definida.
     
-    public ConnectionModel CreateNextStatementConnection()
+    public ConnectionModel CreateNextStatementConnection(BlockModel sourceBlock)
     {
+       // Debug.Log($"BlockDefinition.CreateNextStatementConnection() called for type '{this.type}'. Internal hasNextStatement flag: {this.hasNextStatement}", null);
         if (this.hasNextStatement)
         {
-            ConnectionModel nextConnection = new ConnectionModel(EConnection.NextStatement);
+            ConnectionModel nextConnection = new ConnectionModel(sourceBlock, EConnection.NextStatement);
             if (this.nextChecks != null) 
             {
                 nextConnection.SetCheck(this.nextChecks);
@@ -299,16 +324,15 @@ public class BlockDefinition
         return null;
     }
 
-
     //Crea una instancia del Mutator si está definido.
-    public Mutator CreateMutator()
+    /*public Mutator CreateMutator()
     {
         if (this.hasMutator && !string.IsNullOrEmpty(this.mutatorName))
         {
             return MutatorFactory.Create(this.mutatorName);
         }
         return null;
-    }
+    }*/
 
    
     // Obtiene el valor por defecto de InputsInline según la definición.
@@ -320,7 +344,7 @@ public class BlockDefinition
 
     public static void LoadAllDefinitionsFromXml(string folderPath = "XML/Blocks") 
     {
-        Debug.Log($"<color=lime>BlockDefinitionLoader: Loading block definitions from Resources/{folderPath}...</color>");
+        //Debug.Log($"<color=lime>BlockDefinitionLoader: Loading block definitions from Resources/{folderPath}...</color>");
         TextAsset[] xmlAssets = Resources.LoadAll<TextAsset>(folderPath);
 
         if (xmlAssets == null || xmlAssets.Length == 0)
@@ -332,7 +356,7 @@ public class BlockDefinition
         int definitionsLoaded = 0;
         foreach (TextAsset xmlAsset in xmlAssets)
         {
-            Debug.Log($"<color=lime> --- Loading from: {xmlAsset.name}.xml ---</color>");
+           // Debug.Log($"<color=lime> --- Loading from: {xmlAsset.name}.xml ---</color>");
             try
             {
                 XDocument xDoc = XDocument.Parse(xmlAsset.text);
@@ -351,7 +375,7 @@ public class BlockDefinition
                 {
                 
                     BlockDefinition definition = ParseBlockDefinition(blockElement, globalCategory);
-                    Debug.Log($"Checking BlockFactory Instance before adding {definition.type}: {BlockFactory.Instance != null}");
+                   // Debug.Log($"Checking BlockFactory Instance before adding {definition.type}: {BlockFactory.Instance != null}");
                     if (definition != null && !string.IsNullOrEmpty(definition.type))
                     {
                         if (BlockFactory.Instance == null)
@@ -359,9 +383,10 @@ public class BlockDefinition
                             Debug.LogError("CRITICAL: BlockFactory.Instance is NULL!");
                             continue;
                         }
+                       // Debug.Log($"<color=orange> ---> Storing definition '{definition.type}' with {definition.Arguments?.Count ?? -1} arguments.</color>");
                         BlockFactory.Instance.AddDefinition(definition.type, definition);
                         definitionsLoaded++;
-                        Debug.Log($"   - Loaded definition for: {definition.type}");
+                      //  Debug.Log($"   - Loaded definition for: {definition.type}");
                     }
                     else
                     {
@@ -374,7 +399,7 @@ public class BlockDefinition
                 Debug.LogError($"Error parsing block definition XML '{xmlAsset.name}': {e.Message}\n{e.StackTrace}");
             }
         }
-        Debug.Log($"<color=lime>BlockDefinitionLoader: Finished loading. Total definitions added: {definitionsLoaded}</color>");
+       // Debug.Log($"<color=lime>BlockDefinitionLoader: Finished loading. Total definitions added: {definitionsLoaded}</color>");
     }
 
     private static BlockDefinition ParseBlockDefinition(XElement blockElement, string defaultCategory)
@@ -396,51 +421,77 @@ public class BlockDefinition
         //if (output != null) def.OutputType = EConnection.OutputValue; 
         if (output != null)
         {
+            def.hasOutput = true;
             def.OutputType = EConnection.OutputValue;
             string checkAttr = output.Attribute("check")?.Value;
             if (!string.IsNullOrEmpty(checkAttr))
             {
                 def.outputChecks.AddRange(checkAttr.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)));
             }
-        }
+            Debug.Log($"   - Parsed Output: hasOutput=true, OutputType={def.OutputType}, Checks=[{string.Join(",", def.outputChecks)}]");
 
+        }
+        else
+        {
+            def.hasOutput = false; // Asegurar que sea false si no existe el elemento
+           // Debug.Log($"   - No Output element found.");
+        }
         XElement prev = blockElement.Element("PreviousStatement");
         // if (prev != null) def.PreviousType = EConnection.PrevStatement; 
         if (prev != null)
         {
+            def.hasPreviousStatement = true;
             def.PreviousType = EConnection.PrevStatement;
             string checkAttr = prev.Attribute("check")?.Value;
             if (!string.IsNullOrEmpty(checkAttr))
             {
                 def.previousChecks.AddRange(checkAttr.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)));
             }
+          //  Debug.Log($"   - Parsed PreviousStatement: hasPreviousStatement=true, PreviousType={def.PreviousType}, Checks=[{string.Join(",", def.previousChecks)}]");
+
+        }
+        else
+        {
+            def.hasPreviousStatement = false; // Asegurar que sea false si no existe el elemento
+            //Debug.Log($"   - No PreviousStatement element found.");
         }
 
         XElement next = blockElement.Element("NextStatement");
         //if (next != null) def.NextType = EConnection.NextStatement; 
         if (next != null)
         {
-            def.NextType = EConnection.PrevStatement;
+            def.hasNextStatement = true;
+            def.NextType = EConnection.NextStatement;
             string checkAttr = next.Attribute("check")?.Value;
             if (!string.IsNullOrEmpty(checkAttr))
             {
                 def.nextChecks.AddRange(checkAttr.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)));
             }
+           // Debug.Log($"   - Parsed NextStatement: hasNextStatement=true, NextType={def.NextType}, Checks=[{string.Join(",", def.nextChecks)}]");
+
+        }
+        else
+        {
+            def.hasNextStatement = false; // Asegurar que sea false si no existe el elemento
+            Debug.Log($"   - No NextStatement element found.");
         }
 
         // Parsear <Args>
         XElement argsElement = blockElement.Element("Args");
         if (argsElement != null)
         {
-            Debug.Log($"--- Processing Args for block {def.type} ---");
+          //  Debug.Log($"--- Processing Args for block {def.type} ---");
             foreach (XElement argElement in argsElement.Elements("Arg"))
             {
                 ArgumentDefinition argDef = new ArgumentDefinition();
+
+               // Debug.Log($"  Parsed ArgDefinition: type='{argDef.type}', name='{argDef.name}', value='{argDef.value}', isValue='{argDef.IsValue}', shadowType='{argDef.shadowFieldType}', shadowName='{argDef.shadowFieldName}', defaultValue='{argDef.defaultValue}'");
+                //def.Arguments.Add(argDef); //<-----ESTA PROVOCANDO QUE SE INTRODUZCAN ARGUMENTOS VACIOS
                 argDef.type = argElement.Attribute("type")?.Value;
                 argDef.value = argElement.Attribute("value")?.Value;
                 argDef.name = argElement.Attribute("name")?.Value;
 
-                Debug.Log($"--- Parsing Arg: Type={argDef.type}, Name={argDef.name}, Value={argDef.value}");
+             //   Debug.Log($"--- Parsing Arg: Type={argDef.type}, Name={argDef.name}, Value={argDef.value}");
 
                 try
                 {
@@ -453,7 +504,7 @@ public class BlockDefinition
                     {
                         argDef.checks.AddRange(checkValues);
                     }
-                    Debug.Log($"   - Checking Checks: Element exists? {checkElement != null}, Attribute value: '{checkValues}'");
+                   // Debug.Log($"   - Checking Checks: Element exists? {checkElement != null}, Attribute value: '{checkValues}'");
                 }
                 catch (System.Exception e)
                 {
@@ -462,15 +513,17 @@ public class BlockDefinition
 
                 if (argDef.IsValue)
                 {
-                    Debug.Log("   - Argument IsValue. Checking for Shadow Field...");
+                   // Debug.Log("   - Argument IsValue. Checking for Shadow Field...");
                     XElement shadowFieldElement = argElement.Element("Field");
                     if (shadowFieldElement != null)
                     {
                         argDef.shadowFieldType = shadowFieldElement.Attribute("type")?.Value;
                         argDef.shadowFieldName = shadowFieldElement.Attribute("name")?.Value;
-
-                        argDef.defaultValue = shadowFieldElement.Value ?? shadowFieldElement.Attribute("value")?.Value;
-                        Debug.Log($"      - Shadow Parsed: Type={argDef.shadowFieldType}, Name={argDef.shadowFieldName}, Default={argDef.defaultValue}");
+                        argDef.defaultValue = shadowFieldElement.Attribute("value")?.Value?.Trim();
+                       // Debug.Log($"Leyendo defaultValue {argElement.ToString()} para ver que recupera");
+                       // argDef.defaultValue = argElement.Element("DefaultValue").Value?.Trim();
+                        // argDef.defaultValue = shadowFieldElement.Value ?? shadowFieldElement.Attribute("value")?.Value;
+                        //Debug.Log($" CORREGIDO     - Shadow Parsed: Type={argDef.shadowFieldType}, Name={argDef.shadowFieldName}, Default={argDef.defaultValue}");
                     }
                     else
                     {
@@ -481,7 +534,7 @@ public class BlockDefinition
                
                 def.Arguments.Add(argDef);
 
-                Debug.Log("--- Finished Parsing Arg ---");
+               // Debug.Log("--- Finished Parsing Arg ---");
             }
 
             // TODO: Parsear Mutators si los vamos a usar ....

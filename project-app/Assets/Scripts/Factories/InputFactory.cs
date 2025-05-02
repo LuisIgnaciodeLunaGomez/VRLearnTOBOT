@@ -17,10 +17,11 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.MemoryProfiler;
+using UnityEngine;
+
 public static class InputFactory
 {
-    public static InputModel CreateFromJson(JObject json)
+    public static InputModel CreateFromJson(JObject json, BlockModel sourceBlock)
     {
         string inputType = json["type"].ToString();
         EConnection inputTypeInt = EConnection.InputValue;
@@ -30,18 +31,19 @@ public static class InputFactory
         {
             case "input_value":
                 inputTypeInt = EConnection.InputValue;
-                connection = new ConnectionModel(inputTypeInt);
+                connection = new ConnectionModel(sourceBlock, inputTypeInt);
+
                 break;
             case "input_statement":
                 inputTypeInt = EConnection.NextStatement;
-                connection = new ConnectionModel(inputTypeInt);
+                connection = new ConnectionModel(sourceBlock, inputTypeInt);
                 break;
             case "input_dummy":
                 inputTypeInt = EConnection.DummyInput;
                 break;
         }
 
-        InputModel input = new InputModel(inputTypeInt, inputName, connection);
+        InputModel input = new InputModel(inputTypeInt, inputName, sourceBlock);
         if (json["align"] != null)
         {
             string alignText = json["align"].ToString();
@@ -63,19 +65,24 @@ public static class InputFactory
                 input.SetCheck(json["check"].ToString());
             }
         }
+
+        //Debug.Log($"InputFactory: Created InputModel '{inputName}' (Type:{inputType}). Has Connection: {(input.Connection != null)}", null); 
+
         return input;
     }
-
+    
    
-    public static InputModel Create(EConnection type, string name, EAlign align, List<string> check)
+    public static InputModel Create(EConnection type, string name, EAlign align, List<string> check, BlockModel sourceBlock)
     {
         ConnectionModel connection = null;
         if (type == EConnection.InputValue || type == EConnection.NextStatement)
-            connection = new ConnectionModel(type);
+            connection = new ConnectionModel(sourceBlock, type);
 
-        InputModel input = new InputModel(type, name, connection);
+        InputModel input = new InputModel(type, name, sourceBlock);
         input.SetAlign(align);
         input.SetCheck(check);
+
+        Debug.Log($"InputFactory.Create: Created Input '{input.Name}' for Block '{sourceBlock?.ID}'. Input Conn SourceBlock ID = {input.Connection?.SourceBlock?.ID ?? "NULL"}");
         return input;
     }
 } //Fin InputFactory

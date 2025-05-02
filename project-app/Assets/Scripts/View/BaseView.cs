@@ -61,17 +61,80 @@ public abstract class BaseView : MonoBehaviour
             // Configuro anchors/pivot por defecto
             m_ViewTransform.anchorMin = new Vector2(0, 1);
             m_ViewTransform.anchorMax = new Vector2(0, 1);
-            m_ViewTransform.pivot = new Vector2(0, 1);    
+            m_ViewTransform.pivot = new Vector2(0, 1);
+            if (m_ViewTransform == null)
+            {
+                Debug.LogError($"BaseView ({gameObject.name}): Failed to ADD RectTransform!", this.gameObject); // Si falla al añadir (extremadamente raro)
+            }
+            else
+            {
+                Debug.Log($"BaseView ({gameObject.name}): Successfully ADDED RectTransform.", this.gameObject);
+            }
         }
         // Reseteo listas/refs 
         m_ParentView = null;
         m_PreviousView = null;
         m_NextView = null;
         m_ChildViews.Clear();
+
+       // Debug.Log($"BaseView ({gameObject.name}): Initializing, scanning visual children for BaseView components...", this.gameObject);
+
+        // Obtener TODOS los BaseView descendientes (activos e inactivos)
+        var allDescendants = new List<BaseView>(GetComponentsInChildren<BaseView>(true));
+        allDescendants.Remove(this);
+
+        m_ChildViews = allDescendants;
+
+        if (transform.parent != null)
+        {
+            BaseView potentialParentView = transform.parent.GetComponentInParent<BaseView>(); // Encuentra el primer BaseView padre
+            if (potentialParentView != null)
+            {
+               
+               // Debug.Log($" {gameObject.name} found parent view {potentialParentView.name}");
+               
+            }
+        }
+
+      
     }
+
+    
+    /// <summary>
+    /// Método interno para añadir un hijo a la lista m_ChildViews
+    /// y establecer SU m_ParentView referencia sin manipular Transforms
+    /// o disparar MarkDirty/OnXYUpdated de la manera completa de AddChild.
+    /// Se usa para poblar la jerarquia LÓGICA al inicializar desde prefab.
+    /// </summary>
+    private void InternalAddLogicalChildReference(BaseView childView)
+    {
+        if (childView == null || childView == this || m_ChildViews.Contains(childView))
+        {
+            // Debug.LogWarning("Skipping adding null, self, or already present child.", this.gameObject);
+            return; 
+        }
+
+        int index = m_ChildViews.Count;
+        m_ChildViews.Insert(index, childView);
+
+      
+        childView.m_ParentView = this;
+
+       
+    }
+
     protected virtual void Awake()
     {
+        //Debug.Log($"BaseView ({gameObject.name}): Awake, calling InitializeView().", this.gameObject);
         InitializeView();
+        if (m_ViewTransform == null)
+        {
+            Debug.LogError($"BaseView ({gameObject.name}): ViewTransform IS NULL AFTER InitializeView()!", this.gameObject);
+        }
+        else
+        {
+            //Debug.Log($"BaseView ({gameObject.name}): Awake END. ViewTransform IS assigned.", this.gameObject); // Si está asignado
+        }
     }
 
      /// <summary>
@@ -83,10 +146,18 @@ public abstract class BaseView : MonoBehaviour
         get => m_ViewTransform.anchoredPosition;
         set
         {
+           // Debug.Log($"BaseView::XY Setter Called for {gameObject.name}. New Value: ({value.x:F2}, {value.y:F2}). Current Value: ({m_ViewTransform?.anchoredPosition.x:F2}, {m_ViewTransform?.anchoredPosition.y:F2})", this.gameObject);
+
             if (m_ViewTransform != null && m_ViewTransform.anchoredPosition != value)
             {
+              //  Debug.Log($"BaseView::XY Setter for {gameObject.name}: Position is DIFFERENT, calling OnXYUpdated().", this.gameObject); 
+
                 m_ViewTransform.anchoredPosition = value;
                 OnXYUpdated(); // Notifico que la posición cambió
+            }
+            else if (m_ViewTransform != null && m_ViewTransform.anchoredPosition == value)
+            {
+               // Debug.Log($"BaseView::XY Setter for {gameObject.name}: Position is SAME, NOT calling OnXYUpdated().", this.gameObject); 
             }
             else if (m_ViewTransform == null)
             {
@@ -163,8 +234,31 @@ public abstract class BaseView : MonoBehaviour
     /// </summary>
     protected internal virtual void OnXYUpdated()
     {
-        // REVISAR si los hijos (como ConnectionView) necesitan saber que el padre se movió para actualizar, su posición en el ConnectionDB.
-        //foreach(var child in ChildViews.Where(c => c != null)) child.OnXYUpdated(); 
+       // Debug.Log($"BaseView::OnXYUpdated START for {gameObject.name}. XY: ({XY.x:F2}, {XY.y:F2}). Parent: {ParentView?.gameObject.name ?? "None"}", this.gameObject);
+      //  Debug.Log($"BaseView::OnXYUpdated for {gameObject.name}: ChildViews Count: {ChildViews.Count}. HasChildren: {HasChildren}", this.gameObject);
+        if (HasChildren)
+        {
+            //Se inicializa la propagación de lsde la clase base al resto de clases hijas
+            foreach (var child in ChildViews.Where(c => c != null))
+            {
+                bool childIsActive = child.gameObject?.activeInHierarchy ?? false;
+                //Debug.Log($"BaseView::OnXYUpdated propagating to child {child.gameObject.name} (Type: {child.Type}). Child Active In Hierarchy: {childIsActive}", this.gameObject);
+                if (childIsActive) // <<< Asegurarse de que el hijo esté activo en la jerarquia para propagar movimiento
+                {
+                    child.OnXYUpdated(); // Llama recursiva solo si activo
+                }
+                else
+                {
+                    Debug.LogWarning($"BaseView::OnXYUpdated NOT propagating to {child.gameObject.name} - NOT active in hierarchy!", this.gameObject);
+                }
+            }
+        }
+
+        else
+        {
+           // Debug.Log("No hay hijos en " + gameObject.name);
+        }
+       // Debug.Log($"BaseView::OnXYUpdated END for {gameObject.name}.", this.gameObject);
     }
 
     /// <summary>
@@ -185,6 +279,7 @@ public abstract class BaseView : MonoBehaviour
     /// </summary>
     public virtual void UpdateLayout(Vector2 startXY)
     {
+        Debug.Log($"UpdateLayout START for {gameObject.name} at {startXY}", this.gameObject);
         // 1.Posicionamiento de la vista
         this.XY = startXY; // Llama a OnXYUpdated internamente
 
@@ -235,24 +330,48 @@ public abstract class BaseView : MonoBehaviour
     {
         if (childView == null) return;
         if (childView == this) { Debug.LogError($"BaseView ({gameObject.name}): Cannot add self as child!"); return; }
-        if (m_ChildViews.Contains(childView)) return;
+        if (m_ChildViews.Contains(childView))
+        {
+            Debug.LogWarning($"BaseView ({gameObject.name}): Already contains child {childView.gameObject.name}.", this.gameObject);
+            return;
+        }
+
+        Debug.Log($"BaseView ({gameObject.name}): Attempting to add child {childView.gameObject.name} (Type: {childView.Type}) at index {index}.", this.gameObject);
 
         childView.m_ParentView?.RemoveChild(childView); // Desvincular del padre lógico anterior
 
+        // Manipular la jerarquía visual de Unity 
+        if (this.ViewTransform != null && childView.ViewTransform != null)
+        {
+            Debug.Log($"  Setting visual parent of {childView.gameObject.name} to {this.gameObject.name}.", childView.gameObject);
+            childView.ViewTransform.SetParent(this.ViewTransform, false);
+            Debug.Log($"  New visual parent is: {childView.ViewTransform.parent.name}", childView.gameObject);
+
+        }
+        else
+        {
+            Debug.LogError($"BaseView ({gameObject.name}): Cannot set visual parent for child {childView.gameObject.name}. ViewTransform null.", this.gameObject);
+        }
+
+        // Manipular la jerarquía lógica de vistas 
         index = Mathf.Clamp(index, 0, m_ChildViews.Count);
-        BaseView prevSibling = (index > 0) ? m_ChildViews[index - 1] : null;
-        BaseView nextSibling = (index < m_ChildViews.Count) ? m_ChildViews[index] : null;
+        //BaseView prevSibling = (index > 0) ? m_ChildViews[index - 1] : null;
+        //BaseView nextSibling = (index < m_ChildViews.Count) ? m_ChildViews[index] : null;
 
         m_ChildViews.Insert(index, childView);
 
         childView.m_ParentView = this;
-        childView.m_PreviousView = prevSibling;
-        childView.m_NextView = nextSibling;
+        //  childView.m_PreviousView = prevSibling;
+        //  childView.m_NextView = nextSibling;
 
-        if (prevSibling != null) prevSibling.m_NextView = childView;
-        if (nextSibling != null) nextSibling.m_PreviousView = childView;
+        //   if (prevSibling != null) prevSibling.m_NextView = childView;
+        //   if (nextSibling != null) nextSibling.m_PreviousView = childView;
 
-        MarkDirty(); 
+
+        // Notificar para re-layout 
+        MarkDirty();
+
+        Debug.Log($"BaseView ({gameObject.name}): Successfully added child {childView.gameObject.name}. ChildViews Count: {m_ChildViews.Count}", this.gameObject);
     }
 
     public void RemoveChild(BaseView childView)
@@ -300,11 +419,9 @@ public abstract class BaseView : MonoBehaviour
         }
     }
 
-
     protected virtual void OnDestroy()
     {
         // Debug.Log($"BaseView ({gameObject.name}) OnDestroy.", this);
-        // Desvincularse del padre LÓGICO al ser destruido físicamente.
 
         m_ParentView?.RemoveChild(this); // La vista le dice al padre lógico que ya no es su hijo/a
 

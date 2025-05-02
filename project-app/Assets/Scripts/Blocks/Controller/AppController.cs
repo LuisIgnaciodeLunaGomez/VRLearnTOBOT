@@ -78,7 +78,7 @@ public class AppController : MonoBehaviour
 
     IEnumerator Start()
     {
-        Debug.Log("<color=orange>AppController: Start - Finding components...</color>");
+      //  Debug.Log("<color=orange>AppController: Start - Finding components...</color>");
         m_IsInitialized = false;
         yield return null;
 
@@ -88,11 +88,13 @@ public class AppController : MonoBehaviour
             Debug.LogError("AppController: UICanvasManager not found!");
             yield break;
         }
-        Debug.Log("AppController: Found UICanvasView. Waiting for its core UI/View components to be ready (Awake phase)...", this);
+       // Debug.Log("AppController: Found UICanvasView. Waiting for its core UI/View components to be ready (Awake phase)...", this);
         
-        yield return new WaitUntil(() => m_uiManager.IsCoreComponentsReady()); 
+        yield return new WaitUntil(() => m_uiManager.IsCoreComponentsReady());
 
-        Debug.Log("AppController: UICanvasView components ready.");
+        //  Debug.Log("AppController: UICanvasView components ready.");
+
+        m_workspaceModel = m_uiManager.Workspace;
 
         m_categoryController = FindFirstObjectByType<CategoryController>();
         if (m_categoryController == null) m_categoryController = gameObject.AddComponent<CategoryController>();
@@ -101,7 +103,7 @@ public class AppController : MonoBehaviour
         if (m_workspaceController == null) m_workspaceController = gameObject.AddComponent<WorkspaceController>();
 
         yield return new WaitUntil(() => m_uiManager.Workspace != null && m_uiManager.WorkSpaceView != null);
-        Debug.Log($"AppController: UICanvasView reports core setup complete.");
+      //  Debug.Log($"AppController: UICanvasView reports core setup complete.");
 
         m_workspaceModel = m_uiManager.Workspace;
         m_workspaceView = m_uiManager.WorkSpaceView;
@@ -119,8 +121,7 @@ public class AppController : MonoBehaviour
             Debug.LogError("AppController: FAILED to get critical Model/View components from UICanvasView AFTER waiting!");
             yield break;
         }
-        Debug.Log($"AppController: Got Model (ID: {m_workspaceModel.Id}) and View components from UICanvasView.");
-
+       // Debug.Log($"AppController: Got Model (ID: {m_workspaceModel.Id}) and View components from UICanvasView.");
 
         RectTransform codingAreaRect = m_uiManager.CodingAreaPanelRect;
         RectTransform blockListAreaRect = m_uiManager.BlockListPanelRect;
@@ -140,39 +141,39 @@ public class AppController : MonoBehaviour
           codingAreaRect, 
           null
       );
-        Debug.Log("<color=green>AppController: WorkSpaceView bound to Model and RectTransform.</color>", this);
+      //  Debug.Log("<color=green>AppController: WorkSpaceView bound to Model and RectTransform.</color>", this);
 
 
         m_categoryController = FindFirstObjectByType<CategoryController>() ?? gameObject.AddComponent<CategoryController>();
 
         if (m_categoryController == null) m_categoryController = gameObject.AddComponent<CategoryController>();
         m_categoryController.InitializeController(m_blockListView, m_toolboxConfig); 
-        Debug.Log("AppController: CategoryController initialized.");
+      //  Debug.Log("AppController: CategoryController initialized.");
 
         m_workspaceController = FindFirstObjectByType<WorkspaceController>() ?? gameObject.AddComponent<WorkspaceController>();
 
         if (m_workspaceController == null) m_workspaceController = gameObject.AddComponent<WorkspaceController>();
         m_workspaceController.InitializeController(m_workspaceModel, m_workspaceView);
-        Debug.Log("AppController: WorkspaceController initialized.");
+       // Debug.Log("AppController: WorkspaceController initialized.");
 
         m_executionController = FindFirstObjectByType<ExecutionController>() ?? gameObject.AddComponent<ExecutionController>();
         if (m_executionController == null) m_executionController = gameObject.AddComponent<ExecutionController>();
         
         // m_executionController.Initialize(m_workspaceModel);
-        Debug.Log("AppController: ExecutionController found/created.");
+     //   Debug.Log("AppController: ExecutionController found/created.");
 
         m_inputController = FindFirstObjectByType<InputController>() ?? gameObject.AddComponent<InputController>();
 
         if (m_inputController == null) m_inputController = gameObject.AddComponent<InputController>();
         
         //m_inputController.Initialize(m_workspaceView);
-        Debug.Log("AppController: InputController found/created.");
+    //    Debug.Log("AppController: InputController found/created.");
 
         BlockDragController dragController = FindFirstObjectByType<BlockDragController>(); // ?? gameObject.AddComponent<BlockDragController>();
 
         if (dragController == null)
         {
-            Debug.LogWarning("AppController: BlockDragController not found in scene. Adding one to AppController GameObject.");
+            //Debug.LogWarning("AppController: BlockDragController not found in scene. Adding one to AppController GameObject.");
            
             dragController = gameObject.AddComponent<BlockDragController>();
         }
@@ -183,10 +184,10 @@ public class AppController : MonoBehaviour
 
         m_connectionController.InitializeController(m_workspaceModel, m_workspaceView, m_blockDragController);
 
-        Debug.Log("AppController: ConnectionController initialized.");
+    //    Debug.Log("AppController: ConnectionController initialized.");
 
         dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController, m_connectionController, m_uiManager.DragLayer);
-        Debug.Log("AppController: BlockDragController initialized.");
+     //   Debug.Log("AppController: BlockDragController initialized.");
 
         m_blockListView.InitializeToolbox(
             m_workspaceModel,
@@ -199,7 +200,7 @@ public class AppController : MonoBehaviour
         );
        // Debug.Log("<color=green>AppController: BlockListView initialized.</color>", this);
 
-        Debug.Log("<color=green>AppController: Initialization of dependent controllers complete.</color>");
+       // Debug.Log("<color=green>AppController: Initialization of dependent controllers complete.</color>");
         
         m_IsInitialized = true;
     }

@@ -116,11 +116,11 @@ public class IfElseMutator : Mutator
             else
             {
                 // IFi value input
-                InputModel inputValue = InputFactory.Create(EConnection.InputValue, IF_INPUT_PREFIX + i, ALIGN, new List<string>() { CHECK });
+                InputModel inputValue = InputFactory.Create(EConnection.InputValue, IF_INPUT_PREFIX + i, ALIGN, new List<string>() { CHECK }, mBlock);
                 inputValue.AppendField(new FieldLabelModel(null, I18n.Get(MsgDefine.CONTROLS_IF_MSG_ELSEIF)));
 
                 // DOi statement input
-                InputModel inputStatement = InputFactory.Create(EConnection.NextStatement, DO_INPUT_PREFIX + i, ALIGN, null);
+                InputModel inputStatement = InputFactory.Create(EConnection.NextStatement, DO_INPUT_PREFIX + i, ALIGN, null, mBlock);
                 inputStatement.AppendField(new FieldLabelModel(null, I18n.Get(MsgDefine.CONTROLS_IF_MSG_THEN)));
 
                 newInputs.Add(inputValue);
@@ -133,7 +133,7 @@ public class IfElseMutator : Mutator
         {
             if (elseInput == null)
             {
-                elseInput = InputFactory.Create(EConnection.NextStatement, ELSE_INPUT_NAME, ALIGN, null);
+                elseInput = InputFactory.Create(EConnection.NextStatement, ELSE_INPUT_NAME, ALIGN, null,mBlock);
                 elseInput.AppendField(new FieldLabelModel(null, I18n.Get(MsgDefine.CONTROLS_IF_MSG_ELSE)));
             }
             newInputs.Add(elseInput);

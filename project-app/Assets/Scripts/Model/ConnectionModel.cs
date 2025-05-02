@@ -21,7 +21,6 @@ using System.Text;
 using System.Xml;
 using UnityEngine;
 
-
 public class ConnectionModel : Observable<UpdateState>
 {
 
@@ -31,63 +30,32 @@ public class ConnectionModel : Observable<UpdateState>
         get { return mSourceBlock; }
         set
         {
-            if (mSourceBlock == value) return;
+            Debug.Log($"[Setter ENTER] Conn Hash: {this.GetHashCode()}, " +
+                      $"Current mSourceBlock ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}), " +
+                      $"Value to assign ID: {value?.ID ?? "NULL"} (Hash: {value?.GetHashCode() ?? -1})");
 
-            if (mSourceBlock != null && value != null)
-                //throw new Exception("Connection is already a member of another block.");
-                Debug.LogWarning($"Connection reassignment detected. Old: {mSourceBlock?.ID}, New: {value?.ID}");
+            if (mSourceBlock == value)
+            {
+                Debug.Log($"[Setter SKIP] Value is the same as mSourceBlock. Exiting.");
+                return; 
+            }
 
+            Debug.Log($"[Setter PRE-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
+                      $"About to set mSourceBlock. Current value: {mSourceBlock?.ID ?? "NULL"}");
+
+            // asignación real
             mSourceBlock = value;
 
-            if (mSourceBlock?.Workspace != null)
-            {
-                if (mSourceBlock.Workspace.ConnectionDBList == null)
-                {
-                    Debug.LogError($"Block {mSourceBlock.ID} has a Workspace but its ConnectionDBList is null! Initialization error? {mSourceBlock}");
+            Debug.Log($"[Setter POST-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
+                      $"mSourceBlock should NOW be ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}). " +
+                      $"Was it set to 'value'?: {(System.Object.ReferenceEquals(mSourceBlock, value) ? "YES" : "NO!!!")}");
 
-                    DB = null;
-                    DBOpposite = null;
-                    Hidden = true;
-                    InDB = false; // No puede estar en DB si la lista es null
-                    return; // Salir si la lista de DBs no existe
-                }
-
-                // Obtener los DB correspondientes del Workspace
-                BlockConnectionDB db;
-                if (mSourceBlock.Workspace.ConnectionDBList.TryGetValue(Type, out db))
-                {
-                    DB = db;
-                    Hidden = false; // No está oculto si tiene un DB
-                }
-                else
-                {
-
-                    Debug.LogWarning($"ConnectionDB not found for type {Type} in workspace {mSourceBlock.Workspace.Id}");
-                    DB = null;
-                    Hidden = true; // Oculto si no hay DB
-                }
-                BlockConnectionDB dbOpposite;
-                if (mSourceBlock.Workspace.ConnectionDBList.TryGetValue(Define.OppositeConnection(Type), out dbOpposite))
-                {
-                    DBOpposite = dbOpposite;
-                }
-                else
-                {
-                    // Debug.LogWarning($"Opposite ConnectionDB not found for type {Define.OppositeConnection(Type)}");
-                    DBOpposite = null;
-                }
-            }
-            else
-            {
-                DB = null;
-                DBOpposite = null;
-                Hidden = true;
-                InDB = false; // No puede estar en la DB
-                Debug.Log($"Connection {Type} on block {mSourceBlock?.ID ?? "NULL"} has no workspace/DB assigned.");
-            }
+        string finalState = (mSourceBlock == null) ? "NULL" : "NOT NULL";
+        Debug.Log($"[Setter EXIT SIMPLIFIED] Conn Hash: {this.GetHashCode()}, Final mSourceBlock is: {finalState}");
+        
         }
-    }
-
+    }  
+   
     public InputModel Input { get; internal set; }
 
     /// <summary>
@@ -110,19 +78,21 @@ public class ConnectionModel : Observable<UpdateState>
     /// <param name="type">The type of the connection.</param>
     public ConnectionModel(BlockModel source, EConnection type)
     {
-        Type = type; //type of the connection
-        SourceBlock = source;//block that is the parent of this connection
+        if (source == null && type != EConnection.None) // Permitir None para inputs dummy sin bloqu o  requerirlo siempre
+            Debug.LogWarning($"Creating connection of type {type} with a NULL source block!");
+        Type = type; 
+        SourceBlock = source;
+        InDB = false;
     }
 
     /// <summary>
     /// Class for a connection between blocks.
     /// </summary>
     /// <param name="type"></param>
-    public ConnectionModel(EConnection type) : this(null, type)
+    private ConnectionModel(EConnection type) : this(null, type)
     {
     }
 
-    //Constants for checking whether two connections are compatible.
     public const int CAN_CONNECT = 0;
     public const int REASON_SELF_CONNECTION = 1;
     public const int REASON_WRONG_TYPE = 2;
@@ -187,12 +157,12 @@ public class ConnectionModel : Observable<UpdateState>
     /// <summary>
     /// Connection database for connections of this type on the current workspace.
     /// </summary>
-    public BlockConnectionDB DB { get; private set; } //connection database for connections of this type on the current workspace
+    public BlockConnectionDB DB { get; internal set; } 
 
     /// <summary>
     /// Connection database for connections compatible with this type on the current workspace.
     /// </summary>
-    public BlockConnectionDB DBOpposite { get; private set; } //connection database for connections compatible with this type on the current workspace
+    public BlockConnectionDB DBOpposite { get; internal set; }
 
     public EConnection OppositeType
     {
@@ -214,7 +184,7 @@ public class ConnectionModel : Observable<UpdateState>
     /// <summary>
     /// Whether this connections is hidden (not tracked in a database) or not.
     /// </summary>
-    public bool Hidden { get; private set; }
+    public bool Hidden { get; internal set; }
 
     /// <summary>
     /// DOM representation of a block or null.
@@ -250,12 +220,10 @@ public class ConnectionModel : Observable<UpdateState>
         var parentBlock = parentConnection.SourceBlock; //superior block
         var childBlock = childConnection.SourceBlock; //inferior block
 
-        // Disconnect any existing parent on the child connection.
         if (childConnection.IsConnected)
             childConnection.Disconnect();
 
-        // Other connection is already connected to something.
-        // Disconnect it and reattach it or bump it as needed.
+        
         if (parentConnection.IsConnected)
         {
             BlockModel orphanBlock = parentConnection.TargetBlock;
@@ -264,20 +232,16 @@ public class ConnectionModel : Observable<UpdateState>
 
             if (orphanBlock.IsShadow)
             {
-                // Save the shadow block so that field values are preserved.
                 shadowDom = Xml.BlockToDom(orphanBlock);
                 orphanBlock.Dispose();
                 orphanBlock = null;
             }
             else if (parentConnection.Type == EConnection.InputValue)
             {
-                //value connnections
                 if (orphanBlock.OutputConnection == null)
                     throw new Exception("Orphan block does not have an output connection.");
 
-                // Attempt to reattach the orphan at the end of the newly inserted
-                // block.  Since this block may be a row, walk down to the end
-                // or to the first (and only) shadow block.
+             
                 var connection = ConnectionModel.LastConnectionInRow(childBlock, orphanBlock);
                 if (connection != null)
                 {
@@ -287,14 +251,11 @@ public class ConnectionModel : Observable<UpdateState>
             }
             else if (parentConnection.Type == EConnection.NextStatement)
             {
-                // Statement connections.
-                // Statement blocks may be inserted into the middle of a stack.
-                // Split the stack.
+               
                 if (orphanBlock.PreviousConnection == null)
                     throw new Exception("Orphan block does not have a previous connection.");
 
-                // Attempt to reattach the orphan at the bottom of the newly inserted
-                // block.  Since this block may be a stack, walk down to the end.
+               
                 var newBlock = childBlock;
                 while (newBlock.NextConnection != null)
                 {
@@ -342,15 +303,49 @@ public class ConnectionModel : Observable<UpdateState>
     {
         if (this.IsConnected)
         {
-            throw new Exception("Disconnect connection before disposing of it.");
+            Debug.LogError($"ConnectionModel.Dispose: Connection {GetConnectionModelID(this)} is still connected! Disconnect first.");
+
+           // throw new Exception("Disconnect connection before disposing of it.");
         }
-        if (this.InDB)
+
+        bool wasInDB = this.InDB; // Guarda el estado inicial
+        BlockConnectionDB dbRef = this.DB; // Guarda la referencia
+        string connIdForLog = GetConnectionModelID(this); // Genera ID antes de que SourceBlock pueda cambiar
+
+        GameObject contextObj = null;// this.SourceBlock?.gameObject; // Obtener contexto si es posible
+
+        Debug.Log($"[Conn Dispose ENTER] {connIdForLog}. InDB={wasInDB}. DB Ref Null? {(dbRef == null)}", contextObj);
+
+        if (wasInDB && dbRef != null)
         {
-            this.DB.RemoveConnection(this);
+            Debug.Log($"  --> Attempting Remove from DB {dbRef.GetType().Name}. Contains Before? {dbRef.Contains(this)}", contextObj);
+            bool removed = false;
+            try
+            {
+                removed = dbRef.Remove(this); 
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"  --> EXCEPTION during DB.Remove! Conn:{connIdForLog}, Err:{e}", contextObj);
+            }
+            Debug.Log($"  --> Removal Result: removed={removed}. Contains After? {dbRef.Contains(this)}. Forcing InDB=false.", contextObj);
+            this.InDB = false; // Asegurar InDB es false después del intento
+        }
+        else if (wasInDB /*&& dbRef == null*/)
+        {
+            Debug.LogWarning($"[Conn Dispose] {connIdForLog} had InDB=true BUT DB was NULL! Forcing InDB=false.", contextObj);
+            this.InDB = false;
+        }
+        else
+        {
+            // Debug.Log($"[Conn Dispose] {connIdForLog} - InDB was false. No removal needed.", contextObj);
+            this.InDB = false;
         }
 
         this.DB = null;
         this.DBOpposite = null;
+
+        Debug.Log($"[Conn Dispose EXIT] {connIdForLog}", contextObj);
     }
 
     /// <summary>
@@ -425,60 +420,88 @@ public class ConnectionModel : Observable<UpdateState>
     /// </summary>
     public bool IsConnectionAllowed(ConnectionModel candidate, float maxRadius = 0)
     {
-        int canConnect = this.CanConnectWithReason(candidate);
-        if (canConnect != ConnectionModel.CAN_CONNECT)
+       // Debug.Log($"      [IsConnectionAllowed Check] Self: {GetConnectionModelID(this)} VS Candidate: {GetConnectionModelID(candidate)}, MaxRadius: {maxRadius}");
+        if (candidate == null)
+        {
+            Debug.Log("        -> FAILED: Candidate is NULL.");
             return false;
+        }
+        int reason = this.CanConnectWithReason(candidate);
+        if (reason != ConnectionModel.CAN_CONNECT)
+        {
+            string reasonStr = "Unknown";
+            switch (reason)
+            {
+                case REASON_SELF_CONNECTION: reasonStr = "Self Connection"; break;
+                case REASON_WRONG_TYPE: reasonStr = "Wrong Type"; break;
+                case REASON_TARGET_NULL: reasonStr = "Target Null (already checked)"; break; // Redundante aquí
+                case REASON_CHECKS_FAILED: reasonStr = "Checks Failed"; break;
+                case REASON_DIFFERENT_WORKSPACES: reasonStr = "Different Workspaces"; break;
+                case REASON_SHADOW_PARENT: reasonStr = "Shadow Parent Issue"; break;
+            }
+            Debug.Log($"        -> FAILED (CanConnectWithReason): {reasonStr} ({reason})");
+            return false;
+        }
+    //    Debug.Log("        - Passed: Basic connection reasons (Type, Workspace, Checks, etc.) OK.");
 
-        // Don't connect to its sourceblock's children
-        BlockModel candidateParent = candidate.SourceBlock.ParentBlock;
+        BlockModel candidateParent = candidate.SourceBlock?.ParentBlock; 
         while (candidateParent != null)
         {
             if (candidateParent == this.SourceBlock)
+            {
+                Debug.Log($"        -> FAILED: Connection would create a loop (candidate is child of self).");
                 return false;
+            }
             candidateParent = candidateParent.ParentBlock;
         }
+        Debug.Log("        - Passed: No loop detected.");
 
-        // Don't offer to connect an already connected left (male) value plug to
-        // an available right (female) value plug.  Don't offer to connect the
-        // bottom of a statement block to one that's already connected.
+       
         if (candidate.Type == EConnection.OutputValue || candidate.Type == EConnection.PrevStatement)
         {
-            if (candidate.IsConnected || this.IsConnected)
+            if (candidate.IsConnected) // Si el candidato inferior YA está conectado a OTRO
+            {
+                Debug.Log($"        -> FAILED: Candidate (Inferior: {candidate.Type}) is already connected to {GetConnectionModelID(candidate.TargetConnection)}.");
                 return false;
+            }
+           
         }
+      //  Debug.Log($"        - Passed: Candidate ({candidate.Type}) connection state check OK.");
 
-        // Offering to connect the left (male) of a value block to an already
-        // connected value pair is ok, we'll splice it in.
-        // However, don't offer to splice into an immovable block.
-        if (candidate.Type == EConnection.InputValue && candidate.IsConnected
-            && !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
+        if (candidate.Type == EConnection.InputValue && candidate.IsConnected &&
+            candidate.TargetBlock != null && // Safety check
+            !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
         {
+            Debug.Log("        -> FAILED: Candidate (InputValue) is connected to an immovable, non-shadow block.");
             return false;
         }
-
-        // Don't let a block with no next connection bump other blocks out of the
-        // stack.  But covering up a shadow block or stack of shadow blocks is fine.
-        // Similarly, replacing a terminal statement with another terminal statement
-        // is allowed.
-        if (this.Type == EConnection.PrevStatement && candidate.IsConnected
-            && this.SourceBlock.NextConnection == null && !candidate.TargetBlock.IsShadow
-            && candidate.TargetBlock.NextConnection != null)
+       
+        float dist = this.DistanceFrom(candidate);
+      //  Debug.Log($"        - Checking Distance: Calculated={dist}, MaxRadius={maxRadius}");
+        if (maxRadius > 0 && dist > maxRadius)
         {
+            Debug.Log($"        -> FAILED: Distance ({dist}) exceeds MaxRadius ({maxRadius}).");
             return false;
         }
-
-        if (maxRadius > 0 && this.DistanceFrom(candidate) > maxRadius)
-            return false;
-
+     
         return true;
     }
 
     public static void ConnectReciprocally(ConnectionModel first, ConnectionModel second)
     {
+        Debug.Log($"<color=lightblue>ConnectReciprocally:</color> Setting target for First ({GetConnectionModelID(first)}) to Second ({GetConnectionModelID(second)})");
+
         if (first == null || second == null)
             throw new Exception("Cannot connect null connections.");
+        Debug.Log($"  - BEFORE: first.TargetConnection = {GetConnectionModelID(first.TargetConnection)}");
         first.TargetConnection = second;
+        Debug.Log($"  - First's TargetConnection is now: {GetConnectionModelID(first.TargetConnection)}");
+
+        Debug.Log($"  - BEFORE: second.TargetConnection = {GetConnectionModelID(second.TargetConnection)}");
+
         second.TargetConnection = first;
+        Debug.Log($"  - Second's TargetConnection is now: {GetConnectionModelID(second.TargetConnection)}");
+
     }
 
     /// <summary>
@@ -680,6 +703,54 @@ public class ConnectionModel : Observable<UpdateState>
     public virtual List<ConnectionModel> Neighbours(int maxLimit)
     {
         return DBOpposite.GetNeighbours(this, maxLimit);
+    }
+
+    /// <summary>
+    /// Genera un identificador de depuración para un ConnectionModel.
+    /// </summary>
+    /// <param name="conn">El ConnectionModel (puede ser null).</param>
+    /// <returns>Un string identificador de depuración.</returns>
+    public static string GetConnectionModelID(ConnectionModel conn)
+    {
+        if (conn == null) return "NULL_CONN";
+        if (conn.SourceBlock == null)
+        {
+            // Loguear este error aquí es útil para saber que una conexión zombie fue procesada
+            Debug.LogError($"GetConnectionModelID: conn.SourceBlock is NULL for Connection Hash: {conn.GetHashCode()}. This connection should have been removed from its DB!", null); // O pasa un contexto si puedes
+            return $"CONN_ZOMBIE_{conn.GetHashCode()}_NO_SOURCE";
+        }
+
+        string sourceId = conn.SourceBlock?.ID ?? "NO_BLOCK";
+
+        // Verifico si el Input está asociado directamente a esta conexión
+        // Esto suele ser para EConnection.InputValue y EConnection.NextStatement dentro de inputs
+        string inputName = conn.Input?.Name;
+
+        if (!string.IsNullOrEmpty(inputName))
+        {
+            return $"Conn->{sourceId}.Input.{inputName}.{conn.Type}";
+        }
+        
+        else
+        {
+            return $"Conn->{sourceId}.Direct.{conn.Type}";
+        }
+    }
+
+    /// <summary>
+    /// Asigna las referencias a las bases de datos correctas desde fuera de la clase.
+    /// Debe ser llamado por WorkSpaceModel cuando registra la conexión.
+    /// </summary>
+    /// <param name="theDB">La base de datos para el tipo de esta conexión.</param>
+    /// <param name="theDBOpposite">La base de datos para el tipo opuesto.</param>
+    public void AssignDBReferences(BlockConnectionDB theDB, BlockConnectionDB theDBOpposite)
+    {
+      
+        this.DB = theDB;
+        this.DBOpposite = theDBOpposite;
+
+     
+        // Debug.Log($"[AssignDBReferences] Conn: {GetConnectionModelID(this)}, Assigned DB: {(theDB != null)}, Assigned DBOpposite: {(theDBOpposite != null)}");
     }
 
 }//fin clase ConnectionModel

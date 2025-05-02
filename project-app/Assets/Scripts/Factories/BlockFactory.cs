@@ -14,7 +14,6 @@
  * Descripción: Clase que se encarga de la creación de los bloques para cada categoría
  */
 
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -32,10 +31,10 @@ public class BlockFactory
     private Dictionary<string, BlockDefinition> mDefinitions = new Dictionary<string, BlockDefinition>();
 
     //Devuelve todas las definiciones de bloques
-    public Dictionary<string, BlockDefinition> GetAllBlockDefinitions()
-    {
+    public Dictionary<string, BlockDefinition> GetAllBlockDefinitions() => mDefinitions;
+   /*{
         return mDefinitions;
-    }
+    }*/
 
     //Agrupa bloques por prefijos 
     private Dictionary<string, List<string>> mPrefixCategories = new Dictionary<string, List<string>>();
@@ -55,45 +54,18 @@ public class BlockFactory
         mPrefixCategories.Clear();
     }
 
-    // Carga bloques desde un archivo JSON
-    public void AddJsonDefinitions(string jsonText)
-    {
-        JArray jsonArray = JArray.Parse(jsonText);
-        for (int i = 0; i < jsonArray.Count; i++)
-        {
-            JObject element = jsonArray[i] as JObject;
-            string typeName = element["type"].ToString();
-            if (string.IsNullOrEmpty(typeName))
-            {
-                Debug.LogError("Block definition in JSON is missing 'type' attribute. Skipping.");
-                continue;
-            }
-
-            if (mDefinitions.ContainsKey(typeName))
-            {
-                Debug.LogWarning($"Block definition in JSON array has duplicated type name: {typeName}. Overwriting or Skipping?");
-                
-                continue;
-            }
-
-            int length = typeName.IndexOf("_");
-            string prefix = length > 0 ? typeName.Substring(0, length) : typeName;
-            if (!mPrefixCategories.ContainsKey(prefix))
-                mPrefixCategories[prefix] = new List<string>();
-            mPrefixCategories[prefix].Add(typeName);
-        }
-    }
-
     // Crea un bloque basado en su tipo
     public BlockModel CreateBlock(WorkSpaceModel workspace, string type, string uid = null)
     {
-        BlockModel block;
+        
+        BlockModel block; 
+
         string finalUid = string.IsNullOrEmpty(uid) ? Utilidades.GenUid() : uid; 
 
         if (workspace == null)
         {
-            //Creando una plantilla para el Toolbox (sin workspace)
-            Debug.Log($"BlockFactory: Creating TEMPLATE block: {type} (ID: {finalUid})");
+            //Creando una plantilla para el Toolbox (sin ws)
+           // Debug.Log($"BlockFactory: Creating TEMPLATE block: {type} (ID: {finalUid})");
             block = BlockModel.CreateTemplate(type, finalUid);                                               
         }
         else
@@ -104,8 +76,8 @@ public class BlockFactory
                 Debug.LogWarning($"BlockFactory: Block with provided ID '{uid}' already exists in workspace. Generating new ID.");
                 finalUid = Utilidades.GenUid();
             }
-            Debug.Log($"BlockFactory: Creating workspace block: {type} (ID: {finalUid}) for Workspace {workspace.Id}");
-            block = new BlockModel(workspace, type, finalUid); // Usa el constructor original que registra en el workspace
+           // Debug.Log($"BlockFactory: Creating workspace block: {type} (ID: {finalUid}) for Workspace {workspace.Id}");
+            block = new BlockModel(workspace, type, finalUid); // constructor original que registra en el workspace
         }
 
         BlockDefinition definition;
@@ -115,28 +87,148 @@ public class BlockFactory
         }
         else
         {
-            List<InputModel> inputs = definition.CreateInputList();
-            ConnectionModel output = definition.CreateOutputConnection();
-            ConnectionModel prev = definition.CreatePreviousStatementConnection();
-            ConnectionModel next = definition.CreateNextStatementConnection();
-            Mutator mutator = definition.CreateMutator();
+            List<InputModel> inputs = definition.CreateInputList(block);
+         //   Debug.Log("BlockFactory: Created InputModel list for block: " + string.Join(", ", inputs.Select(i => i.Name).ToArray()));
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            if (inputs != null)
+            {
+                for (int i = 0; i < inputs.Count; i++)
+                {
+                    sb.Append(inputs[i]?.Name ?? "NULL_INPUT");
+                    if (i < inputs.Count - 1) sb.Append(", ");
+                }
+            }
+          //  Debug.Log($"BlockFactory: Corrected InputModel List: [{sb.ToString()}] (Count: {inputs?.Count ?? 0})");
+            ConnectionModel output = definition.CreateOutputConnection(block);
+
+           // Debug.Log($"BlockFactory: Created OutputConnectionModel for block '{type}' (ID: {block.ID}). Has output connection: {(output != null)}.");
+            ConnectionModel prev = definition.CreatePreviousStatementConnection(block);
+          //  Debug.Log($"[Factory:{type}] ConnectionModel 'prev' created by definition. Is null? {prev == null}. ConnID: {ConnectionModel.GetConnectionModelID(prev)}"); 
+            // Debug.Log($"BlockFactory: Created PreviousStatementConnectionModel for block '{type}' (ID: {block.ID}). Has previous connection: {(prev != null)}.");   
+            ConnectionModel next = definition.CreateNextStatementConnection(block);
+
+          //  Debug.Log($"BlockFactory: Created NextStatementConnectionModel for block '{type}' (ID: {block.ID}). Has next connection: {(next != null)}.");
+           // Mutator mutator = definition.CreateMutator();
             bool inputsInline = definition.GetInputsInlineDefault();
+            // Debug.Log($"BlockFactory: Created Mutator for block '{type}' (ID: {block.ID}). Has mutator: {(mutator != null)}. Inputs inline default: {inputsInline}.");
+
+           // Debug.Log($"BlockFactory: Created BlockModel '{type}' (ID: {block.ID}). Created Connections: Output={output != null}, Prev={prev != null}, Next={next != null}. Inputs Count={inputs?.Count ?? 0}.");
 
             block.Reshape(inputs, output, prev, next);
+            Debug.Log($"[Factory:{block.ID}] AFTER Reshape - block.PreviousConnection. Is null? {block.PreviousConnection == null}. ConnID: {ConnectionModel.GetConnectionModelID(block.PreviousConnection)}");
+            // --- Asignar SourceBlock a conexiones y campos DEL BLOQUE FINAL ---
+            Debug.Log($"[BlockFactory ID:{block.ID}] Assigning SourceBlock AFTER Reshape...");
 
-            if (mutator != null) block.SetMutator(mutator);
+            // Conexiones directas
+            if (block.OutputConnection != null) block.OutputConnection.SourceBlock = block;
+            if (block.PreviousConnection != null) block.PreviousConnection.SourceBlock = block; // Si se asignó bien en Reshape
+            if (block.NextConnection != null) block.NextConnection.SourceBlock = block;
+
+          
+            ConnectionModel stepsConnectionForDebug = null;
+            foreach (var inp in block.InputList)
+            {
+                if (inp != null && inp.Name == "STEPS")
+                {
+                    stepsConnectionForDebug = inp.Connection;
+                    break; // Asumimos que solo hay un STEPS
+                }
+            }
+
+            foreach (InputModel input in block.InputList)
+            {
+                // Debug.Log($"  InputModel '{input.Name}' (Type:{input.Type}) assigned to Block. Has ConnectionModel: {(input.Connection != null)}", null);
+
+                if (input == null) continue;
+
+                input.SourceBlock = block; // Asignar al propio Input
+                                           //   Debug.Log($"  - Set SourceBlock for Input '{input.Name}'");
+
+                if (input.Connection != null)
+                {
+                    if (input.Name == "STEPS") // Solo para el input problemático
+                    {
+                        bool isSameInstance = System.Object.ReferenceEquals(input.Connection, stepsConnectionForDebug);
+                        Debug.Log($"[Factory Loop Assign Check Instance] Is same as outside loop? {isSameInstance}");
+
+                        Debug.Log($"[Factory Loop Assign] Assigning block '{block.ID}' to Conn Hash: {input.Connection.GetHashCode()} ...");
+
+                        Debug.Log($"[BlockFactory PRE-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
+                        $"Current SourceBlock: {input.Connection?.SourceBlock?.ID ?? "NULL"}, " +
+                        $"Block to Assign: {block?.ID ?? "NULL"} (Hash: {block?.GetHashCode() ?? -1})"); // Agrega el objeto Connection como contexto
+
+                        input.Connection.SourceBlock = block;
+                        Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}, REF EQ After: {System.Object.ReferenceEquals(input.Connection, stepsConnectionForDebug)}");
+
+                        var sourceBlockAfter = input.Connection?.SourceBlock;
+                        Debug.Log($"[BlockFactory POST-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
+                                  $"NEW SourceBlock IS NOW: {sourceBlockAfter?.ID ?? "NULL"} " +
+                                  $"(Was it assigned?: {(sourceBlockAfter == block ? "YES" : "NO!!!")}, " + // Compara referencias
+                                  $"Is Block var the same?: {(block?.ID) ?? "NULL"})"); // Confirma que 'block' no cambió
+                    }
+                    input.Connection.SourceBlock = block; // Asignar a la Conexión del Input
+                    Debug.Log($"    - Set SourceBlock for Connection of Input '{input.Name}' (ConnID: {ConnectionModel.GetConnectionModelID(input.Connection)})");
+
+                    // VERIFICACIÓN OPCIONAL (para estar seguros después de la corrección)
+
+
+                    if (input.Name == "STEPS")
+                    {
+                        Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                    }
+                }
+
+                if (input.FieldRow != null)
+                {
+                    foreach (FieldModel field in input.FieldRow)
+                    {
+                        if (field != null) field.SourceBlock = block; // Asignar a los Fields
+                    }
+                    //    Debug.Log($"    - Set SourceBlock for Fields in Input '{input.Name}'");
+                }
+            }
+            Debug.Log($"[BlockFactory ID:{block.ID}] Finished Assigning SourceBlock References.");
+
+            //  if (mutator != null) block.SetMutator(mutator);
             //if (inputsInline) block.SetInputsInline(true);
             if (inputsInline != block.GetInputsInline())
             {
                 block.SetInputsInline(inputsInline);
             }
 
-            // Asignamos el SourceBlock a inputs/connections creados
-            foreach (var input in inputs) { input.SourceBlock = block; }
-            if (output != null) output.SourceBlock = block;
-            if (prev != null) prev.SourceBlock = block;
-            if (next != null) next.SourceBlock = block;
+            
+            if (block.Workspace != null)
+            {
+                Debug.Log($"<color=teal>[BlockFactory:{block.ID}] Assigning DB REFERENCES early for workspace block...</color>");
+                List<ConnectionModel> allConnections = block.GetConnections();
+
+                foreach (ConnectionModel conn in allConnections)
+                {
+                    if (conn != null && conn.SourceBlock == block)
+                    {
+                        // Obtener las DBs del Workspace del bloque
+                        BlockConnectionDB dbRef = block.Workspace.GetConnectionDB(conn.Type);
+                        BlockConnectionDB dbOppositeRef = block.Workspace.GetConnectionDB(conn.OppositeType);
+
+                        // Asignar las referencias directamente 
+                        conn.DB = dbRef;
+                        conn.DBOpposite = dbOppositeRef;
+                        conn.Hidden = (dbRef == null); 
+
+                        Debug.Log($"<color=teal>  - Assigned Refs for Conn: {ConnectionModel.GetConnectionModelID(conn)}. DB? {(conn.DB != null).ToString()}. DBOpposite? {(conn.DBOpposite != null).ToString()}. Hidden? {conn.Hidden.ToString()}</color>");
+
+                    }
+                    else if (conn != null) 
+                    {
+                        Debug.LogWarning($"<color=teal>[BlockFactory:{block.ID}] Skipped assigning refs for {ConnectionModel.GetConnectionModelID(conn)} because its SourceBlock ({conn.SourceBlock?.ID}) doesn't match block being created ({block.ID}).</color>");
+                    }
+                }
+                Debug.Log($"<color=teal>[BlockFactory:{block.ID}] FINISHED assigning DB REFERENCES early.</color>");
+            }
+           
         }
+
         return block;
     }
 
@@ -148,7 +240,7 @@ public class BlockFactory
         string blockType = xmlBlock.Attribute("type")?.Value;
         if (string.IsNullOrEmpty(blockType))
         {
-            Debug.LogError("BlockFactory.CreateFromXml: Block XML is missing the 'type' attribute.");
+           // Debug.LogError("BlockFactory.CreateFromXml: Block XML is missing the 'type' attribute.");
             return null;
         }
 

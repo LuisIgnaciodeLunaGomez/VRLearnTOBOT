@@ -27,52 +27,52 @@ using TMPro;
 
 public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHandler //TODO: Interesante mirar IPointerClickHandler
 {
-
     [SerializeField] private List<Image> m_BgImages = new List<Image>();
     [Tooltip("Asigna aquí la Imagen principal que muestra el color del bloque")]
-    [SerializeField] private Image m_PrimaryBackground; 
+    [SerializeField] private Image m_PrimaryBackground;
     private bool m_LayoutIsDirty = false;
-
-    public override ViewType Type
-    {
-        get { return ViewType.Block; }
-    }
-
-    public string BlockType
-    {
-        get { return mBlock.Type; }
-    }
+    public override ViewType Type => ViewType.Block;
+    public string BlockType => mBlock?.Type ?? "NULL_BLOCK_TYPE"; 
 
     private BlockModel mBlock;
-    public BlockModel Block { get { return mBlock; } }
+    public BlockModel Block => mBlock;
+
     private bool m_IsInlineMode = false;
     public bool IsInlineMode => m_IsInlineMode;
     public bool InToolbox { get; set; } = false;
     public bool IsDragging { get; set; } = true;
-  
-    private MemorySafeBlockObserver mBlockObserver;
-    private CanvasGroup m_canvasGroup; 
-    private Vector2 m_dragStartOffset; 
-    private LayoutElement m_layoutElement;             
-    private WorkSpaceView m_WorkspaceView;
 
-    //public WorkSpaceView workSpaceView { get; set; }
+    private MemorySafeBlockObserver mBlockObserver;
+    private CanvasGroup m_canvasGroup;
+    private Vector2 m_dragStartOffset;
+    private LayoutElement m_layoutElement;
+    private WorkSpaceView m_WorkspaceView;
 
     public WorkSpaceView WorkspaceView => m_WorkspaceView;
     protected override void InitializeView()
     {
         base.InitializeView();
     }
+
+    /// <summary>
+    /// Lleva a cabo el proceso de vinculación del modelo lógico con la vista.
+    /// <param name="block">Modelo lógico del bloque.</param>
+    /// <param name="workspaceView">Vista del espacio de trabajo.</param>
+    /// </summary>
     public virtual void BindModel(BlockModel block, WorkSpaceView workspaceView)
     {
-        if (mBlock == block && mBlock != null) return;
+        if (mBlock == block && mBlock != null)
+        {
+            Debug.LogWarning($"BlockView ({BlockType}): BindModel called redundantly with the same model.", this.gameObject);
+            return;
 
+        }
         if (block == null)
         {
             Debug.LogError($"BlockView ({gameObject.name}): Attempted to BindModel with a NULL model!", this);
             return;
         }
-        if (workspaceView == null) 
+        if (workspaceView == null)
         {
             Debug.LogError($"BlockView ({block.Type}/{gameObject.name}): Attempted to BindModel with a NULL WorkSpaceView!", this);
             //return;
@@ -80,77 +80,194 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         if (mBlock != null) UnBindModel();
 
         mBlock = block;
-        m_WorkspaceView = workspaceView;
+       m_WorkspaceView = this.InToolbox ? null : workspaceView;
 
-        Debug.Log($"BlockView ({BlockType}): Assigning WorkspaceView (InstanceID: {m_WorkspaceView?.GetInstanceID()})", this.gameObject);
+        // Debug.Log($"BlockView ({BlockType}): Assigning WorkspaceView (InstanceID: {m_WorkspaceView?.GetInstanceID()})", this.gameObject);
 
-        if (m_WorkspaceView != null)
+        //Debug.Log($"BlockView ({BlockType}): BindModel START. Block Model ID: {block?.ID ?? "NULL"}. Workspace: {block?.Workspace?.Id ?? "NULL"}", this.gameObject);
+
+        // Lógica para distinguir entre una template y un bloque normal 
+        bool isTemplate = mBlock?.Workspace == null;
+
+        if (!isTemplate) // no es una platnilla po lo que tiene que tener WS
         {
-            WorkSpaceView.Active.AddBlockView(this);
+            Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
+            WorkSpaceView.Active?.AddBlockView(this); // Añadir a lista activa del workspace
+            mBlockObserver = new MemorySafeBlockObserver(this); // Observer solo para modelos de workspace
+            mBlock.AddObserver(mBlockObserver);
         }
-        else
+        else // Si es una plantilla no tiene WS asociado
         {
-            Debug.LogError($"BlockView ({BlockType}): BindView called with a NULL WorkSpaceView! Interactions may fail.", this);
+           // Debug.Log($"BlockView ({BlockType}): Binding as TEMPLATE block view.", this.gameObject);
         }
 
-        mBlockObserver = new MemorySafeBlockObserver(this);
-        mBlock.AddObserver(mBlockObserver);
+      //  Debug.Log($"---> BlockView.BindModel ({this.gameObject.name}): About to process ChildViews. Count: {ChildViews?.Count ?? -1}");
 
-        int inputIndex = 0;
-        foreach (BaseView childView in ChildViews)
+        if (ChildViews != null)
+        {
+            foreach (var v in ChildViews)
+            {
+               // Debug.Log($"    - ChildView Found: Name='{v.gameObject.name}', Type='{v.GetType().Name}'");
+            }
+        }
+
+        int inputModelIndex = 0;
+     
+
+        foreach (BaseView childView in ChildViews.Where(c => c != null))
         {
             // if (childView.Type == ViewType.Connection)
-            if (childView is ConnectionView conView)
+
+            //Proceso las conexiones hijas directas - OutputValue, PrevStatemnet y NextStatement
+            if (childView is ConnectionView conView && !(conView is ConnectionInputView))
             {
+              //  Debug.Log($"BlockView ({BlockType}): Found direct ConnectionView: {conView.gameObject.name} (Type:{conView.ConnectionType})", this.gameObject);
                 //ConnectionView conView = childView as ConnectionView;
+                //Obtengo el modelo conexión de BlockModel
                 ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
+
+                //Verifico el modelo antes de bindear e informa de error solo si falla
                 if (conModel != null)
                 {
+                   // Debug.Log($" -> Found matching Model: {ConnectionModel.GetConnectionModelID(conModel)}. Binding...", conView.gameObject);
                     conView.BindModel(conModel, this);
-                    //conView.BindModel(mBlock.GetFirstClassConnection(conView.ConnectionType), this);
+                    /*    // Guarda la referencia específica (Output/Prev/Next)
+                        if (conView.ConnectionType == EConnection.OutputValue) OutputConnectionView = conView;
+                        else if (conView.ConnectionType == EConnection.PrevStatement) PreviousConnectionView = conView;
+                        else if (conView.ConnectionType == EConnection.NextStatement) NextConnectionView = conView;*/
+                }
+                else
+                {
+                    // Log de Error solo si se esperaba una conexión que el modelo no tiene
+                    Debug.LogError($"BlockView ({BlockType}): Failed to find matching ConnectionModel for direct ConnectionView of type {conView.ConnectionType} on BlockModel '{mBlock.Type}'. Binding view to NULL.", this.gameObject);
+                    conView.BindModel(null, this); // Bindea a null si no hay modelo 
                 }
             }
+
+            //busco LineGroups
+
             //  else if (childView.Type == ViewType.LineGroup)
-            else if (childView is LineGroupView groupView)
+            else if (childView is LineGroupView groupView) //Si ChildeView es un LineGroup
             {
-                foreach (var viewInGroup in groupView.ChildViews)
-                    //LineGroupView groupView = childView as LineGroupView;
-                    if (viewInGroup is InputView inputView)
+               // Debug.Log($"BlockView ({BlockType}): Found LineGroupView: {groupView.gameObject.name}. Binding Inputs within...", groupView.gameObject);
+
+                // mLineGroupViews.Add(groupView);
+
+                for (int i = 0; i < groupView.transform.childCount; i++)
+                {
+                    Transform lineGroupChildTransform = groupView.transform.GetChild(i);
+                    InputView inputViewVisual = lineGroupChildTransform.GetComponent<InputView>();
+
+                    // SI es un InputView hijo DIRECTO del LineGroup
+                    if (inputViewVisual != null)
                     {
-                        if (inputIndex < mBlock.InputList.Count)
+
+                        InputModel correspondingInputModel = null;
+                        if (inputModelIndex < mBlock.InputList.Count)
                         {
-                            InputModel inputModel = mBlock.InputList[inputIndex];
-                            if (inputModel != null)
-                            {
+                           // Debug.Log($"--> BlockView mapping Visual Child Index {i} ('{inputViewVisual.gameObject.name}') to Logical Model Index {inputModelIndex}.");
 
-                                // ((InputView)inputView).BindModel(mBlock.InputList[inputIndex], this);
-                                inputView.BindModel(inputModel, this);
-                            }
-                            else
-                            {
-                                Debug.LogError($"NULL InputModel at index {inputIndex} for Block {BlockType}");
-                            }
+                            correspondingInputModel = mBlock.InputList[inputModelIndex];
 
+                            //Debug.Log($"--> BlockView mapping Visual Child Index {i} ('{inputViewVisual.gameObject.name}') to Logical Model Index {inputModelIndex}.");
+
+                           // Debug.Log($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}'. Attempting to bind to InputModel index {inputModelIndex} ('{correspondingInputModel?.Name ?? "NULL"}').");
+                            inputViewVisual.BindModel(correspondingInputModel, this); // Delego el bindeo interno a InputView.BindModel
+                            //inputModelIndex++; // Incrementar SOLO si se procesa un InputView
                         }
-                        inputIndex++;
+                        else
+                        {
+                        //    Debug.LogError($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}' but NO corresponding InputModel at index {inputModelIndex} (Model has only {mBlock.InputList.Count} inputs). Binding view to NULL.", inputViewVisual.gameObject);
+                            inputViewVisual.BindModel(null, this); // Bindea a null
+                        }
+                        inputModelIndex++; // Incremento el índice del modelo lógico
                     }
+                    // else: Ignoro otros hijos DIRECTOS de LineGroup (e.g., separadores visuales, si los hubiera)
                     else
                     {
-                        break;
+                        Debug.Log($"   -> LineGroup Child {i} ('{lineGroupChildTransform.name}'): Not an InputView. Skipping.");
                     }
                 }
+              
             }
-        Debug.Log($"BlockView ({BlockType}): Finished binding children.");
+         
+           // Debug.Log($"---> BlockView.BindModel ({this.gameObject.name}): Finished processing ChildViews. Processed InputViews: {inputModelIndex}");
 
-        RegisterUIEvents();
-        UpdateColor();
-        MarkDirty(); 
-        QueueForceLayoutUpdate(); 
+            //  Debug.Log($"BlockView ({BlockType}): Finished binding children.");
+            if (!isTemplate && mBlock?.InputList != null && mBlock.InputList.Count != mBlock.InputList.Count)
+            {
+                Debug.LogError($"BlockView ({BlockType}): Unbound InputModels remaining: {mBlock.InputList.Count - inputModelIndex}. Mismatch in View/Model Input count.", this.gameObject);
+            }
+           // Debug.Log($"BlockView ({BlockType}): Finished binding children. Reviewing hierarchy...", this);
+            ReviewBaseViewHierarchy(this, 0); //Depuración recursiva para la jerarquía BaseView dentro de este blockView padre
 
-        Debug.Log($"BlockView ({BlockType}): BindModel completed fully.");
+            RegisterUIEvents();
+            UpdateColor();
+            MarkDirty();
+            QueueForceLayoutUpdate();
+
+           // Debug.Log($"BlockView ({BlockType}): BindModel completed fully.");
+
+        }
 
     }
-  
+    private void RecurseCheckChildBinds(BaseView view)
+    {
+        if (view == null) return;
+
+        if (view is FieldView fv)
+        {
+            if (fv.FieldModel == null) Debug.LogError($"Check Bind Fail: FieldView {fv.gameObject.name} has NULL FieldModel", fv.gameObject);
+        }
+        else if (view is ConnectionInputView civ)
+        {
+            if (civ.ConnectionModel == null) Debug.LogError($"Check Bind Fail: ConnectionView {civ.gameObject.name} has NULL ConnectionModel", civ.gameObject);
+        }
+        else if (view is ConnectionView cv && !(view is ConnectionInputView)) // Chequeo para Output/Prev/Next
+        {
+            if (cv.ConnectionModel == null) Debug.LogError($"Check Bind Fail: ConnectionView {cv.gameObject.name} has NULL ConnectionModel", cv.gameObject);
+        }
+        else if (view is InputView iv) // Opcional: Chequear si el InputView mismo quedó nulo
+        {
+            if (iv.InputModel == null) Debug.LogError($"Check Bind Fail: InputView {iv.gameObject.name} has NULL InputModel", iv.gameObject);
+        }
+        if (view.HasChildren)
+        {
+            foreach (BaseView child in view.ChildViews.Where(c => c != null))
+            {
+                RecurseCheckChildBinds(child);
+            }
+        }
+    }
+
+    // Para recorrer la jerarquia lógica de BaseView e imprimirla con el padre visual
+    private void ReviewBaseViewHierarchy(BaseView currentView, int indentLevel)
+    {
+        if (currentView == null) return;
+
+        string indent = new string(' ', indentLevel * 2);
+        string viewName = currentView.gameObject?.name ?? "NULL_VIEW_GO";
+        string parentViewName = currentView.ParentView?.gameObject?.name ?? "NULL_LOGIC_PARENT";
+        string visualParentName = currentView.ViewTransform?.parent?.gameObject?.name ?? "NULL_VISUAL_PARENT_GO";
+
+        //Debug.Log($"{indent} Hierarchy Review: {viewName} (Type:{currentView.Type}, Active:{currentView.gameObject?.activeInHierarchy ?? false}) | Logic Parent: {parentViewName} | Visual Parent: {visualParentName}", currentView.gameObject);
+
+
+        if (currentView.HasChildren)
+        {
+            foreach (BaseView child in currentView.ChildViews.Where(c => c != null))
+            {
+                ReviewBaseViewHierarchy(child, indentLevel + 1); // Llamo recursivamente para hijos logicos
+            }
+        }
+        else if (currentView is BlockView blockViewWithChildren) // Solo para BlockViews que si deberian tener hijos
+        {
+            if (blockViewWithChildren.Block?.InputList?.Any() == true || blockViewWithChildren.Block?.NextConnection != null)
+            {
+                Debug.LogWarning($"{indent}   -> BlockView expected children based on BlockModel but HasChildren is false.", currentView.gameObject);
+            }
+        }
+    }
     public void NotifyLayoutDirty()
     {
         if (!m_LayoutIsDirty) 
@@ -194,32 +311,76 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     public void Dispose()
     {
-        foreach (BaseView view in ChildViews )
+        Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Dispose called for {gameObject.name}. Initiating recursive dispose.", this.gameObject);
+
+     
+        List<BlockModel> childrenToDispose = new List<BlockModel>();
+
+        // Bloque conectado al Next
+        if (mBlock?.NextConnection?.TargetBlock != null)
         {
-            if (view.Type == ViewType.Connection)
+            childrenToDispose.Add(mBlock.NextConnection.TargetBlock);
+        }
+
+        // Bloques conectados a los Inputs (Value/Statement)
+        if (mBlock?.InputList != null)
+        {
+            foreach (InputModel input in mBlock.InputList)
             {
-                if (((ConnectionView)view).TargetBlockView != null)
-                    ((ConnectionView)view).TargetBlockView.Dispose();
-            }
-            else if (view.Type == ViewType.LineGroup)
-            {
-                LineGroupView groupView = view as LineGroupView;
-                foreach (var inputView in groupView.ChildViews )
+                if (input?.Connection?.TargetBlock != null)
                 {
-                    if (((InputView)inputView).HasConnection && ((InputView)inputView).GetConnectionView().TargetBlockView != null)
-                        ((InputView)inputView).GetConnectionView().TargetBlockView.Dispose();
+                    childrenToDispose.Add(input.Connection.TargetBlock);
                 }
             }
         }
 
-        BlockModel model = mBlock;
-        UnBindModel();
+        Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Found {childrenToDispose.Count} logical children to dispose.", this.gameObject);
+
+        
+        foreach (BlockModel childModel in childrenToDispose)
+        {
+            if (childModel != null)
+            {
+                BlockView childView = m_WorkspaceView?.GetBlockView(childModel);
+                if (childView != null)
+                {
+                    Debug.Log($"  -> Recursively disposing child view: {childView.gameObject.name}", childView.gameObject);
+                    childView.Dispose(); // La llamada recursiva se encarga de desbindar y destruir
+                }
+                else
+                {
+                    // Si no hay vista, al menos disponer del modelo lógico
+                    Debug.Log($"  -> Disposing child model '{childModel.ID}' (no view found).");
+                    childModel.Dispose();
+                }
+            }
+        }
+
+
+        //  Desvincular este bloque y destruir su GameObject
+        Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Unbinding self ({gameObject.name}).", this.gameObject);
+        BlockModel model = mBlock; // Guardar referencia al modelo para disponer al final
+        UnBindModel(); // Desconectar observadores, quitar de WorkspaceView.mBlockViews
+
         if (this.gameObject != null)
         {
-            Destroy(this.gameObject);
+            Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Destroying GameObject {gameObject.name}.", this.gameObject);
+            Destroy(this.gameObject); // Destruir el GameObject de esta vista
         }
-        
-        model?.Dispose();
+
+        //limpieza final
+        if (model != null)
+        {
+            Debug.Log($"BlockView ({model.Type}): Disposing BlockModel {model.ID}.", this.gameObject);
+            model.Dispose(false); //false evita re-intentar destruir la vista
+                                  
+        }
+        else
+        {
+            Debug.Log($"BlockView (Unknown Type): Dispose finished for view {gameObject?.name}, model was already null.", this.gameObject);
+        }
+        Debug.Log($"BlockView ({model?.Type ?? "Disposed"}): Dispose method finished for {gameObject?.name}.", this.gameObject);
+      
     }
 
     #region UI Update
@@ -300,6 +461,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         if (InToolbox) return;
 
         mBlock.XY = XY;
+     //   Debug.Log($"BlockView::OnXYUpdated calling base.OnXYUpdated().", this.gameObject);
         base.OnXYUpdated();
     }
 
@@ -390,18 +552,33 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     public void OnDrag(PointerEventData eventData)
     {
-        //if (!InToolbox) // Delegar si NO está en el toolbox
-        BlockDragController.Instance?.HandleDrag(this, eventData);
+        if (BlockDragController.Instance != null && BlockDragController.Instance.IsDraggingBlock(this.Block))
 
+        {        //if (!InToolbox) // Delegar si NO está en el toolbox
+            BlockDragController.Instance?.HandleDrag(/*this,*/ eventData);
+        }
    
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-       // if (!InToolbox) // Delegar si NO está en el toolbox
-       BlockDragController.Instance?.HandleEndDrag(this, eventData);
-        
-    }
+        if (BlockDragController.Instance != null && BlockDragController.Instance.IsDraggingBlock(this.Block))
+        {
+            //if (!InToolbox) // Delegar si NO está en el toolbox
+            BlockDragController.Instance?.HandleEndDrag(/*this,*/ eventData);
+        }
+        /*else
+        {
+            Debug.Log($"BlockView ({BlockType}): OnEndDrag called but BlockDragController is null or not dragging this block.");
+        }
+        */
+        else if (eventData.pointerDrag == this.gameObject && BlockDragController.Instance != null) // Fallback check si no pasaste por OnBeginDrag correcto
+        {
+            Debug.LogWarning($"BlockView.OnEndDrag: Controller's WasDraggingBlock returned false, but UGUI pointerDrag is this object. Forcing HandleEndDrag.", this.gameObject);
+            // if (!InToolbox) // Delegar si NO está en el toolbox
+            BlockDragController.Instance?.HandleEndDrag(/*this,*/ eventData);
+
+        } }
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -542,7 +719,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         else
         {
-            Debug.LogWarning($"No primary background image assigned to apply color on {gameObject.name}");
+           // Debug.LogWarning($"No primary background image assigned to apply color on {gameObject.name}");
         }
     }
 
@@ -762,8 +939,5 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
-
-  
-
 }//fin de la clase BlockView
 

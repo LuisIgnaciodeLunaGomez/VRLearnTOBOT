@@ -380,7 +380,7 @@ public static class BlockDataLoader
         XElement prevNode = blockNode.Element("PreviousStatement");
         XElement nextNode = blockNode.Element("NextStatement");
         XElement outputNode = blockNode.Element("Output");
-        // TODO: resto del parseo: hasPrev, hasNext, hasOutput, checks...)
+        
 
         bool hasPrev = (prevNode != null);
         bool hasNext = (nextNode != null);
@@ -402,9 +402,9 @@ public static class BlockDataLoader
         // string helpUrl = blockNode.Element("HelpUrl")?.Value;
 
         // Mutator
-        XElement mutatorNode = blockNode.Element("Mutator");
+       /* XElement mutatorNode = blockNode.Element("Mutator");
         bool hasMutator = (mutatorNode != null);
-        string mutatorName = mutatorNode?.Attribute("name")?.Value;
+        string mutatorName = mutatorNode?.Attribute("name")?.Value;*/
 
         BlockDefinition definition = new BlockDefinition
         {
@@ -422,10 +422,10 @@ public static class BlockDataLoader
             previousChecks = previousChecks,
             nextChecks = nextChecks,
 
-            hasMutator = hasMutator,
-            mutatorName = mutatorName,
+           // hasMutator = hasMutator,
+          //  mutatorName = mutatorName,
 
-            args = new List<ArgumentDefinition>(),
+            Arguments = new List<ArgumentDefinition>(),
         };
 
         XElement argsContainer = blockNode.Element("Args");
@@ -435,7 +435,7 @@ public static class BlockDataLoader
             {
                 ArgumentDefinition arg = ParseArgumentDefinition(argNode); 
                 {
-                    definition.args.Add(arg);
+                    definition.Arguments.Add(arg);
                 }
             }
         }

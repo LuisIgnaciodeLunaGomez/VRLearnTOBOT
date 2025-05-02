@@ -20,20 +20,18 @@ public delegate string FieldValidator(string text);
 
 public abstract class FieldModel : Observable<string>
 {
-  
     protected FieldModel(string fieldName)
     {
-        this.Name = fieldName;
+        Name = fieldName;
     }
 
- 
     public virtual bool IsEditable => false;
     public string Name { get; protected set; }
 
     protected string mText;
     public bool IsImage { get; protected set; }
 
-    public BlockModel SourceBlock { get; protected set; }
+    public BlockModel SourceBlock { get; internal set; }
 
     protected FieldValidator mValidator;
 
@@ -73,25 +71,20 @@ public abstract class FieldModel : Observable<string>
             throw new Exception("Field already bound to a block, can't bound to another block");
         this.SourceBlock = block;
     }
-
    
     public void SetValidator(FieldValidator handler)
     {
         this.mValidator = handler;
     }
-
-  
     public FieldValidator GetValidator()
     {
         return this.mValidator;
     }
 
-   
     protected virtual string ClassValidator(string text)
     {
         return text;
     }
-
 
     public string CallValidator(string text)
     {
@@ -114,14 +107,10 @@ public abstract class FieldModel : Observable<string>
 
         return text;
     }
-
-  
     public virtual string GetText()
     {
         return mText;
     }
-
-  
     public virtual void SetText(string newText)
     {
         if (string.IsNullOrEmpty(newText) || string.Equals(newText, mText))
@@ -133,12 +122,10 @@ public abstract class FieldModel : Observable<string>
         FireUpdate(mText);
     }
 
-    
     public virtual string GetValue()
     {
         return GetText();
     }
-
     public virtual void SetValue(string newValue)
     {
         if (string.IsNullOrEmpty(newValue))
@@ -152,7 +139,6 @@ public abstract class FieldModel : Observable<string>
 
         this.SetText(newValue);
     }
-
  
     public virtual void Dispose()
     {

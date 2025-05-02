@@ -41,7 +41,7 @@ using System.Xml;
             
             mItemCount = itemCount;
             if (mBlock != null)
-                UpdateInternal();
+                UpdateInternal(mBlock);
         }
         
         public override XmlElement ToXml()
@@ -53,8 +53,9 @@ using System.Xml;
 
         public override void FromXml(XmlElement xmlElement)
         {
-            mItemCount = int.Parse(xmlElement.GetAttribute("items"));
-            UpdateInternal();
+             BlockModel sourceBlock = mBlock;
+             mItemCount = int.Parse(xmlElement.GetAttribute("items"));
+            UpdateInternal(mBlock);
         }
 
         protected override void OnAttached()
@@ -63,10 +64,10 @@ using System.Xml;
             defaultInput.SetName(EMPTY_NAME);
             FieldLabelModel field = defaultInput.FieldRow[0] as FieldLabelModel;
             mLabelText = field.GetText();
-            UpdateInternal();
+            UpdateInternal(mBlock);
         }
 
-        private void UpdateInternal()
+        private void UpdateInternal(BlockModel sourceBlock)
         {
             // currently reserve the dummy input, it will only show the Label Field on UI
             InputModel emptyInput = mBlock.GetInput(EMPTY_NAME);
@@ -76,7 +77,7 @@ using System.Xml;
             }
             else if (mItemCount == 0 && emptyInput == null)
             {
-                emptyInput = InputFactory.Create(EConnection.DummyInput, EMPTY_NAME, EAlign.Right, null);
+                emptyInput = InputFactory.Create(EConnection.DummyInput, EMPTY_NAME, EAlign.Right, null, sourceBlock);
                 emptyInput.AppendField(new FieldLabelModel(null, mLabelText));
                 mBlock.AppendInput(emptyInput);
             }
@@ -88,7 +89,7 @@ using System.Xml;
                 InputModel addInput = mBlock.GetInput("ADD" + i);
                 if (addInput == null)
                 {
-                    addInput = InputFactory.Create(EConnection.InputValue, ADD_INPUT_PREFIX + i, EAlign.Right, null);
+                    addInput = InputFactory.Create(EConnection.InputValue, ADD_INPUT_PREFIX + i, EAlign.Right, null, sourceBlock);
                     mBlock.AppendInput(addInput);
                 }
                 if (i == 0)

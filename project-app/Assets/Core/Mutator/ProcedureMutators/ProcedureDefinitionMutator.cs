@@ -126,7 +126,7 @@ using System.Xml;
         {
             InputModel descriptionInput = mBlock.InputList[0];
             List<FieldModel> oldFields = descriptionInput.FieldRow;
-            InputModel input = InputFactory.Create(EConnection.DummyInput, null, EAlign.Left, null);
+            InputModel input = InputFactory.Create(EConnection.DummyInput, null, EAlign.Left, null, mBlock);
             input.SourceBlock = mBlock;
             input.AppendField(oldFields[0]);
             input.AppendField(oldFields[1]);
@@ -143,7 +143,7 @@ using System.Xml;
             if (stackInput == null)
             {
                 stackInput = InputFactory.Create(EConnection.NextStatement, ProcedureDB.STATEMENT_INPUT_NAME,
-                                                 EAlign.Left, null);
+                                                 EAlign.Left, null, mBlock);
             }
             return stackInput;
         }

@@ -26,7 +26,20 @@ public class BlockConnectionController : MonoBehaviour
 {
     public static BlockConnectionController Instance { get; private set; }
 
-    private WorkSpaceModel m_Workspace;
+    private WorkSpaceModel _workspace;
+    private WorkSpaceModel m_Workspace
+    {
+        get { return _workspace; }
+        set
+        {
+           
+           // Debug.LogError($"<color=red>HASHCODE_CHECK - BlockConnectionController - m_Workspace Setter Called!");
+            Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
+            Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
+
+            _workspace = value; 
+        }
+    }
     private WorkSpaceView m_WorkspaceView;
     private BlockDragController m_BlockDragController;
 
@@ -35,25 +48,36 @@ public class BlockConnectionController : MonoBehaviour
 
     private void Awake()
     {
+      //  Debug.LogError("<color=red>HASHCODE_CHECK - MiControlador - AWAKE - HashCode(this): " + this.GetHashCode());
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
     public void InitializeController(WorkSpaceModel workspace, WorkSpaceView workspaceView, BlockDragController blockDragController)
-    {
-
+    { 
         m_Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         m_WorkspaceView = workspaceView ?? throw new ArgumentNullException(nameof(workspaceView));
         m_BlockDragController = blockDragController ?? throw new ArgumentNullException(nameof(blockDragController));
 
-        Debug.Log("ConnectionController Initialized");
+        // Debug.Log("ConnectionController Initialized");
+
+       // Debug.LogError($"<color=red>HASHCODE_CHECK - BlockConnectionController Initialize - Received/Stored Workspace HashCode: {m_Workspace?.GetHashCode()}");
 
     }
 
     public void ProcessDrag(BlockModel draggingBlock, List<ConnectionModel> draggingConnections, Vector2 dragginblockBaseLogicalPosition)
     {
+        //Debugging
 
-        if (draggingBlock == null || m_Workspace == null) return;
+        //Debug.Log($"[ProcessDrag ENTRY] Dragging: {draggingBlock?.ID}, Num Conns: {draggingConnections?.Count}, BaseLogicalPos: {dragginblockBaseLogicalPosition}"); 
+        if (draggingBlock == null || draggingConnections == null || m_Workspace == null)
+        {
+            Debug.LogWarning("[ProcessDrag EXIT] Null argument.");
+            return;
+        }
+
+        // Guardamos el target actual para saber si cambia y actualizar highlight
+        ConnectionModel oldBestTarget = m_CurrentBestTargetConnection;
 
         //Busco la mejor conexión
         ConnectionModel bestTarget = null;
@@ -62,45 +86,82 @@ public class BlockConnectionController : MonoBehaviour
         float m_ConnectionSnapDistance = BlockViewSettings.Instance.ConnectionSnapDistance;
         float m_ConnectionSearchRadius = BlockViewSettings.Instance.ConnectionSearchRange;
 
+       // Debug.Log($" - Search Settings: SearchRadius={m_ConnectionSearchRadius}, SnapDistance={m_ConnectionSnapDistance}");
+
         float closestRadiusSq = m_ConnectionSnapDistance * m_ConnectionSnapDistance; //Calculo la distancia cuadrada
 
-        ConnectionModel oldBestTarget = m_CurrentBestTargetConnection;
+        //Debug.Log($"ConnectionController.ProcessDrag: Dragging block {draggingBlock.ID} ({draggingBlock.Type})");
+        //  Debug.Log($"  Dragging Block Model Logical XY: ({draggingBlock.XY.x:F2}, {draggingBlock.XY.y:F2})");
+        // Debug.Log($"  Current Best Target (Before Search): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}");
+        // Debug.Log($"  Search Radius: {m_ConnectionSearchRadius}, Snap Distance: {m_ConnectionSnapDistance}");
+
+        //Debugging
+        //Debug.Log($"[ProcessDrag] Received {draggingConnections.Count} connections to process:");
+        for (int i = 0; i < draggingConnections.Count; i++)
+        {
+            Debug.Log($"  - Conn[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}, Has DBOpposite: {draggingConnections[i]?.DBOpposite != null}");
+        }
 
         foreach (ConnectionModel myConn in draggingConnections)
         {
 
-            if (myConn == null || myConn.DBOpposite == null) continue;
+            if (myConn == null )
+            {
+
+                Debug.Log("  - Skipping NULL connection in draggingConnections list.");
+                continue;
+            }
+
+
+            if (myConn.DBOpposite == null)
+
+            {
+                Debug.Log($"  - Skipping connection {ConnectionModel.GetConnectionModelID(myConn)}: DBOpposite is NULL.");
+                continue;
+            }
+
+            Debug.Log($"  Processing DRAGGING Connection: {ConnectionModel.GetConnectionModelID(myConn)} at Location {myConn.Location}");
+
+            Debug.Log($"    Calling SearchForClosest on DB: {myConn.OppositeType}...");
 
             ConnectionModel neighbour;
 
-            float radiusS1;
+            float neighbourRadius;
 
             //Busco en la BBDD de tipos opuestos conexiones cercanas
+            myConn.DBOpposite.SearchForClosest(myConn, m_ConnectionSnapDistance, Vector2.zero /*dxy era Vector2.zero*/, out neighbour, out neighbourRadius);
 
-            Vector2 myConnLogicalPosition = myConn.Location;
-
-            myConn.DBOpposite.SearchForClosest(myConn, m_ConnectionSearchRadius, myConnLogicalPosition, out neighbour, out float distance);
+            Debug.Log($"    <- Search Result: Neighbour={ConnectionModel.GetConnectionModelID(neighbour)}, Radius={neighbourRadius}");
 
             if ((neighbour != null)) //Encontramos un vecino
             {
-                float currentChechRadiusSq = m_ConnectionSearchRadius * m_ConnectionSearchRadius;
+                Debug.Log($"    Found Neighbour: {ConnectionModel.GetConnectionModelID(neighbour)}. Checking IsConnectionAllowed...");
+                //  float currentChechRadiusSq = m_ConnectionSearchRadius * m_ConnectionSearchRadius;
 
-                if (distance < Math.Sqrt(closestRadiusSq) && distance < m_ConnectionSearchRadius) //Es la más cercana y esta dentro del radio general
+                if (myConn.IsConnectionAllowed(neighbour, m_ConnectionSnapDistance))
                 {
-                    if (myConn.IsConnectionAllowed(neighbour, m_ConnectionSnapDistance))  // además esta en del radio definido "snap"
+                    Debug.Log($"      <color=lime>---> ALLOWED! Connection between {ConnectionModel.GetConnectionModelID(myConn)} and {ConnectionModel.GetConnectionModelID(neighbour)} is possible.</color>");
+
+                   
+                    float currentDistanceSq = neighbourRadius * neighbourRadius; 
+                    if (bestTarget == null || currentDistanceSq < closestRadiusSq)
                     {
-                        closestRadiusSq = distance * distance; //Actualizo el mejor radio cuadrado que he encontrado
-
-                        bestTarget = neighbour; //Almaceno la conexión encontrada que es compatible 
-
-                        sourceCandidate = myConn; //Almaceno la conexión candidata que es la que estoy arrastrando
+                        Debug.Log($"      <color=yellow>>>>>>>>>> NEW BEST TARGET FOUND! <<<<<<<<<</color> RadiusSq: {currentDistanceSq}");
+                        bestTarget = neighbour;       // Guardamos el nuevo mejor destino
+                        sourceCandidate = myConn;   // Guardamos nuestra conexión correspondiente
+                        closestRadiusSq = currentDistanceSq; // Actualizamos la distancia más cercana encontrada
+                    }
+                    else
+                    {
+                        Debug.Log($"      (Not closer than previous best target with RadiusSq {closestRadiusSq})");
                     }
                 }
+
             }
         }
 
         //Actualizo el estado del contenido para realizar el drop
-
+       // Debug.Log($"[ProcessDrag EXIT] Loop Finished. Final Best Target: {ConnectionModel.GetConnectionModelID(bestTarget)} (Previous: {ConnectionModel.GetConnectionModelID(oldBestTarget)})");
         m_CurrentBestTargetConnection = bestTarget;
         m_CurrentSourceCandidate = sourceCandidate;
 
@@ -110,11 +171,11 @@ public class BlockConnectionController : MonoBehaviour
         //Informo si he encontrado una conexión que se pueda llevar a cabo "snapable"
         if (m_CurrentBestTargetConnection != null)
         {
-            Debug.Log($"ConnectionController: Found potential snap target: {m_CurrentBestTargetConnection.SourceBlock.Type}:{m_CurrentBestTargetConnection.Type} for source: {m_CurrentSourceCandidate.SourceBlock.Type}:{m_CurrentSourceCandidate.Type}");
+            Debug.Log($"<color=green>[ProcessDrag STATUS] Potential snap FOUND:</color> Source {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)} -> Target {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}");
         }
         else
         {
-            Debug.Log("ConnectionController: No potential snap target found.");
+           // Debug.Log("ConnectionController: No potential snap target found.");
         }
 
     }
@@ -149,34 +210,45 @@ public class BlockConnectionController : MonoBehaviour
 
     /// <summary>
     /// Devuelve si se realizo una conexión (snap) entre dos conexiones.
-    public bool TryConnectAndPlace(BlockModel draggingBlock, bool isTemplateClone, bool overTrasBin, Vector2 pointerScreenPosition)
+    public bool TryConnectAndPlace(BlockModel draggingBlock, bool isTemplateClone,/* bool overTrasBin,*/ Vector2 pointerScreenPosition)
     {
+        Debug.Log($"<color=cyan>TryConnectAndPlace ENTERED.</color> Dragging: {draggingBlock?.ID} ({draggingBlock?.Type}). IsClone: {isTemplateClone}. ");
+        Debug.Log($" - CurrentBestTarget (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}"); 
+        Debug.Log($" - CurrentSource (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)}");
 
         if (draggingBlock == null || m_WorkspaceView == null || m_Workspace == null) return false;
 
         ConnectionModel finalTargetConnection = m_CurrentBestTargetConnection;
         ConnectionModel finalSourceConnection = m_CurrentSourceCandidate;
+
+        Debug.Log($" - Using FinalTarget: {ConnectionModel.GetConnectionModelID(finalTargetConnection)}");
+        Debug.Log($" - Using FinalSource: {ConnectionModel.GetConnectionModelID(finalSourceConnection)}");
+
         bool connected = false;
 
-        //Limpiamos el estado del controlador para el siguiente drag 
+        //Limpio el estado del controlador para el siguiente drag 
         m_CurrentSourceCandidate = null;
         m_CurrentSourceCandidate = null;
 
         //Elimino también el resaltado por si estuviera activo aún.
         UpdateVisualHighlighting(finalTargetConnection, null);
 
-        //Si hay una conexión válidad (snap) intento conectarmete
+        //Si hay una conexión válidad  intento conectarmete
         if (finalTargetConnection != null && finalSourceConnection != null)
         {
-            Debug.Log($"ConnectionController: Attempting connection {finalSourceConnection.SourceBlock.Type}:{finalSourceConnection.Type} -> {finalTargetConnection.SourceBlock.Type}:{finalTargetConnection.Type}");
-
+           // Debug.Log($"ConnectionController: Attempting connection {finalSourceConnection.SourceBlock.Type}:{finalSourceConnection.Type} -> {finalTargetConnection.SourceBlock.Type}:{finalTargetConnection.Type}");
+            Debug.Log($"  <color=lime>Attempting Connection:</color> Source {ConnectionModel.GetConnectionModelID(finalSourceConnection)} -> Target {ConnectionModel.GetConnectionModelID(finalTargetConnection)}");
             try
             {
 
                 //Gestionamos la desconexión automática si el destino ya esta conectado y lo notificará a las vistas
-
+                Debug.Log("    BEFORE Connect Call");
                 finalTargetConnection.Connect(finalSourceConnection);
+                Debug.Log("    AFTER Connect Call");
                 connected = true;
+                Debug.Log($"    --> Post-Connect State: Source '{ConnectionModel.GetConnectionModelID(finalSourceConnection)}' IsConnected={finalSourceConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalSourceConnection?.TargetConnection)}'");
+                Debug.Log($"    --> Post-Connect State: Target '{ConnectionModel.GetConnectionModelID(finalTargetConnection)}' IsConnected={finalTargetConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalTargetConnection?.TargetConnection)}'");
+
 
                 if (isTemplateClone)
                 {
@@ -186,6 +258,7 @@ public class BlockConnectionController : MonoBehaviour
 
                 if (draggingBlock.ParentBlock == null)
                 {
+                    //Debug.LogError($"<color=red>HASHCODE_CHECK - TryConnectAndPlace - Calling AddBlock on Workspace HashCode: {m_Workspace?.GetHashCode()}");
                     m_Workspace.AddBlock(draggingBlock);
                 }
             }
@@ -193,82 +266,61 @@ public class BlockConnectionController : MonoBehaviour
             catch (Exception e)
             {
 
-                Debug.LogWarning($"ConnectionController: Connect failed: {e.Message}" /*, draggingBlock.gameObject)*/);
+               // Debug.LogWarning($"ConnectionController: Connect failed: {e.Message}" /*, draggingBlock.gameObject)*/);
+                Debug.LogError($"<color=red>Connect FAILED:</color> {e.ToString()}");
             }
         }
 
         //Si no se ha conectado, procedo a gestionar el drop en el basurero o en el espacio libre
-
         if (!connected)
         {
+            // Verifico si el puntero está sobre el área de codificación válida.
             bool isOverCodingArea = m_BlockDragController.IsPointerOverArea(pointerScreenPosition, m_WorkspaceView.CodingArea);
 
-            bool wasDeleted = false;
-
-            if (overTrasBin) //Revisar esta lógica 
+            if (!isOverCodingArea)
             {
-                Debug.Log($"ConnectionController: Drop over trash bin. Disposing block {draggingBlock.ID}");
-                draggingBlock.Dispose(false);
-                wasDeleted = true;
+                Debug.LogWarning($"ConnectionController: Invalid drop location (outside CodingArea). Disposing block {draggingBlock.ID}");
+                // Añadir traza para estar seguros de CÓMO se llegó aquí si da problemas
+                try { Debug.LogError("DISPOSE CALLED from !isOverCodingArea path:\n" + Environment.StackTrace); } catch { }
+                draggingBlock.Dispose(false); // <<--- El Dispose() que puede estar causando problemas
 
-            }
-            else if (isOverCodingArea) //Cae fuera del codingArea lógica más sensata con scratch 
-            {
-                Debug.LogWarning($"ConnectionController: Invalid drop location (outside CodingArea and not in trash). Disposing block {draggingBlock.ID}");
-
-                draggingBlock.Dispose(false);
-                wasDeleted = true;
-
+                Debug.Log($" - Returning FALSE because block {draggingBlock.ID} was disposed (invalid drop).");
+                return false; // <<<--- El bloque no se colocó/conectó válidamente.
             }
             else
             {
-
-                //Cae en un espacio libre dentro del CodingArea --- OJO a las posiciones en los dos paneles....
-
-                Debug.Log($"ConnectionController: Confirming add for template clone {draggingBlock.ID} dropped in free space.");
-
+                Debug.Log($"ConnectionController: Block {draggingBlock.ID} dropped in valid free space.");
                 if (isTemplateClone)
                 {
+                    // Era un clon de plantilla soltado libremente -> añadirlo al modelo del workspace.
                     m_Workspace.AddBlock(draggingBlock);
                 }
                 else
                 {
-                    //TODO: si es un bloque Ws y cae libremente, el ParentBlock lo ponemos a null en UnPlug. La vista se tiene que reposicionar según el modelo XY
+                    // Era un bloque existente movido libremente.
+                   
+                    Debug.Log($" - Existing block {draggingBlock.ID} moved freely. No AddBlock needed.");
                 }
+
+              
+                BlockView finalView = m_WorkspaceView.GetBlockView(draggingBlock);
+                if (finalView == null)
+                {
+                    Debug.LogError($"ConnectionController: After VALID drop, block model {draggingBlock.ID} exists but BlockView is NULL!");
+                }
+                else if (finalView.Block != draggingBlock)
+                {
+                    Debug.LogError($"ConnectionController: After VALID drop, BlockView {finalView.name} is bound to a different model {finalView.Block.ID}!");
+                }
+                // else { Debug.Log("   - Final view found and matches model."); }
             }
 
-            connected = true;
-
-            if (wasDeleted) return true;
-
-            //Parte final: Me aseguro de que la vista corresponde al modelo siempre que no se haya eliminado
-
-            BlockView finalView = m_WorkspaceView.GetBlockView(draggingBlock);
-
-            if(finalView == null && connected)
-            {
-                Debug.LogError($"ConnectionController: After drop, block model {draggingBlock.ID} exists but BlockView is NULL!");
-
-                //draggingBlock.Dispose(false);//Revisar esto
-
-            }
-
-            else if (finalView != null && finalView.Block != draggingBlock)
-            {
-                Debug.LogError($"ConnectionController: After drop, BlockView {finalView.name} is bound to a different model {finalView.Block.ID}! This indicates a view/model state issue.");
-
-            }
-
-            else if (finalView != null)
-            {
-                //TODO: revisar si hay que configurar algún trigger.
-            }
-
-                
+        
         }
 
-        return connected;
+      
+        Debug.Log($"<color=cyan>TryConnectAndPlace EXITING - Returning TRUE (Operation Handled)</color>");
+        return true;
     }
 
-
-}
+}//fin clase BlockController

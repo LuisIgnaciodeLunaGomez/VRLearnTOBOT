@@ -27,7 +27,6 @@ public abstract class FieldView : BaseView
     protected BlockView SourceBlockView => GetComponentInParent<BlockView>(); 
     private TextMeshProUGUI m_TextComponent;
 
-   
     protected BlockModel SourceBlock 
     {
         get
@@ -51,9 +50,19 @@ public abstract class FieldView : BaseView
         UnbindModel();
 
         m_FieldModel = fieldModel;
-        if (m_FieldModel == null) return;
+        if (m_FieldModel == null)
 
-         try
+        {
+
+            // Manejo visualmente el estado sin modelo: Oculto elementos visuales del campo/conexión, etc.
+            Debug.Log($"FieldView ('{gameObject.name}'): Bound with NULL model. Hiding visuals.", this.gameObject);
+            gameObject.SetActive(false); 
+            return; // Salir, no hay modelo para actualizar UI.
+        }
+
+        gameObject.SetActive(true);
+
+        try
         {
             OnValueChanged(m_FieldModel.GetValue());
         }

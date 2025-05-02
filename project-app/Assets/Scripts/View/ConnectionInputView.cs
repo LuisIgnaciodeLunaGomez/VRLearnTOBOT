@@ -62,22 +62,6 @@ public class ConnectionInputView : ConnectionView
         return base.CalculateSize();
     }
 
-
-   /* protected override void OnValueChanged(string newValue)
-    {
-        // Los ConnectionInput no tienen un "valor" que mostrar como los Fields
-        // Pero reaccionamos a Connected/Disconnected del modelo
-        base.OnValueChanged(newValue); // Llama base por si hace algo
-    }*/
-
-   /* protected override void RegisterInputListeners()
-    {
-        // Los slots de conexión usualmente no tienen listeners directos.
-        // El drag & drop se maneja a nivel de BlockView/BlockDragController,
-        // y la búsqueda de conexiones usa ConnectionDB.
-    }*/
-
-
    
     protected override void HandleModelUpdate(ConnectionModel model, ConnectionUpdateEvent eventType, ConnectionModel partner) 
     {
@@ -101,8 +85,42 @@ public class ConnectionInputView : ConnectionView
 
     public override void BindModel(ConnectionModel connectionModel, BlockView sourceBlockView)
     {
-        base.BindModel(connectionModel, sourceBlockView); 
-        HandleModelUpdate(ConnectionModel, ConnectionModel.IsConnected ? ConnectionUpdateEvent.Connected : ConnectionUpdateEvent.Disconnected, ConnectionModel.TargetConnection);
+     
+       // Debug.Log($"---> ConnectionInputView({gameObject.name}).BindModel START. Received connectionModel is {(connectionModel == null ? "NULL" : "VALID")}");
+       // if (connectionModel != null) Debug.Log($"    Received Model ID: {ConnectionModel.GetConnectionModelID(connectionModel)}");
+
+        base.BindModel(connectionModel, sourceBlockView);
+
+        //Debug.Log($"---> ConnectionInputView({gameObject.name}) AFTER base.BindModel.");
+      //  Debug.Log($"     m_ConnectionModel is now {(ConnectionModel == null ? "NULL" : "VALID")}");//<---DEJARLO
+        if (ConnectionModel != null)
+        {
+           // Debug.Log($"     m_ConnectionModel.IsConnected = {ConnectionModel.IsConnected}");
+           // Debug.Log($"     m_ConnectionModel.TargetConnection is {(ConnectionModel.TargetConnection == null ? "NULL" : "VALID")}");
+            // Verifico también la propiedad pública que usa en HandleModelUpdate
+           // Debug.Log($"     Property 'ConnectionModel' returns: {(this.ConnectionModel == null ? "NULL" : "VALID")}");
+        }
+
+        //llamada a HandleModelUpdate
+       // Debug.Log($"---> Calling HandleModelUpdate...");
+        try
+        {
+            // Pasa la variable local connectionModel que se ha recibido no se pasa la propiedad this.ConnectionModel
+            HandleModelUpdate(
+                connectionModel, // Usa el argumento que SÍ sabemos que no es null al entrar
+                connectionModel != null ? (connectionModel.IsConnected ? ConnectionUpdateEvent.Connected : ConnectionUpdateEvent.Disconnected) : ConnectionUpdateEvent.Disconnected, // Verifica null antes de acceder
+                connectionModel?.TargetConnection // Usa el operador ?. por seguridad
+                );
+           // Debug.Log($"---> HandleModelUpdate called SUCCESSFULLY.");
+        }
+        catch (System.NullReferenceException nre)
+        {
+            Debug.LogError($"!!! NRE occurred DURING HandleModelUpdate call !!! StackTrace:\n{nre.StackTrace}", this.gameObject);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"!!! Exception occurred DURING HandleModelUpdate call: {ex.Message} !!! StackTrace:\n{ex.StackTrace}", this.gameObject);
+        }
     }
 
     public override void UnBindModel()
@@ -111,6 +129,5 @@ public class ConnectionInputView : ConnectionView
         // if (m_ConnectionModel != null) m_ConnectionModel.OnUpdateWithPartner -= HandleModelUpdate;
         base.UnBindModel(); 
     }
-
 
 }//Fin ConnectionInputView

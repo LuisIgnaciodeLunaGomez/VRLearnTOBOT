@@ -41,7 +41,7 @@ public class UICanvasView : MonoBehaviour
     //private RectTransform BlockListAreaRect;
     //private RectTransform WorkSpaceAreaRect;
     private ScrollRect m_MiddlePanelScrollRect;
-
+    private WorkspaceController m_WorkspaceController;
     public GameObject CategoryButtonPrefab => categoryButtonPrefab;
     private RectTransform m_RightPanelRect;
     public RectTransform CodingAreaPanelRect => m_RightPanelRect;
@@ -49,7 +49,7 @@ public class UICanvasView : MonoBehaviour
     public RectTransform BlockListPanelRect => m_MiddlePanelRect;
     public RectTransform CategoryButtonContainerRect => m_CategoryButtonContainerRect;
     public ScrollRect MiddlePanelScrollRect => m_MiddlePanelScrollRect;
-
+    private RectTransform m_LeftToolBarContainerRect;
     public ToolboxConfig ToolboxConfig => m_ToolboxConfiguration;
     public WorkSpaceModel Workspace => m_WorkspaceModel;
     public WorkSpaceView WorkSpaceView => m_WorkSpaceView;
@@ -60,7 +60,7 @@ public class UICanvasView : MonoBehaviour
     private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
     public RectTransform DragLayer => m_DragLayerRect;
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
-      
+
     private bool m_isCoreComponentsReady = false;//<-----Bandera para indicar que los componentes principales están listos.
     public bool IsCoreComponentsReady() => m_isCoreComponentsReady; //
     //Dimensiones estimadas de la pantalla
@@ -69,8 +69,8 @@ public class UICanvasView : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
-
+        // Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
+        Debug.LogError("---- UICanvasView Awake() START ---- Instance ID: " + this.GetInstanceID());
         m_isCoreComponentsReady = false;
 
         InitializeCore();
@@ -105,17 +105,19 @@ public class UICanvasView : MonoBehaviour
                 m_MiddlePanelScrollRect = m_MiddlePanelRect.gameObject.GetComponent<ScrollRect>();
                 if (m_MiddlePanelScrollRect == null) { }
 
-
                 // Creamos Modelo
                 WorkSpaceModel.WorkspaceOptions options = new WorkSpaceModel.WorkspaceOptions();
                 m_WorkspaceModel = new WorkSpaceModel(options);
-                Debug.Log($"<color=green>UICanvasView: WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
+
+               // Debug.LogError($"HASHCODE_CHECK - WorkSpaceModel UICanvasView CONSTRUCTOR - ID: {m_WorkspaceModel.Id} - Instance HashCode: {m_WorkspaceModel.GetHashCode()}");
+
+                // Debug.Log($"<color=green>UICanvasView: WorkSpaceModel created (ID: {m_WorkspaceModel.Id}).</color>");
 
                 // Marcamos componentes listos 
                 if (m_WorkspaceModel != null && m_WorkSpaceView != null && m_Toolbox != null)
                 {
-                    m_isCoreComponentsReady = true; 
-                    Debug.Log("<color=green>UICanvasView: Core components (Model, WorkspaceView, Toolbox) created/found.</color>");
+                    m_isCoreComponentsReady = true;
+                 //   Debug.Log("<color=green>UICanvasView: Core components (Model, WorkspaceView, Toolbox) created/found.</color>");
                 }
                 else
                 {
@@ -139,17 +141,18 @@ public class UICanvasView : MonoBehaviour
             return;
         }
 
-        Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
+       // Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
     }
 
     IEnumerator Start()
     {
-        Debug.Log("<color=cyan>UICanvasView: Start - Waiting for AppController initialization...</color>");
+        //Debug.Log("<color=cyan>UICanvasView: Start - Waiting for AppController initialization...</color>");
         // Esperamos a que AppController esté listo y tenga los controladores
         yield return new WaitUntil(() => AppController.Instance != null && AppController.Instance.IsInitialized());
-        
-        Debug.Log("<color=cyan>UICanvasView: AppController ready. Initializing Toolbox UI...</color>");
 
+       // Debug.Log("<color=cyan>UICanvasView: AppController ready. Initializing Toolbox UI...</color>");
+
+        m_WorkspaceController = AppController.Instance.GetComponent<WorkspaceController>();
         //Obtenemos el CategoryController 
         CategoryController categoryControllerInstance = AppController.Instance.GetCategoryController();
 
@@ -161,9 +164,9 @@ public class UICanvasView : MonoBehaviour
 
         if (m_Toolbox != null && m_WorkspaceModel != null && m_ToolboxConfiguration != null && m_WorkSpaceView != null && m_CategoryButtonContainerRect != null && m_MiddlePanelScrollRect != null && m_CategoryController == null /* Asegurar que no se inicialice dos veces */)
         {
-            m_CategoryController = categoryControllerInstance; 
+            m_CategoryController = categoryControllerInstance;
 
-            Debug.Log("<color=yellow>UICanvasView: Calling InitializeToolbox on BlockListView...</color>");
+           // Debug.Log("<color=yellow>UICanvasView: Calling InitializeToolbox on BlockListView...</color>");
 
             m_Toolbox.InitializeToolbox(
                 m_WorkspaceModel,
@@ -172,20 +175,20 @@ public class UICanvasView : MonoBehaviour
                 m_CategoryButtonContainerRect,
                 m_MiddlePanelScrollRect,
                 categoryButtonPrefab,
-                categoryControllerInstance 
+                categoryControllerInstance
             );
-            Debug.Log("<color=green>UICanvasView: BlockListView Toolbox Initialized.</color>");
+           // Debug.Log("<color=green>UICanvasView: BlockListView Toolbox Initialized.</color>");
 
             if (m_WorkSpaceView != null)
             {
-                Debug.Log($"<color=yellow>UICanvasView: Binding WorkSpaceView ({m_WorkSpaceView.GetInstanceID()})...</color>");
+               // Debug.Log($"<color=yellow>UICanvasView: Binding WorkSpaceView ({m_WorkSpaceView.GetInstanceID()})...</color>");
                 m_WorkSpaceView.BindModel(
                    m_WorkspaceModel,
-                   m_Toolbox, 
+                   m_Toolbox,
                    m_RightPanelRect,
-                   null 
+                   null
                 );
-                Debug.Log("<color=green>UICanvasView: WorkSpaceView bound.</color>");
+               // Debug.Log("<color=green>UICanvasView: WorkSpaceView bound.</color>");
             }
 
         }
@@ -203,14 +206,14 @@ public class UICanvasView : MonoBehaviour
         }
 
 
-        Debug.Log("<color=green>UICanvasView: Start method finished.</color>");
+        //Debug.Log("<color=green>UICanvasView: Start method finished.</color>");
     }
     /**
      * Descripción: Inicializa el núcleo y carga los recursos necesarios.
      */
     private void InitializeCore()
     {
-        Debug.Log("<color=yellow>UICanvasView: Initializing Core...</color>");
+       // Debug.Log("<color=yellow>UICanvasView: Initializing Core...</color>");
         try
         {
             BlockResMgr resMgr = BlockResMgr.Get();
@@ -220,7 +223,7 @@ public class UICanvasView : MonoBehaviour
 
             }
 
-            Debug.Log("<color=teal>UICanvasView: Loading Toolbox Configuration...</color>");
+           // Debug.Log("<color=teal>UICanvasView: Loading Toolbox Configuration...</color>");
 
             m_ToolboxConfiguration = LoadToolboxConfigFromXml("XML/DefaultToolBox");
             if (m_ToolboxConfiguration == null)
@@ -232,7 +235,7 @@ public class UICanvasView : MonoBehaviour
             {
                 //Obtiene el color del CategoryLoader
                 InitializeCategoryColors(m_ToolboxConfiguration);
-                Debug.Log($"<color=green>UICanvasView: Toolbox Configuration loaded from XML. Categories: {m_ToolboxConfiguration.BlockCategoryList?.Count ?? 0}</color>");
+              //  Debug.Log($"<color=green>UICanvasView: Toolbox Configuration loaded from XML. Categories: {m_ToolboxConfiguration.BlockCategoryList?.Count ?? 0}</color>");
             }
 
         }
@@ -247,7 +250,7 @@ public class UICanvasView : MonoBehaviour
      */
     private void InitializeUIManager()
     {
-        Debug.Log("<color=yellow>UICanvasView: Creating UIManagerView...</color>");
+      //  Debug.Log("<color=yellow>UICanvasView: Creating UIManagerView...</color>");
         m_UiManagerView = GameObject.Find("UIManagerView");
         if (m_UiManagerView == null)
         {
@@ -260,7 +263,7 @@ public class UICanvasView : MonoBehaviour
      */
     private void InitializeCanvas()
     {
-        Debug.Log("<color=yellow>UICanvasView: Creating Canvas...</color>");
+       // Debug.Log("<color=yellow>UICanvasView: Creating Canvas...</color>");
 
         m_CanvasGO = new GameObject("Canvas");
         m_CanvasGO.transform.SetParent(this.m_UiManagerView.transform);
@@ -280,11 +283,11 @@ public class UICanvasView : MonoBehaviour
     }
 
     /**
-     * Descripción: Crea el panel izquierdo (Categorías) y lo configura
+     * Descripción: Crea el panel izquierdo (Categorías) y lo configura. Incorporo un botón para depuración provisional.
      */
     private void CreateTopPanel()
     {
-        Debug.Log("<color=yellow>UICanvasView: Creating Top Panel...</color>");
+        //Debug.Log("<color=yellow>UICanvasView: Creating Top Panel...</color>");
 
         //Creación del panel de herramientas superior
         GameObject topPanel = CreatePanel("Tools Panel", this.m_CanvasGO.transform,
@@ -299,12 +302,39 @@ public class UICanvasView : MonoBehaviour
         topCanvas.overrideSorting = true;
         topCanvas.sortingOrder = 1000;
 
+        // Creamos un contenedor para el logo y los elementos de la izquierda
+        GameObject leftContainer = new GameObject("LeftToolBarContainer");
+        leftContainer.transform.SetParent(topPanel.transform, false); 
+
+        m_LeftToolBarContainerRect = leftContainer.AddComponent<RectTransform>(); 
+        m_LeftToolBarContainerRect.anchorMin = new Vector2(0, 0.5f); // Anclado a la izquierda, centrado vertical
+        m_LeftToolBarContainerRect.anchorMax = new Vector2(0, 0.5f);
+        m_LeftToolBarContainerRect.pivot = new Vector2(0, 0.5f); // Pivote a la izquierda, centrado vertical
+        m_LeftToolBarContainerRect.anchoredPosition = new Vector2(300, 0); // Pequeño margen a la izquierda
+
+
+        HorizontalLayoutGroup leftLayoutGroup = leftContainer.AddComponent<HorizontalLayoutGroup>();
+        leftLayoutGroup.childAlignment = TextAnchor.MiddleLeft; 
+        leftLayoutGroup.spacing = 10f; 
+        leftLayoutGroup.padding = new RectOffset(10, 0, 0, 0); 
+        leftLayoutGroup.childControlWidth = false; 
+        leftLayoutGroup.childControlHeight = false;
+        leftLayoutGroup.childForceExpandWidth = false;
+        leftLayoutGroup.childForceExpandHeight = false;
+
+        ContentSizeFitter leftFitter = leftContainer.AddComponent<ContentSizeFitter>();
+        leftFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize; 
+        leftFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
         topPanel.AddComponent<GraphicRaycaster>();
 
         if (!string.IsNullOrEmpty(logoSpriteName))
         {
             this.AddLogoToPanel(topPanel, logoSpriteName);
         }
+
+        AddExportDebugButtonToPanel(m_LeftToolBarContainerRect);
+
 
         if (topIconNames != null && topIconNames.Length > 0)
         {
@@ -341,11 +371,12 @@ public class UICanvasView : MonoBehaviour
         return panel;
     }
 
-    public void CreateDragLayer() {
+    public void CreateDragLayer()
+    {
 
         if (m_CanvasGO == null) { Debug.LogError("Cannot create DragLayer, Canvas is null!"); return; }
 
-        Debug.Log("<color=yellow>UICanvasView: Creating Drag Layer Panel...</color>");
+     //   Debug.Log("<color=yellow>UICanvasView: Creating Drag Layer Panel...</color>");
 
         GameObject dragLayerGO = CreatePanel(
             "DragLayerPanel",             // Nombre
@@ -371,7 +402,7 @@ public class UICanvasView : MonoBehaviour
             Debug.LogError("Failed to get RectTransform for DragLayerPanel!", dragLayerGO);
         }
 
-        Debug.Log($"<color=green>UICanvasView: DragLayerPanel created. Rect: {m_DragLayerRect?.rect}</color>", dragLayerGO);
+        //Debug.Log($"<color=green>UICanvasView: DragLayerPanel created. Rect: {m_DragLayerRect?.rect}</color>", dragLayerGO);
 
     }
 
@@ -514,7 +545,7 @@ public class UICanvasView : MonoBehaviour
             scrollRect.horizontal = false; // Solo scroll vertical
             scrollRect.vertical = true;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            Debug.Log("Added ScrollRect to MiddlePanel dynamically.", middlePanel);
+            //Debug.Log("Added ScrollRect to MiddlePanel dynamically.", middlePanel);
 
             scrollRect.viewport = m_MiddlePanelRect;
         }
@@ -547,7 +578,7 @@ public class UICanvasView : MonoBehaviour
      *Descripcón: Configuración de componentes
      * @param middlePanelGO GameObject del panel izquierdo (MiddlePanel)
      * @param rightPanelGO GameObject del panel derecho (RightPanel)
-     */
+     *//*
     private void SetUpComponents(GameObject middlePanelGO, GameObject rightPanelGO, CategoryController categoryControllerInstance)
     {
         Debug.Log("<color=yellow>UICanvasView: Setting up Components...</color>");
@@ -639,7 +670,7 @@ public class UICanvasView : MonoBehaviour
             }
 
         }
-    }
+    }*/
 
     /**
      * Descripción: Añade un borde al panel indicado
@@ -808,6 +839,8 @@ public class UICanvasView : MonoBehaviour
      */
     public void LoadWorkspace()
     {
+        Debug.LogError("!!!!!!!! UICanvasView.LoadWorkspace() CALLED !!!!!!!!");
+
         if (m_WorkspaceModel == null || m_WorkSpaceView == null) return;
 
         string savedXml = PlayerPrefs.GetString("SavedWorkspace_UBlockly", "");
@@ -884,7 +917,7 @@ public class UICanvasView : MonoBehaviour
                 return null;
             }
 
-            config.Style = toolboxElement.Attribute("style")?.Value; 
+            config.Style = toolboxElement.Attribute("style")?.Value;
 
             foreach (XElement categoryElement in toolboxElement.Elements("category"))
             {
@@ -925,15 +958,15 @@ public class UICanvasView : MonoBehaviour
     private void InitializeCategoryColors(ToolboxConfig config)
     {
         // LLamada a la versión estática correcta
-        var colorMap = CategoryLoader.LoadCategoryInfo(); 
+        var colorMap = CategoryLoader.LoadCategoryInfo();
 
-        Debug.Log($"UICanvasView: Category colors loaded. Found {colorMap.Count} colors.");
+       // Debug.Log($"UICanvasView: Category colors loaded. Found {colorMap.Count} colors.");
 
         if (config?.BlockCategoryList == null) return;
 
         foreach (var category in config.BlockCategoryList)
         {
-           
+
             if (colorMap.TryGetValue(category.CategoryName, out Color color))
             {
                 category.Init(color); // Asigna el color cargado a la categoría del toolbox
@@ -941,9 +974,90 @@ public class UICanvasView : MonoBehaviour
             else
             {
                 Debug.LogWarning($"Color for category '{category.CategoryName}' not found in Categories.xml. Using default grey.");
-                category.Init(Color.grey); 
+                category.Init(Color.grey);
             }
         }
+    }
+
+    //Debugging blockConnectionDB mediante un botón que obtiene la misma
+
+    /// <summary>
+    /// Exporta el estado actual de las bases de datos de conexión del workspace a un archivo JSON para depuración.
+    /// Este método será llamado por un evento de UI (ej: Click de un botón).
+    /// </summary>
+    public void OnClickExportConnectionDBsButton()
+    {
+        if (m_WorkspaceController != null)
+        {
+            // Añadimos un timestamp al nombre para no sobreescribir exports viejos.
+            string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string filename = $"ConnectionDB_Debug_State_{timestamp}";
+            m_WorkspaceController.ExportConnectionDBState(filename);
+            Debug.Log($"Exporting DB state triggered. File: {filename}.json");
+        }
+        else
+        {
+            Debug.LogError("UICanvasView: WorkspaceController reference is null. Cannot export DB state.");
+        }
+    }
+
+    /// <summary>
+    /// Crea y añade el botón "Export DBs" al contenedor de elementos de la izquierda de la barra superior.
+    /// Se llama desde CreateTopPanel.
+    /// </summary>
+    /// <param name="parentContainer">El RectTransform contenedor donde se añadirá el botón.</param>
+    private GameObject AddExportDebugButtonToPanel(RectTransform parentContainer)
+    {
+        if (parentContainer == null)
+        {
+            Debug.LogError("UICanvasView: Cannot add debug button, parent container is null.");
+            return null;
+        }
+
+        // Creo GO del botón
+        GameObject debugButtonGO = new GameObject("ExportDebugDBButton");
+        debugButtonGO.transform.SetParent(parentContainer.transform, false); 
+
+        // Añado componentes UI: Image y Button
+        Image debugButtonImage = debugButtonGO.AddComponent<Image>();
+        Button debugButtonButton = debugButtonGO.AddComponent<Button>();
+
+        debugButtonImage.color = new Color(1.0f, 0.0f, 0.0f, 1.0f); // Color rojo para configurarlo
+
+        // Añado Texto como hijo del botón
+        GameObject debugButtonTextGO = new GameObject("Text");
+        debugButtonTextGO.transform.SetParent(debugButtonGO.transform, false);
+        Text debugButtonText = debugButtonTextGO.AddComponent<Text>();
+        debugButtonText.text = "Export DBs";
+        debugButtonText.font = Font.CreateDynamicFontFromOSFont("Arial", 18); // Fuente por defecto 
+        debugButtonText.fontSize = 18;
+        debugButtonText.fontStyle = FontStyle.Bold; // Negrita para que se vea
+        debugButtonText.alignment = TextAnchor.MiddleCenter; // Texto centrado en el botón
+        debugButtonText.color = Color.white; // Color del texto
+
+        // Ajusto RectTransform del texto para que llene el área del botón
+        RectTransform debugButtonTextRect = debugButtonTextGO.GetComponent<RectTransform>();
+        debugButtonTextRect.anchorMin = new Vector2(0, 0);
+        debugButtonTextRect.anchorMax = new Vector2(1, 1);
+        debugButtonTextRect.offsetMin = new Vector2(5, 5); // Margen interno del texto respecto al borde del botón
+        debugButtonTextRect.offsetMax = new Vector2(-5, -5);
+
+        LayoutElement debugButtonLayout = debugButtonGO.AddComponent<LayoutElement>();
+        debugButtonLayout.preferredWidth = 150f; 
+        if (parentContainer.GetComponent<HorizontalLayoutGroup>() != null && parentContainer.GetComponent<ContentSizeFitter>()?.verticalFit == ContentSizeFitter.FitMode.PreferredSize)
+        {
+            debugButtonLayout.preferredHeight = 10f; 
+        }
+        else
+        {
+            
+            debugButtonLayout.minHeight = 15f; 
+
+        }
+     
+        debugButtonButton.onClick.AddListener(OnClickExportConnectionDBsButton);
+
+        return debugButtonGO;
     }
 
 }//Fin clase UICanvasView

@@ -24,15 +24,15 @@ using System.Collections;
 using System.Linq;
 using UnityEngine.EventSystems;
 
-
 public class BlockListView : MonoBehaviour
 {
     [Header("UI Assignments")]
     [Tooltip("El RectTransform del panel que contiene los botones de categoría (injectado)")]
-
     private RectTransform m_categoryButtonContainer;
+
     [Tooltip("El componente ScrollRect del panel donde se muestran las plantillas de bloques.")]
     [SerializeField] private ScrollRect m_BlockTemplateScrollRect;
+
     [Tooltip("El RectTransform que actúa como contenido dentro del ScrollRect de plantillas.")]
     private RectTransform m_BlockTemplateContainerRect;
     [SerializeField] private TextMeshProUGUI m_CategoryTitleText;
@@ -81,7 +81,7 @@ public class BlockListView : MonoBehaviour
                                   ScrollRect blockTemplateScrollRect, GameObject categoryButtonPrefab, CategoryController categoryController)
     {
         if (m_IsInitialized) return;
-        Debug.Log("<color=lightblue>BlockListView: Initializing...</color>");
+        //Debug.Log("<color=lightblue>BlockListView: Initializing...</color>");
 
         // Guardamos referencias y validamos
         m_WorkspaceModel = workspace ?? throw new ArgumentNullException(nameof(workspace));
@@ -107,13 +107,13 @@ public class BlockListView : MonoBehaviour
             m_BlockTemplateContainerRect = m_BlockTemplateScrollRect.viewport?.GetComponentInChildren<RectTransform>(true); // Buscar hijo directo
             if (m_BlockTemplateContainerRect == null || m_BlockTemplateContainerRect == m_BlockTemplateScrollRect.transform) // Evitamos usar el propio ScrollRect como contenido
             {
-                Debug.Log("BlockListView: Creating Block Template Container dynamically...");
+               // Debug.Log("BlockListView: Creating Block Template Container dynamically...");
                 m_BlockTemplateContainerRect = CreateAndConfigureBlockContainer(m_BlockTemplateScrollRect);
                 m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
             }
             else
             {
-                Debug.Log("BlockListView: Found existing RectTransform child for ScrollRect content.", m_BlockTemplateContainerRect);
+              //  Debug.Log("BlockListView: Found existing RectTransform child for ScrollRect content.", m_BlockTemplateContainerRect);
                 m_BlockTemplateScrollRect.content = m_BlockTemplateContainerRect;
             }
 
@@ -149,7 +149,7 @@ public class BlockListView : MonoBehaviour
         // Mostrar la primera categoría
         StartCoroutine(SelectFirstCategoryAfterBuild()); // Seleccionar la primera categoría
 
-        Debug.Log("<color=green>BlockListView: Initialized and first category selected.</color>");
+        //Debug.Log("<color=green>BlockListView: Initialized and first category selected.</color>");
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ public class BlockListView : MonoBehaviour
         containerRect.pivot = new Vector2(0.5f, 1); // Top-Center Pivot
         containerRect.anchoredPosition = Vector2.zero; // Alinear con Top
         containerRect.sizeDelta = new Vector2(0, 100); // Ancho = 0 (depende de padre), Altura inicial pequeña
-        Debug.Log($"<color=red>CreateAndConfigureBlockContainer:</color> ScrollRect is '{scrollRectComponent?.name ?? "NULL"}', Viewport is '{scrollRectComponent?.viewport?.name ?? "NULL"}'. Attempting to parent '{containerGO.name}' to viewport.");
+       // Debug.Log($"<color=red>CreateAndConfigureBlockContainer:</color> ScrollRect is '{scrollRectComponent?.name ?? "NULL"}', Viewport is '{scrollRectComponent?.viewport?.name ?? "NULL"}'. Attempting to parent '{containerGO.name}' to viewport.");
         containerRect.SetParent(scrollRectComponent.viewport, false);
 
         // Aseguramos Layout y Fitter 
@@ -263,7 +263,7 @@ public class BlockListView : MonoBehaviour
     // Creamos un botón individual
     private GameObject CreateCategoryButtonUI(string displayName, string categoryKey, Color color, ToggleGroup toggleGroup)
     {
-        Debug.Log($"Creating button UI for Key: {categoryKey}, Display: '{displayName}', Color: {color}"); 
+      //  Debug.Log($"Creating button UI for Key: {categoryKey}, Display: '{displayName}', Color: {color}"); 
 
         if (m_CategoryButtonPrefab == null) return null;
         GameObject buttonGO = Instantiate(m_CategoryButtonPrefab, m_categoryButtonContainer);
@@ -333,7 +333,7 @@ public class BlockListView : MonoBehaviour
         if (string.IsNullOrEmpty(categoryName)) { Debug.LogWarning("ShowBlockCategory called with empty name.", this); return; }
         if (m_BlockTemplateContainerRect == null) { Debug.LogError("ShowBlockCategory: Block Template Container is null!", this); return; }
 
-        Debug.Log($"<color=lightblue>BlockListView: ShowBlocks requested for Category: '{categoryName}'</color>", this);
+        //Debug.Log($"<color=lightblue>BlockListView: ShowBlocks requested for Category: '{categoryName}'</color>", this);
 
         // Limpiamos completamente el contenedor de bloques plantilla
         ClearBlockTemplates();
@@ -478,6 +478,7 @@ public class BlockListView : MonoBehaviour
 
         // 3. Configuramos la Vista para el Toolbox
         view.InToolbox = true;                  // Marcamos como plantilla
+       // Debug.Log($"NewBlockView: Setting InToolbox = TRUE for Template BlockView '{view.gameObject.name}'");
         if (view.Block != null) view.Block.Movable = true; // El modelo asociado a la plantilla si es movible lógicamente
         view.gameObject.name = $"Template_{blockType}"; // Nombre 
 
@@ -649,49 +650,7 @@ public class BlockListView : MonoBehaviour
         StartCoroutine(DelayedLayoutRebuild(m_BlockTemplateContainerRect));
     }
 
-    /// <summary>
-    /// Comprueba si una BlockView (que se está arrastrando) está sobre el área de la papelera.
-    /// Muestra/oculta la papelera visualmente.
-    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
-    /// </summary>
-    /*public bool CheckBin(BlockView blockView) 
-    {
-        if (!m_IsInitialized || m_WorkspaceView == null || m_BinArea == null) return false;
-        if (blockView == null || blockView.InToolbox || !BlockDragController.Instance.IsDraggingBlock(blockView)) return false; 
-
-        RectTransform binRect = m_BinArea.transform as RectTransform;
-        if (binRect == null) return false;
-
-        Camera eventCamera = m_WorkspaceView.EventCamera;
-        Vector2 screenPoint = Input.mousePosition;
-
-        bool contains = RectTransformUtility.RectangleContainsScreenPoint(binRect, screenPoint, eventCamera);
-
-        if (m_BinArea.activeSelf != contains) m_BinArea.SetActive(contains); // Mostrar/ocultar visualmente
-
-        return contains;
-    }*/
-
-    /// <summary>
-    /// Llamado al finalizar un drag (por BlockDragController) para completar la acción de la papelera.
-    /// Si el bloque estaba sobre la papelera, pide su eliminación al WorkspaceController.
-    /// FALTA REVISAR SI VAMOS A UTILIZARLA SI EL BLOQUE NO ESTA EN SU ZONA DE CODIFICACIÓN SE ELIMINARA.
-
-    /// </summary>
-    /*public void FinishCheckBin(BlockView blockView) 
-    {
-        if (!m_IsInitialized || m_BinArea == null || blockView == null) return;
-
-        bool wasOverBin = m_BinArea.activeSelf; // Usar el estado visual actual
-        m_BinArea.SetActive(false); // Ocultar la papelera
-
-        if (wasOverBin && !blockView.InToolbox && blockView.Block != null && blockView.Block.Deletable)
-        {
-            Debug.Log($"BlockListView: Block {blockView.BlockType} ({blockView.Block?.ID}) dropped in Bin. Requesting delete.", this);
-            WorkspaceController.Instance?.RequestDeleteBlock(blockView.Block);
-        }
-    }*/
-
+    
     //  Limpieza y Utilidades 
     public void ClearBlockTemplates()
     {

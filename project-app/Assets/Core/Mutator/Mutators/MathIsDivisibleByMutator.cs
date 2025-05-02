@@ -80,7 +80,7 @@ namespace UBlockly
             InputModel divisorInput = mBlock.GetInput(DIVISOR_INPUT);
             if (divisible && divisorInput == null)
             {
-                divisorInput = InputFactory.Create(EConnection.InputValue, DIVISOR_INPUT, EAlign.Left, CHECK);
+                divisorInput = InputFactory.Create(EConnection.InputValue, DIVISOR_INPUT, EAlign.Left, CHECK, mBlock);
                 mBlock.AppendInput(divisorInput);
             }
             else if (!divisible && divisorInput != null)

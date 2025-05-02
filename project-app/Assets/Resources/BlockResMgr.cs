@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -105,7 +104,7 @@ public class BlockResMgr : ScriptableObject
                 mABUnload(resParam.ResName);
         }
 
-        Debug.Log("Select I18n: " + resParam.IndexName);
+      //  Debug.Log("Select I18n: " + resParam.IndexName);
     }
 
     #endregion
