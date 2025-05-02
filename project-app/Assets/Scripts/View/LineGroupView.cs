@@ -180,11 +180,24 @@ public class LineGroupView : BaseView
 
     public Vector2 GetDrawSize()
     {
-        
-        Vector2 size = Size;
-        ConnectionInputView conView = ((InputView)LastChild).GetConnectionView();
-        if (conView != null && !conView.IsSlot)
-            size.x -= conView.Width;
+
+        Vector2 size = Size; // Obtener el tamaño calculado previamente
+
+        // Hacer el cast de forma segura
+        InputView lastInputView = LastChild as InputView;
+
+        // Comprobar si el último hijo era realmente un InputView
+        if (lastInputView != null)
+        {
+            // Si lo era, intentar obtener su vista de conexión
+            ConnectionInputView conView = lastInputView.GetConnectionView();
+
+            // Si tiene una conexión y no es un slot, ajustar el tamaño
+            if (conView != null && !conView.IsSlot)
+            {
+                size.x -= conView.Width;
+            }
+        }
         return size;
     }
 }//fin clase LineGroupView

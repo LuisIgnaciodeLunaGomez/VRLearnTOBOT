@@ -433,8 +433,11 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 if (i < ChildViews .Count - 1)
                     size.y += settings.ContentSpace.y;
 
-                if (((InputView)groupView.LastChild).AlignRight)
+                InputView lastInputView = groupView.LastChild as InputView;
+                if (lastInputView != null && lastInputView.AlignRight)
+                {
                     alignRight = true;
+                }
             }
         }
 
@@ -452,7 +455,24 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
 
-        ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
+        if (m_BgImages != null && m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customImage)
+        {
+            customImage.SetDrawDimensions(dimensions.ToArray());
+        }
+        else
+        {
+         
+            if (m_BgImages == null || m_BgImages.Count == 0)
+            {
+                Debug.LogError($"BlockView ({BlockType}): m_BgImages list is null or empty! Cannot set draw dimensions. Check Inspector assignment for this block.", this.gameObject);
+            }
+            else // La lista existe y tiene elementos, pero el [0] no es CustomMeshImage o es null
+            {
+                Debug.LogWarning($"BlockView ({BlockType}): m_BgImages[0] is not a CustomMeshImage or is null. Cannot set draw dimensions.", m_BgImages[0]?.gameObject ?? this.gameObject);
+                // var firstCustomImage = m_BgImages.OfType<CustomMeshImage>().FirstOrDefault();
+                // if(firstCustomImage != null) firstCustomImage.SetDrawDimensions(dimensions.ToArray());
+            }
+        }
         return size;
     }
 
