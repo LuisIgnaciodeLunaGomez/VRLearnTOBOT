@@ -30,9 +30,9 @@ public class ConnectionModel : Observable<UpdateState>
         get { return mSourceBlock; }
         set
         {
-            Debug.Log($"[Setter ENTER] Conn Hash: {this.GetHashCode()}, " +
+          /*  Debug.Log($"[Setter ENTER] Conn Hash: {this.GetHashCode()}, " +
                       $"Current mSourceBlock ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}), " +
-                      $"Value to assign ID: {value?.ID ?? "NULL"} (Hash: {value?.GetHashCode() ?? -1})");
+                      $"Value to assign ID: {value?.ID ?? "NULL"} (Hash: {value?.GetHashCode() ?? -1})");*/
 
             if (mSourceBlock == value)
             {
@@ -40,18 +40,18 @@ public class ConnectionModel : Observable<UpdateState>
                 return; 
             }
 
-            Debug.Log($"[Setter PRE-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
-                      $"About to set mSourceBlock. Current value: {mSourceBlock?.ID ?? "NULL"}");
+          /*  Debug.Log($"[Setter PRE-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
+                      $"About to set mSourceBlock. Current value: {mSourceBlock?.ID ?? "NULL"}");*/
 
             // asignación real
             mSourceBlock = value;
 
-            Debug.Log($"[Setter POST-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
+        /*    Debug.Log($"[Setter POST-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
                       $"mSourceBlock should NOW be ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}). " +
-                      $"Was it set to 'value'?: {(System.Object.ReferenceEquals(mSourceBlock, value) ? "YES" : "NO!!!")}");
+                      $"Was it set to 'value'?: {(System.Object.ReferenceEquals(mSourceBlock, value) ? "YES" : "NO!!!")}");*/
 
         string finalState = (mSourceBlock == null) ? "NULL" : "NOT NULL";
-        Debug.Log($"[Setter EXIT SIMPLIFIED] Conn Hash: {this.GetHashCode()}, Final mSourceBlock is: {finalState}");
+      //  Debug.Log($"[Setter EXIT SIMPLIFIED] Conn Hash: {this.GetHashCode()}, Final mSourceBlock is: {finalState}");
         
         }
     }  
@@ -434,7 +434,7 @@ public class ConnectionModel : Observable<UpdateState>
             {
                 case REASON_SELF_CONNECTION: reasonStr = "Self Connection"; break;
                 case REASON_WRONG_TYPE: reasonStr = "Wrong Type"; break;
-                case REASON_TARGET_NULL: reasonStr = "Target Null (already checked)"; break; // Redundante aquí
+                case REASON_TARGET_NULL: reasonStr = "Target Null (already checked)"; break; 
                 case REASON_CHECKS_FAILED: reasonStr = "Checks Failed"; break;
                 case REASON_DIFFERENT_WORKSPACES: reasonStr = "Different Workspaces"; break;
                 case REASON_SHADOW_PARENT: reasonStr = "Shadow Parent Issue"; break;
@@ -480,7 +480,7 @@ public class ConnectionModel : Observable<UpdateState>
       //  Debug.Log($"        - Checking Distance: Calculated={dist}, MaxRadius={maxRadius}");
         if (maxRadius > 0 && dist > maxRadius)
         {
-            Debug.Log($"        -> FAILED: Distance ({dist}) exceeds MaxRadius ({maxRadius}).");
+          //  Debug.Log($"        -> FAILED: Distance ({dist}) exceeds MaxRadius ({maxRadius}).");
             return false;
         }
      

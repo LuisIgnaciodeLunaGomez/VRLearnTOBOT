@@ -91,6 +91,7 @@ public class BlockViewSettings : ScriptableObject
     [Tooltip("Maximum distance (in workspace units/pixels) to search for a compatible connection when dragging a block.")]
     public float ConnectionSearchRange = 50f; 
 
+    public float NotchConnectorOffsetY = 0f; // Offset vertical para el conector de la muesca
 
     private void OnEnable()
     {
@@ -152,8 +153,19 @@ public class BlockViewSettings : ScriptableObject
     [SerializeField] public float DefaultInputFieldHeight = 22f; 
 
     [Tooltip("Ancho visual asignado para la flecha/botón del desplegable en campos de variable.")]
-    [SerializeField] public float DropdownArrowWidth = 18f; 
+    [SerializeField] public float DropdownArrowWidth = 18f;
 
+    [Tooltip("Height of the connection tab (when block connected below). Often same as NotchHeight.")]
+    public float TabHeight = 4f; //define la altura visual de la pestaña (el saliente) de la conexión NextStatement cuando hay un bloque conectado debajo
+
+    [Tooltip("Horizontal indentation (from left edge) for the previous/next connection point.")]
+    public float ConnectorIndentX = 15f; //Define cuánto se desplaza horizontalmente (desde el borde izquierdo del bloque) el inicio de la muesca o la pestaña de las conexiones Previous/NextStatement.
+
+    [Header("Layout & Spacing")] 
+    [Tooltip("Minimum width for any block, regardless of content size.")]
+    public float MinBlockWidth = 60f;// Define el ancho mínimo absoluto que puede tener un bloque, sin importar cuán pequeño sea su contenido. Esto evita que los bloques se vean demasiado estrechos.
+   
+    
     public float ContentHeight
     {
         get { return BlockHeight; }

@@ -279,7 +279,7 @@ public abstract class BaseView : MonoBehaviour
     /// </summary>
     public virtual void UpdateLayout(Vector2 startXY)
     {
-        Debug.Log($"UpdateLayout START for {gameObject.name} at {startXY}", this.gameObject);
+        //Debug.Log($"UpdateLayout START for {gameObject.name} at {startXY}", this.gameObject);
         // 1.Posicionamiento de la vista
         this.XY = startXY; // Llama a OnXYUpdated internamente
 

@@ -46,6 +46,12 @@ public class BlockConnectionController : MonoBehaviour
     private ConnectionModel m_CurrentBestTargetConnection = null;
     private ConnectionModel m_CurrentSourceCandidate = null;
 
+
+    //Para depuración
+
+    private bool _hasLoggedDbSortThisDrag = false;
+
+
     private void Awake()
     {
       //  Debug.LogError("<color=red>HASHCODE_CHECK - MiControlador - AWAKE - HashCode(this): " + this.GetHashCode());
@@ -68,6 +74,38 @@ public class BlockConnectionController : MonoBehaviour
     public void ProcessDrag(BlockModel draggingBlock, List<ConnectionModel> draggingConnections, Vector2 dragginblockBaseLogicalPosition)
     {
         //Debugging
+
+        if (!_hasLoggedDbSortThisDrag)
+        {
+            Debug.Log($"===== DEBUGGING DB SORT (Once per Drag for Workspace: {m_Workspace?.Id}) =====");
+            if (m_Workspace != null && m_Workspace.ConnectionDBList != null)
+            {
+                // Comprueba las DBs relevantes para conexiones de Statement
+                if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.PrevStatement, out var prevDb))
+                {
+                    Debug.Log($"Initial Check - PrevStatement DB Count: {prevDb.Count}");
+                    prevDb.Debug_LogSortOrder("PrevStatement");
+                }
+                else { Debug.LogWarning("PrevStatement DB not found."); }
+
+                if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.NextStatement, out var nextDb))
+                {
+                    Debug.Log($"Initial Check - NextStatement DB Count: {nextDb.Count}");
+                    nextDb.Debug_LogSortOrder("NextStatement");
+                }
+                else { Debug.LogWarning("NextStatement DB not found."); }
+
+                
+                // if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.InputValue, out var inDb)) { inDb.Debug_LogSortOrder("InputValue"); }
+                // if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.OutputValue, out var outDb)) { outDb.Debug_LogSortOrder("OutputValue"); }
+            }
+            else
+            {
+                Debug.LogWarning("Cannot debug DB sort: Workspace or ConnectionDBList is null.");
+            }
+            _hasLoggedDbSortThisDrag = true; // Marcar como hecho para este arrastre
+            Debug.Log($"===== END DEBUGGING DB SORT =====");
+        }
 
         //Debug.Log($"[ProcessDrag ENTRY] Dragging: {draggingBlock?.ID}, Num Conns: {draggingConnections?.Count}, BaseLogicalPos: {dragginblockBaseLogicalPosition}"); 
         if (draggingBlock == null || draggingConnections == null || m_Workspace == null)
@@ -99,16 +137,16 @@ public class BlockConnectionController : MonoBehaviour
         //Debug.Log($"[ProcessDrag] Received {draggingConnections.Count} connections to process:");
         for (int i = 0; i < draggingConnections.Count; i++)
         {
-            Debug.Log($"  - Conn[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}, Has DBOpposite: {draggingConnections[i]?.DBOpposite != null}");
+            //Debug.Log($"  - Conn[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}, Has DBOpposite: {draggingConnections[i]?.DBOpposite != null}");
         }
 
         foreach (ConnectionModel myConn in draggingConnections)
         {
-
+            //Debug.Log($"--->>> Starting processing loop for: {ConnectionModel.GetConnectionModelID(myConn)}");
             if (myConn == null )
             {
-
-                Debug.Log("  - Skipping NULL connection in draggingConnections list.");
+              //  Debug.LogError("XXXXXXXX ERROR: Encountered NULL connection in draggingConnections list.");
+               // Debug.Log("  - Skipping NULL connection in draggingConnections list.");
                 continue;
             }
 
@@ -116,22 +154,33 @@ public class BlockConnectionController : MonoBehaviour
             if (myConn.DBOpposite == null)
 
             {
-                Debug.Log($"  - Skipping connection {ConnectionModel.GetConnectionModelID(myConn)}: DBOpposite is NULL.");
+               // Debug.LogError($"XXXXXXXX ERROR: DBOpposite is NULL for connection {ConnectionModel.GetConnectionModelID(myConn)}! Cannot search.");
+
+               /// Debug.Log($"  - Skipping connection {ConnectionModel.GetConnectionModelID(myConn)}: DBOpposite is NULL.");
                 continue;
             }
+          //  Debug.Log($"--->>> Finished processing loop for: {ConnectionModel.GetConnectionModelID(myConn)}");
+            // Debug.Log($"  Processing DRAGGING Connection: {ConnectionModel.GetConnectionModelID(myConn)} at Location {myConn.Location}");
 
-            Debug.Log($"  Processing DRAGGING Connection: {ConnectionModel.GetConnectionModelID(myConn)} at Location {myConn.Location}");
-
-            Debug.Log($"    Calling SearchForClosest on DB: {myConn.OppositeType}...");
+            // Debug.Log($"    Calling SearchForClosest on DB: {myConn.OppositeType}...");
 
             ConnectionModel neighbour;
 
             float neighbourRadius;
 
+            if (myConn.DBOpposite != null)
+            {
+                myConn.DBOpposite.Debug_LogSortOrder($"DBOpposite for {ConnectionModel.GetConnectionModelID(myConn)} (Type: {myConn.OppositeType})");
+            }
+            else
+            {
+                Debug.LogError($"Cannot check sort order, DBOpposite is NULL for {ConnectionModel.GetConnectionModelID(myConn)}");
+            }
+
             //Busco en la BBDD de tipos opuestos conexiones cercanas
             myConn.DBOpposite.SearchForClosest(myConn, m_ConnectionSnapDistance, Vector2.zero /*dxy era Vector2.zero*/, out neighbour, out neighbourRadius);
 
-            Debug.Log($"    <- Search Result: Neighbour={ConnectionModel.GetConnectionModelID(neighbour)}, Radius={neighbourRadius}");
+           // Debug.Log($"    <- Search Result: Neighbour={ConnectionModel.GetConnectionModelID(neighbour)}, Radius={neighbourRadius}");
 
             if ((neighbour != null)) //Encontramos un vecino
             {
@@ -146,7 +195,7 @@ public class BlockConnectionController : MonoBehaviour
                     float currentDistanceSq = neighbourRadius * neighbourRadius; 
                     if (bestTarget == null || currentDistanceSq < closestRadiusSq)
                     {
-                        Debug.Log($"      <color=yellow>>>>>>>>>> NEW BEST TARGET FOUND! <<<<<<<<<</color> RadiusSq: {currentDistanceSq}");
+                       // Debug.Log($"      <color=yellow>>>>>>>>>> NEW BEST TARGET FOUND! <<<<<<<<<</color> RadiusSq: {currentDistanceSq}");
                         bestTarget = neighbour;       // Guardamos el nuevo mejor destino
                         sourceCandidate = myConn;   // Guardamos nuestra conexión correspondiente
                         closestRadiusSq = currentDistanceSq; // Actualizamos la distancia más cercana encontrada
@@ -226,12 +275,12 @@ public class BlockConnectionController : MonoBehaviour
 
         bool connected = false;
 
-        //Limpio el estado del controlador para el siguiente drag 
-        m_CurrentSourceCandidate = null;
-        m_CurrentSourceCandidate = null;
-
         //Elimino también el resaltado por si estuviera activo aún.
         UpdateVisualHighlighting(finalTargetConnection, null);
+
+        //Limpio el estado del controlador para el siguiente drag 
+        m_CurrentBestTargetConnection = null;
+        m_CurrentSourceCandidate = null;
 
         //Si hay una conexión válidad  intento conectarmete
         if (finalTargetConnection != null && finalSourceConnection != null)

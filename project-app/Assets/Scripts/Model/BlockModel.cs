@@ -622,26 +622,26 @@ public class BlockModel : Observable<int>
     /// <returns>A list containing the possible initiating connections.</returns>
     public List<ConnectionModel> GetDraggingConnections() // Nombre como en tu error
     {
-        Debug.Log($"<color=orange>GetDraggingConnections() called for Block ID: {ID} ({Type})</color>");
+      //  Debug.Log($"<color=orange>GetDraggingConnections() called for Block ID: {ID} ({Type})</color>");
         var draggingConnections = new List<ConnectionModel>();
 
         // Si el bloque tiene una conexión de salida, es un punto de inicio de drag
         if (OutputConnection != null)
         {
-            Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(OutputConnection)}");
+           // Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(OutputConnection)}");
 
             if (this.OutputConnection.SourceBlock == this) draggingConnections.Add(OutputConnection);
         }
         // Si el bloque tiene una conexión anterior (puede apilarse encima), es un punto de inicio
-        else if (PreviousConnection != null) 
+        if (PreviousConnection != null) 
         {
-            Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(this.OutputConnection)}");
+           // Debug.Log($"  - Considering Output: {ConnectionModel.GetConnectionModelID(this.OutputConnection)}");
             if (this.PreviousConnection.SourceBlock == this) draggingConnections.Add(PreviousConnection);
         }
 
-       else  if (NextConnection != null)
+        if (NextConnection != null)
         {
-            Debug.Log($"  - Considering Next: {ConnectionModel.GetConnectionModelID(NextConnection)}");
+           // Debug.Log($"  - Considering Next: {ConnectionModel.GetConnectionModelID(NextConnection)}");
             if (this.NextConnection.SourceBlock == this) draggingConnections.Add(this.NextConnection);
         }
 
@@ -652,28 +652,27 @@ public class BlockModel : Observable<int>
             {
                 if (input.Name == "STEPS") // Filtra solo para el input STEPS
                 {
-                    // Log existente
-                    Debug.Log($"[GetDraggingConn:{this.ID}] Checking SPECIFIC Input 'STEPS'. ConnectionType={input.Connection.Type}. Found SourceBlock ID = {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                 //   Debug.Log($"[GetDraggingConn:{this.ID}] Checking SPECIFIC Input 'STEPS'. ConnectionType={input.Connection.Type}. Found SourceBlock ID = {input.Connection.SourceBlock?.ID ?? "NULL"}");
 
-                        Debug.Log($"[GetDraggingConn Check] Block: {this.ID}, Input: '{input.Name}'. Conn Hash: {input.Connection.GetHashCode()}, Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                     //   Debug.Log($"[GetDraggingConn Check] Block: {this.ID}, Input: '{input.Name}'. Conn Hash: {input.Connection.GetHashCode()}, Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
                 }
                 
                 // Solo considera conexiones de tipo InputValue (las que aceptan bloques con Output)
                 if (input.Connection.Type == EConnection.InputValue)
                 {
-                    Debug.Log($"  - Considering Input '{input.Name}' (Type:InputValue): {ConnectionModel.GetConnectionModelID(input.Connection)} -> Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                    //Debug.Log($"  - Considering Input '{input.Name}' (Type:InputValue): {ConnectionModel.GetConnectionModelID(input.Connection)} -> Found SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
 
                     // Añade a la lista SÓLO si el SourceBlock está asignado correctamente a este bloque
                     if (input.Connection.SourceBlock == this)
                     {
                        
-                        Debug.LogWarning($"[GetDraggingConn:{this.ID}] ADDING InputValue Connection '{input.Name}' to dragging list because SourceBlock matches. Is this intended?");
+                      //  Debug.LogWarning($"[GetDraggingConn:{this.ID}] ADDING InputValue Connection '{input.Name}' to dragging list because SourceBlock matches. Is this intended?");
                         draggingConnections.Add(input.Connection);
                     }
                     else
                     {
                         // Solo un aviso si el SourceBlock no coincide 
-                        Debug.LogWarning($"[GetDraggingConn:{this.ID}] InputValue '{input.Name}' Connection has WRONG SourceBlock ID: {input.Connection.SourceBlock?.ID ?? "NULL"} (Expected: {this.ID}). Not adding.");
+                      //  Debug.LogWarning($"[GetDraggingConn:{this.ID}] InputValue '{input.Name}' Connection has WRONG SourceBlock ID: {input.Connection.SourceBlock?.ID ?? "NULL"} (Expected: {this.ID}). Not adding.");
                     }
                 }
               
@@ -681,10 +680,10 @@ public class BlockModel : Observable<int>
             } // Fin if input y connection no son null
         }
 
-        Debug.Log($"<color=orange> GetDraggingConnections() returning LIST with {draggingConnections.Count} connections:</color>");
+      //  Debug.Log($"<color=orange> GetDraggingConnections() returning LIST with {draggingConnections.Count} connections:</color>");
         for (int i = 0; i < draggingConnections.Count; i++)
         {
-            Debug.Log($"   - FinalList[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}");
+           // Debug.Log($"   - FinalList[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}");
         }
 
         return draggingConnections;
