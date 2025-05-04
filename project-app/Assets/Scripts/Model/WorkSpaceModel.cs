@@ -468,7 +468,7 @@ public class WorkSpaceModel
         }
         else
         {
-            Debug.Log($" - Block ID {block.ID} already exists in BlockDB.");
+           // Debug.Log($" - Block ID {block.ID} already exists in BlockDB.");
         }
 
         bool isTopBlock = block.ParentBlock == null;

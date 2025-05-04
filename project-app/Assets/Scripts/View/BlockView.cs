@@ -104,7 +104,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         if (!isTemplate) // no es una platnilla po lo que tiene que tener WS
         {
-            Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
+           // Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
             WorkSpaceView.Active?.AddBlockView(this); // Añadir a lista activa del workspace
             mBlockObserver = new MemorySafeBlockObserver(this); // Observer solo para modelos de workspace
             mBlock.AddObserver(mBlockObserver);

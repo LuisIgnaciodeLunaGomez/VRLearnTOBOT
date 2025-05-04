@@ -116,9 +116,9 @@ public class BlockFactory
            // Debug.Log($"BlockFactory: Created BlockModel '{type}' (ID: {block.ID}). Created Connections: Output={output != null}, Prev={prev != null}, Next={next != null}. Inputs Count={inputs?.Count ?? 0}.");
 
             block.Reshape(inputs, output, prev, next);
-            Debug.Log($"[Factory:{block.ID}] AFTER Reshape - block.PreviousConnection. Is null? {block.PreviousConnection == null}. ConnID: {ConnectionModel.GetConnectionModelID(block.PreviousConnection)}");
+            //Debug.Log($"[Factory:{block.ID}] AFTER Reshape - block.PreviousConnection. Is null? {block.PreviousConnection == null}. ConnID: {ConnectionModel.GetConnectionModelID(block.PreviousConnection)}");
             // --- Asignar SourceBlock a conexiones y campos DEL BLOQUE FINAL ---
-            Debug.Log($"[BlockFactory ID:{block.ID}] Assigning SourceBlock AFTER Reshape...");
+           // Debug.Log($"[BlockFactory ID:{block.ID}] Assigning SourceBlock AFTER Reshape...");
 
             // Conexiones directas
             if (block.OutputConnection != null) block.OutputConnection.SourceBlock = block;
@@ -150,32 +150,32 @@ public class BlockFactory
                     if (input.Name == "STEPS") // Solo para el input problemático
                     {
                         bool isSameInstance = System.Object.ReferenceEquals(input.Connection, stepsConnectionForDebug);
-                        Debug.Log($"[Factory Loop Assign Check Instance] Is same as outside loop? {isSameInstance}");
+                       // Debug.Log($"[Factory Loop Assign Check Instance] Is same as outside loop? {isSameInstance}");
 
-                        Debug.Log($"[Factory Loop Assign] Assigning block '{block.ID}' to Conn Hash: {input.Connection.GetHashCode()} ...");
+                      //  Debug.Log($"[Factory Loop Assign] Assigning block '{block.ID}' to Conn Hash: {input.Connection.GetHashCode()} ...");
 
-                        Debug.Log($"[BlockFactory PRE-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
-                        $"Current SourceBlock: {input.Connection?.SourceBlock?.ID ?? "NULL"}, " +
-                        $"Block to Assign: {block?.ID ?? "NULL"} (Hash: {block?.GetHashCode() ?? -1})"); // Agrega el objeto Connection como contexto
+                      //  Debug.Log($"[BlockFactory PRE-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
+                      //  $"Current SourceBlock: {input.Connection?.SourceBlock?.ID ?? "NULL"}, " +
+                      //  $"Block to Assign: {block?.ID ?? "NULL"} (Hash: {block?.GetHashCode() ?? -1})"); // Agrega el objeto Connection como contexto
 
                         input.Connection.SourceBlock = block;
-                        Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}, REF EQ After: {System.Object.ReferenceEquals(input.Connection, stepsConnectionForDebug)}");
+                      //  Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}, REF EQ After: {System.Object.ReferenceEquals(input.Connection, stepsConnectionForDebug)}");
 
                         var sourceBlockAfter = input.Connection?.SourceBlock;
-                        Debug.Log($"[BlockFactory POST-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
-                                  $"NEW SourceBlock IS NOW: {sourceBlockAfter?.ID ?? "NULL"} " +
-                                  $"(Was it assigned?: {(sourceBlockAfter == block ? "YES" : "NO!!!")}, " + // Compara referencias
-                                  $"Is Block var the same?: {(block?.ID) ?? "NULL"})"); // Confirma que 'block' no cambió
+                     //   Debug.Log($"[BlockFactory POST-ASSIGN] Target Connection Hash: {input.Connection?.GetHashCode() ?? -1}, " +
+                     //             $"NEW SourceBlock IS NOW: {sourceBlockAfter?.ID ?? "NULL"} " +
+                     //             $"(Was it assigned?: {(sourceBlockAfter == block ? "YES" : "NO!!!")}, " + // Compara referencias
+                     //             $"Is Block var the same?: {(block?.ID) ?? "NULL"})"); // Confirma que 'block' no cambió
                     }
                     input.Connection.SourceBlock = block; // Asignar a la Conexión del Input
-                    Debug.Log($"    - Set SourceBlock for Connection of Input '{input.Name}' (ConnID: {ConnectionModel.GetConnectionModelID(input.Connection)})");
+                   // Debug.Log($"    - Set SourceBlock for Connection of Input '{input.Name}' (ConnID: {ConnectionModel.GetConnectionModelID(input.Connection)})");
 
                     // VERIFICACIÓN OPCIONAL (para estar seguros después de la corrección)
 
 
                     if (input.Name == "STEPS")
                     {
-                        Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
+                   //     Debug.Log($"[Factory Loop Assign] AFTER assign. Conn Hash: {input.Connection.GetHashCode()}, New SourceBlock: {input.Connection.SourceBlock?.ID ?? "NULL"}");
                     }
                 }
 
@@ -188,7 +188,7 @@ public class BlockFactory
                     //    Debug.Log($"    - Set SourceBlock for Fields in Input '{input.Name}'");
                 }
             }
-            Debug.Log($"[BlockFactory ID:{block.ID}] Finished Assigning SourceBlock References.");
+           // Debug.Log($"[BlockFactory ID:{block.ID}] Finished Assigning SourceBlock References.");
 
             //  if (mutator != null) block.SetMutator(mutator);
             //if (inputsInline) block.SetInputsInline(true);

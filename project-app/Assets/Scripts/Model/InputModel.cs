@@ -88,7 +88,7 @@ public class InputModel
             this.Connection = null; 
         }
 
-        Debug.Log($"[InputModel Ctor] Created Input: '{this.Name}', Type: {this.Type}. Connection Created? {this.Connection != null}. Connection.Input set? {this.Connection?.Input != null}");
+       // Debug.Log($"[InputModel Ctor] Created Input: '{this.Name}', Type: {this.Type}. Connection Created? {this.Connection != null}. Connection.Input set? {this.Connection?.Input != null}");
     }
 
     private InputModel(EConnection type, string name, ConnectionModel connection = null) : this(type, name, null, connection)

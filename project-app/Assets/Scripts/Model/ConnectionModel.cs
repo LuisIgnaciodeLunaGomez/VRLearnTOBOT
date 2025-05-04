@@ -36,7 +36,7 @@ public class ConnectionModel : Observable<UpdateState>
 
             if (mSourceBlock == value)
             {
-                Debug.Log($"[Setter SKIP] Value is the same as mSourceBlock. Exiting.");
+               // Debug.Log($"[Setter SKIP] Value is the same as mSourceBlock. Exiting.");
                 return; 
             }
 
@@ -493,14 +493,14 @@ public class ConnectionModel : Observable<UpdateState>
 
         if (first == null || second == null)
             throw new Exception("Cannot connect null connections.");
-        Debug.Log($"  - BEFORE: first.TargetConnection = {GetConnectionModelID(first.TargetConnection)}");
+       // Debug.Log($"  - BEFORE: first.TargetConnection = {GetConnectionModelID(first.TargetConnection)}");
         first.TargetConnection = second;
-        Debug.Log($"  - First's TargetConnection is now: {GetConnectionModelID(first.TargetConnection)}");
+      //  Debug.Log($"  - First's TargetConnection is now: {GetConnectionModelID(first.TargetConnection)}");
 
-        Debug.Log($"  - BEFORE: second.TargetConnection = {GetConnectionModelID(second.TargetConnection)}");
+       // Debug.Log($"  - BEFORE: second.TargetConnection = {GetConnectionModelID(second.TargetConnection)}");
 
         second.TargetConnection = first;
-        Debug.Log($"  - Second's TargetConnection is now: {GetConnectionModelID(second.TargetConnection)}");
+     //   Debug.Log($"  - Second's TargetConnection is now: {GetConnectionModelID(second.TargetConnection)}");
 
     }
 

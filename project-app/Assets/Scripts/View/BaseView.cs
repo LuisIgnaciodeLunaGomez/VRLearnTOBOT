@@ -336,16 +336,16 @@ public abstract class BaseView : MonoBehaviour
             return;
         }
 
-        Debug.Log($"BaseView ({gameObject.name}): Attempting to add child {childView.gameObject.name} (Type: {childView.Type}) at index {index}.", this.gameObject);
+       // Debug.Log($"BaseView ({gameObject.name}): Attempting to add child {childView.gameObject.name} (Type: {childView.Type}) at index {index}.", this.gameObject);
 
         childView.m_ParentView?.RemoveChild(childView); // Desvincular del padre lógico anterior
 
         // Manipular la jerarquía visual de Unity 
         if (this.ViewTransform != null && childView.ViewTransform != null)
         {
-            Debug.Log($"  Setting visual parent of {childView.gameObject.name} to {this.gameObject.name}.", childView.gameObject);
+           // Debug.Log($"  Setting visual parent of {childView.gameObject.name} to {this.gameObject.name}.", childView.gameObject);
             childView.ViewTransform.SetParent(this.ViewTransform, false);
-            Debug.Log($"  New visual parent is: {childView.ViewTransform.parent.name}", childView.gameObject);
+         //   Debug.Log($"  New visual parent is: {childView.ViewTransform.parent.name}", childView.gameObject);
 
         }
         else
@@ -371,7 +371,7 @@ public abstract class BaseView : MonoBehaviour
         // Notificar para re-layout 
         MarkDirty();
 
-        Debug.Log($"BaseView ({gameObject.name}): Successfully added child {childView.gameObject.name}. ChildViews Count: {m_ChildViews.Count}", this.gameObject);
+      //  Debug.Log($"BaseView ({gameObject.name}): Successfully added child {childView.gameObject.name}. ChildViews Count: {m_ChildViews.Count}", this.gameObject);
     }
 
     public void RemoveChild(BaseView childView)

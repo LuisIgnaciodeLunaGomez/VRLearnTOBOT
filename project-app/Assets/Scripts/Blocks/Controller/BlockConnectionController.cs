@@ -34,8 +34,8 @@ public class BlockConnectionController : MonoBehaviour
         {
            
            // Debug.LogError($"<color=red>HASHCODE_CHECK - BlockConnectionController - m_Workspace Setter Called!");
-            Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
-            Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
+         //   Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
+          //  Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
 
             _workspace = value; 
         }
@@ -77,20 +77,20 @@ public class BlockConnectionController : MonoBehaviour
 
         if (!_hasLoggedDbSortThisDrag)
         {
-            Debug.Log($"===== DEBUGGING DB SORT (Once per Drag for Workspace: {m_Workspace?.Id}) =====");
+           // Debug.Log($"===== DEBUGGING DB SORT (Once per Drag for Workspace: {m_Workspace?.Id}) =====");
             if (m_Workspace != null && m_Workspace.ConnectionDBList != null)
             {
                 // Comprueba las DBs relevantes para conexiones de Statement
                 if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.PrevStatement, out var prevDb))
                 {
-                    Debug.Log($"Initial Check - PrevStatement DB Count: {prevDb.Count}");
+                   // Debug.Log($"Initial Check - PrevStatement DB Count: {prevDb.Count}");
                     prevDb.Debug_LogSortOrder("PrevStatement");
                 }
                 else { Debug.LogWarning("PrevStatement DB not found."); }
 
                 if (m_Workspace.ConnectionDBList.TryGetValue(EConnection.NextStatement, out var nextDb))
                 {
-                    Debug.Log($"Initial Check - NextStatement DB Count: {nextDb.Count}");
+                   // Debug.Log($"Initial Check - NextStatement DB Count: {nextDb.Count}");
                     nextDb.Debug_LogSortOrder("NextStatement");
                 }
                 else { Debug.LogWarning("NextStatement DB not found."); }
@@ -220,7 +220,7 @@ public class BlockConnectionController : MonoBehaviour
         //Informo si he encontrado una conexión que se pueda llevar a cabo "snapable"
         if (m_CurrentBestTargetConnection != null)
         {
-            Debug.Log($"<color=green>[ProcessDrag STATUS] Potential snap FOUND:</color> Source {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)} -> Target {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}");
+           // Debug.Log($"<color=green>[ProcessDrag STATUS] Potential snap FOUND:</color> Source {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)} -> Target {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}");
         }
         else
         {
@@ -262,8 +262,8 @@ public class BlockConnectionController : MonoBehaviour
     public bool TryConnectAndPlace(BlockModel draggingBlock, bool isTemplateClone,/* bool overTrasBin,*/ Vector2 pointerScreenPosition)
     {
         Debug.Log($"<color=cyan>TryConnectAndPlace ENTERED.</color> Dragging: {draggingBlock?.ID} ({draggingBlock?.Type}). IsClone: {isTemplateClone}. ");
-        Debug.Log($" - CurrentBestTarget (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}"); 
-        Debug.Log($" - CurrentSource (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)}");
+       // Debug.Log($" - CurrentBestTarget (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}"); 
+      //  Debug.Log($" - CurrentSource (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)}");
 
         if (draggingBlock == null || m_WorkspaceView == null || m_Workspace == null) return false;
 
@@ -291,9 +291,9 @@ public class BlockConnectionController : MonoBehaviour
             {
 
                 //Gestionamos la desconexión automática si el destino ya esta conectado y lo notificará a las vistas
-                Debug.Log("    BEFORE Connect Call");
+              //  Debug.Log("    BEFORE Connect Call");
                 finalTargetConnection.Connect(finalSourceConnection);
-                Debug.Log("    AFTER Connect Call");
+               // Debug.Log("    AFTER Connect Call");
                 connected = true;
                 Debug.Log($"    --> Post-Connect State: Source '{ConnectionModel.GetConnectionModelID(finalSourceConnection)}' IsConnected={finalSourceConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalSourceConnection?.TargetConnection)}'");
                 Debug.Log($"    --> Post-Connect State: Target '{ConnectionModel.GetConnectionModelID(finalTargetConnection)}' IsConnected={finalTargetConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalTargetConnection?.TargetConnection)}'");
@@ -338,7 +338,7 @@ public class BlockConnectionController : MonoBehaviour
             }
             else
             {
-                Debug.Log($"ConnectionController: Block {draggingBlock.ID} dropped in valid free space.");
+                //Debug.Log($"ConnectionController: Block {draggingBlock.ID} dropped in valid free space.");
                 if (isTemplateClone)
                 {
                     // Era un clon de plantilla soltado libremente -> añadirlo al modelo del workspace.
@@ -368,7 +368,7 @@ public class BlockConnectionController : MonoBehaviour
         }
 
       
-        Debug.Log($"<color=cyan>TryConnectAndPlace EXITING - Returning TRUE (Operation Handled)</color>");
+       // Debug.Log($"<color=cyan>TryConnectAndPlace EXITING - Returning TRUE (Operation Handled)</color>");
         return true;
     }
 

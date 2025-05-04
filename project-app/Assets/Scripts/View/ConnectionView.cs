@@ -16,6 +16,7 @@
  */
 
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -342,8 +343,26 @@ public class ConnectionView : BaseView
                 m_HighlightInstance = Instantiate(m_HighlightPrefab, this.ViewTransform); 
                 RectTransform highlightTrans = m_HighlightInstance.GetComponent<RectTransform>();
 
-                highlightTrans.localScale = Vector3.one; 
-                highlightTrans.localPosition = Vector3.zero; 
+
+                if (highlightTrans == null)
+                {
+                    Debug.LogError("Highlight instance MISSING RectTransform!", m_HighlightInstance);
+                    Destroy(m_HighlightInstance); 
+                    m_HighlightInstance = null;
+                    return;
+                }
+
+                highlightTrans.localScale = Vector3.one;       // Sin escalar
+                highlightTrans.localRotation = Quaternion.identity; // Sin rotar por defecto
+                highlightTrans.anchorMin = new Vector2(0, 1);     // Anchor Superior Izquierda del Padre
+                highlightTrans.anchorMax = new Vector2(0, 1);     // Anchor Superior Izquierda del Padre
+                highlightTrans.pivot = new Vector2(0, 1);        // Pivote Superior Izquierda del Highlight
+
+                BlockViewSettings settings = BlockViewSettings.Instance;
+                Vector2 targetPosition = Vector2.zero;
+
+               // float parentOffsetX = this.XY.x; 
+                float parentOffsetY = this.XY.y;
 
                 if (ConnectionType == EConnection.InputValue)
                 {
@@ -351,7 +370,7 @@ public class ConnectionView : BaseView
                     highlightTrans.pivot = new Vector2(0.5f, 0); // Pivote Abajo-Centro
                     highlightTrans.anchorMin = new Vector2(0, 0.5f); // Centro Izquierda del padre
                     highlightTrans.anchorMax = new Vector2(0, 0.5f);
-                       highlightTrans.anchoredPosition = new Vector2(BlockViewSettings.Instance.NotchWidth / 2f, 0); // Centrado en X
+                    highlightTrans.anchoredPosition = new Vector2(BlockViewSettings.Instance.NotchWidth / 2f, 0); // Centrado en X
 
                 }
                 else if (ConnectionType == EConnection.OutputValue)
@@ -366,12 +385,10 @@ public class ConnectionView : BaseView
                 }
                 else if (ConnectionType == EConnection.NextStatement && Type == ViewType.ConnectionInput) 
                 {
-                    highlightTrans.localRotation = Quaternion.identity; // Sin rotación
-                    highlightTrans.pivot = new Vector2(0.5f, 0); // Pivote Abajo-Centro
-                    highlightTrans.anchorMin = new Vector2(0.5f, 0); // Abajo-Centro del padre
-                    highlightTrans.anchorMax = new Vector2(0.5f, 0);
-                    highlightTrans.anchoredPosition = new Vector2(0, BlockViewSettings.Instance.NotchHeight / 2f); // Centrado Y
 
+                    targetPosition.x = -settings.BlockStartX;
+                    targetPosition.y = /*parentOffsetY */-settings.TabHeight;
+                    Debug.Log($"<color=#90EE90>[{gameObject.name}.Highlight]</color> Case NextStatement => Calculated Target=({targetPosition.x:F2},{targetPosition.y:F2})");
                 }
                 else 
                 {
@@ -379,24 +396,26 @@ public class ConnectionView : BaseView
                     highlightTrans.localRotation = Quaternion.identity;
                     if (ConnectionType == EConnection.PrevStatement)
                     {
-                        highlightTrans.pivot = new Vector2(0.5f, 1); // Pivote Arriba-Centro
-                        highlightTrans.anchorMin = new Vector2(0.5f, 1); // Arriba-Centro padre
-                        highlightTrans.anchorMax = new Vector2(0.5f, 1);
-                        highlightTrans.anchoredPosition = new Vector2(0, -BlockViewSettings.Instance.NotchHeight / 2f);
+                        targetPosition.x = -settings.BlockStartX; ;
+                        // RectTransform ownRect = highlightTrans;
+                        targetPosition.y = parentOffsetY * 2f - settings.NotchHeight;// settings.NotchWidth;// nRect != null ? ownRect.rect.height + settings.NotchWidth: parentOffsetY * 2 - settings.NotchWidth;//+ settings.NotchWidth; */
+                        Debug.Log($"<color=#ADD8E6>[{gameObject.name}.Highlight]</color> Case PrevStatement => Calculated Target=({targetPosition.x:F2},{targetPosition.y:F2})");
                     }
                     else
-                    { // NextStatement
-                        highlightTrans.pivot = new Vector2(0.5f, 0); // Pivote Abajo-Centro
-                        highlightTrans.anchorMin = new Vector2(0.5f, 0); // Abajo-Centro padre
-                        highlightTrans.anchorMax = new Vector2(0.5f, 0);
-                        highlightTrans.anchoredPosition = new Vector2(0, BlockViewSettings.Instance.NotchHeight / 2f);
+                    {
+                        targetPosition.x = -settings.BlockStartX;
+                        targetPosition.y = /*parentOffsetY */-settings.TabHeight;
+                        Debug.Log($"<color=#90EE90>[{gameObject.name}.Highlight]</color> Case NextStatement => Calculated Target=({targetPosition.x:F2},{targetPosition.y:F2})");
                     }
                 }
-
+                    
+                highlightTrans.anchoredPosition = targetPosition;
 
             }
-            if (m_HighlightInstance != null) m_HighlightInstance.SetActive(true);
+            
 
+            m_HighlightInstance.SetActive(true);
+            Debug.Log($"<color=yellow>[{gameObject.name}.Highlight]</color> Instance '{m_HighlightInstance.name}' ACTIVATED.", m_HighlightInstance);
         }
         else
         {

@@ -15,6 +15,7 @@
  */
 
 using System;
+using Unity.AppUI.UI;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BlockViewSettings", menuName = "Block View Settings", order = 1)]
@@ -62,10 +63,10 @@ public class BlockViewSettings : ScriptableObject
 
     [Header("Connection Shapes")]
     [Tooltip("Width of the connection notch/tab.")]
-    public float NotchWidth = 10f;
+    public float NotchWidth = 260f;
 
     [Tooltip("Height of the connection notch/tab.")]
-    public float NotchHeight = 4f;
+    public float NotchHeight = 16f;
 
     [Tooltip("Defines the rectangle for the NextStatement connection point relative to its parent block's layout origin (often top-left). Used for positioning.")]
     public Rect StatementConnectPointRect = new Rect(15f, 0f, 20f, 5f); 
@@ -78,7 +79,7 @@ public class BlockViewSettings : ScriptableObject
     [Tooltip("Prefab used to visually highlight a potential connection.")]
     public GameObject PrefabConnectHighlight;
 
-    [Header("Connection Interaction")] // Quizás ya tengas esta sección
+    [Header("Connection Interaction")] 
     [Tooltip("Offset to bump blocks away upon disconnection.")]
     public Vector2 BumpAwayOffset = new Vector2(10f, 10f);
 
@@ -92,7 +93,7 @@ public class BlockViewSettings : ScriptableObject
     public float ConnectionSearchRange = 50f; 
 
     public float NotchConnectorOffsetY = 0f; // Offset vertical para el conector de la muesca
-
+    public float BlockStartX = 46f; // Offset horizontal para el conector de la muesca
     private void OnEnable()
     {
    
@@ -156,7 +157,7 @@ public class BlockViewSettings : ScriptableObject
     [SerializeField] public float DropdownArrowWidth = 18f;
 
     [Tooltip("Height of the connection tab (when block connected below). Often same as NotchHeight.")]
-    public float TabHeight = 4f; //define la altura visual de la pestaña (el saliente) de la conexión NextStatement cuando hay un bloque conectado debajo
+    public float TabHeight = 0f; //define la altura visual de la pestaña (el saliente) de la conexión NextStatement cuando hay un bloque conectado debajo
 
     [Tooltip("Horizontal indentation (from left edge) for the previous/next connection point.")]
     public float ConnectorIndentX = 15f; //Define cuánto se desplaza horizontalmente (desde el borde izquierdo del bloque) el inicio de la muesca o la pestaña de las conexiones Previous/NextStatement.

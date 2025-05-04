@@ -67,7 +67,8 @@ public class BlockDefinition
     // Crea la lista de modelos de Input basándose en las definiciones de argumentos
     public List<InputModel> CreateInputList(BlockModel sourceBlock)
     {
-        Debug.Log($"-->> CreateInputList START for Block ID: {sourceBlock?.ID ?? "NULL_BLOCK_PASSED"} (DefType: {type}). Arg Count: {Arguments?.Count ?? 0}");
+        
+        //  Debug.Log($"-->> CreateInputList START for Block ID: {sourceBlock?.ID ?? "NULL_BLOCK_PASSED"} (DefType: {type}). Arg Count: {Arguments?.Count ?? 0}");
 
         List<InputModel> inputList = new List<InputModel>();
         if (Arguments == null || this.Arguments.Count == 0)
@@ -96,7 +97,7 @@ public class BlockDefinition
 
                 currentInput = new InputModel(inputType, inputName, sourceBlock); // Crea el Input
 
-                Debug.Log($"[CreateInputList:{type}] Created Input '{inputName}'. Its Connection SourceBlock is INITIALLY: {currentInput?.Connection?.SourceBlock?.ID ?? "NULL"}");
+              //  Debug.Log($"[CreateInputList:{type}] Created Input '{inputName}'. Its Connection SourceBlock is INITIALLY: {currentInput?.Connection?.SourceBlock?.ID ?? "NULL"}");
 
                 currentInput.SetAlign(argDef.align);
 
@@ -171,7 +172,7 @@ public class BlockDefinition
             }
         } // Fin del foreach
 
-        Debug.Log($"-->> CreateInputList FINISHED for Block: {type}. Returning list with Count: {inputList.Count}");
+       // Debug.Log($"-->> CreateInputList FINISHED for Block: {type}. Returning list with Count: {inputList.Count}");
         return inputList;
     }
 
