@@ -70,7 +70,7 @@ public class UICanvasView : MonoBehaviour
     void Awake()
     {
         // Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
-        Debug.LogError("---- UICanvasView Awake() START ---- Instance ID: " + this.GetInstanceID());
+      //  Debug.LogError("---- UICanvasView Awake() START ---- Instance ID: " + this.GetInstanceID());
         m_isCoreComponentsReady = false;
 
         InitializeCore();

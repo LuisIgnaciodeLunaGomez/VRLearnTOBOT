@@ -22,6 +22,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(LayoutElement))]
 
@@ -42,11 +43,23 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     public bool InToolbox { get; set; } = false;
     public bool IsDragging { get; set; } = true;
 
+    private Vector2 m_CalculatedContentSize;
+
     private MemorySafeBlockObserver mBlockObserver;
     private CanvasGroup m_canvasGroup;
     private Vector2 m_dragStartOffset;
     private LayoutElement m_layoutElement;
     private WorkSpaceView m_WorkspaceView;
+
+    //pruebas sombra
+    [SerializeField] private CustomMeshImage m_MainBgImage; // La imagen de fondo principal
+    [SerializeField] private GameObject m_SombraSuperior;
+    [SerializeField] private GameObject m_SombraInferior_Muesca;
+    [SerializeField] private GameObject m_SombraInferior_Pestana;
+    [SerializeField] private RectTransform m_ContentContainer;
+    /// <summary>
+    /// /fin pruebas sombra
+    /// </summary>
 
     public WorkSpaceView WorkspaceView => m_WorkspaceView;
     protected override void InitializeView()
@@ -91,7 +104,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         if (!isTemplate) // no es una platnilla po lo que tiene que tener WS
         {
-            Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
+           // Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
             WorkSpaceView.Active?.AddBlockView(this); // Añadir a lista activa del workspace
             mBlockObserver = new MemorySafeBlockObserver(this); // Observer solo para modelos de workspace
             mBlock.AddObserver(mBlockObserver);
@@ -349,7 +362,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 }
                 else
                 {
-                    // Si no hay vista, al menos disponer del modelo lógico
+                   
                     Debug.Log($"  -> Disposing child model '{childModel.ID}' (no view found).");
                     childModel.Dispose();
                 }
@@ -359,13 +372,13 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         //  Desvincular este bloque y destruir su GameObject
         Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Unbinding self ({gameObject.name}).", this.gameObject);
-        BlockModel model = mBlock; // Guardar referencia al modelo para disponer al final
-        UnBindModel(); // Desconectar observadores, quitar de WorkspaceView.mBlockViews
+        BlockModel model = mBlock; 
+        UnBindModel(); 
 
         if (this.gameObject != null)
         {
             Debug.Log($"BlockView ({mBlock?.Type ?? "Disposing..."}): Destroying GameObject {gameObject.name}.", this.gameObject);
-            Destroy(this.gameObject); // Destruir el GameObject de esta vista
+            Destroy(this.gameObject); 
         }
 
         //limpieza final
@@ -423,6 +436,11 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         bool alignRight = false;
 
         Vector2 size = Vector2.zero;
+        bool hasPrevious = mBlock.PreviousConnection != null; 
+        bool hasNext = mBlock.NextConnection != null; 
+        bool nextIsConnected = hasNext && mBlock.NextConnection.IsConnected;
+
+
         for (int i = 0; i < ChildViews .Count; i++)
         {
             LineGroupView groupView = ChildViews [i] as LineGroupView;
@@ -433,8 +451,11 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 if (i < ChildViews .Count - 1)
                     size.y += settings.ContentSpace.y;
 
-                if (((InputView)groupView.LastChild).AlignRight)
+                InputView lastInputView = groupView.LastChild as InputView;
+                if (lastInputView != null && lastInputView.AlignRight)
+                {
                     alignRight = true;
+                }
             }
         }
 
@@ -452,9 +473,33 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
 
-        ((CustomMeshImage)m_BgImages[0]).SetDrawDimensions(dimensions.ToArray());
+        if (m_BgImages != null && m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customImage)
+        {
+            string dimsString = $"Block '{this.name}': Calculating dimensions. Count: {dimensions.Count}. Values: ";
+            for (int k = 0; k < dimensions.Count; k++)
+            {
+                dimsString += $"[{k}]({dimensions[k].x},{dimensions[k].y},{dimensions[k].z},{dimensions[k].w}) ";
+            }
+            Debug.Log(dimsString);
+            //customImage.SetDrawDimensions(dimensions.ToArray());
+        }
+        else
+        {
+         
+            if (m_BgImages == null || m_BgImages.Count == 0)
+            {
+                Debug.LogError($"BlockView ({BlockType}): m_BgImages list is null or empty! Cannot set draw dimensions. Check Inspector assignment for this block.", this.gameObject);
+            }
+            else // La lista existe y tiene elementos, pero el [0] no es CustomMeshImage o es null
+            {
+                Debug.LogWarning($"BlockView ({BlockType}): m_BgImages[0] is not a CustomMeshImage or is null. Cannot set draw dimensions.", m_BgImages[0]?.gameObject ?? this.gameObject);
+                // var firstCustomImage = m_BgImages.OfType<CustomMeshImage>().FirstOrDefault();
+                // if(firstCustomImage != null) firstCustomImage.SetDrawDimensions(dimensions.ToArray());
+            }
+        }
         return size;
     }
+    
 
     protected internal override void OnXYUpdated()
     {
@@ -486,7 +531,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         {
             ManualLayoutRecursive(this.XY);
-            
+            //ApplyVisualAppearance(); //<----- vamos a ver si funciona esto para la sombra
         }
         m_LayoutIsDirty = false;
         //BaseView startView = this.GetLineGroup(0).GetTopmostChild();
@@ -823,6 +868,9 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         mAttachingConnection = null;
 
     }
+
+
+
     public void HandleModelUpdate(BlockModel model, BlockUpdateType updateType)
     {
         if (model != mBlock || mBlock == null)
@@ -905,7 +953,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
-   
+
     public static void EditorInitialDisplayUpdate(FieldView fieldView, FieldModel fieldModel, string errorText = null)
     {
         if (fieldView == null || fieldModel == null) return;
@@ -918,15 +966,15 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         }
         else if (fieldView is FieldInputView inputView)
         {
-            inputView.SetDisplayText(displayText); 
+            inputView.SetDisplayText(displayText);
         }
         else if (fieldView is FieldVariableView varView)
         {
-            varView.SetDisplayText(displayText); 
+            varView.SetDisplayText(displayText);
         }
         else if (fieldView is FieldCheckboxView checkView)
         {
-            
+
         }
         else
         {
@@ -939,5 +987,78 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
+
+    private void ApplyVisualAppearance()
+    {
+        BlockViewSettings settings = BlockViewSettings.Instance;
+
+        if (m_MainBgImage == null || settings == null) return; // Seguridad
+
+        //  Ajustar el Fondo Principal 
+        RectTransform bgRect = m_MainBgImage.rectTransform;
+        Vector2 size = this.Size; // Usamos el tamaño calculado y almacenado por CalculateSize->UpdateLayout
+
+        bgRect.sizeDelta = size; // Altura y Ancho coinciden con el tamaño calculado total
+
+        // Posición Y: 0 si no hay previous, offset si la hay (asumiendo pivot 0,1)
+        bool hasPrevious = mBlock.PreviousConnection != null; // Adapta
+        float bgYOffset = hasPrevious ? BlockViewSettings.Instance.NotchConnectorOffsetY : 0f; // Necesitas un valor de setting
+        bgRect.anchoredPosition = new Vector2(0, bgYOffset);
+
+        //  Activar/Desactivar Sombras 
+        bool hasNext = mBlock.NextConnection != null; 
+        bool nextIsConnected = hasNext && mBlock.NextConnection.IsConnected;
+
+        if (m_SombraSuperior != null) m_SombraSuperior.SetActive(hasPrevious);
+
+        float shadowXPos = settings.ConnectorIndentX;
+
+        // Posicionar sombras inferiores CORRECTAMENTE al final del contenido / inicio de la conexión
+        float bottomConnectorY = -((hasPrevious ? BlockViewSettings.Instance.NotchHeight : 0f) + +settings.InternalPadding.y + m_CalculatedContentSize.y  + settings.InternalPadding.y * 2);
+        // NOTA: 'contentSize' necesitaría ser recalculado aquí o guardado como variable miembro desde CalculateSize(). 
+        RectTransform muescaRect = m_SombraInferior_Muesca.GetComponent<RectTransform>();
+        if (m_SombraInferior_Muesca != null)
+        {
+            //m_SombraInferior_Muesca.SetActive(hasNext && !nextIsConnected);
+            muescaRect.anchoredPosition = new Vector2(shadowXPos, bottomConnectorY); 
+        }
+
+        RectTransform pestanaRect = m_SombraInferior_Pestana.GetComponent<RectTransform>();
+
+        if (m_SombraInferior_Pestana != null)
+        {
+            //m_SombraInferior_Pestana.SetActive(hasNext && nextIsConnected);
+            pestanaRect.anchoredPosition = new Vector2(shadowXPos, bottomConnectorY);
+        }
+
+        // Posicionar Contenedor de Contenido 
+        if (m_ContentContainer != null)
+        {
+            m_ContentContainer.anchoredPosition = new Vector2(
+                BlockViewSettings.Instance.InternalPadding.x,
+                hasPrevious ? -BlockViewSettings.Instance.NotchHeight - BlockViewSettings.Instance.InternalPadding.y : -BlockViewSettings.Instance.InternalPadding.y
+            );
+        }
+    }
+
+  
+    private float GetStackHeightBelow(BlockView startBlock)
+    {
+        if (startBlock == null) return 0f;
+
+        float height = startBlock.Size.y; // Usa tamaño ya calculado del hijo
+        ConnectionModel nextConn = startBlock.mBlock?.NextConnection;
+
+        if (nextConn != null && nextConn.IsConnected)
+        {
+            BlockView nextBlockView = WorkspaceView.GetBlockView(nextConn.TargetBlock);
+            if (nextBlockView != null)
+            {
+                height += GetStackHeightBelow(nextBlockView); // Llamada recursiva
+            }
+        }
+        return height;
+    }
+
 }//fin de la clase BlockView
 

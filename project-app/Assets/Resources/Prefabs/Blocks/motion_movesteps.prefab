@@ -40,7 +40,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -79, y: 36.97821}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 317.0436, y: 148.9564}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &222019954746722046
@@ -131,8 +131,14 @@ MonoBehaviour:
   m_PreviousView: {fileID: 0}
   m_NextView: {fileID: 0}
   m_ChildViews: []
-  m_BgImages: []
+  m_BgImages:
+  - {fileID: 5193869514006704459}
   m_PrimaryBackground: {fileID: 0}
+  m_MainBgImage: {fileID: 0}
+  m_SombraSuperior: {fileID: 0}
+  m_SombraInferior_Muesca: {fileID: 0}
+  m_SombraInferior_Pestana: {fileID: 0}
+  m_ContentContainer: {fileID: 0}
 --- !u!1 &1588165293579700
 GameObject:
   m_ObjectHideFlags: 0
@@ -467,7 +473,7 @@ MonoBehaviour:
   m_NextView: {fileID: 4414852796020827945}
   m_ChildViews: []
   m_ConnectionType: 2
-  m_HighlightPrefab: {fileID: 0}
+  m_HighlightPrefab: {fileID: 3748686863767304909, guid: bb4b0763997778f4ba297b0ebc4154da, type: 3}
 --- !u!222 &5178231340340018802
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1862,7 +1868,7 @@ MonoBehaviour:
   m_NextView: {fileID: 7128576273812503991}
   m_ChildViews: []
   m_ConnectionType: 3
-  m_HighlightPrefab: {fileID: 0}
+  m_HighlightPrefab: {fileID: 3748686863767304909, guid: bb4b0763997778f4ba297b0ebc4154da, type: 3}
 --- !u!222 &4756781764417714317
 CanvasRenderer:
   m_ObjectHideFlags: 0

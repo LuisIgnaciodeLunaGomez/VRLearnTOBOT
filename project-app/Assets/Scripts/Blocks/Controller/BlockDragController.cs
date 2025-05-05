@@ -33,8 +33,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         {
             
          //   Debug.LogError($"<color=red>HASHCODE_CHECK - BlockDragController - m_Workspace Setter Called!");
-            Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
-            Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
+            //Debug.LogError($"  -> Current Value HashCode: {_workspace?.GetHashCode()}");
+           // Debug.LogError($"  -> New Value HashCode Attempting to Set: {value?.GetHashCode()}");
 
             _workspace = value; 
         }
@@ -399,7 +399,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         m_DraggingBlockView.transform.SetAsLastSibling(); // Poner A encima
         // Debug.Log($"   Clone A AnchoredPos SET to: {targetLocalPosInDragLayer} (Parent: DragLayer)");
 
-        Debug.Log($"   DraggingBlock AnchoredPos(0,1 ref / 0.5 anchors) SET to: {targetAnchoredPosTopLeft} (Parent: RootCanvas)");
+      //  Debug.Log($"   DraggingBlock AnchoredPos(0,1 ref / 0.5 anchors) SET to: {targetAnchoredPosTopLeft} (Parent: RootCanvas)");
 
         //Calculamos Offset Pantalla 
         Vector2 cloneActualPivotScreenPos = RectTransformUtility.WorldToScreenPoint(m_CachedCamera, m_DraggingBlockView.transform.position); // Pos pantalla del pivote
@@ -574,8 +574,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
      
         string blockId = m_DraggingBlockModel?.ID ?? "UNKNOWN";
 
-        Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({m_DraggingBlockView.name})</color>");
-        Debug.Log($"    Pointer Screen Pos: {eventData.position}");
+        Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({m_DraggingBlockView.name} ) Pointer Screen Pos: {eventData.position}</color>");
+        //Debug.Log($"    Pointer Screen Pos: {eventData.position}");
 
         m_IsPotentialDrag = false;
 
@@ -588,12 +588,12 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         bool actionHandled = m_connectionController.TryConnectAndPlace(m_DraggingBlockModel, m_WasTemplateClone, eventData.position);
 
-        Debug.Log("<color=orange> - Now attempting to finalize placement/connection via BlockConnectionController...</color>");
+        //Debug.Log("<color=orange> - Now attempting to finalize placement/connection via BlockConnectionController...</color>");
 
         
         if (actionHandled && m_WasTemplateClone)
         { // Solo si fue exitoso Y era un clon pendiente
-            Debug.Log($"[HandleEndDrag] Clearing m_PendingCloneModel ({m_PendingCloneModel?.ID}) due to successful place/connect.");
+            //Debug.Log($"[HandleEndDrag] Clearing m_PendingCloneModel ({m_PendingCloneModel?.ID}) due to successful place/connect.");
             m_PendingCloneModel = null; 
         }
 
@@ -702,7 +702,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             //Debug.Log($"   Block '{draggedModelId}' was deleted or cancelled, no final view setup needed.");
         }
 
-        Debug.Log("<color=cyan>BlockDragController: Drag sequence finished.</color>");
+       // Debug.Log("<color=cyan>BlockDragController: Drag sequence finished.</color>");
     }
 
     private void ResetDragState(PointerEventData eventData = null)

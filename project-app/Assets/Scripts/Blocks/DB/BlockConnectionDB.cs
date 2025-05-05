@@ -45,8 +45,12 @@ public class BlockConnectionDB : List<ConnectionModel>
         }
         else
         {
-         
-            this.Add(connectionToAdd);
+
+            // this.Add(connectionToAdd);
+
+            int index = FindPositionForConnection(connectionToAdd); // Encuentra dónde debería ir
+            Insert(index, connectionToAdd); // Inserta en esa posición
+            connectionToAdd.InDB = true;
             connectionToAdd.InDB = true; 
             // Debug.Log($"ConnectionDB [{this}]: Added connection '{ConnectionModel.GetConnectionModelID(connectionToAdd)}'. Current count: {this.Count}");
         }
@@ -279,6 +283,31 @@ public class BlockConnectionDB : List<ConnectionModel>
 
          
         }
+    }
+
+    //Método de depuración
+    public void Debug_LogSortOrder(string dbType) // Pasa el tipo de conexión para identificar la DB
+    {
+       // Debug.Log($"--- Checking Sort Order for DB: {dbType} (Count: {this.Count}) ---");
+        float lastY = float.NegativeInfinity;
+        bool sorted = true;
+        for (int i = 0; i < this.Count; i++)
+        {
+            float currentY = this[i].Location.y;
+            bool comparisonOk = currentY >= lastY;
+           // Debug.Log($"  [{i}] Conn: {ConnectionModel.GetConnectionModelID(this[i])}, Y: {currentY:F2} (>= Last: {comparisonOk})");
+            if (!comparisonOk) sorted = false;
+            lastY = currentY;
+        }
+        if (!sorted)
+        {
+            Debug.LogError($"  !!!! DB {dbType} IS NOT SORTED BY Y !!!!");
+        }
+        else
+        {
+          //  Debug.Log($"  DB {dbType} APPEARS SORTED BY Y.");
+        }
+   //     Debug.Log("--- End Check ---");
     }
 
 }//fin clase BlockConnectionDB
