@@ -58,6 +58,8 @@ public class UICanvasView : MonoBehaviour
     private GameObject m_CanvasGO;
     private GameObject m_UiManagerView;
     private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
+
+ 
     public RectTransform DragLayer => m_DragLayerRect;
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
 
@@ -141,7 +143,8 @@ public class UICanvasView : MonoBehaviour
             return;
         }
 
-       // Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
+       
+        // Debug.Log("<color=green>UICanvasView: Awake finished UI and  base setup.</color>");
     }
 
     IEnumerator Start()

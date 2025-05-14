@@ -200,7 +200,7 @@ public class BlockFactory
             
             if (block.Workspace != null)
             {
-                Debug.Log($"<color=teal>[BlockFactory:{block.ID}] Assigning DB REFERENCES early for workspace block...</color>");
+                Debug.Log($"<color=teal>creo la BlockView [BlockFactory:{block.ID}] Assigning DB REFERENCES early for workspace block...</color>");
                 List<ConnectionModel> allConnections = block.GetConnections();
 
                 foreach (ConnectionModel conn in allConnections)
@@ -216,7 +216,7 @@ public class BlockFactory
                         conn.DBOpposite = dbOppositeRef;
                         conn.Hidden = (dbRef == null); 
 
-                        Debug.Log($"<color=teal>  - Assigned Refs for Conn: {ConnectionModel.GetConnectionModelID(conn)}. DB? {(conn.DB != null).ToString()}. DBOpposite? {(conn.DBOpposite != null).ToString()}. Hidden? {conn.Hidden.ToString()}</color>");
+                        Debug.Log($"<color=teal> en  BlockFactory BlockConnectionDB - Assigned Refs for Conn: {ConnectionModel.GetConnectionModelID(conn)}. DB? {(conn.DB != null).ToString()}. DBOpposite? {(conn.DBOpposite != null).ToString()}. Hidden? {conn.Hidden.ToString()}</color>");
 
                     }
                     else if (conn != null) 
@@ -359,12 +359,6 @@ public class BlockFactory
                 }
             }
         }
-
-        // REVISAR Procesar Mutator si en Scratch es necesario
-        // XElement mutationNode = xmlBlock.Element("mutation");
-        // block.Mutator?.FromXml(mutationNode); // El mutator aplica los cambios al bloque
-        // block.Reshape? - Mutator.FromXml debería manejarlo
-
         return block; 
     }
 

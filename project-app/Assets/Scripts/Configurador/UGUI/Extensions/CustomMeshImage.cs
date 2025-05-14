@@ -22,8 +22,7 @@ using UnityEngine.Sprites;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UBlockly.UGUI
-{
+
     public class CustomMeshImage : Image
     {
         /// <summary>
@@ -229,4 +228,4 @@ namespace UBlockly.UGUI
             return border;
         }
     }
-}
+

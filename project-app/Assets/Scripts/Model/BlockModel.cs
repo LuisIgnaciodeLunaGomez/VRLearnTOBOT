@@ -57,7 +57,6 @@ public class BlockModel : Observable<int>
     public ConnectionModel PreviousConnection { get; set; }
     public List<InputModel> InputList { get; protected set; }
     public Mutator Mutator { get; protected set; }
-
     public BlockModel ParentBlock { get; protected set; }
     public List<BlockModel> ChildBlocks = new List<BlockModel>();
 
@@ -212,15 +211,14 @@ public class BlockModel : Observable<int>
 
     }
 
-    // Sets the mutator for this block.  Called from BlockFractory, and can only be called once (for now).
-
+    /*
     public void SetMutator(Mutator mutator)
     {
         if (this.Mutator != null)
             throw new Exception("Cannot change mutators on a block.");
         this.Mutator = mutator;
         mutator.AttachToBlock(this);
-    }
+    }*/
 
     // updates the inputs and all connections with potentially new values,
     // changing the shape of the block. This method should only be called by the constructor, or Mutators.
@@ -343,19 +341,50 @@ public class BlockModel : Observable<int>
         }
 
         Debug.LogWarning($"[Unplug Block:{ID}] START. Prev Conn Source Before: {this.PreviousConnection?.SourceBlock?.ID ?? "NULL"}");
-        if (this.ParentBlock != null) { /* ... desconectar de padre ... */ }
+        if (this.ParentBlock != null) {
+
+            BlockModel oldHierarchicalParent = this.ParentBlock; // Guardamos referencia
+            InputModel parentInput = null; // El InputModel del oldHierarchicalParent donde estábamos conectados
+
+            // Encontrar el InputModel del oldHierarchicalParent al que estábamos conectados
+            foreach (InputModel input in oldHierarchicalParent.InputList)
+            {
+                if (input.Connection != null && input.Connection.TargetBlock == this)
+                {
+                    parentInput = input;
+                    break;
+                }
+            }
+
+            if (parentInput != null)
+            {
+                Debug.Log($"UnPlug: Block {ID} was in Input '{parentInput.Name}' of Parent {oldHierarchicalParent.ID}. Disconnecting from parent's input.");
+                parentInput.Connection.Disconnect(); // Desconectar la conexión del Input del padre
+            }
+            else
+            {
+               
+                Debug.LogWarning($"UnPlug: Block {ID} had ParentBlock {oldHierarchicalParent.ID}, but couldn't find which Input it was connected to.");
+            }
+
+            // Limpiar la referencia jerárquica de padre
+            if (oldHierarchicalParent.ChildBlocks.Contains(this)) // Asegurarse que estaba como hijo directo
+            {
+                oldHierarchicalParent.ChildBlocks.Remove(this);
+            }
+            this.ParentBlock = null;
+        }
         if (optHealStack && this.PreviousConnection?.TargetConnection != null)
         {
             Debug.LogWarning($" - Healing stack, disconnecting Prev from {ConnectionModel.GetConnectionModelID(this.PreviousConnection.TargetConnection)}");
-            this.PreviousConnection.Disconnect(); // ¿Esto modifica SourceBlock?
+            this.PreviousConnection.Disconnect(); 
         }
         if (this.NextConnection?.TargetConnection != null)
         {
             Debug.LogWarning($" - Disconnecting Next from {ConnectionModel.GetConnectionModelID(this.NextConnection.TargetConnection)}");
-            this.NextConnection.Disconnect(); // ¿Esto modifica SourceBlock?
-                                              // ... conectar sucesor ...
+            this.NextConnection.Disconnect(); 
         }
-        Debug.LogWarning($"[Unplug Block:{ID}] END. Prev Conn Source After: {this.PreviousConnection?.SourceBlock?.ID ?? "NULL"}"); // Verificar si cambió
+        Debug.LogWarning($"[Unplug Block:{ID}] END. Prev Conn Source After: {this.PreviousConnection?.SourceBlock?.ID ?? "NULL"}"); 
     }
 
     /// <summary>
@@ -570,38 +599,80 @@ public class BlockModel : Observable<int>
 
     public void SetParent(BlockModel newParent)
     {
-        if (newParent == ParentBlock)
+        BlockModel oldHierarchicalParent = this.ParentBlock; // El padre actual en el sentido de Input-Statement/Value
+
+        if (newParent == oldHierarchicalParent)
         {
+            // No hay cambio en el padre jerárquico.
             return;
         }
-        if (null != ParentBlock)
-        {
-            // Remove this block from the old parent's child list.
-            ParentBlock.ChildBlocks.Remove(this);
 
-            // Disconnect from superior blocks
-            if (null != this.PreviousConnection && this.PreviousConnection.IsConnected)
-            {
-                throw new Exception("Still connected to previous block.");
-            }
-            if (null != OutputConnection && this.OutputConnection.IsConnected)
-            {
-                throw new Exception("Still connected to parent block.");
-            }
-            this.ParentBlock = null;
-        
-        }
-        else
+        //   Desvincularse del CONTEXTO JERÁRQUICO antiguo 
+        if (oldHierarchicalParent != null)
         {
-            // Remove this block from the workspace's list of top-most blocks.
-            this.Workspace.RemoveTopBlock(this);
+            // Si tenía un padre jerárquico, quitarse de su lista de hijos.
+      
+            if (oldHierarchicalParent.ChildBlocks.Contains(this))
+            {
+                oldHierarchicalParent.ChildBlocks.Remove(this);
+            }
+        }
+        else // Si oldHierarchicalParent era null, significa que ESTE bloque era un TopBlock.
+        {
+            // Quitar de la lista de TopBlocks  porque su estado va a cambiar.
+            if (this.Workspace != null)
+            {
+                this.Workspace.RemoveTopBlock(this);
+            }
         }
 
+        // Validar y Establecer el NUEVO CONTEXTO 
+
+        // Establecer la referencia al nuevo padre jerárquico. Puede ser null.
         this.ParentBlock = newParent;
-        if (newParent != null)
-            newParent.ChildBlocks.Add(this);
-        else
-            this.Workspace.AddTopBlock(this);
+
+        if (newParent == null) // Se intenta hacer de este bloque un TopBlock
+        {
+            if (this.PreviousConnection != null && this.PreviousConnection.IsConnected)
+            {
+                // Revierte el ParentBlock si no puede ser TopBlock.
+                this.ParentBlock = oldHierarchicalParent; // Devolver al estado anterior
+                throw new Exception($"SetParent(null) FAILED: Block '{this.ID}' cannot be a TopBlock because its PreviousConnection is active (connected to {ConnectionModel.GetConnectionModelID(this.PreviousConnection.TargetConnection)}).");
+            }
+            if (this.OutputConnection != null && this.OutputConnection.IsConnected)
+            {
+                this.ParentBlock = oldHierarchicalParent;
+                throw new Exception($"SetParent(null) FAILED: Block '{this.ID}' cannot be a TopBlock because its OutputConnection is active (connected to {ConnectionModel.GetConnectionModelID(this.OutputConnection.TargetConnection)}).");
+            }
+
+            // Si pasó las validaciones, añadirlo a TopBlocks (si tiene workspace).
+            if (this.Workspace != null)
+            {
+                this.Workspace.AddTopBlock(this); 
+            }
+            Debug.Log($"SetParent: Block {this.ID} successfully set as TopBlock (ParentBlock is null).");
+        }
+        else // Se intenta asignar un newHierarchicalParent (no null)
+        {
+           
+            if (this.PreviousConnection != null && this.PreviousConnection.IsConnected)
+            {
+                this.ParentBlock = oldHierarchicalParent; // Revertir
+                throw new Exception($"SetParent({newParent.ID}) FAILED: Block '{this.ID}' cannot have a hierarchical parent while its PreviousConnection is active.");
+            }
+            if (this.OutputConnection != null && this.OutputConnection.IsConnected)
+            {
+                this.ParentBlock = oldHierarchicalParent; // Revertir
+                throw new Exception($"SetParent({newParent.ID}) FAILED: Block '{this.ID}' cannot have a hierarchical parent while its OutputConnection is active.");
+            }
+
+            // Si pasó las validaciones, añadirlo a la lista de hijos del nuevo padre jerárquico.
+            if (!newParent.ChildBlocks.Contains(this))
+            {
+                newParent.ChildBlocks.Add(this);
+            }
+            Debug.Log($"SetParent: Block {this.ID} successfully set parent to {newParent.ID}.");
+        }
     }
 
     /// <summary>

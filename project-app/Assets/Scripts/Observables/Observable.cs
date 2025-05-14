@@ -15,8 +15,6 @@
  */
 
 using System.Collections.Generic;
-
-
 public abstract class Observable<TArgs>
 {
     private readonly List<IObserver<TArgs>> mObservers = new List<IObserver<TArgs>>();

@@ -15,11 +15,10 @@
  */
 
 using UnityEngine;
-
 public class LineGroupView : BaseView
 {
     [SerializeField] private float m_ReservedStartX;
-
+    private RectTransform m_RectTransform;
     public override ViewType Type
     {
         get { return ViewType.LineGroup; }
@@ -199,5 +198,11 @@ public class LineGroupView : BaseView
             }
         }
         return size;
+    }
+
+    public  RectTransform GetRectTransform()
+    {
+        if (m_RectTransform == null) m_RectTransform = GetComponent<RectTransform>();
+        return m_RectTransform;
     }
 }//fin clase LineGroupView

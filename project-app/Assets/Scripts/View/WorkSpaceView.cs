@@ -10,7 +10,7 @@
  * Fecha: 22/02/2025
  * 
  * Versión: 2.0.0
- * 
+ * BindModel
  * Descripción:  proveer el RectTransform del m_codingArea y la referencia al Canvas / Camera
  */
 
@@ -33,6 +33,8 @@ public class WorkSpaceView : MonoBehaviour
     private Dictionary<string, BlockView> m_blockViews = new Dictionary<string, BlockView>();
     public Canvas RootCanvas { get; private set; }
     private RectTransform m_canvasRect;
+    private RectTransform m_blockContainer;
+    public RectTransform BlockContainer => m_blockContainer;
     public Camera EventCamera => RootCanvas?.worldCamera;
     public static WorkSpaceView Active {get; private set;}
 
@@ -49,8 +51,15 @@ public class WorkSpaceView : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        if (m_blockContainer == null)
+        {
+           
+            m_blockContainer = GetComponent<RectTransform>();
+           
+            //Debug.LogError("WorkSpaceView: m_blockContainer NO está asignado en el Inspector!", this.gameObject);
+        }
 
-      //  Debug.Log("WorkSpaceView: Awake starting...");
+        //  Debug.Log("WorkSpaceView: Awake starting...");
     }
 
     /**
@@ -71,7 +80,11 @@ public class WorkSpaceView : MonoBehaviour
             enabled = false;
             return;
         }
-        
+        else
+        {
+            Debug.Log($"WorkSpaceView ({gameObject.name}): RootCanvas IS '{RootCanvas.name}'. Mode: {RootCanvas.renderMode}. WorldCamera is {(RootCanvas.worldCamera == null ? "NULL" : RootCanvas.worldCamera.name)}", RootCanvas);
+        }
+
         m_canvasRect = RootCanvas.GetComponent<RectTransform>();
 
         m_codingArea = codingAreaRect;
@@ -297,41 +310,7 @@ public class WorkSpaceView : MonoBehaviour
 
     private BlockView m_BlockOverTrash = null;
 
-    /**
-     * Descripción: Verifica si un bloque está sobre el área de la papelera.
-     * @param blockView La BlockView que se quiere verificar.
-     */
-    public void CheckTrashBin(BlockView blockView)
-    {
-        bool isOver = false; 
-        if (TrashCanRect != null)
-        {
-            Vector3[] worldCorners = new Vector3[4];
-            TrashCanRect.GetWorldCorners(worldCorners);
-            Rect trashWorldRect = new Rect(worldCorners[0].x, worldCorners[0].y, worldCorners[2].x - worldCorners[0].x, worldCorners[2].y - worldCorners[0].y);
-            isOver = trashWorldRect.Contains(blockView.transform.position); 
-
-            HighlightTrashBin(isOver); 
-        }
-
-        m_BlockOverTrash = isOver ? blockView : null;
-    }
-
-    /**
-     * Descripción: Verifica si un bloque está sobre la papelera.
-     * @param blockView La BlockView que se quiere verificar.
-     * @return true si el bloque está sobre la papelera, false en caso contrario.
-     */
-    public bool IsOverTrashBin(BlockView blockView)
-    {
-        return m_BlockOverTrash == blockView; // Devuelve true si este bloque era el último sobre la papelera
-    }
-
-    /**
-     * Descripción: Resalta o desresalta la papelera visualmente.
-     * @param highlight true para resaltar, false para desresaltar.
-     */
-    public void HighlightTrashBin(bool highlight) { /*TODO*/}
+    
     public RectTransform TrashCanRect;
 
     #endregion
@@ -417,9 +396,9 @@ public class WorkSpaceView : MonoBehaviour
     public Vector2 VisualAnchoredPositionToLogicalXY(Vector2 visualAnchoredPos, RectTransform parent)
     {
        
-        Vector2 logicalPos = Vector2.zero; 
-        Debug.LogError("VisualAnchoredPositionToLogicalXY conversion logic NOT IMPLEMENTED YET!"); 
-        return logicalPos; 
+        //Vector2 logicalPos = Vector2.zero; 
+       // Debug.LogError("VisualAnchoredPositionToLogicalXY conversion logic NOT IMPLEMENTED YET!"); 
+        return visualAnchoredPos; 
     }
 } // Fin Clase WorkSpaceView
 
