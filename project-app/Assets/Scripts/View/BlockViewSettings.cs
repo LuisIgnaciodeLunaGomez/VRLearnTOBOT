@@ -165,8 +165,19 @@ public class BlockViewSettings : ScriptableObject
     [Header("Layout & Spacing")] 
     [Tooltip("Minimum width for any block, regardless of content size.")]
     public float MinBlockWidth = 60f;// Define el ancho mínimo absoluto que puede tener un bloque, sin importar cuán pequeño sea su contenido. Esto evita que los bloques se vean demasiado estrechos.
-   
-    
+   public float MinBlockHeight =100f;
+    [Tooltip("The visual horizontal width of the interlocking part of a statement connection (the 'teeth' or 'tab').")] 
+    public float StatementConnectorVisualWidth = 30f;
+
+    [Tooltip("Height of the actual interlocking part of a statement connection if different from NotchHeight/TabHeight. Often the same.")]
+    public float StatementConnectionHeight = 16f;
+    [Tooltip("Horizontal indentation for statement inputs (e.g., inside a loop block) and for Previous/Next connection points from the block edge.")] // NUEVA
+    public float StatementIndent = 20f;
+
+    [Tooltip("Default width and height for a block if its size cannot be determined otherwise. Used as a fallback.")] // NUEVA
+    public Vector2 DefaultBlockSize = new Vector2(100f, 30f);
+
+
     public float ContentHeight
     {
         get { return BlockHeight; }
