@@ -50,13 +50,14 @@ public abstract class BaseView : MonoBehaviour
  
     private BlockView m_CachedAncestorBlockView = null;
     private bool m_SearchingForBlockView = false;
+    public RectTransform M_ViewTransform_Para_Debug => m_ViewTransform;
 
     protected virtual void InitializeView()
     {
         m_ViewTransform = GetComponent<RectTransform>();
         if (m_ViewTransform == null)
         {
-            Debug.LogError($"BaseView: RectTransform not found on {gameObject.name}. Adding one.");
+             Logger.LogError($"BaseView ({gameObject.name}): RectTransform component is missing!", this.gameObject);
             m_ViewTransform = gameObject.AddComponent<RectTransform>();
             // Configuro anchors/pivot por defecto
             m_ViewTransform.anchorMin = new Vector2(0, 1);
@@ -95,10 +96,7 @@ public abstract class BaseView : MonoBehaviour
                
             }
         }
-
-      
     }
-
     
     /// <summary>
     /// Método interno para añadir un hijo a la lista m_ChildViews
@@ -135,6 +133,8 @@ public abstract class BaseView : MonoBehaviour
         {
             //Debug.Log($"BaseView ({gameObject.name}): Awake END. ViewTransform IS assigned.", this.gameObject); // Si está asignado
         }
+
+
     }
 
      /// <summary>
@@ -287,7 +287,6 @@ public abstract class BaseView : MonoBehaviour
         
         this.Size = CalculateSize(); 
 
-
         // 3. Posicionamiento recursivo de los hijos)
         if (HasChildren)
         {
@@ -323,11 +322,11 @@ public abstract class BaseView : MonoBehaviour
                 }
             }
         }
-
     }
    
     public void AddChild(BaseView childView, int index = -1)
     {
+        Debug.Log($"---> BaseView.AddChild on {this.gameObject.name} ({this.GetType()}). Received child: {childView?.name}. Target Visual Parent will be: {this.ViewTransform.name}");
         if (childView == null) return;
         if (childView == this) { Debug.LogError($"BaseView ({gameObject.name}): Cannot add self as child!"); return; }
         if (m_ChildViews.Contains(childView))
@@ -344,8 +343,10 @@ public abstract class BaseView : MonoBehaviour
         if (this.ViewTransform != null && childView.ViewTransform != null)
         {
            // Debug.Log($"  Setting visual parent of {childView.gameObject.name} to {this.gameObject.name}.", childView.gameObject);
-            childView.ViewTransform.SetParent(this.ViewTransform, false);
-         //   Debug.Log($"  New visual parent is: {childView.ViewTransform.parent.name}", childView.gameObject);
+            childView.ViewTransform.SetParent(this.ViewTransform, true /*false*/);
+
+
+           Debug.Log($"  New visual parent is: {childView.ViewTransform.parent.name}", childView.gameObject);
 
         }
         else

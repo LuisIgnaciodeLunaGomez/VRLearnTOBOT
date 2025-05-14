@@ -50,6 +50,9 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     private BlockModel m_DraggingBlockModel = null; //Modelo clon A
     private Vector2 m_ScreenSpaceDragOffset;
 
+    public BlockView DragginBlockView => m_DraggingBlockView; //Propiedad para acceder a la vista del bloque arrastrado
+
+    public BlockModel DraggingBlockModel => m_DraggingBlockModel; //Propiedad para acceder al modelo del bloque arrastrado
     private bool m_IsPotentialDrag = false; 
     private bool m_IsDragging = false;
 
@@ -552,9 +555,8 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         m_connectionController.ProcessDrag(m_DraggingBlockModel, dragginConnections, m_DraggingBlockModel.XY);
         
-        m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); //Revisar la lógica de la papelera ya que si no cae en CodingArea se debe de borrar, ahora mismo no se borra 
+       // m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); //Revisar la lógica de la papelera ya que si no cae en CodingArea se debe de borrar, ahora mismo no se borra 
     }
-
 
     public void HandleEndDrag(/*BlockView blockView,*/ PointerEventData eventData)
     {
@@ -567,53 +569,193 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             // m_IsPotentialDrag = false;
             Debug.LogWarning($"HandleEndDrag called, but controller was not in valid dragging state. IsDragging:{m_IsDragging}, DraggingView is null:{m_DraggingBlockView == null}. Just resetting.", this.gameObject);
             ResetDragState(eventData);
+            m_connectionController.ResetPotentialConnection(); //Reseto el controlador de conexion 
             return;
         }
-
-
      
         string blockId = m_DraggingBlockModel?.ID ?? "UNKNOWN";
 
         Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({m_DraggingBlockView.name} ) Pointer Screen Pos: {eventData.position}</color>");
-        //Debug.Log($"    Pointer Screen Pos: {eventData.position}");
 
         m_IsPotentialDrag = false;
 
-       // ConnectionModel finalTargetConnection = m_BestTargetConnection; // La conexión encontrada
-      //  ConnectionModel finalSourceConnection = m_SourceDragConnection; // La conexión que quería conectar
-        //bool overTrash = m_WorkspaceView.IsOverTrashBin(m_DraggingBlockView);
-        bool overCodingArea = IsPointerOverCodingArea(eventData);
-
-        //Debug.LogError($"HASHCODE_CHECK - HandleEndDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
-
-        bool actionHandled = m_connectionController.TryConnectAndPlace(m_DraggingBlockModel, m_WasTemplateClone, eventData.position);
-
-        //Debug.Log("<color=orange> - Now attempting to finalize placement/connection via BlockConnectionController...</color>");
-
-        
-        if (actionHandled && m_WasTemplateClone)
-        { // Solo si fue exitoso Y era un clon pendiente
-            //Debug.Log($"[HandleEndDrag] Clearing m_PendingCloneModel ({m_PendingCloneModel?.ID}) due to successful place/connect.");
-            m_PendingCloneModel = null; 
-        }
+        //Finalizar la búsqueda de conexión y obtener los candidatos.
+        m_connectionController.FinalizePotentialConnection();
+        ConnectionModel finalTargetStationaryModelConn;
+        ConnectionModel finalSourceDraggedModelConn;
+        bool canConnect = m_connectionController.GetFinalizedConnections(out finalTargetStationaryModelConn, out finalSourceDraggedModelConn);
 
         bool connected = false;
-        bool deleted = false;
         bool placedInWorkspace = false;
+        bool deleted = false;
 
-         if (!connected && !deleted && !overCodingArea) 
-         {
-             deleted = true; 
-             Debug.Log($"<color=orange>... Dropped OUTSIDE Coding Area (Over Toolbox? Left Panel? Off screen?). Invalid drop.</color>");
-            m_DraggingBlockView.Dispose();
-            m_DraggingBlockModel.Dispose();
+        if (canConnect)
+        {
+            Debug.Log($"<color=lime>BlockDragController: Potential connection found!</color> Attempting to connect DRAGGED: {ConnectionModel.GetConnectionModelID(finalSourceDraggedModelConn)} -> STATIONARY: {ConnectionModel.GetConnectionModelID(finalTargetStationaryModelConn)}");
 
-             HandleInvalidDrop(); 
-         }
+            ConnectionModel superiorConn, inferiorConn;
 
-       // Debug.Log($"BlockDragController: Action Handled? {actionHandled}");
+            // finalSourceDraggedModelConn es del bloque arrastrado
+            // finalTargetStationaryModelConn es del bloque estacionario
 
-        CleanUpAfterDrag(placedInWorkspace, eventData);
+            if (finalSourceDraggedModelConn.IsSuperior) // El conector del bloque ARRASTRADO es "hembra" (Next o Input)
+            {
+                // Por lo tanto, el conector del bloque ARRASTRADO debe ser el SUPERIOR
+                superiorConn = finalSourceDraggedModelConn;
+                inferiorConn = finalTargetStationaryModelConn; // Y el ESTACIONARIO el INFERIOR (Prev o Output)
+                                                               // Log.Log($"   Case 1: Dragged is Superior ({superiorConn.Type}). Stationary is Inferior ({inferiorConn.Type}).");
+            }
+            else // El conector del bloque ARRASTRADO es "macho" (Prev o Output)
+            {
+                // Por lo tanto, el conector del bloque ESTACIONARIO debe ser el SUPERIOR (Next o Input)
+                superiorConn = finalTargetStationaryModelConn;
+                inferiorConn = finalSourceDraggedModelConn;   // Y el ARRASTRADO el INFERIOR
+                                                              // Logger.Log($"   Case 2: Dragged is Inferior ({inferiorConn.Type}). Stationary is Superior ({superiorConn.Type}).");
+            }
+
+            // Comprobación de compatibilidad de tipos antes de conectar
+            // Aquí definimos cómo chequear si son Statement o Value basándonos en el enum EConnection
+            bool superiorIsStatement = superiorConn.Type == EConnection.NextStatement || superiorConn.Type == EConnection.PrevStatement;
+            bool inferiorIsStatement = inferiorConn.Type == EConnection.NextStatement || inferiorConn.Type == EConnection.PrevStatement;
+
+            bool superiorIsValue = superiorConn.Type == EConnection.InputValue || superiorConn.Type == EConnection.OutputValue;
+            bool inferiorIsValue = inferiorConn.Type == EConnection.InputValue || inferiorConn.Type == EConnection.OutputValue;
+
+            bool typesAreCompatible =
+                (superiorIsStatement && inferiorIsStatement) ||
+                (superiorIsValue && inferiorIsValue);
+
+            if (!typesAreCompatible)
+            {
+                Logger.LogError($"<color=red>BlockDragController: CONNECTION TYPE MISMATCH! Cannot connect Superior {superiorConn.Type} (ID: {ConnectionModel.GetConnectionModelID(superiorConn)}) to Inferior {inferiorConn.Type} (ID: {ConnectionModel.GetConnectionModelID(inferiorConn)}).</color>");
+                canConnect = false; // Anular la conexión
+            }
+            else
+            {
+                // Logger.Log($"<color=magenta>BlockDragController: Calling Connect - Superior: {ConnectionModel.GetConnectionModelID(superiorConn)} ({superiorConn.SourceBlock.Id}) ---> Inferior: {ConnectionModel.GetConnectionModelID(inferiorConn)} ({inferiorConn.SourceBlock.Id})</color>");
+                try
+                {
+                    // Ejecutar la conexión a NIVEL DE MODELO: El SUPERIOR llama a Connect con el INFERIOR
+                    superiorConn.Connect(inferiorConn); // Esto debería disparar eventos que ConnectionView escuchará
+                    connected = true;
+                    placedInWorkspace = true; // Si se conecta, está en el workspace
+
+                    Debug.Log($"  <color=green>MODEL Connection SUCCESSFUL.</color> ParentBlock of DraggingBlock ({m_DraggingBlockModel.ID}) is now: {m_DraggingBlockModel.ParentBlock?.ID ?? "NULL"}. OutputConnection Target: {m_DraggingBlockModel.OutputConnection?.TargetBlock?.ID ?? "NULL"}. PrevConnection Target: {m_DraggingBlockModel.PreviousConnection?.TargetBlock?.ID ?? "NULL"}", m_DraggingBlockView.gameObject);
+
+                    if (m_WasTemplateClone)
+                    {
+                        Debug.Log($"BlockDragController: Confirming add for template clone {m_DraggingBlockModel.ID} due to successful connection.");
+                        m_workspaceController.EnsureBlockRegistered(m_DraggingBlockModel);
+                        m_PendingCloneModel = null;
+                        Debug.Log($"BlockDragController: Template clone {m_DraggingBlockModel.ID} successfully CONNECTED. Ensured registration.", m_DraggingBlockView.gameObject);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"<color=red>BlockDragController: MODEL Connect FAILED:</color> {e.ToString()}");
+                    connected = false;
+                  
+                }
+            }
+        }
+
+        //Si no se conectó, intentar colocar en el workspace o manejar el descarte.
+        if (!connected)
+        {
+            bool isValidDropPlacement = m_connectionController.HandleDropPlacement(m_DraggingBlockModel, m_WasTemplateClone, eventData.position, this);
+
+            if (isValidDropPlacement)
+            {
+                Debug.Log($"<color=yellow>BlockDragController: Block {blockId} placed freely in CodingArea.</color>");
+                
+                m_DraggingBlockView.transform.SetParent(m_CodingAreaRect, true); // worldPositionStays = true
+
+                if (m_DraggingBlockModel.ParentBlock != null)
+                {
+                    Debug.LogError("BlockDragController: Freely dropped block still has a ParentBlock. This shouldn't happen here.");
+                }
+
+                if (m_DraggingBlockModel.PreviousConnection != null && m_DraggingBlockModel.PreviousConnection.IsConnected)
+                {
+                    Debug.LogError("BlockDragController: Freely dropped block still has PrevConnection connected.");
+                    m_DraggingBlockModel.PreviousConnection.Disconnect();
+                }
+
+                RectTransform draggingBlockRect = m_DraggingBlockView.GetRectTransform();
+                RectTransform codingAreaRect = m_WorkspaceView.CodingArea;
+
+                // Convertir la posición actual del puntero (más el offset) a la local del CodingArea
+                Vector2 finalPointerScreenPos = eventData.position;
+                Vector2 desiredScreenPos = finalPointerScreenPos + m_ScreenSpaceDragOffset;
+                Vector2 newAnchoredPos = draggingBlockRect.anchoredPosition; ;//= ScreenPosToLocalPosInTarget(desiredScreenPos, m_CodingAreaRect);
+                if (ScreenPosToLocalPosInTarget(desiredScreenPos, m_CodingAreaRect, out newAnchoredPos))
+                {
+                    m_DraggingBlockView.XY = newAnchoredPos;
+                    m_DraggingBlockModel.XY = m_WorkspaceView.VisualAnchoredPositionToLogicalXY(newAnchoredPos,  codingAreaRect);
+
+                    m_DraggingBlockModel.UnPlug();
+
+                    placedInWorkspace = true;
+                    if (m_WasTemplateClone)
+                    {
+                        m_workspaceController.ConfirmAddBlock(m_DraggingBlockModel); 
+                        m_PendingCloneModel = null;
+                        Debug.Log($"BlockDragController: Template clone {m_DraggingBlockModel.ID} placed FREELY. Confirmed as TopBlock.", m_DraggingBlockView.gameObject);
+
+                    }
+                    // Para bloques existentes, su modelo XY se actualizó. Su vista está posicionada.
+                }
+            }
+            else // no en un área de drop válida ( fuera del CodingArea)
+            {
+                if (m_DraggingBlockModel != null)
+                {
+                    if (m_WasTemplateClone)
+                    {
+                        // Si es un clon de la toolbox, lo destruimos completamente.
+                        if (m_DraggingBlockView != null && m_DraggingBlockView.gameObject != null)
+                        {
+                            m_DraggingBlockView.Dispose(); 
+                        }
+                        m_DraggingBlockModel.Dispose(false); // Limpia el modelo.
+                        Debug.Log($"   Template clone '{blockId}' destroyed (invalid drop).");
+                    }
+                    else
+                    {
+                   
+                        m_workspaceController.RequestDeleteBlock(m_DraggingBlockModel);
+                        Debug.Log($"   Existing block '{blockId}' requested for deletion (invalid drop).");
+                        // Destruir la instancia visual que estaba en el drag layer
+                        if (m_DraggingBlockView != null && m_DraggingBlockView.gameObject != null)
+                        {
+                                   Destroy(m_DraggingBlockView.gameObject); // Destruye el objeto visual que se estaba arrastrando.
+                        }
+                    }
+                }
+                //this.gameObject.SetActive(false);
+
+                //  }
+            }
+        }
+
+        //Limpieza final del estado de arrastre.
+        CleanUpAfterDrag(placedInWorkspace || connected, eventData); // Si se colocó o conectó, es un éxito para cleanup.
+
+        if (m_WasTemplateClone && (deleted || (!placedInWorkspace && !connected)))
+        {
+            // Si era un clon y fue borrado o no colocado/conectado, asegurar -> pendingClone se limpia
+            if (m_PendingCloneModel != null)
+            {
+                Debug.Log($"[HandleEndDrag] Clearing m_PendingCloneModel ({m_PendingCloneModel?.ID}) after unsuccessful drop of template.");
+              
+                m_workspaceController.CancelPendingClone(m_PendingCloneModel);
+                m_PendingCloneModel = null;
+            }
+        }
+
+        // Controlador de conexión esté completamente reseteado para el próximo drag
+        m_connectionController.ResetPotentialConnection();
+
 
     }
 
@@ -658,21 +800,60 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     /// </summary>
     private void HandleInvalidDrop()
     {
-        if (m_WasTemplateClone)
+        if (m_DraggingBlockModel == null) // Seguridad, aunque no debería pasar si se llama desde HandleEndDrag con un drag activo
         {
-            Debug.Log("   Cancelling pending clone (Dropped outside valid area).");
-            if (m_DraggingBlockModel != null)
-            {
-                Debug.Log($"   Disposing cancelled clone model: {m_DraggingBlockModel.ID}");
-                m_DraggingBlockModel.Dispose(false);
-            }
-            else
-            {
+            Debug.LogWarning("HandleInvalidDrop called with null m_DraggingBlockModel.");
+            return;
+        }
 
-                Debug.Log($"   Requesting deletion of existing block (Dropped outside): {m_DraggingBlockModel.ID}");
+        string blockId = m_DraggingBlockModel.ID; // Para logs
+
+        if (m_WasTemplateClone) // Si el bloque arrastrado era un clon de la toolbox
+        {
+            Debug.Log($"HandleInvalidDrop: Template clone '{blockId}' dropped in invalid location. Destroying.");
+
+            //  Destruir el GameObject de la BlockView (el clon visual)
+            if (m_DraggingBlockView != null && m_DraggingBlockView.gameObject != null)
+            {
+                
+                m_DraggingBlockView.Dispose();
+             
+                // Destroy(m_DraggingBlockView.gameObject);
+                // Debug.Log($"   Destroyed BlockView GameObject for template clone '{blockId}'.");
+            }
+
+            // Limpiar/disponer el BlockModel (el clon de datos)
+        
+            m_DraggingBlockModel.Dispose(false); // `false` podría significar no intentar añadir a pila de undo si la tienes.
+            Debug.Log($"   Disposed BlockModel for template clone '{blockId}'.");
+        }
+        else // Si era un bloque existente del workspace que se sacó y se soltó mal
+        {
+            Debug.Log($"HandleInvalidDrop: Existing block '{blockId}' dropped in invalid location. Returning to original state/position (o manejar de otra forma).");
+
+            // Opción A: Devolver el bloque a su última posición válida en el workspace
+
+            if (m_DraggingBlockView != null && m_DraggingBlockView.gameObject != null)
+            {
+                Debug.LogWarning($"  Existing block '{blockId}' dropped invalidly. Attempting to 'hide' its view and let model persist. Consider definitive action.");
+                // m_DraggingBlockView.gameObject.SetActive(false);
+
+                m_workspaceController.RequestDeleteBlock(m_DraggingBlockModel);
+                // m_DraggingBlockView.Dispose() se llamará cuando el Workspace elimine el modelo y su vista.
+                Debug.Log($"   Requested deletion of existing block '{blockId}'.");
+            }
+            else if (m_DraggingBlockModel != null) // Si solo tenemos modelo
+            {
+                Debug.LogWarning($"   Existing model '{blockId}' dropped invalidly (no view?). Requesting deletion.");
                 m_workspaceController.RequestDeleteBlock(m_DraggingBlockModel);
             }
         }
+
+        // Importante: Como estamos manejando m_DraggingBlockView/Model directamente aquí,
+        // ResetDragState (llamado después en HandleEndDrag) no intentará acceder a
+        // un m_DraggingBlockView que ya podría estar destruido.
+        // Pero es bueno nulificar las referencias en ResetDragState de todas formas.
+
     }
 
     /// <summary>
@@ -778,41 +959,6 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         }
     }
 
-    /// <summary>
-    /// Actualiza el estado visual del resaltado de conexiones.
-    /// </summary>
-   /* private void UpdateHighlighting(ConnectionModel oldBestTarget)
-    {
-        if (oldBestTarget != m_BestTargetConnection) 
-        {
-            if (oldBestTarget != null)
-            {
-                ConnectionView oldView = m_WorkspaceView?.GetConnectionView(oldBestTarget);
-                oldView?.Highlight(false);
-            }
-
-            if (m_HighlightedTargetView != null /*&& m_HighlightedTargetView.Model != m_BestTargetConnection*//*)
-            {
-                m_HighlightedTargetView.Highlight(false); 
-                m_HighlightedTargetView = null;
-            }
-
-            if (m_BestTargetConnection != null)
-            {
-                ConnectionView newView = m_WorkspaceView?.GetConnectionView(m_BestTargetConnection);
-                if (newView != null)
-                {
-                    HighlightConnection(newView); 
-                }
-                else
-                {
-                    m_HighlightedTargetView = null; 
-                    Debug.LogWarning($"Could not find ConnectionView for BestTargetConnection: {m_BestTargetConnection.SourceBlock.Type}:{m_BestTargetConnection.Type}");
-                }
-            }
-        }
-    }*/
-
     public void OnDragBlock(PointerEventData eventData)
     {
         if (!m_IsDragging || m_DraggingBlockView == null) return;
@@ -834,7 +980,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
        // ConnectionModel oldBestTarget = m_BestTargetConnection;
         //FindBestConnection(currentLogicalPos);
      //   UpdateHighlighting(oldBestTarget);
-        m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); 
+       // m_WorkspaceView?.CheckTrashBin(m_DraggingBlockView); 
     }
 
     public void OnEndBlockDrag(PointerEventData eventData)
@@ -846,7 +992,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             return;
         }
 
-        //  Guardar estado necesario ANTES de ResetDragState 
+        //  Guardar estado necesario antes de ResetDragState 
         string blockId = m_DraggingBlockModel?.ID ?? "UNKNOWN";
         string viewNameA = m_DraggingBlockView.name;
         BlockView blockToPlaceOrConnect = m_DraggingBlockView; // Clon A
@@ -872,7 +1018,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             Vector2 finalLocalPosInCodingArea;
             if (ScreenPosToLocalPosInTarget(finalTargetPivotScreenPos, m_CodingAreaRect, out finalLocalPosInCodingArea))
             {
-                // Reparentar (si no lo hizo conexión fallida) y Posicionar
+                // Reparentar y Posicionar
                 if (blockToPlaceOrConnect.transform.parent != m_CodingAreaRect)
                 {
                     blockToPlaceOrConnect.transform.SetParent(m_CodingAreaRect, true);
@@ -883,7 +1029,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
                 // Actualizar Modelo
                 HandleValidWorkspaceDrop(modelToUpdate, finalLocalPosInCodingArea, wasClone); // Pasar flag
-            } // else { log error de posicionamiento }
+            } 
         }
 
         //  Drop Inválido
@@ -1057,7 +1203,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         rect.pivot = new Vector2(0f, 1f);
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.localScale = new Vector2(0.5f, 0.5f); // Asegurar escala unitaria también
+        rect.localScale = new Vector2(0.5f, 0.5f); 
         // Debug.Log($"   ... Set Pivot={rect.pivot}, Anchors Min={rect.anchorMin}, Max={rect.anchorMax}, Scale={rect.localScale}");
     }
 
@@ -1085,6 +1231,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         // Encontrar la esquina inferior izquierda local (relativa al pivot)
         float localMinX = rect.x;
         float localMinY = rect.y;
+
         // Calcular la posición dentro del rect basada en el punto normalizado
         float localX = localMinX + rect.width * normalizedPoint.x;
         float localY = localMinY + rect.height * normalizedPoint.y;

@@ -25,7 +25,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
 
 public class WorkspaceController : MonoBehaviour
 {
@@ -83,7 +82,7 @@ public class WorkspaceController : MonoBehaviour
 
         ublocklyBlock.SetParent(null); 
 
-        Debug.Log($"WorkspaceController: Confirmed and added BlockModel {ublocklyBlock.ID} to UBlockly Workspace TopBlocks.");
+        Debug.Log($"WorkspaceController: Confirmed and added BlockModel {ublocklyBlock.ID} to Workspace TopBlocks.");
 
         if (IsReadOnly() || m_WorkspaceModel == null || potentialBlock == null)
         {
@@ -182,7 +181,7 @@ public class WorkspaceController : MonoBehaviour
         return true;
     }
 
-      public BlockModel RequestCloneBlockBegin(BlockModel templateModelSource, Vector2 initialPosition) 
+     public BlockModel RequestCloneBlockBegin(BlockModel templateModelSource, Vector2 initialPosition) 
     {
         if (IsReadOnly() || templateModelSource == null || m_WorkspaceModel == null) return null;
 
@@ -194,8 +193,14 @@ public class WorkspaceController : MonoBehaviour
 
         if (clonedModel != null)
         {
-            m_WorkspaceModel.RemoveTopBlock(clonedModel);
-       BlockDragController.Instance?.RegisterPendingClone(clonedModel); 
+            bool wasInTopBlocks = m_WorkspaceModel.TopBlocks.Contains(clonedModel); // Compruebo antes de intentar quitar
+            if (wasInTopBlocks)
+            {
+                m_WorkspaceModel.RemoveTopBlock(clonedModel);
+                Debug.Log($"<color=teal>WorkSpaceController - RequestCloneBlockBegin: clonedModel {clonedModel.ID} was in TopBlocks and was removed to make it pending.");
+            }
+            BlockDragController.Instance?.RegisterPendingClone(clonedModel); 
+
           //  Debug.Log($"WorkspaceController: Created Pending Clone {clonedModel.ID}");
         }
         return clonedModel;
@@ -214,6 +219,45 @@ public class WorkspaceController : MonoBehaviour
         }
     }
 
+    public void EnsureBlockRegistered(BlockModel block)
+    {
+        if (block == null || m_WorkspaceModel == null) return;
+
+        // Asegurarse de que está en el BlockDB
+        if (!m_WorkspaceModel.BlockDB.ContainsKey(block.ID))
+        {
+            // Esto normalmente no debería pasar si BlockFactory lo hizo,
+            // pero es una salvaguarda.
+            m_WorkspaceModel.BlockDB.Add(block.ID, block);
+            Debug.LogWarning($"EnsureBlockRegistered: Block {block.ID} was not in BlockDB. Added.", this.gameObject);
+        }
+
+        // Si NO tiene un ParentBlock LÓGICO (a través de una conexión Statement o ValueInput de otro bloque)
+        // Y NO tiene una conexión de salida (Output o Previous) que lo vincule "hacia arriba"
+        // ENTONCES sí debe ser un TopBlock.
+        if (block.ParentBlock == null &&
+            (block.OutputConnection == null || !block.OutputConnection.IsConnected) &&
+            (block.PreviousConnection == null || !block.PreviousConnection.IsConnected))
+        {
+            if (!m_WorkspaceModel.TopBlocks.Contains(block))
+            {
+                m_WorkspaceModel.AddTopBlock(block); // Usa el método existente para añadir a TopBlocks
+                Debug.Log($"EnsureBlockRegistered: Block {block.ID} added to TopBlocks.", this.gameObject);
+            }
+        }
+        else
+        {
+            // Si tiene un padre o una conexión "hacia arriba", asegurarse de que NO esté en TopBlocks.
+            if (m_WorkspaceModel.TopBlocks.Contains(block))
+            {
+                m_WorkspaceModel.RemoveTopBlock(block);
+                Debug.LogWarning($"EnsureBlockRegistered: Block {block.ID} has a parent/superior connection but was in TopBlocks. Removed.", this.gameObject);
+            }
+        }
+        // Llama a OnXYUpdated en la vista para registrar conexiones en DBs si es necesario
+        BlockView view = m_WorkspaceView?.GetBlockView(block);
+        view?.OnXYUpdated(); // Fuerza la sincronización Location<->View y adición a DB si es Visible/!Hidden/!Conectado
+    }
 
     public void RequestLoadWorkspace()
     {
@@ -511,5 +555,15 @@ public class WorkspaceController : MonoBehaviour
     }
 
     #endregion
+
+    public void CancelPendingClone(BlockModel pendingCloneModel)
+    {
+        if (pendingCloneModel == null) return;
+
+        Debug.Log($"WorkspaceController.CancelPendingClone: Called for block {pendingCloneModel.ID} ({pendingCloneModel.Type}).");
+      
+        pendingCloneModel.Dispose(false); 
+
+    }
 
 }//fin WorkSpaceController

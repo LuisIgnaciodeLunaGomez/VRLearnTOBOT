@@ -12,7 +12,6 @@
  * Versión: 1.0.0
  * 
  * Descripción:  Define los eventos que puede disparar una conexión
-
  */
 
 using System;
@@ -216,84 +215,186 @@ public class ConnectionModel : Observable<UpdateState>
     /// <param name="childConnection"></param>
     private void ConnectInternal(ConnectionModel childConnection)
     {
-        var parentConnection = this;
-        var parentBlock = parentConnection.SourceBlock; //superior block
-        var childBlock = childConnection.SourceBlock; //inferior block
+
+        var parentConnection = this; 
+        var parentBlock = parentConnection.SourceBlock;
+        var childBlock = childConnection.SourceBlock;
+
+        if (parentBlock == null || childBlock == null)
+        {
+            Debug.LogError($"ConnectInternal ABORTED: ParentBlock ({parentBlock?.ID ?? "NULL"}) or ChildBlock ({childBlock?.ID ?? "NULL"}) is null. ParentConn: {GetConnectionModelID(parentConnection)}, ChildConn: {GetConnectionModelID(childConnection)}");
+            if (childConnection.IsConnected) childConnection.Disconnect();
+            return;
+        }
 
         if (childConnection.IsConnected)
+        {
+            Debug.Log($"<color=orange>ConnectInternal ({GetConnectionModelID(parentConnection)} to {GetConnectionModelID(childConnection)})</color>: Child connection ({GetConnectionModelID(childConnection)}) is already connected to ({GetConnectionModelID(childConnection.TargetConnection)}). Disconnecting it first.");
             childConnection.Disconnect();
+        }
 
-        
+        // Lógica para manejar si 'parentConnection' ya estaba conectada (manejo de orphanBlock)
         if (parentConnection.IsConnected)
         {
+           
             BlockModel orphanBlock = parentConnection.TargetBlock;
             XmlNode shadowDom = parentConnection.ShadowDom;
-            parentConnection.ShadowDom = null;
+            parentConnection.ShadowDom = null; // Clear shadow before potential disconnect
 
-            if (orphanBlock.IsShadow)
+            Debug.Log($"<color=orange>ConnectInternal ({GetConnectionModelID(parentConnection)} to {GetConnectionModelID(childConnection)})</color>: Parent connection ({GetConnectionModelID(parentConnection)}) is already connected to ({GetConnectionModelID(parentConnection.TargetConnection)}). Managing orphan...");
+
+            // Guardamos la conexión del bloque huérfano ANTES de llamar a Disconnect en parentConnection
+            ConnectionModel orphanBlockMainConnection = null;
+            if (orphanBlock != null) 
             {
-                shadowDom = Xml.BlockToDom(orphanBlock);
-                orphanBlock.Dispose();
-                orphanBlock = null;
+                orphanBlockMainConnection = orphanBlock.IsShadow ? null : 
+                                          (parentConnection.Type == EConnection.InputValue ? orphanBlock.OutputConnection :
+                                          (parentConnection.Type == EConnection.NextStatement ? orphanBlock.PreviousConnection : null));
             }
-            else if (parentConnection.Type == EConnection.InputValue)
-            {
-                if (orphanBlock.OutputConnection == null)
-                    throw new Exception("Orphan block does not have an output connection.");
 
+            if (orphanBlock != null) // Si había un TargetBlock previo
+            {
+                if (orphanBlock.IsShadow)
+                {
+                    // Los shadow blocks simplemente se eliminan, no se reinsertan
+                    Debug.Log($"  Orphan ({orphanBlock.ID}) is shadow. Disposing it.");
+                    shadowDom = Xml.BlockToDom(orphanBlock); 
+                    orphanBlock.Dispose();
+                    orphanBlock = null; // Ya no hay huérfano
+                }
+                else if (parentConnection.Type == EConnection.InputValue)
+                {
+            
+                    if (orphanBlock.OutputConnection == null)
+                        throw new Exception($"Orphan block {orphanBlock.ID} does not have an output connection (was in InputValue).");
+
+                    ConnectionModel connectionTargetForOrphan = ConnectionModel.LastConnectionInRow(childBlock, orphanBlock);
+                    if (connectionTargetForOrphan != null && connectionTargetForOrphan.SourceBlock != parentBlock /*evitar auto-conexión al input del padre otra vez*/)
+                    {
+                        Debug.Log($"  Reconnecting orphan ({orphanBlock.ID}) to last valid input connection of child chain ({GetConnectionModelID(connectionTargetForOrphan)}).");
+                        orphanBlock.OutputConnection.Connect(connectionTargetForOrphan);
+                        orphanBlock = null; // Huérfano reconectado
+                    }
+                }
+                else if (parentConnection.Type == EConnection.NextStatement)
+                {
              
-                var connection = ConnectionModel.LastConnectionInRow(childBlock, orphanBlock);
-                if (connection != null)
-                {
-                    orphanBlock.OutputConnection.Connect(connection);
-                    orphanBlock = null;
-                }
-            }
-            else if (parentConnection.Type == EConnection.NextStatement)
-            {
-               
-                if (orphanBlock.PreviousConnection == null)
-                    throw new Exception("Orphan block does not have a previous connection.");
+                    if (orphanBlock.PreviousConnection == null)
+                        throw new Exception($"Orphan block {orphanBlock.ID} does not have a previous connection (was in NextStatement).");
 
-               
-                var newBlock = childBlock;
-                while (newBlock.NextConnection != null)
-                {
-                    var nextBlock = newBlock.NextBlock;
-                    if (nextBlock != null && !nextBlock.IsShadow)
+                    BlockModel lastInChildChain = childBlock;
+                    while (lastInChildChain.NextConnection != null && lastInChildChain.NextBlock != null && !lastInChildChain.NextBlock.IsShadow)
                     {
-                        newBlock = nextBlock;
+                        lastInChildChain = lastInChildChain.NextBlock;
                     }
-                    else
+                    // lastInChildChain es ahora el último bloque no-shadow en la cadena que empieza con childBlock
+
+                    if (lastInChildChain.NextConnection != null && orphanBlock.PreviousConnection.CheckType(lastInChildChain.NextConnection))
                     {
-                        if (orphanBlock.PreviousConnection.CheckType(newBlock.NextConnection))
-                        {
-                            newBlock.NextConnection.Connect(orphanBlock.PreviousConnection);
-                            orphanBlock = null;
-                        }
-                        break;
+                        // El Next del último de la cadena del hijo es compatible con el Prev del huérfano.
+                        Debug.Log($"  Reconnecting orphan ({orphanBlock.ID}) to NextConnection of last in child chain ({GetConnectionModelID(lastInChildChain.NextConnection)}).");
+                        lastInChildChain.NextConnection.Connect(orphanBlock.PreviousConnection); // Esto es conceptualmente Prev.Connect(Next), entonces orphan se vuelve el hijo del Next.
+                        orphanBlock = null; // Huérfano reconectado
                     }
                 }
             }
 
+            // Si después de intentar reinsertar el orphanBlock, sigue existiendo (no se pudo reconectar)
             if (orphanBlock != null)
             {
-                // Unable to reattach orphan.
-                parentConnection.Disconnect();
-                ConnectionModel orphanBlockCon = orphanBlock.OutputConnection != null ? orphanBlock.OutputConnection : orphanBlock.PreviousConnection;
-                orphanBlockCon.FireUpdate(UpdateState.BumpedAway);
-            }
+                Debug.LogWarning($"<color=orange>ConnectInternal:</color> Orphan block ({orphanBlock.ID}) from parent ({GetConnectionModelID(parentConnection)}) could not be reattached. Disconnecting it and bumping.");
+        
+                // Desconectar formalmente 'parentConnection' de 'orphanBlock' (SI TODAVÍA ESTÁN CONECTADOS)
+                if (orphanBlock != null && orphanBlock != childConnection.SourceBlock)
+                {
+                    Debug.Log($"<color=orange>ConnectInternal:</color> parentConnection ({GetConnectionModelID(this)}) was connected to orphan ({orphanBlock.ID}). Now connecting to child ({childConnection.SourceBlock.ID}). Handling orphan...");
+                    parentConnection.Disconnect(); 
+                }
+                else
+                {
+                    Debug.Log("Parent conn was already not pointing to orphan. No formal disconnect needed for parent->orphan.");
+                }
 
-            // Restore the shadow DOM.
+
+                ConnectionModel orphanBlockConToBump = orphanBlock.OutputConnection ?? orphanBlock.PreviousConnection;
+                if (orphanBlockConToBump != null)
+                {
+                    orphanBlockConToBump.FireUpdate(UpdateState.BumpedAway); // El orphanblock simplemente se "cae".
+                }
+
+            }
+            // Restaurar el shadow DOM original del parentConnection si no hay orphanBlock O si se manejó de otra forma.
+            // Si hay un nuevo shadow a conectar, esto se sobrescribirá.
             parentConnection.ShadowDom = shadowDom;
         }
 
-        // Establish the connections.
+        // Establecer las conexiones recíprocas
         ConnectionModel.ConnectReciprocally(parentConnection, childConnection);
-        // Demote the inferior block so that one is a child of the superior one.
-        childBlock.SetParent(parentBlock);
+        Debug.Log($"<color=lightblue>ConnectInternal Post-Reciprocal:</color> Parent: {GetConnectionModelID(parentConnection)} -> Target: {GetConnectionModelID(parentConnection.TargetConnection)}. Child: {GetConnectionModelID(childConnection)} -> Target: {GetConnectionModelID(childConnection.TargetConnection)}.");
 
-        FireUpdate(UpdateState.Connected);
+        // Configurar el parentesco jerárquico SOLO SI CORRESPONDE
+        bool setHierarchicalParent = false;
+        if (parentConnection.Input != null &&
+            parentConnection.Input.Type == EConnection.InputValue && // El InputModel al que pertenece esta conexión es para Valores
+             parentConnection.Type == EConnection.InputValue &&       // La propia conexión del hueco es de tipo InputValue
+            childConnection.Type == EConnection.OutputValue)         // Y el hijo se conecta con su OutputValue
+        {
+            setHierarchicalParent = true;
+            Debug.Log($"  ConnectInternal: Hierarchical Parent (VALUE). Child OutputValue '{childBlock.ID}' INTO Parent InputValue '{parentConnection.Input.Name}' of '{parentBlock.ID}'.");
+        }
+        else if (parentConnection.Input != null &&
+               parentConnection.Input.Type == EConnection.NextStatement &&
+               childConnection.Type == EConnection.PrevStatement)
+        {
+           
+            setHierarchicalParent = true;
+            Debug.Log($"  ConnectInternal: Hierarchical Parent (STATEMENT). Child PrevStatement '{childBlock.ID}' INTO Parent StatementInput '{parentConnection.Input.Name}' of '{parentBlock.ID}'. parentConnection.Type was {parentConnection.Type}");
+        }
+
+        if (setHierarchicalParent)
+        {
+            try
+            {
+                Debug.Log($"  Attempting childBlock.SetParent(parentBlock). Child: {childBlock.ID} (PrevConn Connected: {childBlock.PreviousConnection?.IsConnected ?? false}, OutputConn Connected: {childBlock.OutputConnection?.IsConnected ?? false}), Parent: {parentBlock.ID}");
+                childBlock.SetParent(parentBlock);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"  ERROR during childBlock.SetParent(parentBlock) in ConnectInternal! Child: {childBlock.ID}, Parent: {parentBlock.ID}. Exception: {e.Message}\nReverting connection...");
+                // REVERTIR LA CONEXIÓN SI SetParent FALLA CRÍTICAMENTE
+                ConnectionModel.DisconnectReciprocally(parentConnection, childConnection);
+                throw; // Re-lanzar para que la operación de drag/conexión general falle
+            }
+        }
+        else if (parentConnection.Type == EConnection.NextStatement && childConnection.Type == EConnection.PrevStatement)
+        {
+            //if (childBlock.ParentBlock != null && (childConnection.Type == EConnection.PrevStatement || childConnection.Type == EConnection.OutputValue))
+            if (childBlock.ParentBlock != null && childBlock.ParentBlock != parentBlock) // No es hijo del bloque actual
+
+            {
+                Logger.Log($"ConnectInternal: Child '{childBlock.ID}' was child of '{childBlock.ParentBlock.ID}'. Connecting to stack (Prev of child -> Next of parent '{parentBlock.ID}'). Setting ParentBlock to null."); if (parentConnection.Type == EConnection.NextStatement && childConnection.Type == EConnection.PrevStatement)
+                {
+                    if (childBlock.ParentBlock != null)
+                    {
+                        Debug.Log($"  Block '{childBlock.ID}' was child of '{childBlock.ParentBlock.ID}'. Connecting to stack (Prev->Next), so setting its ParentBlock to null.");
+                        childBlock.SetParent(null); 
+                    }
+                }
+            }
+        }
+
+        //Debug.Log($"<color=green>ConnectInternal SUCCESS:</color> Parent ({GetConnectionModelID(parentConnection)}) is now connected to Child ({GetConnectionModelID(childConnection)}). Firing 'Connected' update.");
+
+        Debug.Log($"[CM.ConnectInternal] === Firing Connection Updates === Parent: {GetConnectionModelID(parentConnection)} (Superior? {parentConnection.IsSuperior}), Child: {GetConnectionModelID(childConnection)} (Superior? {childConnection.IsSuperior})");
+        FireUpdate(UpdateState.Connected); // Disparar para parentConnection
+        childConnection.FireUpdate(UpdateState.Connected); // Y para childConnection
+    
+}
+
+    public static void DisconnectReciprocally(ConnectionModel c1, ConnectionModel c2)
+    {
+        if (c1 != null) c1.TargetConnection = null;
+        if (c2 != null) c2.TargetConnection = null;
     }
 
     /// <summary>
@@ -580,10 +681,37 @@ public class ConnectionModel : Observable<UpdateState>
 
     private void DisconnectInternal(ConnectionModel childConnection)
     {
-        var otherConnection = this.TargetConnection;
-        otherConnection.TargetConnection = null;
-        this.TargetConnection = null;
-        childConnection.SourceBlock.SetParent(null);
+        /* var otherConnection = this.TargetConnection;
+         otherConnection.TargetConnection = null;
+         this.TargetConnection = null;
+         childConnection.SourceBlock.SetParent(null);*/
+        bool wasHierarchical = false;
+        if (this.Input != null && // conexión perteneciente a un InputModel
+            this.Input.Type == EConnection.InputValue && // InputModel  para un valor
+            this.Type == EConnection.InputValue &&
+            childConnection.Type == EConnection.OutputValue)
+        {
+            wasHierarchical = true;
+        }
+        else if (this.Input != null && //  conexión perteneciente a un InputModel
+                 this.Input.Type == EConnection.NextStatement && //  InputModel  para una pila de sentencias
+                 childConnection.Type == EConnection.PrevStatement)
+        {
+            wasHierarchical = true;
+        }
+
+        if (wasHierarchical)
+        {
+            if (childConnection.SourceBlock != null && childConnection.SourceBlock.ParentBlock == this.SourceBlock)
+            { // Solo si este era el padre
+                Debug.Log($"DisconnectInternal: Clearing ParentBlock of Child ({childConnection.SourceBlock.ID}) from Parent ({this.SourceBlock?.ID}) because it was hierarchically connected via {this.Input.Name} ({this.Input.Type}).");
+                childConnection.SourceBlock.SetParent(null);
+            }
+            else if (childConnection.SourceBlock != null)
+            {
+                // Debug.Log($"DisconnectInternal: Hierarchical-like disconnection but ParentBlock of Child ({childConnection.SourceBlock.ID}) was not this.SourceBlock ({this.SourceBlock?.ID}) but '{childConnection.SourceBlock.ParentBlock?.ID}'. No SetParent(null) call.");
+            }
+        }
         FireUpdate(UpdateState.Disconnected);
     }
 

@@ -21,6 +21,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class BlockConnectionController : MonoBehaviour
 {
@@ -42,15 +43,16 @@ public class BlockConnectionController : MonoBehaviour
     }
     private WorkSpaceView m_WorkspaceView;
     private BlockDragController m_BlockDragController;
-
+    private BlockConnectionController m_WorkspaceController;
     private ConnectionModel m_CurrentBestTargetConnection = null;
     private ConnectionModel m_CurrentSourceCandidate = null;
 
+    private ConnectionModel m_FinalizedBestTargetConnection = null;
+    private ConnectionModel m_FinalizedSourceCandidate = null;
 
     //Para depuración
 
     private bool _hasLoggedDbSortThisDrag = false;
-
 
     private void Awake()
     {
@@ -234,14 +236,26 @@ public class BlockConnectionController : MonoBehaviour
     /// </summary>
     /// <param name="newBestTarget">La nueva conexión a resaltar.</param>
     /// <param name="oldBesTarget">La conexión anterior a la que se le quitará el resaltado.</param>
-    private void UpdateVisualHighlighting(ConnectionModel oldBesTarget, ConnectionModel newBestTarget)
+    private void UpdateVisualHighlighting(ConnectionModel oldBestTarget, ConnectionModel newBestTarget)
     {
-        if (oldBesTarget != newBestTarget)
+
+        string prefix = $"{System.DateTime.Now:HH:mm:ss.fff} [BCC.UpdateVisHighlight]";
+        string oldId = ConnectionModel.GetConnectionModelID(oldBestTarget);
+        string newId = ConnectionModel.GetConnectionModelID(newBestTarget);
+
+       // Debug.Log($"{prefix} CALLED. OldTarget: '{oldId}', NewTarget: '{newId}'.");
+
+        if (oldBestTarget != newBestTarget)
         {
             //Quitar el resaltado en la antiuga conexión
-            if (oldBesTarget != null)
+            if (oldBestTarget != null)
             {
-                ConnectionView oldView = m_WorkspaceView.GetConnectionView(oldBesTarget);
+                Debug.Log($"{prefix} Targets DIFFER. Updating highlights.");
+
+                ConnectionView oldView = m_WorkspaceView.GetConnectionView(oldBestTarget);
+
+                Debug.Log($"{prefix} Attempting to get OldView for '{oldId}'. Found: {oldView != null}. Highlight(false).");
+
                 oldView?.Highlight(false);
             }
 
@@ -249,127 +263,118 @@ public class BlockConnectionController : MonoBehaviour
             if (newBestTarget != null)
             {
                 ConnectionView newView = m_WorkspaceView.GetConnectionView(newBestTarget);
+                Debug.Log($"{prefix} Attempting to get NewView for '{newId}'. Found: {newView != null}. Highlight(true).");
 
-                if (newView != null) newView?.Highlight(true);
-                else Debug.LogWarning($"ConnectionController: Could not find ConnectionView for new best target: {newBestTarget.SourceBlock.Type}:{newBestTarget.Type}. Cannot highlight.");
+                if (newView == null)
+                {
+                    Debug.LogError($"{prefix} CRITICAL: GetConnectionView returned NULL for NewTarget: '{newId}'. Cannot highlight.", this.gameObject);
+                }
+
+                newView?.Highlight(true);
             }
+        }
+        else
+        {
+          //  Debug.Log($"{prefix} Targets are SAME ({newId}). No visual highlight state change needed by this method call directly.");
         }
 
     }
 
     /// <summary>
-    /// Devuelve si se realizo una conexión (snap) entre dos conexiones.
-    public bool TryConnectAndPlace(BlockModel draggingBlock, bool isTemplateClone,/* bool overTrasBin,*/ Vector2 pointerScreenPosition)
+    /// Prepara las conexiones finales que se usarían si el arrastre termina ahora.
+    /// No las ejecuta, solo las identifica.
+    /// Esto se llamaría ANTES de TryConnectAndPlace en el nuevo flujo, o como parte de él.
+    /// </summary>
+    public void FinalizePotentialConnection()
     {
-        Debug.Log($"<color=cyan>TryConnectAndPlace ENTERED.</color> Dragging: {draggingBlock?.ID} ({draggingBlock?.Type}). IsClone: {isTemplateClone}. ");
-       // Debug.Log($" - CurrentBestTarget (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentBestTargetConnection)}"); 
-      //  Debug.Log($" - CurrentSource (at entry): {ConnectionModel.GetConnectionModelID(m_CurrentSourceCandidate)}");
+        m_FinalizedBestTargetConnection = m_CurrentBestTargetConnection;
+        m_FinalizedSourceCandidate = m_CurrentSourceCandidate;
 
-        if (draggingBlock == null || m_WorkspaceView == null || m_Workspace == null) return false;
+        // Quitar el resaltado porque la fase de 'buscar' ha terminado.
+        // El resaltado definitivo o el snap visual se maneja post-conexión o por la animación de snap.
+        UpdateVisualHighlighting(m_CurrentBestTargetConnection, null);
 
-        ConnectionModel finalTargetConnection = m_CurrentBestTargetConnection;
-        ConnectionModel finalSourceConnection = m_CurrentSourceCandidate;
-
-        Debug.Log($" - Using FinalTarget: {ConnectionModel.GetConnectionModelID(finalTargetConnection)}");
-        Debug.Log($" - Using FinalSource: {ConnectionModel.GetConnectionModelID(finalSourceConnection)}");
-
-        bool connected = false;
-
-        //Elimino también el resaltado por si estuviera activo aún.
-        UpdateVisualHighlighting(finalTargetConnection, null);
-
-        //Limpio el estado del controlador para el siguiente drag 
+        // Limpiar los candidatos actuales de 'ProcessDrag' para el próximo ciclo de drag si lo hubiera
+        // o para evitar confusión si el bloque no se conecta.
         m_CurrentBestTargetConnection = null;
         m_CurrentSourceCandidate = null;
+        _hasLoggedDbSortThisDrag = false; // Resetea para el próximo drag
+    }
 
-        //Si hay una conexión válidad  intento conectarmete
-        if (finalTargetConnection != null && finalSourceConnection != null)
+    /// <summary>
+    /// Obtiene las conexiones que fueron identificadas como la mejor pareja al finalizar el drag.
+    /// Devuelve true si hay una pareja válida, false si no.
+    /// </summary>
+    public bool GetFinalizedConnections(out ConnectionModel targetConnection, out ConnectionModel sourceConnection)
+    {
+        targetConnection = m_FinalizedBestTargetConnection;
+        sourceConnection = m_FinalizedSourceCandidate;
+
+        if (targetConnection != null && sourceConnection != null)
         {
-           // Debug.Log($"ConnectionController: Attempting connection {finalSourceConnection.SourceBlock.Type}:{finalSourceConnection.Type} -> {finalTargetConnection.SourceBlock.Type}:{finalTargetConnection.Type}");
-            Debug.Log($"  <color=lime>Attempting Connection:</color> Source {ConnectionModel.GetConnectionModelID(finalSourceConnection)} -> Target {ConnectionModel.GetConnectionModelID(finalTargetConnection)}");
-            try
-            {
-
-                //Gestionamos la desconexión automática si el destino ya esta conectado y lo notificará a las vistas
-              //  Debug.Log("    BEFORE Connect Call");
-                finalTargetConnection.Connect(finalSourceConnection);
-               // Debug.Log("    AFTER Connect Call");
-                connected = true;
-                Debug.Log($"    --> Post-Connect State: Source '{ConnectionModel.GetConnectionModelID(finalSourceConnection)}' IsConnected={finalSourceConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalSourceConnection?.TargetConnection)}'");
-                Debug.Log($"    --> Post-Connect State: Target '{ConnectionModel.GetConnectionModelID(finalTargetConnection)}' IsConnected={finalTargetConnection?.IsConnected}, TargetID='{ConnectionModel.GetConnectionModelID(finalTargetConnection?.TargetConnection)}'");
-
-
-                if (isTemplateClone)
-                {
-                    Debug.Log($"ConnectionController: Confirming add for template clone {draggingBlock.ID} due to successful connection.");
-                    m_Workspace.AddBlock(draggingBlock);
-                }
-
-                if (draggingBlock.ParentBlock == null)
-                {
-                    //Debug.LogError($"<color=red>HASHCODE_CHECK - TryConnectAndPlace - Calling AddBlock on Workspace HashCode: {m_Workspace?.GetHashCode()}");
-                    m_Workspace.AddBlock(draggingBlock);
-                }
-            }
-
-            catch (Exception e)
-            {
-
-               // Debug.LogWarning($"ConnectionController: Connect failed: {e.Message}" /*, draggingBlock.gameObject)*/);
-                Debug.LogError($"<color=red>Connect FAILED:</color> {e.ToString()}");
-            }
+            return true;
         }
+        return false;
+    }
 
-        //Si no se ha conectado, procedo a gestionar el drop en el basurero o en el espacio libre
-        if (!connected)
+    /// <summary>
+    /// Esta función ahora solo verifica si el bloque fue soltado en un lugar válido (CodingArea o Basura)
+    /// y maneja la confirmación de clones si no hay una conexión directa.
+    /// LA CONEXIÓN REAL YA NO OCURRE AQUÍ.
+    /// Devuelve true si la acción de "drop" (no necesariamente conexión) fue válida.
+    /// </summary>
+    public bool HandleDropPlacement(BlockModel draggingBlock, bool isTemplateClone, Vector2 pointerScreenPosition, BlockDragController dragController)
+    {
+    
+
+        // Verificamos si el puntero está sobre el área de codificación válida.
+        bool isOverCodingArea = dragController.IsPointerOverArea(pointerScreenPosition, m_WorkspaceView.CodingArea);
+
+        if (!isOverCodingArea)
         {
-            // Verifico si el puntero está sobre el área de codificación válida.
-            bool isOverCodingArea = m_BlockDragController.IsPointerOverArea(pointerScreenPosition, m_WorkspaceView.CodingArea);
+            // Si NO está sobre el área de codificación, consideramos que es un drop inválido 
+            //  Debug.LogWarning($"HandleDropPlacement: Invalid drop location (outside CodingArea) for block {draggingBlock.ID}. Not placing or confirming clone.");
 
-            if (!isOverCodingArea)
+            // NO disponemos el bloque aquí. BlockDragController.HandleEndDrag decidirá qué hacer con un drop inválido.
+            return false; // Indica que el drop no fue en un área de colocación válida (sin conexión).
+        }
+        else
+        {
+            // Se soltó en el área de codificación (pero no hubo conexión SNAP)
+            // Debug.Log($"HandleDropPlacement: Block {draggingBlock.ID} dropped in valid free space in CodingArea.");
+            if (isTemplateClone)
             {
-                Debug.LogWarning($"ConnectionController: Invalid drop location (outside CodingArea). Disposing block {draggingBlock.ID}");
-                // Añadir traza para estar seguros de CÓMO se llegó aquí si da problemas
-                try { Debug.LogError("DISPOSE CALLED from !isOverCodingArea path:\n" + Environment.StackTrace); } catch { }
-                draggingBlock.Dispose(false); // <<--- El Dispose() que puede estar causando problemas
-
-                Debug.Log($" - Returning FALSE because block {draggingBlock.ID} was disposed (invalid drop).");
-                return false; // <<<--- El bloque no se colocó/conectó válidamente.
+                // Era un clon de plantilla soltado libremente -> añadirlo al modelo del workspace.
+                //  Debug.Log($"HandleDropPlacement: Confirming add for template clone {draggingBlock.ID}.");
+                m_Workspace.AddBlock(draggingBlock); // Confirmar el clon
             }
             else
             {
-                //Debug.Log($"ConnectionController: Block {draggingBlock.ID} dropped in valid free space.");
-                if (isTemplateClone)
+                // Era un bloque existente movido libremente. Su modelo ya está en el workspace.
+                //  Debug.Log($" - Existing block {draggingBlock.ID} moved freely. Ensuring it's registered if needed.");
+                // Asegurarse de que si se desenganchó, sigue siendo un bloque 'top' en el workspace.
+                if (draggingBlock.ParentBlock == null && !m_Workspace.BlockDB.ContainsKey(draggingBlock.ID))
                 {
-                    // Era un clon de plantilla soltado libremente -> añadirlo al modelo del workspace.
+                    // Esto puede pasar si fue desenganchado y no estaba como top-level block previamente
                     m_Workspace.AddBlock(draggingBlock);
                 }
-                else
-                {
-                    // Era un bloque existente movido libremente.
-                   
-                    Debug.Log($" - Existing block {draggingBlock.ID} moved freely. No AddBlock needed.");
-                }
-
-              
-                BlockView finalView = m_WorkspaceView.GetBlockView(draggingBlock);
-                if (finalView == null)
-                {
-                    Debug.LogError($"ConnectionController: After VALID drop, block model {draggingBlock.ID} exists but BlockView is NULL!");
-                }
-                else if (finalView.Block != draggingBlock)
-                {
-                    Debug.LogError($"ConnectionController: After VALID drop, BlockView {finalView.name} is bound to a different model {finalView.Block.ID}!");
-                }
-                // else { Debug.Log("   - Final view found and matches model."); }
             }
-
-        
+            return true; // Indica que el drop fue en un área válida para colocación.
         }
+    }
 
-      
-       // Debug.Log($"<color=cyan>TryConnectAndPlace EXITING - Returning TRUE (Operation Handled)</color>");
-        return true;
+    public void ResetPotentialConnection()
+    {
+        _hasLoggedDbSortThisDrag = false;
+    
+        if (m_CurrentBestTargetConnection != null)
+        {
+            UpdateVisualHighlighting(m_CurrentBestTargetConnection, null);
+            m_CurrentBestTargetConnection = null;
+            m_CurrentSourceCandidate = null;
+        }
+        m_FinalizedBestTargetConnection = null; 
+        m_FinalizedSourceCandidate = null;
     }
 
 }//fin clase BlockController
