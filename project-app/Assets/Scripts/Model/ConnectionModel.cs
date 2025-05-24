@@ -9,58 +9,75 @@
  * 
  * Fecha: 27/03/2025
  * 
- * Versión: 1.0.0
+ * Versión: 1.0.3
  * 
  * Descripción:  Define los eventos que puede disparar una conexión
  */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using UnityEngine;
-
+using static UnityEditor.FilePathAttribute;
 public class ConnectionModel : Observable<UpdateState>
 {
-
+    private UpdateState m_UpdateState;
     private BlockModel mSourceBlock;
+   
+
     public BlockModel SourceBlock
     {
         get { return mSourceBlock; }
         set
         {
-          /*  Debug.Log($"[Setter ENTER] Conn Hash: {this.GetHashCode()}, " +
-                      $"Current mSourceBlock ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}), " +
-                      $"Value to assign ID: {value?.ID ?? "NULL"} (Hash: {value?.GetHashCode() ?? -1})");*/
+            if (mSourceBlock == value) return;
 
-            if (mSourceBlock == value)
+            // Remueve la conexión de la DBs antiguas antes de cambiar el SB si es necesario
+            if (mSourceBlock != null && mSourceBlock.Workspace != null && DB != null)
             {
-               // Debug.Log($"[Setter SKIP] Value is the same as mSourceBlock. Exiting.");
-                return; 
+                DB.RemoveConnection(this); 
             }
 
-          /*  Debug.Log($"[Setter PRE-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
-                      $"About to set mSourceBlock. Current value: {mSourceBlock?.ID ?? "NULL"}");*/
-
-            // asignación real
             mSourceBlock = value;
 
-        /*    Debug.Log($"[Setter POST-INTERNAL ASSIGN] Conn Hash: {this.GetHashCode()}, " +
-                      $"mSourceBlock should NOW be ID: {mSourceBlock?.ID ?? "NULL"} (Hash: {mSourceBlock?.GetHashCode() ?? -1}). " +
-                      $"Was it set to 'value'?: {(System.Object.ReferenceEquals(mSourceBlock, value) ? "YES" : "NO!!!")}");*/
+            // Si el nuevo SourceBlock tiene un WS, asignamos las DBs relevantes.
+            if (mSourceBlock != null && mSourceBlock.Workspace != null && mSourceBlock.Workspace.ConnectionDBList != null)
+            {
+                BlockConnectionDB dbRef;
+                mSourceBlock.Workspace.ConnectionDBList.TryGetValue(this.Type, out dbRef);
+                this.DB = dbRef; // Asigna la referencia a la DB del nuevo WS
 
-        string finalState = (mSourceBlock == null) ? "NULL" : "NOT NULL";
-      //  Debug.Log($"[Setter EXIT SIMPLIFIED] Conn Hash: {this.GetHashCode()}, Final mSourceBlock is: {finalState}");
-        
-        }
-    }  
-   
+                BlockConnectionDB dbOppositeRef;
+                mSourceBlock.Workspace.ConnectionDBList.TryGetValue(this.OppositeType, out dbOppositeRef);
+                this.DBOpposite = dbOppositeRef;
+
+                // Determina el estado Hidden (si es de tipo InputValue y ya está conectado)
+              
+                this.Hidden = (this.IsConnected || this.SourceBlock.Collapsed ); // Si es un InputValue/StatementInput y ya esta conectado a algo, o el bloque colapsa
+                if (this.DB == null) Hidden = true; // Si la DB no existe, está oculta de hecho.
+
+                            }
+            else // Si el nuevo SB es nulo o no tiene un Workspace, limpia las referencias de DB
+            {
+                this.DB = null;
+                this.DBOpposite = null;
+                this.Hidden = true; // Siempre oculto si no tiene WS/DBs válidos.
+            }
+
+            }
+    }
+
     public InputModel Input { get; internal set; }
 
     /// <summary>
     /// The type of the connection.
     /// </summary>
     public EConnection Type { get; private set; }
+
+    private Vector2 m_location;
+
 
     /// <summary>
     /// Does the connection belong to a superior block (higher in the source stack)?
@@ -77,7 +94,7 @@ public class ConnectionModel : Observable<UpdateState>
     /// <param name="type">The type of the connection.</param>
     public ConnectionModel(BlockModel source, EConnection type)
     {
-        if (source == null && type != EConnection.None) // Permitir None para inputs dummy sin bloqu o  requerirlo siempre
+        if (source == null && type != EConnection.None) // Permitir None para inputs dummy sin bloque o  requerirlo siempre
             Debug.LogWarning($"Creating connection of type {type} with a NULL source block!");
         Type = type; 
         SourceBlock = source;
@@ -136,7 +153,15 @@ public class ConnectionModel : Observable<UpdateState>
     /// <summary>
     /// Horizontal and Vertical location of this connection.
     /// </summary>
-    public Vector2 Location;
+   
+
+    public Vector2 Location 
+    {
+        get { return m_location; }
+        set { SetLocationInternal(value); } 
+    }
+
+    /*
     public float X
     {
         get { return Location.x; }
@@ -146,7 +171,42 @@ public class ConnectionModel : Observable<UpdateState>
     {
         get { return Location.y; }
         set { Location.y = value; }
+    }*/
+
+
+    private void SetLocationInternal(Vector2 newLocation) 
+    {
+        if (m_location == newLocation && InDB) // si la ubicacion es la misma y ya está en DB
+            return; 
+
+        bool wasInDB = this.InDB;
+        BlockConnectionDB currentDB = this.DB; // Se cachea referencia antes de usarla
+
+        //Quitamos la conexión de la DB si ya estaba en ella.
+        if (wasInDB && currentDB != null)
+        {
+            Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' was in DB. Removing from old location ({m_location:F2}).");
+            currentDB.RemoveConnection(this); // InDB = false.
+        }
+
+        //Actualizar la ubicación en el modelo.
+        this.m_location = newLocation;
+
+        //Volver a añadir a la DB si debe estar ahí (no oculta y DB válida).
+        if (!this.Hidden && currentDB != null)
+        {
+            Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' is not hidden. Adding to DB at new location ({m_location:F2}).");
+            currentDB.AddConnection(this); // InDB = true.
+        }
+        else if (wasInDB && currentDB == null)
+        {
+            // Inconsistencia grave. Si InDB era true pero DB es null.
+            Debug.LogError($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' had InDB=true but DB was NULL during location update. Forcing InDB=false. This indicates an issue with DB assignment!");
+            this.InDB = false;
+        }
+        //Si no estaba en DB o está oculta, no se hace nada más.
     }
+
 
     /// <summary>
     /// Has this connection been added to the connection database?
@@ -190,211 +250,325 @@ public class ConnectionModel : Observable<UpdateState>
     /// </summary>
     public XmlNode ShadowDom { get; set; }
 
+    
+
     /// <summary>
-    /// 
+    /// Connects this connection to another connection.
+    /// This method should robustly handle all valid connection scenarios,
+    /// including bumping existing connections.
     /// </summary>
-    /// <param name="otherConnection"></param>
-    public void Connect(ConnectionModel otherConnection)
+    /// <param name="otherConnection">The connection to connect to.</param>
+    public void Connect(ConnectionModel otherConnection) 
     {
-        if (this.TargetConnection == otherConnection)
+        if (otherConnection == null)
         {
+            Debug.LogError($"[CM.Connect] ABORTED: otherConnection is null. Attempting to connect: {GetConnectionModelID(this)}");
             return;
         }
 
-        this.CheckConnection(otherConnection);
+        // 'this' la conexión del bloque que se está arrastrando
+        // 'otherConnection' es la conexión candidata estacionaria del workspace 
 
-        if (this.IsSuperior)
-            this.ConnectInternal(otherConnection);
+        ConnectionModel actualSuperiorConn = null; // Será la conexión del bloque que está esperando.
+        ConnectionModel actualInferiorConn = null; // Será la conexión del bloque que se enchufa.
+
+        // Log de entrada para depuración
+        //Logger.Debug($"[CM.Connect ENTRY] Attempting to connect: THIS (Dragged): {GetConnectionModelID(this)} ({this.Type}) TO otherConnection (Stationary): {GetConnectionModelID(otherConnection)} ({otherConnection.Type})");
+
+        // CASO 1: Se arrastra un PrevStatement (this) para conectar a un NextStatement (otherConnection)
+        // Ejemplo: [Bloque A]<NEXT> <-- [Bloque B]<PREV arrastrado>
+        // El bloque arrastrado (B) se conecta debajo del estacionario (A).
+        if (this.Type == EConnection.PrevStatement && otherConnection.Type == EConnection.NextStatement)
+        {
+            actualSuperiorConn = otherConnection; // otherConnection (A.Next) es el socket superior.
+            actualInferiorConn = this;            // this (B.Prev) es el enchufe inferior.
+        }
+        // CASO 2: Se arrastra un NextStatement (this) para conectar a un PrevStatement (otherConnection)
+        // Ejemplo: [Bloque B]<PREV arrastrado> --> [Bloque A]<NEXT> <--NO, ESTO ES EL CASO 1
+        // Ejemplo Correcto: [Bloque B]<NEXT arrastrado> --> [Bloque A]<PREV>
+        // El bloque arrastrado (B) se conecta encima del estacionario (A).
+        else if (this.Type == EConnection.NextStatement && otherConnection.Type == EConnection.PrevStatement)
+        {
+            actualSuperiorConn = otherConnection; // otherConnection (A.Prev) es el socket superior.
+            actualInferiorConn = this;            // this (B.Next) es el enchufe inferior.
+        }
+        // CASO 3: Se arrastra un OutputValue (this) para conectar a un InputValue (otherConnection)
+        // Ejemplo: [Input A]<INPUT> <-- [Output B]<OUTPUT arrastrado>
+        else if (this.Type == EConnection.OutputValue && otherConnection.Type == EConnection.InputValue)
+        {
+            actualSuperiorConn = otherConnection; // otherConnection (InputA.Input) es el socket.
+            actualInferiorConn = this;            // this (OutputB.Output) es el enchufe.
+        }
+        // CASO 4: Se arrastra un InputValue (this) para conectar a un OutputValue (otherConnection)
+        // Ejemplo: [Output A]<OUTPUT> <-- [Input B]<INPUT arrastrado>
+        
+        else if (this.Type == EConnection.InputValue && otherConnection.Type == EConnection.OutputValue)
+        {
+            // En este escenario, 'this' (el Input arrastrado) es el "socket" que quiere recibir.
+            // 'otherConnection' (el Output estacionario) es el "enchufe" que se conectará.
+         
+            actualSuperiorConn = this;                // El InputValue arrastrado es el que define el slot.
+            actualInferiorConn = otherConnection;     // El OutputValue estacionario es el que se enchufa.
+                                                     
+        }
         else
-            otherConnection.ConnectInternal(this);
+        {
+            Debug.LogError($"[CM.Connect] ABORTED: Incompatible or unhandled connection types for establishing superior/inferior. Self(Arrastrado): {GetConnectionModelID(this)} ({this.Type}), Other(Estacionario): {GetConnectionModelID(otherConnection)} ({otherConnection.Type})");
+            return;
+        }
+
+        if (actualSuperiorConn == null || actualInferiorConn == null)
+        {
+            Debug.LogError($"[CM.Connect] ABORTED: Failed to assign actualSuperiorConn or actualInferiorConn. THIS(Dragged): {GetConnectionModelID(this)}, OTHER(Stationary): {GetConnectionModelID(otherConnection)}");
+            return;
+        }
+
+        //Logger.Debug($"[CM.Connect] Roles Resolved -> Superior (Socket/Stationary in most cases): {GetConnectionModelID(actualSuperiorConn)}, Inferior (Plug/Dragged in most cases): {GetConnectionModelID(actualInferiorConn)}");
+        ActualConnect(actualSuperiorConn, actualInferiorConn);
     }
 
-    /// <summary>
-    /// Connect two connections together.  This is the connection on the superior block.
-    /// </summary>
-    /// <param name="childConnection"></param>
-    private void ConnectInternal(ConnectionModel childConnection)
+
+    private static void ActualConnect(ConnectionModel superiorConn, ConnectionModel inferiorConn)
     {
-
-        var parentConnection = this; 
-        var parentBlock = parentConnection.SourceBlock;
-        var childBlock = childConnection.SourceBlock;
-
-        if (parentBlock == null || childBlock == null)
+        if (superiorConn == null || inferiorConn == null)
         {
-            Debug.LogError($"ConnectInternal ABORTED: ParentBlock ({parentBlock?.ID ?? "NULL"}) or ChildBlock ({childBlock?.ID ?? "NULL"}) is null. ParentConn: {GetConnectionModelID(parentConnection)}, ChildConn: {GetConnectionModelID(childConnection)}");
-            if (childConnection.IsConnected) childConnection.Disconnect();
+            Debug.LogError($"[CM.ActualConnect] ABORTED: superiorConn or inferiorConn is null. Sup: {GetConnectionModelID(superiorConn)}, Inf: {GetConnectionModelID(inferiorConn)}");
             return;
         }
 
-        if (childConnection.IsConnected)
+        BlockModel superiorBlock = superiorConn.SourceBlock;
+        BlockModel inferiorBlock = inferiorConn.SourceBlock;
+
+        if (superiorBlock == null || inferiorBlock == null)
         {
-            Debug.Log($"<color=orange>ConnectInternal ({GetConnectionModelID(parentConnection)} to {GetConnectionModelID(childConnection)})</color>: Child connection ({GetConnectionModelID(childConnection)}) is already connected to ({GetConnectionModelID(childConnection.TargetConnection)}). Disconnecting it first.");
-            childConnection.Disconnect();
+            Debug.LogError($"[CM.ActualConnect] ABORTED: SuperiorBlock ({superiorBlock?.ID ?? "NULL"}) or InferiorBlock ({inferiorBlock?.ID ?? "NULL"}) is null.");
+            return;
         }
 
-        // Lógica para manejar si 'parentConnection' ya estaba conectada (manejo de orphanBlock)
-        if (parentConnection.IsConnected)
+        // --- PRE-CONNECTION CLEANUP & ORPHAN/SHADOW MANAGEMENT ---
+
+        if (inferiorConn.IsConnected)
         {
-           
-            BlockModel orphanBlock = parentConnection.TargetBlock;
-            XmlNode shadowDom = parentConnection.ShadowDom;
-            parentConnection.ShadowDom = null; // Clear shadow before potential disconnect
+            Debug.LogWarning($"[CM.ActualConnect] Inferior connection ({GetConnectionModelID(inferiorConn)}) is already connected to ({GetConnectionModelID(inferiorConn.TargetConnection)}). Disconnecting it first. This might indicate complex reconnection.");
+            inferiorConn.Disconnect();
+        }
 
-            Debug.Log($"<color=orange>ConnectInternal ({GetConnectionModelID(parentConnection)} to {GetConnectionModelID(childConnection)})</color>: Parent connection ({GetConnectionModelID(parentConnection)}) is already connected to ({GetConnectionModelID(parentConnection.TargetConnection)}). Managing orphan...");
+        BlockModel oldBlockConnectedToSuperior = null;
+        ConnectionModel connectionOnOldBlock = null;
+        XmlNode shadowDomFromSuperiorSlot = superiorConn.ShadowDom;
 
-            // Guardamos la conexión del bloque huérfano ANTES de llamar a Disconnect en parentConnection
-            ConnectionModel orphanBlockMainConnection = null;
-            if (orphanBlock != null) 
+        if (superiorConn.IsConnected)
+        {
+            oldBlockConnectedToSuperior = superiorConn.TargetBlock;
+            connectionOnOldBlock = superiorConn.TargetConnection;
+
+            Debug.Log($"[CM.ActualConnect] Superior connection ({GetConnectionModelID(superiorConn)}) is ALREADY CONNECTED to ({GetConnectionModelID(connectionOnOldBlock)} on block '{oldBlockConnectedToSuperior?.ID}'). Disconnecting them first.");
+
+            superiorConn.Disconnect();
+
+            if (oldBlockConnectedToSuperior != null && oldBlockConnectedToSuperior.IsShadow)
             {
-                orphanBlockMainConnection = orphanBlock.IsShadow ? null : 
-                                          (parentConnection.Type == EConnection.InputValue ? orphanBlock.OutputConnection :
-                                          (parentConnection.Type == EConnection.NextStatement ? orphanBlock.PreviousConnection : null));
+                Debug.Log($"  [CM.ActualConnect] The 'oldBlockConnectedToSuperior' ({oldBlockConnectedToSuperior.ID}) was a SHADOW. Disposing it.");
+                oldBlockConnectedToSuperior.Dispose();
+                oldBlockConnectedToSuperior = null;
+                connectionOnOldBlock = null;
             }
+        }
+        else if (superiorConn.ShadowDom != null && inferiorBlock != null && !inferiorBlock.IsShadow)
+        {
+            Debug.Log($"[CM.ActualConnect] Superior slot ({GetConnectionModelID(superiorConn)}) was empty but had a ShadowDOM. Connecting a NON-SHADOW block ({inferiorBlock.ID}). Removing original shadow from slot.");
+            superiorConn.ShadowDom = null;
+        }
 
-            if (orphanBlock != null) // Si había un TargetBlock previo
+        // --- REALIZAR LA CONEXIÓN PRINCIPAL ---
+        Debug.Log($"[CM.ActualConnect] Connecting Superior: {GetConnectionModelID(superiorConn)} WITH Inferior: {GetConnectionModelID(inferiorConn)}");
+        ConnectionModel.ConnectReciprocally(superiorConn, inferiorConn);
+
+        if (superiorConn.Type == EConnection.InputValue || superiorConn.Type == EConnection.NextStatement)
+        {
+            if (inferiorBlock.IsShadow)
             {
-                if (orphanBlock.IsShadow)
-                {
-                    // Los shadow blocks simplemente se eliminan, no se reinsertan
-                    Debug.Log($"  Orphan ({orphanBlock.ID}) is shadow. Disposing it.");
-                    shadowDom = Xml.BlockToDom(orphanBlock); 
-                    orphanBlock.Dispose();
-                    orphanBlock = null; // Ya no hay huérfano
-                }
-                else if (parentConnection.Type == EConnection.InputValue)
-                {
-            
-                    if (orphanBlock.OutputConnection == null)
-                        throw new Exception($"Orphan block {orphanBlock.ID} does not have an output connection (was in InputValue).");
-
-                    ConnectionModel connectionTargetForOrphan = ConnectionModel.LastConnectionInRow(childBlock, orphanBlock);
-                    if (connectionTargetForOrphan != null && connectionTargetForOrphan.SourceBlock != parentBlock /*evitar auto-conexión al input del padre otra vez*/)
-                    {
-                        Debug.Log($"  Reconnecting orphan ({orphanBlock.ID}) to last valid input connection of child chain ({GetConnectionModelID(connectionTargetForOrphan)}).");
-                        orphanBlock.OutputConnection.Connect(connectionTargetForOrphan);
-                        orphanBlock = null; // Huérfano reconectado
-                    }
-                }
-                else if (parentConnection.Type == EConnection.NextStatement)
-                {
-             
-                    if (orphanBlock.PreviousConnection == null)
-                        throw new Exception($"Orphan block {orphanBlock.ID} does not have a previous connection (was in NextStatement).");
-
-                    BlockModel lastInChildChain = childBlock;
-                    while (lastInChildChain.NextConnection != null && lastInChildChain.NextBlock != null && !lastInChildChain.NextBlock.IsShadow)
-                    {
-                        lastInChildChain = lastInChildChain.NextBlock;
-                    }
-                    // lastInChildChain es ahora el último bloque no-shadow en la cadena que empieza con childBlock
-
-                    if (lastInChildChain.NextConnection != null && orphanBlock.PreviousConnection.CheckType(lastInChildChain.NextConnection))
-                    {
-                        // El Next del último de la cadena del hijo es compatible con el Prev del huérfano.
-                        Debug.Log($"  Reconnecting orphan ({orphanBlock.ID}) to NextConnection of last in child chain ({GetConnectionModelID(lastInChildChain.NextConnection)}).");
-                        lastInChildChain.NextConnection.Connect(orphanBlock.PreviousConnection); // Esto es conceptualmente Prev.Connect(Next), entonces orphan se vuelve el hijo del Next.
-                        orphanBlock = null; // Huérfano reconectado
-                    }
-                }
+                Debug.Log($"  [CM.ActualConnect] Inferior block ({inferiorBlock.ID}) is a SHADOW. Assigning its XML to Superior Connection's ShadowDOM ({GetConnectionModelID(superiorConn)}).");
+                superiorConn.ShadowDom = Xml.BlockToDom(inferiorBlock);
             }
-
-            // Si después de intentar reinsertar el orphanBlock, sigue existiendo (no se pudo reconectar)
-            if (orphanBlock != null)
+            else
             {
-                Debug.LogWarning($"<color=orange>ConnectInternal:</color> Orphan block ({orphanBlock.ID}) from parent ({GetConnectionModelID(parentConnection)}) could not be reattached. Disconnecting it and bumping.");
-        
-                // Desconectar formalmente 'parentConnection' de 'orphanBlock' (SI TODAVÍA ESTÁN CONECTADOS)
-                if (orphanBlock != null && orphanBlock != childConnection.SourceBlock)
+                superiorConn.ShadowDom = null;
+            }
+        }
+
+        // --- MANEJO POST-CONEXIÓN: BUMP (ORPHAN RE-ATTACH) Y JERARQUÍA ---
+
+        if (oldBlockConnectedToSuperior != null && connectionOnOldBlock != null)
+        {
+            Debug.Log($"  [CM.ActualConnect] Managing 'oldBlockConnectedToSuperior' ({oldBlockConnectedToSuperior.ID}) of type {connectionOnOldBlock.Type}.");
+
+            // CASO A: BUMP PARA STATEMENTS (HACIA ABAJO)
+            // A.Next -> C.Prev (recién hecho), intentamos conectar C_final.Next -> B.Prev
+            if (superiorConn.Type == EConnection.NextStatement &&   // Conexión de A (slot estacionario) es Next
+                inferiorConn.Type == EConnection.PrevStatement &&   // Conexión de C (nuevo, arrastrado) es Prev
+                connectionOnOldBlock.Type == EConnection.PrevStatement) // Conexión de B (viejo, que estaba debajo de A) era Prev
+            {
+                BlockModel lastInNewInferiorChain = inferiorBlock;
+                while (lastInNewInferiorChain.NextConnection != null &&
+                       lastInNewInferiorChain.NextBlock != null &&
+                       !lastInNewInferiorChain.NextBlock.IsShadow)
                 {
-                    Debug.Log($"<color=orange>ConnectInternal:</color> parentConnection ({GetConnectionModelID(this)}) was connected to orphan ({orphanBlock.ID}). Now connecting to child ({childConnection.SourceBlock.ID}). Handling orphan...");
-                    parentConnection.Disconnect(); 
+                    lastInNewInferiorChain = lastInNewInferiorChain.NextBlock;
+                }
+
+                ConnectionModel nextSlotOnNewChain = lastInNewInferiorChain.NextConnection;
+                ConnectionModel prevToBump = connectionOnOldBlock;
+
+                if (nextSlotOnNewChain != null && prevToBump != null &&
+                    nextSlotOnNewChain.CheckType(prevToBump) &&
+                    nextSlotOnNewChain.CanConnectWithReason(prevToBump) == ConnectionModel.CAN_CONNECT)
+                {
+                    Debug.Log($"    [CM.ActualConnect] BUMP (DOWNWARDS Statement): Reconnecting old block '{oldBlockConnectedToSuperior.ID}' (via Prev: {GetConnectionModelID(prevToBump)}) to Next of new chain ({GetConnectionModelID(nextSlotOnNewChain)} on '{lastInNewInferiorChain.ID}').");
+                    nextSlotOnNewChain.Connect(prevToBump);
                 }
                 else
                 {
-                    Debug.Log("Parent conn was already not pointing to orphan. No formal disconnect needed for parent->orphan.");
+                    Debug.LogWarning($"    [CM.ActualConnect] BUMP FAILED (DOWNWARDS Statement): Could not reconnect old block '{oldBlockConnectedToSuperior.ID}'. Conditions: nextSlotOnNewChain Null? {nextSlotOnNewChain == null}, prevToBump Null? {prevToBump == null}, CheckType: {(nextSlotOnNewChain != null && prevToBump != null ? nextSlotOnNewChain.CheckType(prevToBump).ToString() : "N/A")}, CanConnectReason: {(nextSlotOnNewChain != null && prevToBump != null ? nextSlotOnNewChain.CanConnectWithReason(prevToBump).ToString() : "N/A")}. Old block is displaced.");
+                    prevToBump.FireUpdate(UpdateState.BumpedAway);
                 }
-
-
-                ConnectionModel orphanBlockConToBump = orphanBlock.OutputConnection ?? orphanBlock.PreviousConnection;
-                if (orphanBlockConToBump != null)
-                {
-                    orphanBlockConToBump.FireUpdate(UpdateState.BumpedAway); // El orphanblock simplemente se "cae".
-                }
-
             }
-            // Restaurar el shadow DOM original del parentConnection si no hay orphanBlock O si se manejó de otra forma.
-            // Si hay un nuevo shadow a conectar, esto se sobrescribirá.
-            parentConnection.ShadowDom = shadowDom;
+            // ***** NUEVO BLOQUE INSERTADO *****
+            // CASO B: BUMP PARA STATEMENTS (HACIA ARRIBA)
+            // El slot superior estacionario era A.Prev (superiorConn), se insertó C.Next (inferiorConn).
+            // El bloque B con B.Next (connectionOnOldBlock) estaba previamente conectado A.Prev (era el bloque encima de A).
+            // Conexión principal ACTUAL: C.Next -> A.Prev.
+            // Queremos conectar: B.Next -> C_inicial.Prev (donde C_inicial es inferiorConn.SourceBlock).
+            else if (superiorConn.Type == EConnection.PrevStatement &&   // Conexión de A (slot estacionario) es Prev
+                     inferiorConn.Type == EConnection.NextStatement &&   // Conexión de C (nuevo, arrastrado) es Next
+                     /*connectionOnOldBlock != null && */ connectionOnOldBlock.Type == EConnection.NextStatement) // Conexión de B (viejo, el que estaba encima de A) era Next
+                                                                                                                  // Nota: connectionOnOldBlock != null ya está cubierto por el if externo.
+            {
+                BlockModel blockThatWasAbove = oldBlockConnectedToSuperior; // B
+                ConnectionModel nextOfBlockThatWasAbove = connectionOnOldBlock; // B.Next
+
+                // 'inferiorBlock' (C) es el bloque superior de la nueva cadena que se está insertando.
+                // Necesitamos conectar el PreviousConnection del inferiorBlock (C.Prev) con el nextOfBlockThatWasAbove (B.Next).
+                // La conexión a establecer es B.Next -> C.Prev
+                ConnectionModel prevSlotOnNewInsertedBlock = inferiorConn.SourceBlock.PreviousConnection; // C.Prev
+
+                if (prevSlotOnNewInsertedBlock != null && nextOfBlockThatWasAbove != null &&
+                    nextOfBlockThatWasAbove.CheckType(prevSlotOnNewInsertedBlock) && // Valida compatibilidad de tipos
+                    nextOfBlockThatWasAbove.CanConnectWithReason(prevSlotOnNewInsertedBlock) == ConnectionModel.CAN_CONNECT) // Valida compatibilidad lógica
+                {
+                    Debug.Log($"    [CM.ActualConnect] BUMP (UPWARDS Statement): Reconnecting old block '{blockThatWasAbove.ID}' (via Next: {GetConnectionModelID(nextOfBlockThatWasAbove)}) to Previous of new block ({GetConnectionModelID(prevSlotOnNewInsertedBlock)} on '{inferiorConn.SourceBlock.ID}').");
+                    // (B.Next).Connect(C.Prev)
+                    nextOfBlockThatWasAbove.Connect(prevSlotOnNewInsertedBlock);
+                }
+                else
+                {
+                    Debug.LogWarning($"    [CM.ActualConnect] BUMP FAILED (UPWARDS Statement): Could not reconnect old block '{blockThatWasAbove.ID}'. Conditions: prevSlotOnNewInsertedBlock Null? {prevSlotOnNewInsertedBlock == null}, nextOfBlockThatWasAbove Null? {nextOfBlockThatWasAbove == null}, CheckType: {(nextOfBlockThatWasAbove != null && prevSlotOnNewInsertedBlock != null ? nextOfBlockThatWasAbove.CheckType(prevSlotOnNewInsertedBlock).ToString() : "N/A")}, CanConnectReason: {(nextOfBlockThatWasAbove != null && prevSlotOnNewInsertedBlock != null ? nextOfBlockThatWasAbove.CanConnectWithReason(prevSlotOnNewInsertedBlock).ToString() : "N/A")}. Old block is displaced.");
+                    if (nextOfBlockThatWasAbove != null) nextOfBlockThatWasAbove.FireUpdate(UpdateState.BumpedAway); else Debug.LogError("[CM.ActualConnect] BUMP UPWARDS FAILED: nextOfBlockThatWasAbove was null, this should not happen if connectionOnOldBlock was not null and of type NextStatement.");
+                }
+            }
+            // ***** FIN DEL NUEVO BLOQUE INSERTADO *****
+
+            // CASO C: RE-ATTACH PARA VALUE INPUTS (Anteriormente CASO B)
+            // A.Input -> C.Output (recién hecho). El B.Output (connectionOnOldBlock) estaba antes en A.Input.
+            // Intentamos conectar B.Output a algún Input disponible en la cadena de C (inferiorBlock).
+            else if (superiorConn.Type == EConnection.InputValue &&     // Conexión de A (slot estacionario)
+                     inferiorConn.Type == EConnection.OutputValue &&   // Conexión de C (nuevo, arrastrado)
+                     connectionOnOldBlock.Type == EConnection.OutputValue) // Conexión de B (viejo)
+            {
+                ConnectionModel connectionTargetForOrphan = ConnectionModel.LastConnectionInRow(inferiorBlock, oldBlockConnectedToSuperior);
+                if (connectionTargetForOrphan != null &&
+                    connectionTargetForOrphan.SourceBlock != superiorBlock &&
+                    connectionOnOldBlock.CanConnectWithReason(connectionTargetForOrphan) == ConnectionModel.CAN_CONNECT)
+                {
+                    Debug.Log($"    [CM.ActualConnect] RE-ATTACH (Value): Reconnecting old block '{oldBlockConnectedToSuperior.ID}' (Output: {GetConnectionModelID(connectionOnOldBlock)}) to slot found by LastConnectionInRow ({GetConnectionModelID(connectionTargetForOrphan)} on '{connectionTargetForOrphan.SourceBlock?.ID}').");
+                    connectionOnOldBlock.Connect(connectionTargetForOrphan);
+                }
+                else
+                {
+                    Debug.LogWarning($"    [CM.ActualConnect] RE-ATTACH FAILED (Value): Could not find slot for old block '{oldBlockConnectedToSuperior.ID}' via LastConnectionInRow. Old block is displaced.");
+                    connectionOnOldBlock.FireUpdate(UpdateState.BumpedAway);
+                }
+            }
+            // OTROS CASOS: El bloque "huérfano" simplemente se desplaza.
+            else
+            {
+                Debug.LogWarning($"  [CM.ActualConnect] Old block '{oldBlockConnectedToSuperior.ID}' was connected, but no specific bump/reattach logic for combination SupType: {superiorConn.Type} / InfType: {inferiorConn.Type} / OldBlockConnType: {connectionOnOldBlock.Type}. Old block is displaced.");
+                connectionOnOldBlock.FireUpdate(UpdateState.BumpedAway);
+            }
         }
 
-        // Establecer las conexiones recíprocas
-        ConnectionModel.ConnectReciprocally(parentConnection, childConnection);
-        Debug.Log($"<color=lightblue>ConnectInternal Post-Reciprocal:</color> Parent: {GetConnectionModelID(parentConnection)} -> Target: {GetConnectionModelID(parentConnection.TargetConnection)}. Child: {GetConnectionModelID(childConnection)} -> Target: {GetConnectionModelID(childConnection.TargetConnection)}.");
-
-        // Configurar el parentesco jerárquico SOLO SI CORRESPONDE
+        // 2. Configurar el parentesco jerárquico.
+        BlockModel parentToSetForInferior = null;
         bool setHierarchicalParent = false;
-        if (parentConnection.Input != null &&
-            parentConnection.Input.Type == EConnection.InputValue && // El InputModel al que pertenece esta conexión es para Valores
-             parentConnection.Type == EConnection.InputValue &&       // La propia conexión del hueco es de tipo InputValue
-            childConnection.Type == EConnection.OutputValue)         // Y el hijo se conecta con su OutputValue
+
+        if (superiorConn.Type == EConnection.InputValue && inferiorConn.Type == EConnection.OutputValue)
         {
+            parentToSetForInferior = superiorBlock;
             setHierarchicalParent = true;
-            Debug.Log($"  ConnectInternal: Hierarchical Parent (VALUE). Child OutputValue '{childBlock.ID}' INTO Parent InputValue '{parentConnection.Input.Name}' of '{parentBlock.ID}'.");
+            Debug.Log($"  [CM.ActualConnect] HIERARCHY (Value): Child Output '{inferiorBlock.ID}' into Parent Input '{superiorConn.Input?.Name ?? "N/A"}' of '{superiorBlock.ID}'. Attempting to set parent.");
         }
-        else if (parentConnection.Input != null &&
-               parentConnection.Input.Type == EConnection.NextStatement &&
-               childConnection.Type == EConnection.PrevStatement)
+        else if (superiorConn.Type == EConnection.NextStatement && inferiorConn.Type == EConnection.PrevStatement)
         {
-           
+            parentToSetForInferior = superiorBlock.ParentBlock;
+
+            if (superiorConn.Input != null)
+            {
+                if (superiorBlock.ParentBlock != superiorConn.Input.SourceBlock)
+                {
+                    Debug.LogWarning($"  [CM.ActualConnect] HIERARCHY (Stack): Parent of superiorBlock ('{superiorBlock.ID}' -> parent '{superiorBlock.ParentBlock?.ID}') " +
+                                     $"is NOT the source of its input ('{superiorConn.Input.SourceBlock?.ID}'). This might be an issue. Using Input.SourceBlock as target parent.");
+                }
+                parentToSetForInferior = superiorConn.Input.SourceBlock;
+            }
+
             setHierarchicalParent = true;
-            Debug.Log($"  ConnectInternal: Hierarchical Parent (STATEMENT). Child PrevStatement '{childBlock.ID}' INTO Parent StatementInput '{parentConnection.Input.Name}' of '{parentBlock.ID}'. parentConnection.Type was {parentConnection.Type}");
+            Debug.Log($"  [CM.ActualConnect] HIERARCHY (Stack): Child '{inferiorBlock.ID}' (Prev) after Parent '{superiorBlock.ID}' (Next). Attempting to set parent of child to '{parentToSetForInferior?.ID ?? "NULL (TopLevel)"}'.");
         }
 
         if (setHierarchicalParent)
         {
-            try
+            if (inferiorBlock.ParentBlock != parentToSetForInferior)
             {
-                Debug.Log($"  Attempting childBlock.SetParent(parentBlock). Child: {childBlock.ID} (PrevConn Connected: {childBlock.PreviousConnection?.IsConnected ?? false}, OutputConn Connected: {childBlock.OutputConnection?.IsConnected ?? false}), Parent: {parentBlock.ID}");
-                childBlock.SetParent(parentBlock);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"  ERROR during childBlock.SetParent(parentBlock) in ConnectInternal! Child: {childBlock.ID}, Parent: {parentBlock.ID}. Exception: {e.Message}\nReverting connection...");
-                // REVERTIR LA CONEXIÓN SI SetParent FALLA CRÍTICAMENTE
-                ConnectionModel.DisconnectReciprocally(parentConnection, childConnection);
-                throw; // Re-lanzar para que la operación de drag/conexión general falle
-            }
-        }
-        else if (parentConnection.Type == EConnection.NextStatement && childConnection.Type == EConnection.PrevStatement)
-        {
-            //if (childBlock.ParentBlock != null && (childConnection.Type == EConnection.PrevStatement || childConnection.Type == EConnection.OutputValue))
-            if (childBlock.ParentBlock != null && childBlock.ParentBlock != parentBlock) // No es hijo del bloque actual
-
-            {
-                Logger.Log($"ConnectInternal: Child '{childBlock.ID}' was child of '{childBlock.ParentBlock.ID}'. Connecting to stack (Prev of child -> Next of parent '{parentBlock.ID}'). Setting ParentBlock to null."); if (parentConnection.Type == EConnection.NextStatement && childConnection.Type == EConnection.PrevStatement)
+                try
                 {
-                    if (childBlock.ParentBlock != null)
-                    {
-                        Debug.Log($"  Block '{childBlock.ID}' was child of '{childBlock.ParentBlock.ID}'. Connecting to stack (Prev->Next), so setting its ParentBlock to null.");
-                        childBlock.SetParent(null); 
-                    }
+                    inferiorBlock.SetParent(parentToSetForInferior);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"  [CM.ActualConnect] ERROR during inferiorBlock.SetParent! Child: {inferiorBlock.ID}, TargetParent: {parentToSetForInferior?.ID ?? "NULL"}. Exception: {e.Message}\n  REVERTING PRIMARY CONNECTION.");
+                    ConnectionModel.DisconnectReciprocally(superiorConn, inferiorConn);
+                    superiorConn.FireUpdate(UpdateState.ConnectionFailed);
+                    inferiorConn.FireUpdate(UpdateState.ConnectionFailed);
+                    throw;
                 }
             }
+            else
+            {
+                Debug.Log($"  [CM.ActualConnect] HIERARCHY: Parent of inferiorBlock ({inferiorBlock.ID}) is already {parentToSetForInferior?.ID ?? "NULL"}. No change needed.");
+            }
         }
 
-        //Debug.Log($"<color=green>ConnectInternal SUCCESS:</color> Parent ({GetConnectionModelID(parentConnection)}) is now connected to Child ({GetConnectionModelID(childConnection)}). Firing 'Connected' update.");
+        // --- ACTUALIZAR ESTADO Y DISPARAR EVENTOS ---
+        Debug.Log($"[CM.ActualConnect] === Connection SUCCESSFUL. Firing Connection Updates for Sup: {GetConnectionModelID(superiorConn)}, Inf: {GetConnectionModelID(inferiorConn)} ===");
 
-        Debug.Log($"[CM.ConnectInternal] === Firing Connection Updates === Parent: {GetConnectionModelID(parentConnection)} (Superior? {parentConnection.IsSuperior}), Child: {GetConnectionModelID(childConnection)} (Superior? {childConnection.IsSuperior})");
-        FireUpdate(UpdateState.Connected); // Disparar para parentConnection
-        childConnection.FireUpdate(UpdateState.Connected); // Y para childConnection
-    
-}
+        superiorConn.m_UpdateState = UpdateState.Connected;
+        inferiorConn.m_UpdateState = UpdateState.Connected;
+
+        superiorConn.FireUpdate(UpdateState.Connected);
+        inferiorConn.FireUpdate(UpdateState.Connected);
+    }
+
 
     public static void DisconnectReciprocally(ConnectionModel c1, ConnectionModel c2)
     {
-        if (c1 != null) c1.TargetConnection = null;
-        if (c2 != null) c2.TargetConnection = null;
+        if (c1 != null && c1.TargetConnection == c2)
+        { 
+            c1.TargetConnection = null; 
+        }
+        if (c2 != null && c2.TargetConnection == c1) 
+        { 
+            c2.TargetConnection = null; 
+        }
     }
 
     /// <summary>
@@ -411,7 +585,7 @@ public class ConnectionModel : Observable<UpdateState>
 
         bool wasInDB = this.InDB; // Guarda el estado inicial
         BlockConnectionDB dbRef = this.DB; // Guarda la referencia
-        string connIdForLog = GetConnectionModelID(this); // Genera ID antes de que SourceBlock pueda cambiar
+        string connIdForLog = GetConnectionModelID(this); // Genera ID antes de que SB pueda cambiar
 
         GameObject contextObj = null;// this.SourceBlock?.gameObject; // Obtener contexto si es posible
 
@@ -521,70 +695,135 @@ public class ConnectionModel : Observable<UpdateState>
     /// </summary>
     public bool IsConnectionAllowed(ConnectionModel candidate, float maxRadius = 0)
     {
-       // Debug.Log($"      [IsConnectionAllowed Check] Self: {GetConnectionModelID(this)} VS Candidate: {GetConnectionModelID(candidate)}, MaxRadius: {maxRadius}");
+        // Logger.Log($"[CM.IsConnectionAllowed] Checking Self: {GetConnectionModelID(this)} ({this.Type}) VS Candidate: {GetConnectionModelID(candidate)} ({candidate?.Type}), MaxRadius: {maxRadius}");
+
         if (candidate == null)
         {
-            Debug.Log("        -> FAILED: Candidate is NULL.");
+            Logger.Log("        -> FAILED: Candidate is NULL.");
             return false;
         }
-        int reason = this.CanConnectWithReason(candidate);
+
+        //Chequeo de compatibilidad fundamental (tipos, checks, etc.)
+        int reason = this.CanConnectWithReason(candidate); 
         if (reason != ConnectionModel.CAN_CONNECT)
         {
-            string reasonStr = "Unknown";
+            string reasonStr = "Unknown (" + reason + ")"; // Proporciona el número si no está en el switch
             switch (reason)
             {
                 case REASON_SELF_CONNECTION: reasonStr = "Self Connection"; break;
                 case REASON_WRONG_TYPE: reasonStr = "Wrong Type"; break;
-                case REASON_TARGET_NULL: reasonStr = "Target Null (already checked)"; break; 
+                // REASON_TARGET_NULL ya no aplica aquí directamente, se maneja con candidate == null.
                 case REASON_CHECKS_FAILED: reasonStr = "Checks Failed"; break;
                 case REASON_DIFFERENT_WORKSPACES: reasonStr = "Different Workspaces"; break;
-                case REASON_SHADOW_PARENT: reasonStr = "Shadow Parent Issue"; break;
+                case REASON_SHADOW_PARENT: reasonStr = "Shadow Parent Issue"; break; 
             }
-            Debug.Log($"        -> FAILED (CanConnectWithReason): {reasonStr} ({reason})");
+            Logger.Log($"        -> FAILED (CanConnectWithReasonTo): {reasonStr}. Self: {this.Type}, Candidate: {candidate.Type}");
             return false;
         }
-    //    Debug.Log("        - Passed: Basic connection reasons (Type, Workspace, Checks, etc.) OK.");
+        // Logger.Log("        - Passed: Basic connection reasons (Type, Workspace, Checks, etc.) OK.");
 
-        BlockModel candidateParent = candidate.SourceBlock?.ParentBlock; 
-        while (candidateParent != null)
+        // Chequeo de bucles (conectar un bloque a uno de sus propios hijos)
+        //    SB es el bloque al que pertenece esta conexión (arrastrada)
+        //    candidate.SB es el bloque al que pertenece la conexión candidata (esta fija o estacionaria)
+        if (this.SourceBlock != null && candidate.SourceBlock != null) // Evitar NullRef si alguna conexión no tiene SB
         {
-            if (candidateParent == this.SourceBlock)
+            BlockModel parentOfCandidate = candidate.SourceBlock.ParentBlock;
+            while (parentOfCandidate != null)
             {
-                Debug.Log($"        -> FAILED: Connection would create a loop (candidate is child of self).");
+                if (parentOfCandidate == this.SourceBlock)
+                {
+                    Logger.Log("        -> FAILED: Connection would create a loop (candidate is child of self's source block).");
+                    return false;
+                }
+                parentOfCandidate = parentOfCandidate.ParentBlock;
+            }
+            // También verificar si el bloque que se arrastra es padre del candidato
+            BlockModel parentOfSelf = this.SourceBlock.ParentBlock;
+            while (parentOfSelf != null)
+            {
+                if (parentOfSelf == candidate.SourceBlock)
+                {
+                    Logger.Log("        -> FAILED: Connection would create a loop (self's source block is child of candidate's).");
+                    return false;
+                }
+                parentOfSelf = parentOfSelf.ParentBlock;
+            }
+        }
+        // Logger.Log("        - Passed: No loop detected.");
+
+        // Lógica para manejar si la conexión candidata esta ocupada.
+        //    'this' es la conexión del bloque que se arrastra.
+        //    'candidate' es la conexión del bloque estacionario.
+        if (candidate.IsConnected)
+        {
+            // CASO A: Conexiones de Statement (Previous/Next) -> permitir bump
+            // Si candidate.Next está ocupado, se empuja.
+            if (this.Type == EConnection.PrevStatement && candidate.Type == EConnection.NextStatement)
+            {
+                // candidate.SB es el bloque superior de la pila existente.
+                // candidate (NextStatement) ya está conectado a candidate.TargetConnection (PrevStatement de otro bloque).
+                // Es correcto empujar el bloque de abajo.
+                Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP downwards.", this.SourceBlock?.BlockView?.gameObject);
+                
+            }
+            // Intentamos conectar el NEXT de nuestro bloque arrastrado (this) al PREVIOUS del bloque estacionario (candidate).
+            // //Si candidate.Previous está ocupado, se empuja.
+            else if (this.Type == EConnection.NextStatement && candidate.Type == EConnection.PrevStatement)
+            {
+                // candidate.SB es el bloque inferior de la pila existente.
+                // candidate (PrevStatement) ya está conectado a candidate.TargetConnection (NextStatement de otro bloque).
+                // Es correcto empujar el bloque de arriba.
+                Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP upwards.", this.SourceBlock?.BlockView?.gameObject);
+                
+            }
+
+            // CASO B: Conexiones de Valor (Input/Output) -> PERMITIR REEMPLAZO (con condiciones)
+            // Intentando conectar nuestro OUTPUT (this) a un INPUT (candidate) que ya tiene algo.
+            else if (this.Type == EConnection.OutputValue && candidate.Type == EConnection.InputValue)
+            {
+                // candidate (InputValue) ya está conectado a candidate.TargetConnection (otro OutputValue).
+                // Podemos reemplazarlo excepto que el bloque conectado sea inmóvil.
+                if (candidate.TargetBlock != null && !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
+                {
+                    Logger.Log($"        -> FAILED: Candidate (InputValue) '{GetConnectionModelID(candidate)}' is connected to an IMMOVABLE, non-shadow block '{candidate.TargetBlock.ID}'. Cannot replace.");
+                    return false;
+                }
+                Logger.Log($"        - Candidate (InputValue) '{GetConnectionModelID(candidate)}' is occupied. Allowing potential REPLACEMENT of '{GetConnectionModelID(candidate.TargetConnection)}'.", this.SourceBlock?.BlockView?.gameObject);
+            }
+            // Intentando conectar nuestro INPUT (this) a un OUTPUT (candidate).
+            else if (this.Type == EConnection.InputValue && candidate.Type == EConnection.OutputValue)
+            {
+                if (this.IsConnected) // Si el input del bloque que estoy arrastrando ya está ocupado
+                {
+                    Logger.Log($"        -> FAILED: Self (InputValue) '{GetConnectionModelID(this)}' is already connected to '{GetConnectionModelID(this.TargetConnection)}'. Cannot connect new OutputValue '{GetConnectionModelID(candidate)}'.");
+                    return false;
+                }
+ 
+                Logger.Log($"        - Candidate (OutputValue) '{GetConnectionModelID(candidate)}' might be connected, but self InputValue '{GetConnectionModelID(this)}' is free. Allowing.", this.SourceBlock?.BlockView?.gameObject);
+            }
+            // CASO C: Cualquier otro tipo de conexión donde el candidato esté ocupado y no sea bump/reemplazo manejado.
+            else
+            {
+                Logger.Log($"        -> FAILED: Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied by '{GetConnectionModelID(candidate.TargetConnection)}', and no bump/replace logic for this combination. Self: '{GetConnectionModelID(this)}' ({this.Type}).");
                 return false;
             }
-            candidateParent = candidateParent.ParentBlock;
         }
-        Debug.Log("        - Passed: No loop detected.");
+        // Logger.Log("        - Passed: Candidate connection state checks (or bump/replace allowed).");
 
-       
-        if (candidate.Type == EConnection.OutputValue || candidate.Type == EConnection.PrevStatement)
+        // Chequeo de Distancia
+        if (maxRadius > 0) // Solo chequeamos si maxRadius es un valor significativo
         {
-            if (candidate.IsConnected) // Si el candidato inferior YA está conectado a OTRO
+            float dist = this.DistanceFrom(candidate);
+            // Logger.Log($"        - Checking Distance: Calculated={dist}, MaxRadius={maxRadius}");
+            if (dist > maxRadius)
             {
-                Debug.Log($"        -> FAILED: Candidate (Inferior: {candidate.Type}) is already connected to {GetConnectionModelID(candidate.TargetConnection)}.");
+                // Logger.Log($"        -> FAILED: Distance ({dist}) exceeds MaxRadius ({maxRadius}).");
                 return false;
             }
-           
+            // Logger.Log("        - Passed: Distance check.");
         }
-      //  Debug.Log($"        - Passed: Candidate ({candidate.Type}) connection state check OK.");
 
-        if (candidate.Type == EConnection.InputValue && candidate.IsConnected &&
-            candidate.TargetBlock != null && // Safety check
-            !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
-        {
-            Debug.Log("        -> FAILED: Candidate (InputValue) is connected to an immovable, non-shadow block.");
-            return false;
-        }
-       
-        float dist = this.DistanceFrom(candidate);
-      //  Debug.Log($"        - Checking Distance: Calculated={dist}, MaxRadius={maxRadius}");
-        if (maxRadius > 0 && dist > maxRadius)
-        {
-          //  Debug.Log($"        -> FAILED: Distance ({dist}) exceeds MaxRadius ({maxRadius}).");
-            return false;
-        }
-     
+        Logger.Log($"        -> SUCCESS: Connection Allowed between {GetConnectionModelID(this)} and {GetConnectionModelID(candidate)}.");
         return true;
     }
 
@@ -656,27 +895,44 @@ public class ConnectionModel : Observable<UpdateState>
     /// <summary>
     /// Disconnect this connection.
     /// </summary>
-    public void Disconnect()
+    
+    public  void Disconnect() // Hacerla virtual si aún no lo es
     {
         if (!IsConnected) return;
 
-        var otherConnection = TargetConnection;
-        if (otherConnection.TargetConnection != this)
+        ConnectionModel oldTarget = TargetConnection;
+        // Logger.Log($"[CM.Disconnect] Disconnecting '{ID}' from '{oldTarget?.ID}'");
+
+        // Romper la conexión en ambos lados ANTES de disparar eventos para evitar recursiones o estados inconsistentes.
+        this.TargetConnection = null;
+        if (oldTarget != null)
         {
-            Debug.LogWarning("Target connection not connected to source connection.");
-            return;
+            oldTarget.TargetConnection = null;
         }
 
-        if (this.IsSuperior)
-        {
-            this.DisconnectInternal(otherConnection);
-            this.RespawnShadow();
+        // Notificar a las vistas
+        UpdateState oldState = m_UpdateState; // Guarda el estado antes del cambio
+        m_UpdateState = UpdateState.Disconnected;
+        if (oldState == UpdateState.Connected)
+        { // Solo dispara si realmente estaba conectado
+            FireUpdate(m_UpdateState); // Notifica a mi vista
         }
-        else
+
+        if (oldTarget != null)
         {
-            otherConnection.DisconnectInternal(this);
-            otherConnection.RespawnShadow();
+            UpdateState oldTargetState = oldTarget.m_UpdateState;
+            oldTarget.m_UpdateState = UpdateState.Disconnected;
+            if (oldTargetState == UpdateState.Connected)
+            {
+                oldTarget.FireUpdate(oldTarget.m_UpdateState); // Notifica a la vista del otro
+            }
         }
+        // Cualquier limpieza adicional de ShadowDOM si se manejaba directamente en Disconnect.
+        // if (this.ShadowDom != null && this.TargetConnection == null /*asegurarse de que está desconectado y no reconectando a otro shadow*/)
+        // {
+        //     Debug.LogWarning($"Disconnecting {this.ID} which has a shadow. Shadow may need explicit disposal if it becomes an orphan.");
+        //     // La lógica de eliminar shadows huérfanos podría estar en otro lado (e.g., cuando el bloque dueño se actualiza)
+        // }
     }
 
     private void DisconnectInternal(ConnectionModel childConnection)

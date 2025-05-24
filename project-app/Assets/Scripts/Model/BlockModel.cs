@@ -60,6 +60,8 @@ public class BlockModel : Observable<int>
     public BlockModel ParentBlock { get; protected set; }
     public List<BlockModel> ChildBlocks = new List<BlockModel>();
 
+    public BlockView BlockView { get; internal set; }
+
     /// <summary>
     /// The block's position in workspace units.  (0, 0) is at the workspace's origin; scale does not change this value.
     /// </summary>
@@ -69,6 +71,21 @@ public class BlockModel : Observable<int>
     public BlockModel() 
     {
         InputList = new List<InputModel>(); 
+    }
+
+    public IEnumerable<InputModel> StatementInputList
+    {
+        get { return InputList.Where(input => input.Type == EConnection.NextStatement || input.Type == EConnection.InputValue /*Si Inputs de valor también son "contenedores" de jerarquía */); }
+        //  solo para los huecos de NextStatement:
+        // get { return InputList.Where(input => input.Type == EConnection.NextStatement); }
+    }
+
+    public bool HasStatementInputWith(ConnectionModel connectionToCheck)
+    {
+        if (connectionToCheck == null) return false;
+        // Verifica si alguno de los InputModel de este bloque tiene una conexión que es la misma que connectionToCheck Y ese InputModel es de tipo Statement.
+        return InputList.Any(input => input.Connection == connectionToCheck &&
+                                      (input.Type == EConnection.NextStatement  ));
     }
 
     /// <summary>

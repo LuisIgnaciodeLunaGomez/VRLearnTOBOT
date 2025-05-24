@@ -82,7 +82,7 @@ public class WorkSpaceView : MonoBehaviour
         }
         else
         {
-            Debug.Log($"WorkSpaceView ({gameObject.name}): RootCanvas IS '{RootCanvas.name}'. Mode: {RootCanvas.renderMode}. WorldCamera is {(RootCanvas.worldCamera == null ? "NULL" : RootCanvas.worldCamera.name)}", RootCanvas);
+            //Debug.Log($"WorkSpaceView ({gameObject.name}): RootCanvas IS '{RootCanvas.name}'. Mode: {RootCanvas.renderMode}. WorldCamera is {(RootCanvas.worldCamera == null ? "NULL" : RootCanvas.worldCamera.name)}", RootCanvas);
         }
 
         m_canvasRect = RootCanvas.GetComponent<RectTransform>();
