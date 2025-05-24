@@ -408,7 +408,7 @@ public class ConnectionView : BaseView
         {
             //bloque arrastrado, y además soy el superior en la conexión.
             
-            Logger.Log($"{logPrefix} - Case: DRAGGED is SUPERIOR ('{m_SourceBlockView.name}' receives stationary '{partnerBlockView.name}')", this);
+           // Logger.Log($"{logPrefix} - Case: DRAGGED is SUPERIOR ('{m_SourceBlockView.name}' receives stationary '{partnerBlockView.name}')", this);
 
             viewToMove = m_SourceBlockView;           // Bloque arrastrado se mueve inicialmente.
             stationaryContextView = partnerBlockView; // Estacionario es la referencia para el bloque arrastrado.
@@ -416,11 +416,11 @@ public class ConnectionView : BaseView
             //Calcular la posición final del bloque arrastrado
             ConnectionView myReceiverConnectionView = this; //  Next o Input del bloque arrastrado
 
-            Logger.Log($"{logPrefix}   Preparing to get childDonorConnectionView. partnerBlockView is {(partnerBlockView == null ? "NULL" : partnerBlockView.name)}. newlyAttachedPartnerModel.Type is {newlyAttachedPartnerModel.Type}.", this);
+           // Logger.Log($"{logPrefix}   Preparing to get childDonorConnectionView. partnerBlockView is {(partnerBlockView == null ? "NULL" : partnerBlockView.name)}. newlyAttachedPartnerModel.Type is {newlyAttachedPartnerModel.Type}.", this);
 
             ConnectionView childDonorConnectionView = partnerBlockView.GetConnectionView(newlyAttachedPartnerModel.Type); // Prev o Output del estacionario
 
-            Logger.Log($"{logPrefix}   Child donor connection view: {childDonorConnectionView?.name} ({childDonorConnectionView?.ConnectionType})", this);
+            //Logger.Log($"{logPrefix}   Child donor connection view: {childDonorConnectionView?.name} ({childDonorConnectionView?.ConnectionType})", this);
 
 
             if (myReceiverConnectionView == null || childDonorConnectionView == null) 

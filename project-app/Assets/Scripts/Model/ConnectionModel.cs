@@ -185,7 +185,7 @@ public class ConnectionModel : Observable<UpdateState>
         //Quitamos la conexión de la DB si ya estaba en ella.
         if (wasInDB && currentDB != null)
         {
-            Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' was in DB. Removing from old location ({m_location:F2}).");
+            //Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' was in DB. Removing from old location ({m_location:F2}).");
             currentDB.RemoveConnection(this); // InDB = false.
         }
 
@@ -195,13 +195,13 @@ public class ConnectionModel : Observable<UpdateState>
         //Volver a añadir a la DB si debe estar ahí (no oculta y DB válida).
         if (!this.Hidden && currentDB != null)
         {
-            Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' is not hidden. Adding to DB at new location ({m_location:F2}).");
+           // Debug.Log($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' is not hidden. Adding to DB at new location ({m_location:F2}).");
             currentDB.AddConnection(this); // InDB = true.
         }
         else if (wasInDB && currentDB == null)
         {
             // Inconsistencia grave. Si InDB era true pero DB es null.
-            Debug.LogError($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' had InDB=true but DB was NULL during location update. Forcing InDB=false. This indicates an issue with DB assignment!");
+          //  Debug.LogError($"[CM.SetLocInternal] Conn '{GetConnectionModelID(this)}' had InDB=true but DB was NULL during location update. Forcing InDB=false. This indicates an issue with DB assignment!");
             this.InDB = false;
         }
         //Si no estaba en DB o está oculta, no se hace nada más.
@@ -763,7 +763,7 @@ public class ConnectionModel : Observable<UpdateState>
                 // candidate.SB es el bloque superior de la pila existente.
                 // candidate (NextStatement) ya está conectado a candidate.TargetConnection (PrevStatement de otro bloque).
                 // Es correcto empujar el bloque de abajo.
-                Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP downwards.", this.SourceBlock?.BlockView?.gameObject);
+               // Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP downwards.", this.SourceBlock?.BlockView?.gameObject);
                 
             }
             // Intentamos conectar el NEXT de nuestro bloque arrastrado (this) al PREVIOUS del bloque estacionario (candidate).
@@ -773,7 +773,7 @@ public class ConnectionModel : Observable<UpdateState>
                 // candidate.SB es el bloque inferior de la pila existente.
                 // candidate (PrevStatement) ya está conectado a candidate.TargetConnection (NextStatement de otro bloque).
                 // Es correcto empujar el bloque de arriba.
-                Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP upwards.", this.SourceBlock?.BlockView?.gameObject);
+              //  Logger.Log($"        - Candidate '{GetConnectionModelID(candidate)}' ({candidate.Type}) is occupied. BUT this is '{GetConnectionModelID(this)}' ({this.Type}). Allowing potential BUMP upwards.", this.SourceBlock?.BlockView?.gameObject);
                 
             }
 
@@ -785,10 +785,10 @@ public class ConnectionModel : Observable<UpdateState>
                 // Podemos reemplazarlo excepto que el bloque conectado sea inmóvil.
                 if (candidate.TargetBlock != null && !candidate.TargetBlock.Movable && !candidate.TargetBlock.IsShadow)
                 {
-                    Logger.Log($"        -> FAILED: Candidate (InputValue) '{GetConnectionModelID(candidate)}' is connected to an IMMOVABLE, non-shadow block '{candidate.TargetBlock.ID}'. Cannot replace.");
+                   Logger.Log($"        -> FAILED: Candidate (InputValue) '{GetConnectionModelID(candidate)}' is connected to an IMMOVABLE, non-shadow block '{candidate.TargetBlock.ID}'. Cannot replace.");
                     return false;
                 }
-                Logger.Log($"        - Candidate (InputValue) '{GetConnectionModelID(candidate)}' is occupied. Allowing potential REPLACEMENT of '{GetConnectionModelID(candidate.TargetConnection)}'.", this.SourceBlock?.BlockView?.gameObject);
+               // Logger.Log($"        - Candidate (InputValue) '{GetConnectionModelID(candidate)}' is occupied. Allowing potential REPLACEMENT of '{GetConnectionModelID(candidate.TargetConnection)}'.", this.SourceBlock?.BlockView?.gameObject);
             }
             // Intentando conectar nuestro INPUT (this) a un OUTPUT (candidate).
             else if (this.Type == EConnection.InputValue && candidate.Type == EConnection.OutputValue)
