@@ -921,7 +921,7 @@ public class ConnectionView : BaseView
                 if (m_ConnectionModel.InDB)
                 {
                     // Debug.Log($"  DB exists. InDB=true. Calling UpdateConnectionLocation.", this.gameObject);
-                    db.UpdateConnectionLocation(m_ConnectionModel);
+                  //  db.UpdateConnectionLocation(m_ConnectionModel); //Eliminar
                 }
 
             }

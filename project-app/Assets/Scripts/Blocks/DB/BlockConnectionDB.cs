@@ -51,7 +51,6 @@ public class BlockConnectionDB : List<ConnectionModel>
             int index = FindPositionForConnection(connectionToAdd); // Encuentra dónde debería ir
             Insert(index, connectionToAdd); // Inserta en esa posición
             connectionToAdd.InDB = true;
-            connectionToAdd.InDB = true; 
             // Debug.Log($"ConnectionDB [{this}]: Added connection '{ConnectionModel.GetConnectionModelID(connectionToAdd)}'. Current count: {this.Count}");
         }
     }
@@ -140,6 +139,8 @@ public class BlockConnectionDB : List<ConnectionModel>
             if (connectionToRemove.InDB)
             {
                 connectionToRemove.InDB = false;
+
+                Debug.LogError($"ConnectionDB [{this}]: INCONSISTENCY - Connection '{ConnectionModel.GetConnectionModelID(connectionToRemove)}' had InDB=true but was NOT found in list via Remove(). Forcing InDB=false. THIS SHOULD BE INVESTIGATED.");
             }
         }
     }
@@ -192,7 +193,8 @@ public class BlockConnectionDB : List<ConnectionModel>
 
 
     public void SearchForClosest(ConnectionModel connection, float maxRadius, Vector2 dxy,
-                                 out ConnectionModel closestConnection, out float closestRadius)
+                                 out ConnectionModel closestConnection,
+                                 out float closestRadius)
     {
         closestConnection = null;
         closestRadius = maxRadius; 
@@ -228,6 +230,8 @@ public class BlockConnectionDB : List<ConnectionModel>
         {
             temp = this[pointerMax];
             float distance = connection.DistanceFrom(temp);
+
+
             if (connection.IsConnectionAllowed(temp, closestRadius) && distance < closestRadius)
             {
                 closestConnection = temp;
@@ -250,41 +254,7 @@ public class BlockConnectionDB : List<ConnectionModel>
         return dbList;
     }
 
-
-    public void UpdateConnectionLocation(ConnectionModel connectionToUpdate)
-    {
-        if (connectionToUpdate == null)
-        {
-            Debug.LogError("BlockConnectionDB.UpdateConnectionLocation: Received a null connection.");
-            return;
-        }
-
-        // Busco la instancia específica en la lista.
-        // El enfoque más simple y generalmente seguro es buscar la misma referencia de objeto.
-        bool found = false;
-        for (int i = 0; i < this.Count; i++)
-        {
-            // Comparar referencias directamente
-            if (this[i] == connectionToUpdate)
-            {
-               
-                // Debug.Log($"ConnectionDB [{this}]: Confirmed connection '{ConnectionModel.GetConnectionModelID(connectionToUpdate)}' exists in list. Location ({this[i].Location.x:F2}, {this[i].Location.y:F2}).");
-                found = true;
-                break; 
-            }
-        }
-
-        // Si después de recorrer la lista, no se encontró la referencia...
-        if (!found)
-        {
-            Debug.LogWarning($"BlockConnectionDB: UpdateConnectionLocation - Connection '{ConnectionModel.GetConnectionModelID(connectionToUpdate)}' reported InDB=true but was NOT found in the list. Forcing InDB=false.");
-            // Fuerzo el flag a false para corregir el estado
-            connectionToUpdate.InDB = false;
-
-         
-        }
-    }
-
+  
     //Método de depuración
     public void Debug_LogSortOrder(string dbType) // Pasa el tipo de conexión para identificar la DB
     {

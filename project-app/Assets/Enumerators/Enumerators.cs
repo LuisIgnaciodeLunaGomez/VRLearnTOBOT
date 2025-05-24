@@ -16,13 +16,15 @@
 
 public enum UpdateState
 {
+    None,
     Connected,
     Disconnected,
     BumpedAway, // Bloque que ha sido desconectado y ha sido alejado de la conexión
     Highlight, // Bloque que ha sido conectado y se ha resaltado
     UnHighlight, //Bloque que ha sido desconectado 
     AcceptConnection,
-    CancelConnection
+    CancelConnection,
+    ConnectionFailed,
 }
 
 public enum ViewType
