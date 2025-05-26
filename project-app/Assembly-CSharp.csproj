@@ -9,7 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <ProjectGuid>{2AF31773-6B5D-3D09-051F-A15783CA8D37}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -169,7 +170,6 @@
     <Compile Include="Assets\Core\Code\CmdEnumerator.cs" />
     <Compile Include="Assets\Scripts\Configurador\Options\VariableUtils.cs" />
     <Compile Include="Assets\Scripts\Model\FieldModels\FieldLabelModel.cs" />
-    <Compile Include="Assets\Core\CustomDefine\ObservePattern.cs" />
     <Compile Include="Assets\Scripts\Configurador\Extensions\UGUIHelper.cs" />
     <Compile Include="Assets\Scripts\View\FieldViews\FieldVariableView.cs" />
     <Compile Include="Assets\Enumerators\Enumerators.cs" />
