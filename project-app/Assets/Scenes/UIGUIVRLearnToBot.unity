@@ -174,7 +174,7 @@ MonoBehaviour:
   topIconNames:
   - load_icon
   - save_icon
-  - FlagIcon
+  - GreenFlag
   - stopFlag
   categoryButtonPrefab: {fileID: 7487428553154889496, guid: 06209eb2731f2c94caaf13b780e89f39, type: 3}
 --- !u!114 &524822159

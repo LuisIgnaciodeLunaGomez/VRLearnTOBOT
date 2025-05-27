@@ -17,6 +17,7 @@ limitations under the License.
 ****************************************************************************/
 
 using System.Collections;
+using UnityEngine;
 
 
 /// <summary>
@@ -25,44 +26,95 @@ using System.Collections;
 public class CmdEnumerator : IEnumerator
 {
     private readonly BlockModel mBlock;
-    private readonly Cmdtor mCmdtor;
+    private readonly Cmdtor mCmdtorInstance;
     private IEnumerator mItor;
+    private bool mFinishedEarly; // Flag para indicar si la ejecución se "saltó" o no tiene Cmdtor
 
     public BlockModel Block
     {
         get { return mBlock; }
     }
 
-    public Cmdtor Cmdtor
+    public Cmdtor CmdtorInstance
     {
-        get { return mCmdtor; }
+        get { return mCmdtorInstance; }
     }
 
     public DataStruct Data
     {
-        get { return mCmdtor.Data; }
+        get {
+            
+            return mCmdtorInstance.Data; 
+        
+        
+        }
     }
 
     public CmdEnumerator(BlockModel block)
     {
         mBlock = block;
-        mCmdtor = CSharp.Interpreter.GetBlockInterpreter(block);
-        mItor = mCmdtor.Run(block);
+        mCmdtorInstance = CSharp.Interpreter.GetBlockInterpreter(block);
+        // mItor = mCmdtor.Run(block);
+
+        if (mCmdtorInstance == null) 
+        {
+            Debug.LogWarning($"CmdEnumerator: No interpreter (Cmdtor) found for block type '{block.Type}'. This block or its interpretation will be skipped. (Block ID: {block.ID})");
+            mItor = EmptyEnumerator(); // Asigna un enumerador que no hace nada.
+            mFinishedEarly = true; // Marca que está "terminado" porque no hay Cmdtor.
+        }
+        else
+        {
+            // Asumiendo que Run(block) en Cmdtor devuelve un IEnumerator.
+            mItor = mCmdtorInstance.Run(block);
+            mFinishedEarly = false;
+        }
     }
+
+    // Un enumerador vacío para bloques sin intérprete
+    private IEnumerator EmptyEnumerator()
+    {
+        yield break; // No rinde nada, se completa al instante.
+    }
+
 
     public bool MoveNext()
     {
+        if (mFinishedEarly) // Si no hay intérprete, o fue saltado
+        {
+            return false;
+        }
+
+        // Lógica de deshabilitad
+        if (mBlock.Disabled || mBlock.GetInheritedDisabled())
+        {
+            return false; // Este enumerador ha terminado porque el bloque está deshabilitado.
+        }
+
+        // Mueve el enumerador del intérprete real (Cmdtor.Run(block))
         return mItor.MoveNext();
     }
 
     public void Reset()
     {
-        mItor = null;
+        // Resetea el enumerador del intérprete subyacente.
+        if (mItor != null)
+        {
+            mItor.Reset(); 
+        }
+        mFinishedEarly = false; // Restablecer la bandera si Reset se llama
     }
 
     public object Current
     {
-        get { return mItor.Current; }
+        get
+        {
+            if (mItor == null)
+            {
+                // Devolver null o una señal de que no hay un valor actual.
+                return null;
+            }
+            return mItor.Current;
+        }
     }
 
     /// <summary>
@@ -76,8 +128,11 @@ public class CmdEnumerator : IEnumerator
 
         //parent loop was break or continue, move out. 
         if (LoopCmdtor.SkipRunByControlFlow(nextblock))
-            return null;
+        {
+            Debug.Log($"CmdEnumerator: Skipping next block '{nextblock.Type}' due to control flow.");
 
+            return null;
+        }
         return new CmdEnumerator(nextblock);
     }
 }

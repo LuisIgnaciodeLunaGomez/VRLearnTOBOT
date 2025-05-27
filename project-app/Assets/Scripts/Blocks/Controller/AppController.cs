@@ -35,6 +35,9 @@ public class AppController : MonoBehaviour
     private BlockDragController m_blockDragController;
     private BlockConnectionController m_connectionController;
 
+    [SerializeField] private GameObject m_RobotPrefab; // carga del robot dinámicamente como un prefab
+    [SerializeField] private Transform m_RobotSpawnPoint;
+
     private bool m_IsInitialized = false;
 
     public CategoryController GetCategoryController()
@@ -49,10 +52,15 @@ public class AppController : MonoBehaviour
             Instance = this;
             ScratchBlocks.Init();
             DontDestroyOnLoad(gameObject);
+            Logger.Log("<color=orange>AppController: Awake - Singleton instance created and set to DontDestroyOnLoad.</color>");
+            
+           
         }
         else
         {
             Destroy(gameObject);
+            Logger.LogWarning("AppController: Duplicate instance of AppController detected. Destroying myself.");
+
         }
     }
 
@@ -62,7 +70,7 @@ public class AppController : MonoBehaviour
         if (Instance == this)
         {
             Instance = null;
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
     }
 
@@ -75,7 +83,7 @@ public class AppController : MonoBehaviour
     {
         return m_IsInitialized;
     }
-
+    
     IEnumerator Start()
     {
       //  Debug.Log("<color=orange>AppController: Start - Finding components...</color>");
@@ -127,7 +135,19 @@ public class AppController : MonoBehaviour
         RectTransform blockListAreaRect = m_uiManager.BlockListPanelRect;
         RectTransform categoryButtonContainer = m_uiManager.CategoryButtonContainerRect;
         ScrollRect middlePanelScrollRect = m_uiManager.MiddlePanelScrollRect;
-         GameObject catButtonPrefab = m_uiManager.CategoryButtonPrefab; 
+         GameObject catButtonPrefab = m_uiManager.CategoryButtonPrefab;
+        RectTransform dragLayerRect = m_uiManager.DragLayer;
+
+
+       /* if (BlockObserver.Instance != null)
+        {
+            BlockObserver.Instance.Initialize(); // Llamará a su método de inicialización
+        }
+        else
+        {
+            Debug.LogError("AppController: BlockObserver.Instance is unexpectedly null after expected Awake(). Check Project Settings Script Execution Order for BlockObserver.");
+            // Esto solo se ejecutaría si la configuración del orden falla de alguna manera extrema.
+        }*/
 
         if (codingAreaRect == null || blockListAreaRect == null || categoryButtonContainer == null || middlePanelScrollRect == null || catButtonPrefab == null)
         {
@@ -157,10 +177,35 @@ public class AppController : MonoBehaviour
        // Debug.Log("AppController: WorkspaceController initialized.");
 
         m_executionController = FindFirstObjectByType<ExecutionController>() ?? gameObject.AddComponent<ExecutionController>();
-        if (m_executionController == null) m_executionController = gameObject.AddComponent<ExecutionController>();
+        //if (m_executionController == null) m_executionController = gameObject.AddComponent<ExecutionController>();
         
-        // m_executionController.Initialize(m_workspaceModel);
-     //   Debug.Log("AppController: ExecutionController found/created.");
+        // m_executionController.InitializeController(m_workspaceModel);
+
+        if (m_executionController != null)
+        {
+            // ¡Esta línea es CRÍTICA y llama a la versión corregida de InitializeController!
+            // Que a su vez asegura que CSharp.Interpreter y CSharp.Runner estén inicializados.
+            m_executionController.InitializeController(m_workspaceModel);
+        }
+        else
+        {
+            Debug.LogError("AppController: FAILED to find or create ExecutionController! Cannot proceed with execution setup.");
+            yield break;
+        }
+
+        if (BlockObserver.Instance != null)
+        {
+            // ¡¡ESTA ES LA LÍNEA QUE SE EJECUTA EN EL MOMENTO CORRECTO!!
+            BlockObserver.Instance.SubscribeToExecutionController(m_executionController);
+            Logger.Log("<color=green>AppController: BlockObserver subscription to ExecutionController successful.</color>");
+            BlockObserver.Instance.Initialize(); // Reinicia el robot (esta parte tuya ya funciona)
+        }
+        else
+        {
+            Debug.LogError("AppController.Start(): BlockObserver.Instance is NULL. Check Script Execution Order for BlockObserver and ensure it exists in the scene.");
+        }
+
+        //   Debug.Log("AppController: ExecutionController found/created.");
 
         m_inputController = FindFirstObjectByType<InputController>() ?? gameObject.AddComponent<InputController>();
 
@@ -198,12 +243,11 @@ public class AppController : MonoBehaviour
             catButtonPrefab,         
             m_categoryController
         );
-       // Debug.Log("<color=green>AppController: BlockListView initialized.</color>", this);
 
-       // Debug.Log("<color=green>AppController: Initialization of dependent controllers complete.</color>");
-        
+       
         m_IsInitialized = true;
     }
+
 
     public void TriggerExecution()
     {
