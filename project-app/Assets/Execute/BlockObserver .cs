@@ -31,14 +31,14 @@ public class BlockObserver : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // DontDestroyOnLoad(gameObject);
+             DontDestroyOnLoad(gameObject);
             Logger.Log("<color=cyan>[BlockObserver] Singleton Instance created.</color>");
         }
         else if (Instance != this)
         {
             Logger.LogWarning("[BlockObserver] Duplicate BlockObserver instance detected. Destroying myself.");
             Destroy(gameObject);
-            return;
+           // return;
         }
     }
 
@@ -168,55 +168,6 @@ public class BlockObserver : MonoBehaviour
         Debug.Log($"<color=yellow>BlockObserver: Starting processing of block: {block?.Type} (ID: {block?.ID})</color>");
         if (m_StatusText != null) m_StatusText.text = $"Running: {block?.Type}...";
 
-        if (m_RobotObject != null && block != null)
-        {
-            switch (block.Type)
-            {
-                case "motion_movesteps":
-                    float stepsValue = 0f;
-                    // Intento seguro de obtener el valor del campo "STEPS"
-                    string stepsStr = block.GetFieldValue("STEPS"); // <-- Llama al método NO GENÉRICO
-                    if (string.IsNullOrEmpty(stepsStr) && float.TryParse(stepsStr, out stepsValue))
-                    {
-                        
-                        Debug.LogWarning($"BlockObserver: Block 'motion_movesteps' has no value for 'STEPS'. Using default of 10.");
-                        stepsValue = 10f; // Valor predeterminado de seguridad
-                    }
-                    else
-                    {
-                        if (!float.TryParse(stepsStr, out stepsValue)) // Intenta parsear a float
-                        {
-                            Debug.LogError($"BlockObserver: Could not parse STEPS value '{stepsStr}' to float. Using default of 10.");
-                            stepsValue = 10f; // Si no es un número válido
-                        }
-                    }
-                    StartCoroutine(MoveRobot(stepsValue));
-                    break;
-
-                case "motion_turnright":
-                    float degrees = 90f; 
-                    string degreesStr = block.GetFieldValue("DEGREES"); 
-                    if (float.TryParse(degreesStr, out degrees)) { /* uso el valor parseado */ }
-
-                    //StartCoroutine(TurnRobot(degrees));
-                    break;
-
-                case "looks_say":
-                    string textToSay = "Hola mundo!"; 
-                    textToSay = block.GetFieldValue("TEXT") ?? "Hola!";
-                    Debug.Log($"BlockObserver: Robot says: '{textToSay}'");
-                    break;
-
-                case "control_wait":
-                    float waitSeconds = 1f;
-                    string waitStr = block.GetFieldValue("DURATION"); 
-                    if (float.TryParse(waitStr, out waitSeconds)) {  }
-                    //StartCoroutine(WaitRobot(waitSeconds));
-                    break;
-
-                    // Agregar más casos para otros bloques que se quieran controlar...
-            }
-        }
     }
 
     public void HandleExecutionFinishBlock(BlockModel block)
@@ -320,7 +271,7 @@ public class BlockObserver : MonoBehaviour
             yield break;
         }
 
-        float animationDuration = 0.5f; // Puedes hacerla ajustable.
+        float animationDuration = 0.5f; 
         Vector3 startPos = m_RobotObject.transform.position;
         float unitsPerStep = 0.1f; // Conversión de pasos Scratch a unidades Unity.
         Vector3 endPos = startPos + m_RobotObject.transform.forward * distance * unitsPerStep;
@@ -333,7 +284,7 @@ public class BlockObserver : MonoBehaviour
             yield return null;
         }
         m_RobotObject.transform.position = endPos; // Asegura que llega al destino exacto.
-        Debug.Log($"<color=blue>Milo moved {distance} steps!</color>");
+        Debug.Log($"<color=blue>Robot moved {distance} steps!</color>");
     }
 
     public IEnumerator TurnRobot(float degrees)
@@ -353,13 +304,13 @@ public class BlockObserver : MonoBehaviour
             yield return null;
         }
         m_RobotObject.transform.rotation = endRot;
-        Debug.Log($"<color=blue>Milo turned {degrees} degrees!</color>");
+        Debug.Log($"<color=blue>Robot turned {degrees} degrees!</color>");
     }
 
     public IEnumerator WaitRobot(float seconds)
     {
-        Debug.Log($"<color=blue>Milo waiting for {seconds} seconds...</color>");
+        Debug.Log($"<color=blue>Robot waiting for {seconds} seconds...</color>");
         yield return new WaitForSeconds(seconds);
-        Debug.Log($"<color=blue>Milo finished waiting.</color>");
+        Debug.Log($"<color=blue>Robot finished waiting.</color>");
     }
 }//Fin clase BlockObserver

@@ -33,4 +33,16 @@ public static class Logger
     {
         Debug.LogError($"{System.DateTime.Now:HH:mm:ss.fff} - {message}", context);
     }
+
+    // Sin contexto
+    public static void LogFormat(string format, params object[] args)
+    {
+        Debug.LogFormat(format, args);
+    }
+
+    // Con contexto (para mensajes de un objeto específico)
+    public static void LogFormat(string format, UnityEngine.Object context, params object[] args)
+    {
+        Debug.LogFormat(context, format, args); // Llama a Debug.LogFormat con contexto
+    }
 }

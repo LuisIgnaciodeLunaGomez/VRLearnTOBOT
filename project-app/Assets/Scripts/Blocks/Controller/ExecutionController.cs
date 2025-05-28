@@ -120,9 +120,9 @@ public class ExecutionController : MonoBehaviour
             CSharp.Runner.CoroutineStopper = StopAllCoroutines;
 
             //Suscribir el observador al CSharp.Runner.
-            
+          
 
-            CSharp.Runner.RemoveObserver(m_RunnerObserver);
+            //CSharp.Runner.RemoveObserver(m_RunnerObserver); //<--- esto parece que no es necesario a la vista de los logs obtenidos.
             CSharp.Runner.AddObserver(m_RunnerUpdateStateObserver);
 
             Debug.Log("<color=green>ExecutionController Initialized and subscribed to CSharp.Runner events.</color>");

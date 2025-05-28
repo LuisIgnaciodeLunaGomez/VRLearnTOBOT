@@ -193,9 +193,8 @@ public class AppController : MonoBehaviour
             yield break;
         }
 
-        if (BlockObserver.Instance != null)
+      /*  if (BlockObserver.Instance != null)
         {
-            // ¡¡ESTA ES LA LÍNEA QUE SE EJECUTA EN EL MOMENTO CORRECTO!!
             BlockObserver.Instance.SubscribeToExecutionController(m_executionController);
             Logger.Log("<color=green>AppController: BlockObserver subscription to ExecutionController successful.</color>");
             BlockObserver.Instance.Initialize(); // Reinicia el robot (esta parte tuya ya funciona)
@@ -204,7 +203,7 @@ public class AppController : MonoBehaviour
         {
             Debug.LogError("AppController.Start(): BlockObserver.Instance is NULL. Check Script Execution Order for BlockObserver and ensure it exists in the scene.");
         }
-
+      */
         //   Debug.Log("AppController: ExecutionController found/created.");
 
         m_inputController = FindFirstObjectByType<InputController>() ?? gameObject.AddComponent<InputController>();

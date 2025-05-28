@@ -60,7 +60,7 @@ public class MotionBlockInterpreter : Cmdtor
       
         Debug.Log($"[MotionBlockInterpreter] Robot finished moving.");
 
-       
+    
     }
    
     protected override IEnumerator OnRun(BlockModel block)
@@ -94,10 +94,10 @@ public class MotionBlockInterpreter : Cmdtor
          Debug.Log($"[MotionBlockInterpreter] Requesting robot to move {stepsValue} steps.");
 
          //  Llamar al BlockObserver para mover el robot.
-      .
+      
          yield return m_BlockObserver.MoveRobot(stepsValue);          //  la ejecución de este intérprete espere hasta que MoveRobot() termine.
 
 
-        Debug.Log($"[MotionBlockInterpreter] Robot finished moving.");
+        Debug.Log($"<color=purple>[MotionBlockInterpreter.OnRun] Robot finished moving {stepsValue} steps.</color>");
     }
 }

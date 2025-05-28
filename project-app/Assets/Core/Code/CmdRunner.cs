@@ -54,12 +54,12 @@ public class CmdRunner : MonoBehaviour
 
     private void PopCall()
     {
-        var call = callstack.Pop();
-        if (call is CmdEnumerator)
+        /*var call =*/ callstack.Pop();
+       /* if (call is CmdEnumerator)
         {
             Debug.Log(">>>>>exit + " + ((CmdEnumerator)call).Block.Type);
-            CSharp.Runner.FireUpdate(new RunnerUpdateState(RunnerUpdateState.FinishBlock, ((CmdEnumerator)call).Block));
-        }
+           // CSharp.Runner.FireUpdate(new RunnerUpdateState(RunnerUpdateState.FinishBlock, ((CmdEnumerator)call).Block));
+        }*/
     }
 
     private Action finishCb = null;
@@ -144,135 +144,104 @@ public class CmdRunner : MonoBehaviour
         {
             if (curStatus == Runner.Status.Stop) // Salir si se ha solicitado detener.
             {
+                Logger.Log($"<color=red>[CmdRunner-{gameObject.name}] Stop signal detected in Run() loop. Breaking.</color>");
                 break;
             }
 
             if (curStatus == Runner.Status.Pause) // Manejar la pausa
             {
-                // Espera en el modo Pausa hasta que el estado cambie a Running o Stop
+                Logger.Log($"<color=yellow>[CmdRunner-{gameObject.name}] Paused in Run() loop. Waiting for resume.</color>");
                 while (curStatus == Runner.Status.Pause)
-                    yield return null; // Pausa efectiva.
+                    yield return null; // Pausa efectiva, espera que se reanude.
+                Logger.Log($"<color=green>[CmdRunner-{gameObject.name}] Resumed from Run() loop.</color>");
                 if (curStatus == Runner.Status.Stop) break; // Si se paró durante la pausa.
             }
 
-            IEnumerator itor = callstack.Peek();
 
+            IEnumerator itor = callstack.Peek(); // El IEnumerator actual en la cima de la pila.
 
-            bool moveResult = itor.MoveNext(); // Intenta mover la corrutina actual.
+            // Intenta avanzar la corrutina actual 
+            bool canContinue = itor.MoveNext();
 
-            // Si el paso actual de la corrutina ha rendido un sub-IEnumerator
-            if (itor.Current is IEnumerator currentNestedCall && currentNestedCall != null)
+            //Comprobar el resultado de MoveNext() y el valor Current:
+
+            // Si el paso actual rindió un SUB-IEnumerator 
+            if (canContinue && itor.Current is IEnumerator currentNestedCall && currentNestedCall != null)
             {
-                PushCall(currentNestedCall); // Empuja el sub-IEnumerator a la pila.
+                // Este `currentNestedCall` es otra corrutina que debe ejecutarse antes que la actual.
+                PushCall(currentNestedCall); // Empuja la sub-corrutina a la pila.
+                Logger.Log($"<color=blue>[CmdRunner-{gameObject.name}] Pushing nested coroutine onto stack. Stack depth: {callstack.Count}.</color>");
 
-                // Si es un paso en modo "Step" y acabamos de entrar a un nuevo bloque, detenemos y esperamos `Step()`.
+                // En modo "Step", después de empujar un nuevo elemento (especialmente un CmdEnumerator para un nuevo bloque)
+                // debemos ceder el control y esperar a la próxima llamada a Step().
                 if (RunMode == Runner.Mode.Step && currentNestedCall is CmdEnumerator)
                 {
-                    yield break; // Esperar al próximo Step() o Resume().
+                       yield break; // Si está en Step, termina la iteración actual para esperar el siguiente Step()
                 }
             }
-            // Si el paso actual rindió un `yield return null` o `yield return new WaitForSeconds()`
-            // El `itor.MoveNext()` devuelve true y el `Current` no es otro `IEnumerator`.
-            else if (moveResult)
+            // Si el paso actual de la corrutina es un `yield return` normal 
+            else if (canContinue)
             {
-                yield return itor.Current; // Realizar la espera de Unity (un frame, o tiempo de espera, etc.).
+                // Se realiza la espera solicitada por el itor actual.
+               // Logger.Log($"<color=green>[CmdRunner-{gameObject.name}] Yielding {itor.Current?.GetType().Name ?? "null"} for a frame or seconds.</color>");
+                yield return itor.Current;
             }
-            // Si la corrutina actual ha terminado (itor.MoveNext() devolvió false)
+            // Si la corrutina actual HA TERMINADO su ejecución (canContinue es false, significa que MoveNext() devolvió false).
             else
             {
-                // Se quita el elemento que acaba de terminar.
-                PopCall();
+                IEnumerator completedCall = callstack.Pop(); // Saca el IEnumerator que acaba de terminar.
+                Logger.Log($"<color=blue>[CmdRunner-{gameObject.name}] Pop-ing completed call: {completedCall.GetType().Name}. Stack depth: {callstack.Count}.</color>");
 
-                // Aquí manejamos la cadena de bloques si el que acaba de terminar era un CmdEnumerator
-                // Y si es el final de una pila de bloques.
-                if (itor is CmdEnumerator finishedCmdEnumerator) 
+                // Si el elemento que terminó era un CmdEnumerator significa que un BLOQUE COMPLETO de Scratch terminó su ejecución
+                if (completedCall is CmdEnumerator finishedBlockCmd)
                 {
-                   
+                    // NOTIFICAR que este bloque ha TERMINADO su ejecución.
+                    Debug.Log($">>>>>exit CmdRunner for block: {finishedBlockCmd.Block.Type} (ID: {finishedBlockCmd.Block.ID})");
+                    CSharp.Runner.FireUpdate(new RunnerUpdateState(RunnerUpdateState.FinishBlock, finishedBlockCmd.Block));
+
+                    // LÓGICA CRÍTICA: Obtener y Pushear el siguiente bloque en la cadena de Scratch.
+                    CmdEnumerator nextCmd = finishedBlockCmd.GetNextCmd();
+                    if (nextCmd != null)
+                    {
+                        PushCall(nextCmd); // Empuja el próximo bloque (CmdEnumerator) a la pila para ejecutarlo.
+                        Logger.Log($"<color=blue>[CmdRunner-{gameObject.name}] Pushing next block in chain: '{nextCmd.Block.Type}' (ID: {nextCmd.Block.ID}).</color>");
+                    }
+                    else
+                    {
+                        // No hay más bloques en esta cadena. La pila puede quedar vacía o no.
+                        Logger.Log($"<color=blue>[CmdRunner-{gameObject.name}] End of block chain for '{finishedBlockCmd.Block.Type}'. No more next blocks.</color>");
+                    }
+                }
+                // Si lo que terminó fue una sub-corrutina 
+                // Su padre (`MotionBlockInterpreter.OnRun`) sigue en la pila y continuará.
+                else
+                {
+                    Logger.Log($"<color=blue>[CmdRunner-{gameObject.name}] Nested coroutine finished. Returning control to parent CmdEnumerator. Stack depth: {callstack.Count}.</color>");
                 }
 
+                // En modo "Step", después de que cualquier comando o bloque haya terminado, se pausa.
                 if (RunMode == Runner.Mode.Step)
                 {
-                    // Si estamos en modo Step y acabamos de Pop (terminar un bloque), pausamos hasta el siguiente Step.
-                    yield break;
+                    yield break; // Pausa el Run() coroutine hasta el próximo Step() o Resume().
                 }
             }
         } // Fin del while (callstack.Count > 0)
 
         // Una vez que la pila de llamadas esté vacía o la ejecución se haya detenido.
-        if (callstack.Count == 0 && curStatus != Runner.Status.Stop) // Se terminó naturalmente
+        if (callstack.Count == 0 && curStatus != Runner.Status.Stop) // La pila terminó de forma natural
         {
-            Debug.LogFormat("<color=green>[CodeRunner - {0}]: end - time: {1}.</color>",
-                            (gameObject != null ? gameObject.name : "DESTROYED"), Time.time); // Manejo para GC.
-
-            finishCb?.Invoke(); // Llama al callback de finalización.
+            Logger.LogFormat("<color=green>[CmdRunner - {0}]: Finished execution for this stack naturally. Total elapsed: {1}.</color>",
+                            gameObject.name, Time.time);
+            finishCb?.Invoke(); // Llama al callback de finalización al CSharpRunner.
             curStatus = Runner.Status.Stop; // Asegura que el estado sea detenido.
         }
         else if (curStatus == Runner.Status.Stop)
         { // Se detuvo forzosamente.
-            Debug.LogFormat("<color=red>[CodeRunner - {0}]: forcibly stopped - time: {1}.</color>",
-                            (gameObject != null ? gameObject.name : "DESTROYED"), Time.time);
-            // El Stop() ya limpió la pila y el CSharpRunner limpiará el CmdRunner.
+            Logger.LogFormat("<color=red>[CmdRunner - {0}]: Forcibly stopped execution for this stack. Total elapsed: {1}.</color>",
+                            gameObject.name, Time.time);
         }
-
-        /*
-        bool finished = true;
-        while (itor.MoveNext())
-        {
-            if (itor.Current is IEnumerator)
-            {
-                IEnumerator current = itor.Current as IEnumerator;
-                PushCall(current);
-                if (RunMode == Runner.Mode.Step && (current is CmdEnumerator))
-                {
-                    yield break;
-                }
-
-                finished = false;
-                break;
-            }
-
-            yield return itor.Current;
-        }
-
-        if (!finished) continue;
-        PopCall();
-
-        if (itor is CmdEnumerator)
-        {
-            //exit point of block
-
-            //push next block
-            CmdEnumerator next = ((CmdEnumerator)itor).GetNextCmd();
-            if (next != null)
-            {
-                PushCall(next);
-            }
-
-            if (RunMode == Runner.Mode.Step)
-            {
-                break;
-            }
-        }
-
-        if (curStatus == Runner.Status.Pause || curStatus == Runner.Status.Stop)
-            break;
     }
 
-    if (curStatus == Runner.Status.Stop)
-    {
-        callstack.Clear();
-    }
-
-    if (callstack.Count == 0)
-    {
-        Debug.LogFormat("<color=green>[CodeRunner - {0}]: end - time: {1}.</color>", gameObject.name, Time.time);
-        if (curStatus != Runner.Status.Stop)
-        {
-            finishCb?.Invoke();
-        }
-        curStatus = Runner.Status.Stop;
-    }*/
-    }
 
     /// <summary>
     /// get current callstack
