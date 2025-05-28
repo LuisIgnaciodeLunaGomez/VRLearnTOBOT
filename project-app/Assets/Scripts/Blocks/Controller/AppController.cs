@@ -13,6 +13,7 @@
  * 
  * Descripción: Gestor central de la aplicación (Singleton), coordinando diferentes partes del sistema que no son estrictamente UI o Modelo/Vista de bloques.
  */
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,9 +36,13 @@ public class AppController : MonoBehaviour
     private BlockDragController m_blockDragController;
     private BlockConnectionController m_connectionController;
 
+    [Header("Configuración del Robot y Escena 3D")]
     [SerializeField] private GameObject m_RobotPrefab; // carga del robot dinámicamente como un prefab
     [SerializeField] private Transform m_RobotSpawnPoint;
+    [SerializeField] private Camera m_main3DCamera; //Referencia a la cámara principal 3D. 
+    [SerializeField] private GameObject m_robotEnvironmentRoot; // GameObject raíz del fondo 3D. 
 
+    private GameObject m_currentRobotInstance;
     private bool m_IsInitialized = false;
 
     public CategoryController GetCategoryController()
@@ -243,21 +248,130 @@ public class AppController : MonoBehaviour
             m_categoryController
         );
 
-       
+        // Asegurar que la cámara 3D y el entorno estén deshabilitados al inicio.
+        if (m_robotEnvironmentRoot != null)
+        {
+            m_robotEnvironmentRoot.SetActive(false); // El fondo 3D inicialmente oculto.
+        }
+        else
+        {
+            Debug.LogWarning("AppController: 'm_robotEnvironmentRoot' no está asignado en el Inspector. El entorno 3D no se gestionará.");
+        }
+
+        if (m_main3DCamera != null)
+        {
+            m_main3DCamera.enabled = false; // La cámara 3D inicialmente deshabilitada.
+        }
+        else
+        {
+            Debug.LogWarning("AppController: 'm_main3DCamera' no está asignado en el Inspector. La cámara 3D no se gestionará.");
+        }
+
+
         m_IsInitialized = true;
     }
 
-
+    /// <summary>
+    /// Pedir a UICanvasView que cambie la visibilidad de la UI 
+    ///Activar la cámara 3D.
+    ///Mostrar/Activar el GameObject raíz de tu fondo 3D.
+    ///Instanciar(o activar/reiniciar si ya existe) el robot.
+    /// </summary>
     public void TriggerExecution()
     {
-        Debug.Log("Ejecutar acción de inicio");
+        Debug.Log("<color=blue>AppController: Triggering Execution Mode.</color>");
+
+        // 1. Alternar visibilidad de la UI (ocultar paneles, cambiar iconos)
+        // Esto ya se encarga de cambiar la bandera verde/roja.
+        m_uiManager?.SetUISimulationState(true);
+
+        // 2. Activar la cámara 3D y el entorno 3D
+        if (m_main3DCamera != null)
+        {
+            m_main3DCamera.enabled = true; // Habilita la cámara para renderizar la escena 3D.
+        }
+        if (m_robotEnvironmentRoot != null)
+        {
+            m_robotEnvironmentRoot.SetActive(true); // Muestra tu escenario 3D.
+        }
+
+        // 3. Instanciar/Reiniciar el robot
+        if (m_currentRobotInstance == null && m_RobotPrefab != null && m_RobotSpawnPoint != null)
+        {
+            // Instancia el robot si aún no existe.
+            m_currentRobotInstance = Instantiate(m_RobotPrefab, m_RobotSpawnPoint.position, m_RobotSpawnPoint.rotation);
+            m_currentRobotInstance.transform.SetParent(m_robotEnvironmentRoot.transform); // Opcional: Emparenta el robot con el entorno 3D si deseas que se mueva con él.
+            Debug.Log("AppController: Robot instanciado.");
+        }
+        else if (m_currentRobotInstance != null)
+        {
+            // Si el robot ya existe de una ejecución anterior, solo actívalo.
+            m_currentRobotInstance.SetActive(true);
+            // Además, necesitas una forma de restablecer su estado (posición, rotación) si se reusa.
+            // Por simplicidad para el prototipo, en TriggerStop() lo destruimos.
+            Debug.Log("AppController: Robot existente activado.");
+        }
+        else
+        {
+            Debug.LogWarning("AppController: Prefab del Robot, punto de aparición o escenario 3D no asignado o instanciado.");
+            return; // No podemos ejecutar sin robot/configuración.
+        }
+
+        // 4. Lógica de Ejecución (Para la PRUEBA de movimiento inicial)
+        // Esto es TEMPORAL para la prueba de "defaultValue = 10".
+        // Eventualmente, el m_executionController interpretará los bloques y moverá el robot.
+        RobotBehaviour robotBehaviour = m_currentRobotInstance.GetComponent<RobotBehaviour>();
+        if (robotBehaviour != null)
+        {
+            Debug.Log("<color=green>AppController: Llamando a MoveForward(10) en Robot para la prueba.</color>");
+            robotBehaviour.MoveForward(10); // <-- ¡Aquí se mueve 10 unidades!
+        }
+        else
+        {
+            Debug.LogError("AppController: 'RobotBehaviour' script no encontrado en el robot instanciado. Asegúrate de que tu prefab de robot lo tiene.");
+        }
+
+        // Esto sigue siendo necesario para que el sistema UBlockly sepa que debe interpretar y correr código.
+        // Una vez que ExecutionController esté listo, este método llamará a sus intérpretes.
         m_executionController?.StartExecution();
+
+
     }
+
+    /// <summary>
+    /// Este método desactiva la simulación y restaura la UI de desarrollo
+    /// Pedir a UICanvasView que restaure la UI
+    /// Desactivar la cámara 3D.
+    /// Ocultar el GameObject raíz de tu fondo 3D.
+    /// Destruir la instancia actual del robot (para una limpieza simple).
+    ///  </summary>
 
     public void TriggerStop()
     {
-        Debug.Log("Detener ejecución");
-        m_executionController?.StopExecution();
+        RobotBehaviour robotBehaviour = m_currentRobotInstance?.GetComponent<RobotBehaviour>();
+        robotBehaviour?.StopAllActions(); // Asegura que el robot deje de moverse
+
+        // 2. Ocultar la cámara 3D y el entorno 3D
+        if (m_main3DCamera != null)
+        {
+            m_main3DCamera.enabled = false; // Deshabilita la cámara 3D.
+        }
+        if (m_robotEnvironmentRoot != null)
+        {
+            m_robotEnvironmentRoot.SetActive(false); // Oculta tu escenario 3D.
+        }
+
+        // 3. Destruir la instancia del robot para limpiar el estado para la próxima ejecución.
+        if (m_currentRobotInstance != null)
+        {
+            Destroy(m_currentRobotInstance);
+            m_currentRobotInstance = null; // Limpiar la referencia.
+            Debug.Log("AppController: Robot destruido.");
+        }
+
+        // 4. Restaurar la visibilidad de la UI de diseño.
+        m_uiManager?.SetUISimulationState(false);
+        
     }
     public void TriggerSave()
     {

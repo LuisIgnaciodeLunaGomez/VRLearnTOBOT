@@ -69,6 +69,10 @@ public class UICanvasView : MonoBehaviour
     private const int m_screenWidth = 1200;
     private const int m_screenHeight = 720;
 
+    private GameObject m_CategoriesPanelGO; // GameObject del panel izquierdo de categorías
+    private GameObject m_greenFlagIconGO;   // GameObject del icono de GreenFlag
+    private GameObject m_stopFlagIconGO;    // GameObject del icono de StopFlag
+
     void Awake()
     {
         // Debug.Log("<color=cyan>UICanvasView: Awake starting UI Setup...</color>");
@@ -483,6 +487,7 @@ public class UICanvasView : MonoBehaviour
         {
             string iconName = iconNames[i];
             Texture2D iconTexture = Resources.Load<Texture2D>("Icons/" + iconName);
+          
             if (iconTexture != null)
             {
                 GameObject iconGO = new GameObject("Icon_" + iconName);
@@ -505,6 +510,18 @@ public class UICanvasView : MonoBehaviour
                 // Asociar la acción al botón
                 string currentIconName = iconName;
                 iconButton.onClick.AddListener(() => OnIconButtonClick(currentIconName));
+
+
+                //Capturo las referencias a los iconos
+
+                if (currentIconName == "GreenFlag")
+                {
+                    m_greenFlagIconGO = iconGO;
+                }
+                else if (currentIconName == "stopFlag")
+                {
+                    m_stopFlagIconGO = iconGO;
+                }
 
                 //Desactivo inicialmente 
                 if (currentIconName == "stopFlag")
@@ -714,6 +731,16 @@ public class UICanvasView : MonoBehaviour
      */
     private void OnIconButtonClick(string iconName)
     {
+        // Actualizar el estado visual de la UI dentro de UICanvasView
+        if (iconName == "GreenFlag")
+        {
+            SetUISimulationState(true); // Entrar en modo simulación
+        }
+        else if (iconName == "stopFlag")
+        {
+            SetUISimulationState(false); // Volver a modo edición
+        }
+
         var actions = new System.Collections.Generic.Dictionary<string, System.Action>
         {
            { "GreenFlag", () => {
@@ -759,6 +786,8 @@ public class UICanvasView : MonoBehaviour
             Vector2.zero, Vector2.zero,
             new Vector2(0, 1), // Pivot Arriba-Izquierda
             new Color(0.95f, 0.95f, 0.95f, 1f));
+
+        m_CategoriesPanelGO = leftPanel; //Capturo la referencia del panel izquierdo
 
         // Añadir ScrollRect al LeftPanel directamente
         ScrollRect scrollRect = leftPanel.AddComponent<ScrollRect>();
@@ -1061,6 +1090,73 @@ public class UICanvasView : MonoBehaviour
         debugButtonButton.onClick.AddListener(OnClickExportConnectionDBsButton);
 
         return debugButtonGO;
+    }
+
+
+    /// <summary>
+    /// Establece el estado de la UI para el modo de simulación.
+    /// Oculta paneles de codificación y cambia los iconos de bandera.
+    /// </summary>
+    /// <param name="isSimulating">True para activar el modo simulación; False para desactivarlo y volver al modo edición.</param>
+    public void SetUISimulationState(bool isSimulating)
+    {
+        Debug.Log($"UICanvasView: Cambiando estado de UI a modo {(isSimulating ? "Simulación" : "Edición")}");
+
+        // Alternar visibilidad de los iconos de bandera
+        if (m_greenFlagIconGO != null)
+        {
+            m_greenFlagIconGO.SetActive(!isSimulating);
+        }
+        if (m_stopFlagIconGO != null)
+        {
+            m_stopFlagIconGO.SetActive(isSimulating);
+        }
+
+        // Ocultar/Mostrar paneles principales de la UI (excepto el Top Panel)
+        // Panel de Categorías (Izquierda)
+        if (m_CategoriesPanelGO != null)
+        {
+            m_CategoriesPanelGO.SetActive(!isSimulating);
+            Debug.Log($"CategoriesPanel.SetActive: {m_CategoriesPanelGO.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'm_CategoriesPanelGO' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Panel de Lista de Bloques (Medio)
+        if (BlockListPanelRect != null)
+        {
+            BlockListPanelRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"BlockListPanel.SetActive: {BlockListPanelRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'BlockListPanelRect' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Panel de Área de Codificación (Derecho)
+        if (CodingAreaPanelRect != null)
+        {
+            CodingAreaPanelRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"CodingAreaPanel.SetActive: {CodingAreaPanelRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'CodingAreaPanelRect' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Capa de Arrastre (DragLayer)
+        
+        if (m_DragLayerRect != null)
+        {
+            m_DragLayerRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"DragLayerRect.SetActive: {m_DragLayerRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'm_DragLayerRect' es nula. No se puede alternar visibilidad.");
+        }
     }
 
 }//Fin clase UICanvasView
