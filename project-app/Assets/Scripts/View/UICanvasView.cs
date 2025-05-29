@@ -347,7 +347,7 @@ public class UICanvasView : MonoBehaviour
             this.AddLogoToPanel(topPanel, logoSpriteName);
         }
 
-        AddExportDebugButtonToPanel(m_LeftToolBarContainerRect);
+        //AddExportDebugButtonToPanel(m_LeftToolBarContainerRect); //<----Se elimina el boton de depuración para exportar la base de datos de conexiones
 
 
         if (topIconNames != null && topIconNames.Length > 0)

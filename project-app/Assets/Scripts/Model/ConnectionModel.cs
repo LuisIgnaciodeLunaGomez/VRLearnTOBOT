@@ -20,7 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using UnityEngine;
-using static UnityEditor.FilePathAttribute;
 public class ConnectionModel : Observable<UpdateState>
 {
     private UpdateState m_UpdateState;
