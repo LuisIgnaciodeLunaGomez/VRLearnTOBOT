@@ -75,6 +75,47 @@ public class MotionBlockInterpreter : Cmdtor
 
         // Obtener el valor de los pasos del bloque
          float stepsValue = 10f;
+
+        // 1. Obtener el InputModel cuyo nombre es "STEPS"
+        InputModel stepsInput = block.GetInput("STEPS");
+
+        if (stepsInput != null)
+        {
+            // 2. Dentro de ese InputModel, buscar el FieldModel llamado "NUM_FIELD"
+            // (Este es el campo que visualmente contiene el "10" en tu bloque)
+            FieldModel numField = stepsInput.FieldRow.Find(f => f.Name == "NUM_FIELD");
+
+            if (numField != null)
+            {
+                // 3. Obtener el valor en texto del FieldModel
+                string stepsStr = numField.GetValue();
+
+                // 4. Intentar parsear el valor a float
+                if (float.TryParse(stepsStr, out stepsValue))
+                {
+                    Debug.Log($"<color=blue>[MotionBlockInterpreter.OnRun] Extracted {stepsValue} steps from Field 'NUM_FIELD'.</color>");
+                }
+                else
+                {
+                    // Fallback si el parseo falla (ej. el usuario escribió texto)
+                    Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] Failed to parse steps value '{stepsStr}' from Field 'NUM_FIELD'. Defaulting to 10.</color>");
+                    stepsValue = 10f; // Valor por defecto en caso de error
+                }
+            }
+            else
+            {
+                // Este log indica que la estructura del prefab podría haber cambiado
+                Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] Field 'NUM_FIELD' not found in 'STEPS' input for block '{block.ID}'. Defaulting to 10.</color>");
+                stepsValue = 10f;
+            }
+        }
+        else
+        {
+            // Si por alguna razón, ni siquiera se encuentra el input llamado "STEPS"
+            Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] Input 'STEPS' not found for block '{block.ID}'. Defaulting to 10.</color>");
+            stepsValue = 10f;
+        }
+        /*
         CmdEnumerator stepsCtor = CSharp.Interpreter.ValueReturn(block, "STEPS", new DataStruct(10));
         //yield return stepsCtor;
 
@@ -88,7 +129,7 @@ public class MotionBlockInterpreter : Cmdtor
         else
         {
             Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] DataStruct de 'STEPS' no es un número válido (Type: {stepsData.Type}). Defaulting to {stepsValue}.</color>");
-        }
+        }*/
         /*
          * 
          * 
