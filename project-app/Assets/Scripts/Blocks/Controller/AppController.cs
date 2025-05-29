@@ -13,7 +13,6 @@
  * 
  * Descripción: Gestor central de la aplicación (Singleton), coordinando diferentes partes del sistema que no son estrictamente UI o Modelo/Vista de bloques.
  */
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,7 +57,6 @@ public class AppController : MonoBehaviour
             ScratchBlocks.Init();
             DontDestroyOnLoad(gameObject);
             Logger.Log("<color=orange>AppController: Awake - Singleton instance created and set to DontDestroyOnLoad.</color>");
-            
            
         }
         else
@@ -260,7 +258,7 @@ public class AppController : MonoBehaviour
 
         if (m_main3DCamera != null)
         {
-            m_main3DCamera.enabled = false; // La cámara 3D inicialmente deshabilitada.
+            m_main3DCamera.enabled = true; // La cámara 3D inicialmente habilitada.
         }
         else
         {
@@ -281,34 +279,37 @@ public class AppController : MonoBehaviour
     {
         Debug.Log("<color=blue>AppController: Triggering Execution Mode.</color>");
 
-        // 1. Alternar visibilidad de la UI (ocultar paneles, cambiar iconos)
-        // Esto ya se encarga de cambiar la bandera verde/roja.
+        // Alternar visibilidad de la UI (ocultar paneles, cambiar iconos)
+        
         m_uiManager?.SetUISimulationState(true);
 
-        // 2. Activar la cámara 3D y el entorno 3D
+        //Activar la cámara 3D y el entorno 3D
         if (m_main3DCamera != null)
         {
+            m_main3DCamera.gameObject.SetActive(true);
             m_main3DCamera.enabled = true; // Habilita la cámara para renderizar la escena 3D.
         }
         if (m_robotEnvironmentRoot != null)
         {
-            m_robotEnvironmentRoot.SetActive(true); // Muestra tu escenario 3D.
+            m_robotEnvironmentRoot.SetActive(true); // Muestra el escenario 3D.
         }
 
-        // 3. Instanciar/Reiniciar el robot
+
+       // StartCoroutine(StartCountdownAndExecutionSequence());
+
+        // Instanciar/Reiniciar el robot
         if (m_currentRobotInstance == null && m_RobotPrefab != null && m_RobotSpawnPoint != null)
         {
             // Instancia el robot si aún no existe.
             m_currentRobotInstance = Instantiate(m_RobotPrefab, m_RobotSpawnPoint.position, m_RobotSpawnPoint.rotation);
-            m_currentRobotInstance.transform.SetParent(m_robotEnvironmentRoot.transform); // Opcional: Emparenta el robot con el entorno 3D si deseas que se mueva con él.
+            m_currentRobotInstance.transform.SetParent(m_robotEnvironmentRoot.transform);
             Debug.Log("AppController: Robot instanciado.");
         }
         else if (m_currentRobotInstance != null)
         {
-            // Si el robot ya existe de una ejecución anterior, solo actívalo.
+            // Si el robot ya existe de una ejecución anterior, solo se actíva.
             m_currentRobotInstance.SetActive(true);
-            // Además, necesitas una forma de restablecer su estado (posición, rotación) si se reusa.
-            // Por simplicidad para el prototipo, en TriggerStop() lo destruimos.
+            
             Debug.Log("AppController: Robot existente activado.");
         }
         else
@@ -317,26 +318,55 @@ public class AppController : MonoBehaviour
             return; // No podemos ejecutar sin robot/configuración.
         }
 
-        // 4. Lógica de Ejecución (Para la PRUEBA de movimiento inicial)
-        // Esto es TEMPORAL para la prueba de "defaultValue = 10".
-        // Eventualmente, el m_executionController interpretará los bloques y moverá el robot.
-        RobotBehaviour robotBehaviour = m_currentRobotInstance.GetComponent<RobotBehaviour>();
-        if (robotBehaviour != null)
+
+        StopAllCoroutines(); // Detiene todas las corrutinas de AppController, incluida cualquier cuenta atrás anterior
+
+        if (m_executionController == null)
         {
-            Debug.Log("<color=green>AppController: Llamando a MoveForward(10) en Robot para la prueba.</color>");
-            robotBehaviour.MoveForward(10); // <-- ¡Aquí se mueve 10 unidades!
+            Debug.LogError("AppController: ExecutionController is null. Cannot start program.");
+            m_uiManager.SetRobotMessageText("Error: Sistema de ejecución no iniciado.", true);
+            return;
+        }
+
+       
+        bool canStart = m_executionController.PreCheckExecutableBlocks(); // Crear este método nuevo en ExecutionController
+
+        if (canStart)
+        {
+            // Solo si hay algo ejecutable, iniciamos la secuencia visual y la ejecución real
+            StartCoroutine(StartCountdownAndExecutionSequence());
         }
         else
         {
-            Debug.LogError("AppController: 'RobotBehaviour' script no encontrado en el robot instanciado. Asegúrate de que tu prefab de robot lo tiene.");
+            Debug.LogWarning("AppController: No executable blocks found in workspace. Not starting simulation.");
+            m_uiManager.SetRobotMessageText("No hay bloques para ejecutar.", true);
+        
+            StartCoroutine(ResetUIAfterNoExecutableBlocks(2.0f)); // Coroutine para mostrar mensaje y luego restaurar UI
+        }
+    }
+
+
+    private IEnumerator ResetUIAfterNoExecutableBlocks(float delay)
+    {
+        // Opcional: mostrar un mensaje "No hay bloques" antes de restaurar UI
+        m_uiManager.SetRobotMessageText("No hay bloques para ejecutar.", true);
+        yield return new WaitForSeconds(delay); // Espera unos segundos para que se lea
+
+        // Ocultar mensaje y restaurar UI de edición
+        m_uiManager.SetRobotMessageText("", false);
+        m_uiManager.SetUISimulationState(false);
+
+        // Destruir el robot si se había instanciado para el chequeo
+        if (m_currentRobotInstance != null)
+        {
+            Destroy(m_currentRobotInstance);
+            m_currentRobotInstance = null;
+            Debug.Log("AppController: Robot de chequeo destruido.");
         }
 
-        // Esto sigue siendo necesario para que el sistema UBlockly sepa que debe interpretar y correr código.
-        // Una vez que ExecutionController esté listo, este método llamará a sus intérpretes.
-        m_executionController?.StartExecution();
-
-
+        Debug.Log("AppController: UI restaurada a modo edición tras no encontrar bloques ejecutables.");
     }
+
 
     /// <summary>
     /// Este método desactiva la simulación y restaura la UI de desarrollo
@@ -351,17 +381,17 @@ public class AppController : MonoBehaviour
         RobotBehaviour robotBehaviour = m_currentRobotInstance?.GetComponent<RobotBehaviour>();
         robotBehaviour?.StopAllActions(); // Asegura que el robot deje de moverse
 
-        // 2. Ocultar la cámara 3D y el entorno 3D
+        //  Ocultar la cámara 3D y el entorno 3D
         if (m_main3DCamera != null)
         {
-            m_main3DCamera.enabled = false; // Deshabilita la cámara 3D.
+            m_main3DCamera.enabled = true; // no Deshabilita la cámara 3D.
         }
         if (m_robotEnvironmentRoot != null)
         {
             m_robotEnvironmentRoot.SetActive(false); // Oculta tu escenario 3D.
         }
 
-        // 3. Destruir la instancia del robot para limpiar el estado para la próxima ejecución.
+        // Destruir la instancia del robot para limpiar el estado para la próxima ejecución.
         if (m_currentRobotInstance != null)
         {
             Destroy(m_currentRobotInstance);
@@ -369,7 +399,7 @@ public class AppController : MonoBehaviour
             Debug.Log("AppController: Robot destruido.");
         }
 
-        // 4. Restaurar la visibilidad de la UI de diseño.
+        // Restaurar la visibilidad de la UI de diseño.
         m_uiManager?.SetUISimulationState(false);
         
     }
@@ -385,4 +415,70 @@ public class AppController : MonoBehaviour
         m_uiManager?.LoadWorkspace();
     }
 
-}//fin clase AppController
+    private IEnumerator StartCountdownAndExecutionSequence()
+    {
+        //  LÓGICA DE INICIALIZACIÓN DEL ROBOT 
+        if (m_RobotPrefab == null || m_RobotSpawnPoint == null)
+        {
+            Debug.LogError("AppController: Prefab del Robot o punto de aparición no asignado. No se puede iniciar la simulación.");
+            yield break; // Aborta la corrutina
+        }
+
+        if (m_currentRobotInstance == null)
+        {
+            m_currentRobotInstance = Instantiate(m_RobotPrefab, m_RobotSpawnPoint.position, m_RobotSpawnPoint.rotation);
+            m_currentRobotInstance.transform.SetParent(m_robotEnvironmentRoot.transform); 
+            Debug.Log("AppController: Robot instanciado.");
+        }
+        else
+        {
+            // Si el robot ya existe ( tras un Stop/Start rápido), lo reposicionamos y activamos
+            m_currentRobotInstance.transform.position = m_RobotSpawnPoint.position;
+            m_currentRobotInstance.transform.rotation = m_RobotSpawnPoint.rotation;
+            m_currentRobotInstance.SetActive(true);
+            // Asegurarse de que no tenga movimientos pendientes
+            RobotBehaviour rb = m_currentRobotInstance.GetComponent<RobotBehaviour>();
+            if (rb != null) rb.StopAllActions();
+            Debug.Log("AppController: Robot existente activado y reposicionado.");
+        }
+        // Asegurarse de que el robot se ve
+        RobotBehaviour robotBehaviour = m_currentRobotInstance.GetComponent<RobotBehaviour>();
+        if (robotBehaviour == null)
+        {
+            Debug.LogError("AppController: El robot no tiene el script RobotBehaviour.");
+            m_uiManager.SetRobotMessageText("Error: Script RobotBehaviour no encontrado.", true);
+            yield return new WaitForSeconds(3);
+            m_uiManager.SetRobotMessageText("", false);
+            yield break; // Aborta si no hay script de comportamiento
+        }
+
+        //  LÓGICA DEL CONTADOR DE CUENTA ATRÁS 
+        m_uiManager.SetCountdownText("3", true);
+        yield return new WaitForSeconds(1);
+        m_uiManager.SetCountdownText("2", true);
+        yield return new WaitForSeconds(1);
+        m_uiManager.SetCountdownText("1", true);
+        yield return new WaitForSeconds(1);
+        m_uiManager.SetCountdownText("¡GO!", true);
+        yield return new WaitForSeconds(0.5f);
+        m_uiManager.SetCountdownText("", false); // Oculta el contador
+
+
+        //  LÓGICA DE MOVIMIENTO DE PRUEBA 
+      /*  m_uiManager.SetRobotMessageText("Moviendo robot 10 pasos...", true);
+        Debug.Log("<color=green>AppController: Llamando a MoveRobotOverTime(10) en Robot para la prueba.</color>");
+        
+       // yield return robotBehaviour.MoveRobotOverTime(10); // Llama a la corrutina y espera
+
+        m_uiManager.SetRobotMessageText("Movimiento de 10 pasos completado.", true);
+        yield return new WaitForSeconds(2); // Muestra el mensaje por 2 segundos
+        m_uiManager.SetRobotMessageText("", false); // Oculta el mensaje
+      */
+        //  INICIAR EJECUCIÓN REAL DE BLOQUES 
+
+        Debug.Log("AppController: Iniciando ejecución de bloques via m_executionController.");
+        m_executionController?.StartExecution();
+    }
+
+    }//fin clase AppController
+

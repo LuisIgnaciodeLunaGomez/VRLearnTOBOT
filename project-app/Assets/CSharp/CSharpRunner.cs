@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+Descripción: CSharpRunner class for executing block code in Unity using C#.
 ****************************************************************************/
 
 
@@ -71,7 +72,7 @@ public class CSharpRunner : Runner
                 GameObject.Destroy(runner.gameObject); // Destruye GameObjects.
         }
         m_CodeRunners.Clear();
-        m_ExecutionQueue.Clear();
+        m_ExecutionQueue.Clear(); // Limpieza de la cola para una nueva ejecución
 
         // Ordenar los top blocks de mayor Y (arriba) a menor.
         // Y por ID

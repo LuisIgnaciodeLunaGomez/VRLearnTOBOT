@@ -74,8 +74,27 @@ public class MotionBlockInterpreter : Cmdtor
          }
 
          // Obtener el valor de los pasos del bloque
-         float stepsValue = 0f;
-         string stepsStr = block.GetFieldValue("STEPS");
+        // float stepsValue = 0f;
+        CmdEnumerator stepsCtor = CSharp.Interpreter.ValueReturn(block, "STEPS", new DataStruct(10));
+        yield return stepsCtor;
+
+        DataStruct stepsData = stepsCtor.Data;
+
+        float stepsValue = 10f; // Default de emergencia
+
+        if (!stepsData.IsUndefined && stepsData.IsNumber)
+        {
+            stepsValue = stepsData.NumberValue.Value;
+            Debug.Log($"<color=blue>[MotionBlockInterpreter.OnRun] Extracted {stepsValue} steps from block '{block.ID}'.</color>");
+        }
+        else
+        {
+            Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] 'STEPS' value for block '{block.ID}' is not a valid number (Type: {stepsData.Type}). Defaulting to {stepsValue}.</color>");
+        }
+
+        yield return m_BlockObserver.MoveRobot(stepsValue);
+        Debug.Log($"<color=purple>[MotionBlockInterpreter.OnRun] Robot finished moving {stepsValue} steps.</color>");
+        /* string stepsStr = block.GetFieldValue("STEPS");
 
          if (string.IsNullOrEmpty(stepsStr))
          {
@@ -91,11 +110,11 @@ public class MotionBlockInterpreter : Cmdtor
              }
          }
 
-         Debug.Log($"[MotionBlockInterpreter] Requesting robot to move {stepsValue} steps.");
+         Debug.Log($"[MotionBlockInterpreter] Requesting robot to move {stepsValue} steps.");*/
 
-         //  Llamar al BlockObserver para mover el robot.
-      
-         yield return m_BlockObserver.MoveRobot(stepsValue);          //  la ejecución de este intérprete espere hasta que MoveRobot() termine.
+        //  Llamar al BlockObserver para mover el robot.
+
+        yield return m_BlockObserver.MoveRobot(stepsValue);          //  la ejecución de este intérprete espere hasta que MoveRobot() termine.
 
 
         Debug.Log($"<color=purple>[MotionBlockInterpreter.OnRun] Robot finished moving {stepsValue} steps.</color>");

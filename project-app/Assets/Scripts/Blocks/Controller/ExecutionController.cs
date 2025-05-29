@@ -138,6 +138,40 @@ public class ExecutionController : MonoBehaviour
         Logger.Log("ExecutionController Initialized successfully.", this);
     }
 
+    public bool PreCheckExecutableBlocks()
+    {
+        if (m_WorkspaceModel == null)
+        {
+            Debug.LogError("ExecutionController.PreCheckExecutableBlocks: Workspace is null.");
+            return false;
+        }
+
+        List<BlockModel> topBlocks = m_WorkspaceModel.GetTopBlocks(true); // Obtiene todos los top-level
+
+        bool willExecute = false; // Bandera para saber si se encolaría algo
+
+        foreach (BlockModel block in topBlocks)
+        {
+            if (block.Type == "event_whenflagclicked")
+            {
+                if (block.NextConnection != null && block.NextConnection.TargetConnection != null && block.NextConnection.TargetConnection.SourceBlock != null)
+                {
+                    willExecute = true; // Se encontró una cadena de bloques válida
+                    Debug.Log($"ExecutionController.PreCheck: Found 'event_whenflagclicked' with connected blocks. Program will run.");
+                    break; // Con uno que haya, es suficiente para indicar que SÍ hay algo.
+                }
+            }
+          
+        }
+
+        // CSharp.Runner.Run() se encarga de llenar la cola.
+
+        if (!willExecute)
+        {
+            Debug.LogWarning("ExecutionController.PreCheck: No executable chains (starting with 'event_whenflagclicked' or recognized standalone blocks) found in workspace.");
+        }
+        return willExecute;
+    }
     public void StartExecution()
     {
         if (!mIsInitialized)
@@ -278,4 +312,7 @@ public class ExecutionController : MonoBehaviour
             }
         }
     }
+
+
+
 }//fin clase ExecutionController

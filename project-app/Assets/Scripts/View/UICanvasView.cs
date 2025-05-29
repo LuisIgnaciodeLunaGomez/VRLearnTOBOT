@@ -59,7 +59,12 @@ public class UICanvasView : MonoBehaviour
     private GameObject m_UiManagerView;
     private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
 
- 
+    [Header("UI de Mensajes de Simulación")]
+    private GameObject m_countdownPanelGO; // Panel contenedor para el texto de cuenta atrás
+    private Text m_countdownText;
+    private GameObject m_robotMessagePanelGO; // Panel contenedor para el texto del robot
+    private Text m_robotMessageText;
+
     public RectTransform DragLayer => m_DragLayerRect;
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
 
@@ -96,6 +101,8 @@ public class UICanvasView : MonoBehaviour
         CreateWorkspacePanels(); // Middle y Right Panels
 
         CreateDragLayer(); // Panel para el arrastre de bloques
+
+        CreateSimulationMessageUI(); //Creación de mensajes de simulación cuenta atrás y mensajes del robot
 
         if (m_RightPanelRect != null && m_MiddlePanelRect != null)
         {
@@ -1156,6 +1163,85 @@ public class UICanvasView : MonoBehaviour
         else
         {
             Debug.LogWarning("UICanvasView: Referencia a 'm_DragLayerRect' es nula. No se puede alternar visibilidad.");
+        }
+    }
+
+
+    private void CreateSimulationMessageUI()
+    {
+        if (m_CanvasGO == null)
+        {
+            Debug.LogError("UICanvasView: No se puede crear UI de mensajes. Canvas principal es nulo.");
+            return;
+        }
+
+        // 1. Panel y Texto para el CONTADOR
+        m_countdownPanelGO = CreatePanel("CountdownPanel", m_CanvasGO.transform,
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), // Anclado al centro
+            new Vector2(-150, -50), new Vector2(150, 50),     // Posición relativa al ancla (-150,-50 min, 150,50 max = tamaño 300x100)
+            new Vector2(0.5f, 0.5f), Color.clear);            // Pivote al centro, transparente
+        m_countdownPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 100); // Tamaño fijo
+
+        GameObject countdownTextGO = new GameObject("CountdownText");
+        countdownTextGO.transform.SetParent(m_countdownPanelGO.transform, false);
+        m_countdownText = countdownTextGO.AddComponent<Text>();
+        m_countdownText.font = Font.CreateDynamicFontFromOSFont("Arial", 100); // Fuente grande
+        m_countdownText.fontSize = 100;
+        m_countdownText.alignment = TextAnchor.MiddleCenter;
+        m_countdownText.color = Color.white; // Color del texto
+        m_countdownText.text = ""; // Vacío al inicio
+
+        // Ajustar RectTransform del texto para que llene el panel
+        RectTransform countdownTextRect = countdownTextGO.GetComponent<RectTransform>();
+        countdownTextRect.anchorMin = Vector2.zero;
+        countdownTextRect.anchorMax = Vector2.one;
+        countdownTextRect.offsetMin = Vector2.zero;
+        countdownTextRect.offsetMax = Vector2.zero;
+
+
+        // 2. Panel y Texto para MENSAJES del robot/simulación
+        m_robotMessagePanelGO = CreatePanel("RobotMessagePanel", m_CanvasGO.transform,
+            new Vector2(0.5f, 0.1f), new Vector2(0.5f, 0.1f), // Anclado al centro inferior
+            new Vector2(-300, -50), new Vector2(300, 50),     // Posición relativa
+            new Vector2(0.5f, 0.5f), Color.clear);
+        m_robotMessagePanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(600, 100);
+
+        GameObject robotMessageTextGO = new GameObject("RobotMessageText");
+        robotMessageTextGO.transform.SetParent(m_robotMessagePanelGO.transform, false);
+        m_robotMessageText = robotMessageTextGO.AddComponent<Text>();
+        m_robotMessageText.font = Font.CreateDynamicFontFromOSFont("Arial", 40); // Fuente un poco más pequeña
+        m_robotMessageText.fontSize = 40;
+        m_robotMessageText.alignment = TextAnchor.MiddleCenter;
+        m_robotMessageText.color = Color.yellow; // Un color visible
+        m_robotMessageText.text = "";
+
+        RectTransform robotMessageTextRect = robotMessageTextGO.GetComponent<RectTransform>();
+        robotMessageTextRect.anchorMin = Vector2.zero;
+        robotMessageTextRect.anchorMax = Vector2.one;
+        robotMessageTextRect.offsetMin = Vector2.zero;
+        robotMessageTextRect.offsetMax = Vector2.zero;
+
+        // Inicialmente ocultar ambos paneles
+        m_countdownPanelGO.SetActive(false);
+        m_robotMessagePanelGO.SetActive(false);
+    }
+
+    // Métodos públicos para controlar la visibilidad y el texto desde AppController
+    public void SetCountdownText(string text, bool visible)
+    {
+        if (m_countdownText != null && m_countdownPanelGO != null)
+        {
+            m_countdownText.text = text;
+            m_countdownPanelGO.SetActive(visible);
+        }
+    }
+
+    public void SetRobotMessageText(string text, bool visible)
+    {
+        if (m_robotMessageText != null && m_robotMessagePanelGO != null)
+        {
+            m_robotMessageText.text = text;
+            m_robotMessagePanelGO.SetActive(visible);
         }
     }
 
