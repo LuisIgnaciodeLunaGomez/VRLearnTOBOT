@@ -562,7 +562,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
     {
         //Debug.Log($"<color=red>BlockDragController.HandleEndDrag: Entered. IsDragging={m_IsDragging}. DraggingView={m_DraggingBlockView?.name}</color>");
 
-       // Debug.LogError($"<color=red> HASHCODE_CHECK - HandleEndDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
+        // Debug.LogError($"<color=red> HASHCODE_CHECK - HandleEndDrag - BlockDragController - Using Workspace HashCode: {m_Workspace?.GetHashCode()}");
 
         if (!m_IsDragging || m_DraggingBlockView /*!= blockView || m_DraggingBlockView */== null)
         {
@@ -572,7 +572,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
             m_connectionController.ResetPotentialConnection(); //Reseto el controlador de conexion 
             return;
         }
-     
+
         string blockId = m_DraggingBlockModel?.ID ?? "UNKNOWN";
 
         Debug.Log($"<color=cyan>BlockDragController: Ending drag - Block {blockId} ({m_DraggingBlockView.name} ) Pointer Screen Pos: {eventData.position}</color>");
@@ -581,8 +581,10 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         //Finalizar la búsqueda de conexión y obtener los candidatos.
         m_connectionController.FinalizePotentialConnection();
+
         ConnectionModel finalTargetStationaryModelConn;
         ConnectionModel finalSourceDraggedModelConn;
+
         bool canConnect = m_connectionController.GetFinalizedConnections(out finalTargetStationaryModelConn, out finalSourceDraggedModelConn);
 
         bool connected = false;
@@ -591,73 +593,63 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
 
         if (canConnect)
         {
-            Debug.Log($"<color=lime>BlockDragController: Potential connection found!</color> Attempting to connect DRAGGED: {ConnectionModel.GetConnectionModelID(finalSourceDraggedModelConn)} -> STATIONARY: {ConnectionModel.GetConnectionModelID(finalTargetStationaryModelConn)}");
+            // Debugging: Log del estado inicial antes de re-resolver roles.
+            Logger.Log($"<color=orange>[BlockDragController Debugging]</color> Arrasting (Source): {ConnectionModel.GetConnectionModelID(finalSourceDraggedModelConn)} (Type: {finalSourceDraggedModelConn.Type}, IsSuperior: {finalSourceDraggedModelConn.IsSuperior})");
+            Logger.Log($"<color=orange>[BlockDragController Debugging]</color> Estacionario (Target): {ConnectionModel.GetConnectionModelID(finalTargetStationaryModelConn)} (Type: {finalTargetStationaryModelConn.Type}, IsSuperior: {finalTargetStationaryModelConn.IsSuperior})");
+            // ConnectionModel superiorConn, inferiorConn;
 
-            ConnectionModel superiorConn, inferiorConn;
+              ConnectionModel connectionToCallConnectOn; // Esta variable será el *verdadero* SOCKET (el receptor)
+            ConnectionModel connectionToPassAsParameter; // Esta variable será el *verdadero* PLUG (el que se conecta)
 
-            // finalSourceDraggedModelConn es del bloque arrastrado
-            // finalTargetStationaryModelConn es del bloque estacionario
-
-            if (finalSourceDraggedModelConn.IsSuperior) // El conector del bloque ARRASTRADO es "hembra" (Next o Input)
+            // Escenario 1: El conector ESTACIONARIO es el SOCKET (event_whenflagclicked.NextStatement)
+            if (finalTargetStationaryModelConn.Type == EConnection.NextStatement || finalTargetStationaryModelConn.Type == EConnection.InputValue)
             {
-                // Por lo tanto, el conector del bloque ARRASTRADO debe ser el SUPERIOR
-                superiorConn = finalSourceDraggedModelConn;
-                inferiorConn = finalTargetStationaryModelConn; // Y el ESTACIONARIO el INFERIOR (Prev o Output)
-                                                               // Log.Log($"   Case 1: Dragged is Superior ({superiorConn.Type}). Stationary is Inferior ({inferiorConn.Type}).");
+                connectionToCallConnectOn = finalTargetStationaryModelConn; //  estacionario es el SOCKET.
+                connectionToPassAsParameter = finalSourceDraggedModelConn;    //  arrastrado es el PLUG.
+                Logger.Log($"<color=lime>BlockDragController: ¡ROLES RESUELTOS! ESTACIONARIO es el SOCKET ({connectionToCallConnectOn.Type}). ARRASTRADO es el PLUG ({connectionToPassAsParameter.Type}).</color>");
             }
-            else // El conector del bloque ARRASTRADO es "macho" (Prev o Output)
+            // Escenario 2: El conector ESTACIONARIO es un PLUG (motion_movesteps.PrevStatement),
+            // entonces,  bloque arrastrado debe tener el SOCKET ( motion_movesteps.NextStatement`arrastrándose a otro PrevStatement).
+            else // finalTargetStationaryModelConn es un PLUG
             {
-                // Por lo tanto, el conector del bloque ESTACIONARIO debe ser el SUPERIOR (Next o Input)
-                superiorConn = finalTargetStationaryModelConn;
-                inferiorConn = finalSourceDraggedModelConn;   // Y el ARRASTRADO el INFERIOR
-                                                              // Logger.Log($"   Case 2: Dragged is Inferior ({inferiorConn.Type}). Stationary is Superior ({superiorConn.Type}).");
+                connectionToCallConnectOn = finalSourceDraggedModelConn;  // Lo arrastrado es el SOCKET.
+                connectionToPassAsParameter = finalTargetStationaryModelConn; // Lo estacionario es el PLUG.
+                Logger.Log($"<color=lime>BlockDragController: ¡ROLES RESUELTOS! ARRASTRADO es el SOCKET ({connectionToCallConnectOn.Type}). ESTACIONARIO es el PLUG ({connectionToPassAsParameter.Type}).</color>");
             }
+           
 
-            // Comprobación de compatibilidad de tipos antes de conectar
-            // Aquí definimos cómo chequear si son Statement o Value basándonos en el enum EConnection
-            bool superiorIsStatement = superiorConn.Type == EConnection.NextStatement || superiorConn.Type == EConnection.PrevStatement;
-            bool inferiorIsStatement = inferiorConn.Type == EConnection.NextStatement || inferiorConn.Type == EConnection.PrevStatement;
-
-            bool superiorIsValue = superiorConn.Type == EConnection.InputValue || superiorConn.Type == EConnection.OutputValue;
-            bool inferiorIsValue = inferiorConn.Type == EConnection.InputValue || inferiorConn.Type == EConnection.OutputValue;
-
-            bool typesAreCompatible =
-                (superiorIsStatement && inferiorIsStatement) ||
-                (superiorIsValue && inferiorIsValue);
-
-            if (!typesAreCompatible)
+            Logger.Log($"<color=magenta>BlockDragController: Llamando a Connect en el modelo (FINAL):</color> " +
+                       $"SOCKET: {ConnectionModel.GetConnectionModelID(connectionToCallConnectOn)} ({connectionToCallConnectOn.Type}) " +
+                       $"con PLUG: {ConnectionModel.GetConnectionModelID(connectionToPassAsParameter)} ({connectionToPassAsParameter.Type})");
+            
+            try
             {
-                Logger.LogError($"<color=red>BlockDragController: CONNECTION TYPE MISMATCH! Cannot connect Superior {superiorConn.Type} (ID: {ConnectionModel.GetConnectionModelID(superiorConn)}) to Inferior {inferiorConn.Type} (ID: {ConnectionModel.GetConnectionModelID(inferiorConn)}).</color>");
-                canConnect = false; // Anular la conexión
-            }
-            else
-            {
-                // Logger.Log($"<color=magenta>BlockDragController: Calling Connect - Superior: {ConnectionModel.GetConnectionModelID(superiorConn)} ({superiorConn.SourceBlock.Id}) ---> Inferior: {ConnectionModel.GetConnectionModelID(inferiorConn)} ({inferiorConn.SourceBlock.Id})</color>");
-                try
+                connectionToCallConnectOn.Connect(connectionToPassAsParameter);
+                connected = true; // La conexión a nivel de modelo fue exitosa.
+
+                Logger.Log($"  <color=green>MODEL Connection SUCCESSFUL.</color> DraggingBlock ({m_DraggingBlockModel.ID}) es ahora un hijo. " +
+                 $"Su ParentBlock: {m_DraggingBlockModel.ParentBlock?.ID ?? "NULL (Debería ser el padre evento)"}. " + 
+                 $"Su `PrevConnection.TargetBlock`: {m_DraggingBlockModel.PreviousConnection?.TargetConnection?.SourceBlock?.ID ?? "N/A"}. " + 
+                 $"El `NextConnection` de su Padre (el evento) ({m_DraggingBlockModel.ParentBlock?.ID ?? "N/A"}) ahora apunta a `DraggingBlock`: " +
+                 $"Target: {m_DraggingBlockModel.ParentBlock?.NextConnection?.TargetBlock?.ID ?? "N/A"}", 
+                 m_DraggingBlockView.gameObject);
+
+                if (m_WasTemplateClone) 
                 {
-                    // Ejecutar la conexión a NIVEL DE MODELO: El SUPERIOR llama a Connect con el INFERIOR
-                    superiorConn.Connect(inferiorConn); // Esto debería disparar eventos que ConnectionView escuchará
-                    connected = true;
-                    placedInWorkspace = true; // Si se conecta, está en el workspace
-
-                    Debug.Log($"  <color=green>MODEL Connection SUCCESSFUL.</color> ParentBlock of DraggingBlock ({m_DraggingBlockModel.ID}) is now: {m_DraggingBlockModel.ParentBlock?.ID ?? "NULL"}. OutputConnection Target: {m_DraggingBlockModel.OutputConnection?.TargetBlock?.ID ?? "NULL"}. PrevConnection Target: {m_DraggingBlockModel.PreviousConnection?.TargetBlock?.ID ?? "NULL"}", m_DraggingBlockView.gameObject);
-
-                    if (m_WasTemplateClone)
-                    {
-                        Debug.Log($"BlockDragController: Confirming add for template clone {m_DraggingBlockModel.ID} due to successful connection.");
-                        m_workspaceController.EnsureBlockRegistered(m_DraggingBlockModel);
-                        m_PendingCloneModel = null;
-                        Debug.Log($"BlockDragController: Template clone {m_DraggingBlockModel.ID} successfully CONNECTED. Ensured registration.", m_DraggingBlockView.gameObject);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"<color=red>BlockDragController: MODEL Connect FAILED:</color> {e.ToString()}");
-                    connected = false;
-                  
+                    Logger.Log($"BlockDragController: Template clone {m_DraggingBlockModel.ID} successfully CONNECTED. Confirming its final registration in Workspace.");
+                    m_workspaceController.EnsureBlockRegistered(m_DraggingBlockModel);
+                    m_PendingCloneModel = null;
                 }
             }
-        }
+            catch (Exception e)
+            {
+                Logger.LogError($"<color=red>BlockDragController: MODEL Connect FAILED (EXCEPCIÓN):</color> {e.ToString()}", this.gameObject);
+                connected = false; // Si hubo excepción, la conexión falló.
+            }
+        } // Fin del if (canConnect)
+
+
+
 
         //Si no se conectó, intentar colocar en el workspace o manejar el descarte.
         if (!connected)

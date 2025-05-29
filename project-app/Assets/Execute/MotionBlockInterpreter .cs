@@ -26,7 +26,7 @@ public class MotionBlockInterpreter : Cmdtor
         m_BlockObserver = observer;
     }
 
-    public  IEnumerator Execute(BlockModel block)
+    public IEnumerator Execute(BlockModel block)
     {
         if (m_BlockObserver == null)
         {
@@ -34,9 +34,9 @@ public class MotionBlockInterpreter : Cmdtor
             yield break;
         }
 
-          //Obtener el valor de los pasos del bloque
+        //Obtener el valor de los pasos del bloque
         float stepsValue = 0f;
-        string stepsStr = block.GetFieldValue("STEPS"); 
+        string stepsStr = block.GetFieldValue("STEPS");
 
         if (string.IsNullOrEmpty(stepsStr))
         {
@@ -57,30 +57,28 @@ public class MotionBlockInterpreter : Cmdtor
         // Llama al BlockObserver para mover el robot - REVISAR
 
         yield return m_BlockObserver.StartCoroutine(m_BlockObserver.MoveRobot(stepsValue));
-      
+
         Debug.Log($"[MotionBlockInterpreter] Robot finished moving.");
 
-    
+
     }
-   
+
     protected override IEnumerator OnRun(BlockModel block)
     {
 
         //yield return Execute(block);
         if (m_BlockObserver == null)
-         {
-             Debug.LogError("[MotionBlockInterpreter] BlockObserver is NULL! Robot cannot move.");
-             yield break; // Terminar la corrutina si no hay observador.
-         }
+        {
+            Debug.LogError("[MotionBlockInterpreter] BlockObserver is NULL! Robot cannot move.");
+            yield break; // Terminar la corrutina si no hay observador.
+        }
 
-         // Obtener el valor de los pasos del bloque
-        // float stepsValue = 0f;
+        // Obtener el valor de los pasos del bloque
+         float stepsValue = 10f;
         CmdEnumerator stepsCtor = CSharp.Interpreter.ValueReturn(block, "STEPS", new DataStruct(10));
-        yield return stepsCtor;
+        //yield return stepsCtor;
 
         DataStruct stepsData = stepsCtor.Data;
-
-        float stepsValue = 10f; // Default de emergencia
 
         if (!stepsData.IsUndefined && stepsData.IsNumber)
         {
@@ -89,11 +87,35 @@ public class MotionBlockInterpreter : Cmdtor
         }
         else
         {
-            Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] 'STEPS' value for block '{block.ID}' is not a valid number (Type: {stepsData.Type}). Defaulting to {stepsValue}.</color>");
+            Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] DataStruct de 'STEPS' no es un número válido (Type: {stepsData.Type}). Defaulting to {stepsValue}.</color>");
         }
+        /*
+         * 
+         * 
+                float stepsValue = 10f; // Default de emergencia
 
-        yield return m_BlockObserver.MoveRobot(stepsValue);
-        Debug.Log($"<color=purple>[MotionBlockInterpreter.OnRun] Robot finished moving {stepsValue} steps.</color>");
+                if (!stepsData.IsUndefined && stepsData.IsNumber)
+                {
+                    stepsValue = stepsData.NumberValue.Value;
+                    Debug.Log($"<color=blue>[MotionBlockInterpreter.OnRun] Extracted {stepsValue} steps from block '{block.ID}'.</color>");
+                }
+                else
+                {
+                    Debug.LogWarning($"<color=orange>[MotionBlockInterpreter.OnRun] 'STEPS' value for block '{block.ID}' is not a valid number (Type: {stepsData.Type}). Defaulting to {stepsValue}.</color>");
+                }
+                */
+
+        /* if (stepsCtor != null)
+         {
+             yield return stepsCtor; // Esperar a que el CmdEnumerator de STEPS termine
+             stepsData = stepsCtor.Data; // Intentar obtener los datos del resultado
+         }
+         else
+         {
+             Debug.LogWarning($"<color=red>[MotionBlockInterpreter.OnRun] CmdEnumerator para input 'STEPS' es NULL. (Input 'STEPS' podría no tener un bloque conectado o estar mal definido). Asumiendo 10 pasos.</color>");
+         }
+         yield return m_BlockObserver.MoveRobot(stepsValue);
+         Debug.Log($"<color=purple>[MotionBlockInterpreter.OnRun] Robot finished moving {stepsValue} steps.</color>");*/
         /* string stepsStr = block.GetFieldValue("STEPS");
 
          if (string.IsNullOrEmpty(stepsStr))
