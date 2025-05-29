@@ -19,7 +19,7 @@ using System.Collections; // Necesario para corrutinas
 
 public class RobotBehaviour : MonoBehaviour
 {
-    public float moveSpeed = 5f; // Velocidad del robot
+    public float moveSpeed = 0.5f; // Velocidad del robot
 
     private Coroutine m_currentMovementCoroutine;
 
