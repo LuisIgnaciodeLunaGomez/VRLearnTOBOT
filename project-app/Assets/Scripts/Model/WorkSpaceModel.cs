@@ -48,21 +48,31 @@ public class WorkSpaceModel
         {
             if (_instance == null)
             {
-                Debug.LogError("WorkSpaceModel INSTANCE WAS NULL! Creating new default one.");
+                Logger.LogWarning("[WorkSpaceModel] WorkSpaceModel.Instance accedido antes de ser inicializado. Creando una instancia por defecto.");
+
                 _instance = new WorkSpaceModel(); 
             }
             return _instance;
         }
     }
+    private bool _isDisposed = false;
+
 
     public WorkSpaceModel(WorkspaceOptions options = null, string optId = null)
     {
         if (_instance != null && _instance != this)
         {
-            Debug.LogError("!!! Singleton Pattern Violated! Creating a second WorkSpaceModel instance. !!!");
+            Logger.LogWarning($"[WorkSpaceModel] Singleton Pattern Violated! Se está creando una SEGUNDA instancia de WorkSpaceModel (ID que se intentaba: {optId ?? "AUTO"}). La instancia principal ya existe: {_instance.Id}. ¡NO USES 'new WorkSpaceModel()' directamente para el workspace principal!");
         }
 
-        if (_instance == null) _instance = this; // Asigno la primera instancia creada
+        if (_instance == null)
+        {
+            _instance = this; // Asigno la primera instancia creada
+            Logger.Log($"[WorkSpaceModel] Instancia Singleton establecida para ID: {optId ?? "AUTO"}. Hash: {this.GetHashCode()}");
+
+        }
+
+        _isDisposed = false;
 
         if (string.IsNullOrEmpty(optId))
         {
@@ -78,11 +88,12 @@ public class WorkSpaceModel
         if (mWorkspaceDB.ContainsKey(Id))
         {
             mWorkspaceDB[Id] = this;
-            Debug.LogWarning("Already contains workspace id:" + Id);
+            Logger.LogWarning($"[WorkSpaceModel] El ID de WorkSpace '{Id}' ya existe en mWorkspaceDB. Se sobrescribirá la entrada. Esto podría indicar IDs duplicados o recreación.");
         }
         else
         {
             mWorkspaceDB.Add(Id, this);
+            Logger.Log($"[WorkSpaceModel] WorkSpace con ID '{Id}' añadido a mWorkspaceDB.");
         }
 
         Options = options ?? new WorkspaceOptions();
@@ -102,20 +113,107 @@ public class WorkSpaceModel
         if (_instance == null)
         {
             _instance = new WorkSpaceModel(options, optId);
+            Logger.Log($"[WorkSpaceModel] EnsureInitialized: Se inicializó una nueva instancia de WorkSpaceModel (ID: {_instance.Id}).");
+        }
+        else
+        {
+            Logger.Log($"[WorkSpaceModel] EnsureInitialized: WorkSpaceModel ya está inicializado (ID: {_instance.Id}). No se crea una nueva instancia.");
+            if (options != null) _instance.Options = options;
+            // Opcional: _instance.Clear(); ¿ cada EnsureInitialized significa un "nuevo proyecto" en el workspace?
         }
     }
     public void Dispose()
     {
-        Debug.LogError("!!!!!!!! WorkSpaceModel.Dispose() CALLED !!!!!!!!");
+        if (_isDisposed) // Comprobación de idempotencia
+        {
+            Logger.LogWarning($"[WorkSpaceModel] Dispose() llamado para la instancia ID '{Id}' que ya está dispuesta. Ignorando llamadas repetidas.");
+            return;
+        }
 
-        this.Clear();
-        mWorkspaceDB.Remove(this.Id);
+        // Los Debug.LogError se cambian a Debug.Log, porque esto es un comportamiento esperado al finalizar.
+        Logger.Log($"[WorkSpaceModel] INICIANDO Dispose() para instancia ID: {Id}.");
+
+        this.Clear(); // Se vacía el contenido del workspace
+
+        // Remover de la base de datos global de workspaces (mWorkspaceDB)
+        if (mWorkspaceDB.ContainsKey(this.Id))
+        {
+            mWorkspaceDB.Remove(this.Id);
+            Logger.Log($"[WorkSpaceModel] Instancia ID '{Id}' eliminada de mWorkspaceDB.");
+        }
+
+        // Si la instancia que se está disponiendo es la instancia Singleton global, la nulificamos.
+        // Esto permite que una nueva instancia pueda ser creada más tarde
+        if (_instance == this)
+        {
+            Logger.Log($"[WorkSpaceModel] Nulificando referencia estática '_instance' para ID: {Id}.");
+            _instance = null;
+        }
+
+        _isDisposed = true; // : Marcar como dispuesto
+        Logger.Log($"[WorkSpaceModel] Dispose() COMPLETADO para instancia ID: {Id}.");
+        /* Debug.LogError("!!!!!!!! WorkSpaceModel.Dispose() CALLED !!!!!!!!");
+
+         this.Clear();
+         mWorkspaceDB.Remove(this.Id);*/
     }
 
     public void Clear()
     {
-        Debug.LogError("!!!!!!!! WorkSpaceModel.Clear() CALLED !!!!!!!!");
-        Debug.LogError("Stack Trace:\n" + Environment.StackTrace);
+        if (_isDisposed)
+        {
+            Logger.LogWarning($"[WorkSpaceModel] Clear() llamado para la instancia ID '{Id}' que ya está dispuesta. No se puede limpiar.");
+            return;
+        }
+
+        Logger.Log($"[WorkSpaceModel] INICIANDO Clear() para instancia ID: {Id}.");
+       
+        List<BlockModel> blocksToDispose = new List<BlockModel>(TopBlocks);
+        foreach (BlockModel block in blocksToDispose)
+        {
+            
+            if (block != null) 
+            {
+                if (block.ParentBlock == null) 
+                {
+                    Logger.Log($"[WorkSpaceModel.Clear()] Disposing TopBlock: {block.ID} ({block.Type}).");
+                    block.Dispose(); 
+                }
+                else
+                {
+                   
+                    Logger.LogWarning($"[WorkSpaceModel.Clear()] El bloque {block.ID} ({block.Type}) fue encontrado en TopBlocks, pero tiene un ParentBlock ({block.ParentBlock.ID}). Debería haber sido removido antes.");
+                    block.Dispose();
+                }
+            }
+        }
+
+        
+        if (TopBlocks.Count > 0)
+        {
+            Logger.LogWarning($"[WorkSpaceModel.Clear()] TopBlocks aún contiene bloques ({TopBlocks.Count}) después de intentar disponerlos. Forzando vaciado.");
+            TopBlocks.Clear();
+        }
+        if (BlockDB.Count > 0)
+        {
+            Logger.LogWarning($"[WorkSpaceModel.Clear()] BlockDB aún contiene bloques ({BlockDB.Count}) después de intentar disponerlos. Forzando vaciado.");
+            BlockDB.Clear();
+        }
+
+        VariableMap.Clear();
+        foreach (var dbKvp in ConnectionDBList) // Limpia cada base de datos de conexiones dentro de ConnectionDBList
+        {
+            dbKvp.Value.Clear();
+        }
+        // Este log ya no es un "error", sino un seguimiento de la limpieza
+        Logger.Log($"[WorkSpaceModel] Se vació ConnectionDBList dentro de Clear().");
+        ProcedureDB.Clear();
+
+        Logger.Log($"[WorkSpaceModel] Clear() COMPLETADO para instancia ID: {Id}. Contenido vacío, pero objeto aún válido.");
+
+        /*
+        //Debug.LogError("!!!!!!!! WorkSpaceModel.Clear() CALLED !!!!!!!!");
+       // Debug.LogError("Stack Trace:\n" + Environment.StackTrace);
         while (TopBlocks.Count > 0)
         {
             TopBlocks[TopBlocks.Count - 1].Dispose();
@@ -124,7 +222,7 @@ public class WorkSpaceModel
         VariableMap.Clear();
         ConnectionDBList.Clear();
         Debug.LogError("!!!!!!!! dentro de WorkSpaceModel.Clear() ->ConnectionDBList.Clear(); CALLED !!!!!!!!");
-        ProcedureDB.Clear();
+        ProcedureDB.Clear();*/
     }
 
     #region Blocks
@@ -132,6 +230,7 @@ public class WorkSpaceModel
     {
         return BlockFactory.Instance.CreateBlock(this, prototypeName, opt_id);
     }
+
     public BlockModel GetBlockById(string id)
     {
         BlockModel block = null;

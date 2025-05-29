@@ -35,6 +35,9 @@ public class ExecutionController : MonoBehaviour
     public static ExecutionController Instance { get; private set; }
 
     private WorkSpaceModel m_WorkspaceModel;
+
+    private RunnerUpdateStateObserver m_RunnerUpdateStateObserver;
+
     public BlockModel Block { get; private set; } 
     public string ErrorMessage { get; private set; }
 
@@ -52,6 +55,9 @@ public class ExecutionController : MonoBehaviour
         }
     }
 
+    private bool mIsInitialized = false; 
+
+    private bool mIsRunning = false;
 
     private Coroutine m_ExecutionCoroutine = null;
     private Stack<BlockModel> m_ExecutionStack; 
@@ -69,40 +75,147 @@ public class ExecutionController : MonoBehaviour
 
     void Awake()
     {
-        
-        if (Instance == null) Instance = this; else Destroy(gameObject);
 
+        if (Instance == null)
+        {
+            Instance = this;
+            // DontDestroyOnLoad(gameObject); // Opcional, 
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        //if (Instance == null) Instance = this; else Destroy(gameObject);
+        // Se inicializa el observador interno del Runner
+        m_RunnerUpdateStateObserver = new RunnerUpdateStateObserver(this);
     }
+
+    public bool IsFullyInitialized() { return mIsInitialized; }
 
     public void InitializeController(WorkSpaceModel workspaceModel)
     {
         m_WorkspaceModel = workspaceModel;
+
         if (m_WorkspaceModel == null)
+        {
             Debug.LogError("ExecutionController: WorkspaceModel reference is missing!");
+            enabled = false; // Desactiva el controlador si no hay WorkspaceModel.
+            return;
+        }
+        /*else
+            Debug.Log("ExecutionController Initialized.");*/
+
+        var forceInterpreterLoad = CSharp.Interpreter; // Llama a CSharp.get_Interpreter() y su constructor.
+        var forceRunnerLoad = CSharp.Runner;
+
+        // Inicializa la instancia del observador interno.
+        m_RunnerObserver = new RunnerUpdateStateObserver(this);
+
+        // Se suscribe al observador CSharp.Runner.
+        
+        if (CSharp.Runner != null)
+        {
+            CSharp.Runner.CoroutineStarter = StartCoroutine;
+            CSharp.Runner.CoroutineStopper = StopAllCoroutines;
+
+            //Suscribir el observador al CSharp.Runner.
+          
+
+            //CSharp.Runner.RemoveObserver(m_RunnerObserver); //<--- esto parece que no es necesario a la vista de los logs obtenidos.
+            CSharp.Runner.AddObserver(m_RunnerUpdateStateObserver);
+
+            Debug.Log("<color=green>ExecutionController Initialized and subscribed to CSharp.Runner events.</color>");
+        }
+    
         else
-            Debug.Log("ExecutionController Initialized.");
+        {
+            Debug.LogError("ExecutionController: CSharp.Runner is null! Cannot subscribe. Check initialization order in AppController.");
+            enabled = false;
+        }
+
+        mIsInitialized = true; // Marca como inicializado
+        Logger.Log("ExecutionController Initialized successfully.", this);
     }
 
+    public bool PreCheckExecutableBlocks()
+    {
+        if (m_WorkspaceModel == null)
+        {
+            Debug.LogError("ExecutionController.PreCheckExecutableBlocks: Workspace is null.");
+            return false;
+        }
+
+        List<BlockModel> topBlocks = m_WorkspaceModel.GetTopBlocks(true); // Obtiene todos los top-level
+
+        bool willExecute = false; // Bandera para saber si se encolaría algo
+
+        foreach (BlockModel block in topBlocks)
+        {
+            if (block.Type == "event_whenflagclicked")
+            {
+                if (block.NextConnection != null && block.NextConnection.TargetConnection != null && block.NextConnection.TargetConnection.SourceBlock != null)
+                {
+                    willExecute = true; // Se encontró una cadena de bloques válida
+                    Debug.Log($"ExecutionController.PreCheck: Found 'event_whenflagclicked' with connected blocks. Program will run.");
+                    break; // Con uno que haya, es suficiente para indicar que SÍ hay algo.
+                }
+            }
+          
+        }
+
+        // CSharp.Runner.Run() se encarga de llenar la cola.
+
+        if (!willExecute)
+        {
+            Debug.LogWarning("ExecutionController.PreCheck: No executable chains (starting with 'event_whenflagclicked' or recognized standalone blocks) found in workspace.");
+        }
+        return willExecute;
+    }
     public void StartExecution()
     {
-        if (CurrentStatus == ExecutionStatus.Running) { Debug.LogWarning("ExecutionController: Already running."); return; }
-        if (m_WorkspaceModel == null) { Debug.LogError("ExecutionController: Cannot start, Workspace is null."); return; }
+        if (!mIsInitialized)
+        {
+            Logger.LogError("ExecutionController.StartExecution: Controller not fully initialized (mIsInitialized is false). Aborting.", this);
+            return;
+        }
 
-        Debug.Log("ExecutionController: Requesting CSharp.Runner to start...");
+        if (m_WorkspaceModel == null) {
 
-        OnExecutionStart?.Invoke(); 
+            OnExecutionError?.Invoke(Block, "WorkspaceModel was null."); ///Ver si esto es correcto o no.
+            Debug.LogError("ExecutionController: Cannot start, Workspace is null.");
+            return;
+        }
+
+       // CSharp.Runner.StopAllExecution();
+
+        int topBlockCount = m_WorkspaceModel.TopBlocks.Count; 
+        Debug.Log($"ExecutionController: WorkSpaceModel contains {topBlockCount} top-level blocks.");
+
+       if (topBlockCount == 0)
+        {
+            Debug.LogWarning("ExecutionController: No top-level blocks found in WorkspaceModel. Cannot run anything.");
+            
+            return;
+        }
+
+        else
+        {
+
+            Debug.Log("ExecutionController: Requesting CSharp.Runner to start...");
+        }
+            OnExecutionStart?.Invoke(); 
 
         CSharp.Runner.Run(m_WorkspaceModel);
-    }
 
+        Logger.Log("<color=green>ExecutionController: CSharp.Runner initialized and execution requested. Observer ready to receive updates.");
+    }
     
     public void StopExecution()
     {
         Debug.Log("ExecutionController: Requesting CSharp.Runner to stop...");
         CSharp.Runner.Stop();
     }
-
-
     
     public void PauseExecution()
     {
@@ -133,14 +246,27 @@ public class ExecutionController : MonoBehaviour
     {
         if (Instance == this)
         {
-            if (m_RunnerObserver != null)
+            if(m_RunnerObserver != null && CSharp.Runner != null) // Se añade un check extra
             {
                 CSharp.Runner.RemoveObserver(m_RunnerObserver);
                 m_RunnerObserver = null;
+                Logger.Log("<color=green>ExecutionController: Successfully unsubscribed RunnerUpdateStateObserver.</color>");
+
             }
-       
+
             Instance = null;
         }
+
+    }
+
+    /// <summary>
+    /// Muestra un log detallado para propósitos de depuración.
+    /// </summary>
+    private void LogExecutionDebugInfo(string message)
+    {
+        // Debug.Log($"<color=magenta>[ExecutionController Debug]: {message}</color>");
+        // Usar tu Logger si es un Wrapper, sino directamente Debug.Log
+        Logger.Log($"<color=magenta>[ExecutionController Debug]: {message}</color>");
     }
 
     // Traduce los eventos de CSharpRunner a los eventos de ExecutionController
@@ -186,4 +312,7 @@ public class ExecutionController : MonoBehaviour
             }
         }
     }
+
+
+
 }//fin clase ExecutionController

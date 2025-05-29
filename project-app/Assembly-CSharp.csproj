@@ -9,8 +9,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{2AF31773-6B5D-3D09-051F-A15783CA8D37}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -72,6 +71,7 @@
     <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldDropdownDialog.cs" />
     <Compile Include="Assets\Core\Variable\VariableMap.cs" />
     <Compile Include="Assets\Scripts\Model\FieldModels\FieldVariableModel.cs" />
+    <Compile Include="Assets\Execute\RobotBehaviour .cs" />
     <Compile Include="Assets\Scripts\Blocks\Controller\CategoryController.cs" />
     <Compile Include="Assets\Scripts\Blocks\CategoryLoader.cs" />
     <Compile Include="Assets\Scripts\Factories\BlockFactory.cs" />
@@ -191,6 +191,7 @@
     <Compile Include="Assets\Core\Field\FieldCreatorAttribute.cs" />
     <Compile Include="Assets\Scripts\Model\InputModel.cs" />
     <Compile Include="Assets\Interfaces\IBlockElement.cs" />
+    <Compile Include="Assets\Execute\MotionBlockInterpreter .cs" />
     <Compile Include="Assets\Scripts\View\FieldViews\FieldInputView.cs" />
     <Compile Include="Assets\Scripts\Configurador\Dialogs\MutatorDialogs\ProcedureDefinitionMutatorDialog.cs" />
     <Compile Include="Assets\Scripts\View\FieldViews\FieldNumberInputView.cs" />
@@ -205,6 +206,7 @@
     <Compile Include="Assets\Scripts\Model\ConnectionModelExtensions.cs" />
     <Compile Include="Assets\Scripts\BlockLogicalMetrics.cs" />
     <Compile Include="Assets\Scripts\View\BlockViewSettings.cs" />
+    <Compile Include="Assets\Execute\BlockObserver .cs" />
     <Compile Include="Assets\Scripts\View\UICanvasView.cs" />
     <Compile Include="Assets\Scripts\Configurador\UGUI\ToolBox\ToolboxConfig.cs" />
     <Compile Include="Assets\Scripts\WorkspaceSerializer.cs" />

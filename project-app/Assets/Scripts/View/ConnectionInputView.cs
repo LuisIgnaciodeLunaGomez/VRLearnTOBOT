@@ -20,7 +20,7 @@ using UnityEngine.UI;
 public class ConnectionInputView : ConnectionView 
 {
     public override ViewType Type => ViewType.ConnectionInput;
-    protected BlockView m_SourceBlockView;
+    protected new BlockView m_SourceBlockView;
 
  
     public bool IsSlot { get; set; } = true; 

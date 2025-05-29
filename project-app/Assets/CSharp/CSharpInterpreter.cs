@@ -22,12 +22,43 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-
 public class CSharpInterpreter : Interpreter
 {
     public override CodeName Name
     {
         get { return CodeName.CSharp; }
+    }
+
+    public CSharpInterpreter()
+    {
+        //AÑADE directamente los intérpretes al diccionario 'mCmdMap'
+        // (este diccionario es un campo heredado de la clase base Interpreter).
+        
+
+        if (BlockObserver.Instance == null)
+        {
+            Debug.LogError("CSharpInterpreter: BlockObserver.Instance es NULL cuando se intentan registrar intérpretes. " +
+                           "Asegúrate de que el GameObject con el script BlockObserver esté activo en la escena " +
+                           "y que su método Awake() se ejecute antes de que CSharp.Runner (y por ende CSharp.Interpreter) sea instanciado.");
+          
+        }
+
+
+        // TODO: AñadI aquí todos LOS bloques "ejecutables" y sus intérpretes.
+        // Los strings ("motion_movesteps", etc.) DEBEN coincidir exactamente con el Type del BlockModel.
+        try
+        {
+            mCmdMap.Add("motion_movesteps", new MotionBlockInterpreter(BlockObserver.Instance));
+            //mCmdMap.Add("looks_say", new LooksBlockInterpreter(BlockObserver.Instance));
+           // mCmdMap.Add("control_wait", new ControlWaitInterpreter(BlockObserver.Instance)); 
+            // ... (añadir todos los demás intérpretes que se creen) ...
+        }
+        catch (System.ArgumentException ex)
+        {
+            Debug.LogError($"CSharpInterpreter: Failed to add interpreter to mCmdMap. Key already exists or another error. {ex.Message}");
+        }
+
+        Debug.Log("CSharpInterpreter: Inicializado. Intérpretes de bloques cargados en mCmdMap.");
     }
 
     /// <summary>
@@ -56,7 +87,7 @@ public class CSharpInterpreter : Interpreter
     public CmdEnumerator ValueReturn(BlockModel block, string name, DataStruct defaultData)
     {
         CmdEnumerator etor = ValueReturn(block, name);
-        etor.Cmdtor.DefaultData = defaultData;
+        etor.CmdtorInstance.DefaultData = defaultData;
         return etor;
     }
 
@@ -85,6 +116,11 @@ public class CSharpInterpreter : Interpreter
         // function definition doesn't need interpreter. 
         if (ProcedureDB.IsDefinition(block))
             return null;
+
+        if (block.Type == "event_whenflagclicked")
+        {
+            return null; // NO se necesita un intérprete para este, lo maneja el CSharpRunner.
+        }
 
         Cmdtor cmdtor;
         if (!mCmdMap.TryGetValue(block.Type, out cmdtor))

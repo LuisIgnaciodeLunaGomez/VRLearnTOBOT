@@ -59,7 +59,12 @@ public class UICanvasView : MonoBehaviour
     private GameObject m_UiManagerView;
     private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
 
- 
+    [Header("UI de Mensajes de Simulación")]
+    private GameObject m_countdownPanelGO; // Panel contenedor para el texto de cuenta atrás
+    private Text m_countdownText;
+    private GameObject m_robotMessagePanelGO; // Panel contenedor para el texto del robot
+    private Text m_robotMessageText;
+
     public RectTransform DragLayer => m_DragLayerRect;
     private Dictionary<string, Color> mCategoryColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
 
@@ -68,6 +73,10 @@ public class UICanvasView : MonoBehaviour
     //Dimensiones estimadas de la pantalla
     private const int m_screenWidth = 1200;
     private const int m_screenHeight = 720;
+
+    private GameObject m_CategoriesPanelGO; // GameObject del panel izquierdo de categorías
+    private GameObject m_greenFlagIconGO;   // GameObject del icono de GreenFlag
+    private GameObject m_stopFlagIconGO;    // GameObject del icono de StopFlag
 
     void Awake()
     {
@@ -92,6 +101,8 @@ public class UICanvasView : MonoBehaviour
         CreateWorkspacePanels(); // Middle y Right Panels
 
         CreateDragLayer(); // Panel para el arrastre de bloques
+
+        CreateSimulationMessageUI(); //Creación de mensajes de simulación cuenta atrás y mensajes del robot
 
         if (m_RightPanelRect != null && m_MiddlePanelRect != null)
         {
@@ -336,7 +347,7 @@ public class UICanvasView : MonoBehaviour
             this.AddLogoToPanel(topPanel, logoSpriteName);
         }
 
-        AddExportDebugButtonToPanel(m_LeftToolBarContainerRect);
+        //AddExportDebugButtonToPanel(m_LeftToolBarContainerRect); //<----Se elimina el boton de depuración para exportar la base de datos de conexiones
 
 
         if (topIconNames != null && topIconNames.Length > 0)
@@ -483,6 +494,7 @@ public class UICanvasView : MonoBehaviour
         {
             string iconName = iconNames[i];
             Texture2D iconTexture = Resources.Load<Texture2D>("Icons/" + iconName);
+          
             if (iconTexture != null)
             {
                 GameObject iconGO = new GameObject("Icon_" + iconName);
@@ -505,6 +517,18 @@ public class UICanvasView : MonoBehaviour
                 // Asociar la acción al botón
                 string currentIconName = iconName;
                 iconButton.onClick.AddListener(() => OnIconButtonClick(currentIconName));
+
+
+                //Capturo las referencias a los iconos
+
+                if (currentIconName == "GreenFlag")
+                {
+                    m_greenFlagIconGO = iconGO;
+                }
+                else if (currentIconName == "stopFlag")
+                {
+                    m_stopFlagIconGO = iconGO;
+                }
 
                 //Desactivo inicialmente 
                 if (currentIconName == "stopFlag")
@@ -714,6 +738,16 @@ public class UICanvasView : MonoBehaviour
      */
     private void OnIconButtonClick(string iconName)
     {
+        // Actualizar el estado visual de la UI dentro de UICanvasView
+        if (iconName == "GreenFlag")
+        {
+            SetUISimulationState(true); // Entrar en modo simulación
+        }
+        else if (iconName == "stopFlag")
+        {
+            SetUISimulationState(false); // Volver a modo edición
+        }
+
         var actions = new System.Collections.Generic.Dictionary<string, System.Action>
         {
            { "GreenFlag", () => {
@@ -759,6 +793,8 @@ public class UICanvasView : MonoBehaviour
             Vector2.zero, Vector2.zero,
             new Vector2(0, 1), // Pivot Arriba-Izquierda
             new Color(0.95f, 0.95f, 0.95f, 1f));
+
+        m_CategoriesPanelGO = leftPanel; //Capturo la referencia del panel izquierdo
 
         // Añadir ScrollRect al LeftPanel directamente
         ScrollRect scrollRect = leftPanel.AddComponent<ScrollRect>();
@@ -1061,6 +1097,152 @@ public class UICanvasView : MonoBehaviour
         debugButtonButton.onClick.AddListener(OnClickExportConnectionDBsButton);
 
         return debugButtonGO;
+    }
+
+
+    /// <summary>
+    /// Establece el estado de la UI para el modo de simulación.
+    /// Oculta paneles de codificación y cambia los iconos de bandera.
+    /// </summary>
+    /// <param name="isSimulating">True para activar el modo simulación; False para desactivarlo y volver al modo edición.</param>
+    public void SetUISimulationState(bool isSimulating)
+    {
+        Debug.Log($"UICanvasView: Cambiando estado de UI a modo {(isSimulating ? "Simulación" : "Edición")}");
+
+        // Alternar visibilidad de los iconos de bandera
+        if (m_greenFlagIconGO != null)
+        {
+            m_greenFlagIconGO.SetActive(!isSimulating);
+        }
+        if (m_stopFlagIconGO != null)
+        {
+            m_stopFlagIconGO.SetActive(isSimulating);
+        }
+
+        // Ocultar/Mostrar paneles principales de la UI (excepto el Top Panel)
+        // Panel de Categorías (Izquierda)
+        if (m_CategoriesPanelGO != null)
+        {
+            m_CategoriesPanelGO.SetActive(!isSimulating);
+            Debug.Log($"CategoriesPanel.SetActive: {m_CategoriesPanelGO.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'm_CategoriesPanelGO' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Panel de Lista de Bloques (Medio)
+        if (BlockListPanelRect != null)
+        {
+            BlockListPanelRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"BlockListPanel.SetActive: {BlockListPanelRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'BlockListPanelRect' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Panel de Área de Codificación (Derecho)
+        if (CodingAreaPanelRect != null)
+        {
+            CodingAreaPanelRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"CodingAreaPanel.SetActive: {CodingAreaPanelRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'CodingAreaPanelRect' es nula. No se puede alternar visibilidad.");
+        }
+
+        // Capa de Arrastre (DragLayer)
+        
+        if (m_DragLayerRect != null)
+        {
+            m_DragLayerRect.gameObject.SetActive(!isSimulating);
+            Debug.Log($"DragLayerRect.SetActive: {m_DragLayerRect.gameObject.activeSelf}");
+        }
+        else
+        {
+            Debug.LogWarning("UICanvasView: Referencia a 'm_DragLayerRect' es nula. No se puede alternar visibilidad.");
+        }
+    }
+
+
+    private void CreateSimulationMessageUI()
+    {
+        if (m_CanvasGO == null)
+        {
+            Debug.LogError("UICanvasView: No se puede crear UI de mensajes. Canvas principal es nulo.");
+            return;
+        }
+
+        // 1. Panel y Texto para el CONTADOR
+        m_countdownPanelGO = CreatePanel("CountdownPanel", m_CanvasGO.transform,
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), // Anclado al centro
+            new Vector2(-150, -50), new Vector2(150, 50),     // Posición relativa al ancla (-150,-50 min, 150,50 max = tamaño 300x100)
+            new Vector2(0.5f, 0.5f), Color.clear);            // Pivote al centro, transparente
+        m_countdownPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 100); // Tamaño fijo
+
+        GameObject countdownTextGO = new GameObject("CountdownText");
+        countdownTextGO.transform.SetParent(m_countdownPanelGO.transform, false);
+        m_countdownText = countdownTextGO.AddComponent<Text>();
+        m_countdownText.font = Font.CreateDynamicFontFromOSFont("Arial", 100); // Fuente grande
+        m_countdownText.fontSize = 100;
+        m_countdownText.alignment = TextAnchor.MiddleCenter;
+        m_countdownText.color = Color.white; // Color del texto
+        m_countdownText.text = ""; // Vacío al inicio
+
+        // Ajustar RectTransform del texto para que llene el panel
+        RectTransform countdownTextRect = countdownTextGO.GetComponent<RectTransform>();
+        countdownTextRect.anchorMin = Vector2.zero;
+        countdownTextRect.anchorMax = Vector2.one;
+        countdownTextRect.offsetMin = Vector2.zero;
+        countdownTextRect.offsetMax = Vector2.zero;
+
+
+        // 2. Panel y Texto para MENSAJES del robot/simulación
+        m_robotMessagePanelGO = CreatePanel("RobotMessagePanel", m_CanvasGO.transform,
+            new Vector2(0.5f, 0.1f), new Vector2(0.5f, 0.1f), // Anclado al centro inferior
+            new Vector2(-300, -50), new Vector2(300, 50),     // Posición relativa
+            new Vector2(0.5f, 0.5f), Color.clear);
+        m_robotMessagePanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(600, 100);
+
+        GameObject robotMessageTextGO = new GameObject("RobotMessageText");
+        robotMessageTextGO.transform.SetParent(m_robotMessagePanelGO.transform, false);
+        m_robotMessageText = robotMessageTextGO.AddComponent<Text>();
+        m_robotMessageText.font = Font.CreateDynamicFontFromOSFont("Arial", 40); // Fuente un poco más pequeña
+        m_robotMessageText.fontSize = 40;
+        m_robotMessageText.alignment = TextAnchor.MiddleCenter;
+        m_robotMessageText.color = Color.yellow; // Un color visible
+        m_robotMessageText.text = "";
+
+        RectTransform robotMessageTextRect = robotMessageTextGO.GetComponent<RectTransform>();
+        robotMessageTextRect.anchorMin = Vector2.zero;
+        robotMessageTextRect.anchorMax = Vector2.one;
+        robotMessageTextRect.offsetMin = Vector2.zero;
+        robotMessageTextRect.offsetMax = Vector2.zero;
+
+        // Inicialmente ocultar ambos paneles
+        m_countdownPanelGO.SetActive(false);
+        m_robotMessagePanelGO.SetActive(false);
+    }
+
+    // Métodos públicos para controlar la visibilidad y el texto desde AppController
+    public void SetCountdownText(string text, bool visible)
+    {
+        if (m_countdownText != null && m_countdownPanelGO != null)
+        {
+            m_countdownText.text = text;
+            m_countdownPanelGO.SetActive(visible);
+        }
+    }
+
+    public void SetRobotMessageText(string text, bool visible)
+    {
+        if (m_robotMessageText != null && m_robotMessagePanelGO != null)
+        {
+            m_robotMessageText.text = text;
+            m_robotMessagePanelGO.SetActive(visible);
+        }
     }
 
 }//Fin clase UICanvasView
