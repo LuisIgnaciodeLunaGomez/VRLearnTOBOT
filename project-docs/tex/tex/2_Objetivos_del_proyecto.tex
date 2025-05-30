@@ -6,7 +6,7 @@ El presente Trabajo Fin de Grado tiene como objetivo principal el desarrollo de 
 
 La educación en robótica y programación ha demostrado ser una herramienta clave en el aprendizaje del pensamiento computacional. Sin embargo, uno de los principales desafíos en la enseñanza de la robótica es la dependencia de hardware físico, lo que limita el acceso a estudiantes en contextos de escasos recursos.
 
-Para abordar esta problemática, el laboratorio virtual combinará un \textbf{entorno de simulación 3D}, que permitirá visualizar la ejecución de los programas, con un \textbf{sistema de bloques de programación}, basado en la lógica de \textbf{Scratch}. Este sistema ha sido adaptado para la \textit{simulación de robótica educativa} centrada en un robot \textbf{LEGO WeDo 2.0} virtual.
+Para abordar esta problemática, el laboratorio virtual combinará un \textbf{entorno de simulación 3D}, que permitirá visualizar la ejecución de los programas, con un \textbf{sistema de bloques de programación}, basado en la lógica de \textbf{Scratch}. Este sistema se inspira en la robótica educativa, con la intención de simular a futuro un robot tipo LEGO WeDo 2.0 virtual, implementándose en este prototipo los mecanismos de movimiento fundamentales.
 
 Además, se ha analizado el repositorio \textbf{UBlockly}, una implementación en Unity que permite la programación por bloques. Aunque UBlockly no está diseñado específicamente para replicar los bloques de Scratch, ha representado una base sólida y clave para evaluar su adaptabilidad e integración en este trabajo \cite{UBlockly}. Su estudio ha permitido definir estrategias para la implementación y optimización del sistema propuesto en este proyecto.
 
@@ -24,7 +24,7 @@ Estos objetivos están relacionados con las funcionalidades que el prototipo de 
 		\begin{itemize}
 			\item \textbf{Bloque de movimiento:} (\texttt{motion\_movesteps}) para controlar el desplazamiento lineal del robot en la simulación 3D.
 			\item \textbf{Bloque de eventos:} (\texttt{event\_whenflagclicked}) para iniciar la secuencia de ejecución del programa.
-			% Se mencionarán explícitamente en capítulos posteriores que la gama completa de bloques de Scratch (control, sensores, operadores, etc.) son objetivos futuros para una solución completa.
+		
 		\end{itemize}
 		\item Evaluar y aplicar aspectos clave de UBlockly para lograr una implementación eficiente y escalable de la lógica de programación visual tipo Scratch en Unity.
 	\end{itemize}
