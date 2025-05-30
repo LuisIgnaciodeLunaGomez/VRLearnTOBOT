@@ -1,13 +1,13 @@
 \capitulo{3}{Conceptos teóricos}
 
-\section {Paleta de colores}
-Para la implementación del laboratorio virtual en este Trabajo Fin de Grado, se han evaluado diversas plataformas de programación visual, comparando sus características clave. 
+La implementación del laboratorio virtual desarrollado en este Trabajo Fin de Grado se fundamenta en una evaluación previa de diversas plataformas de programación visual. Este capítulo detalla los conceptos teóricos esenciales que sustentan el prototipo, con especial atención a la arquitectura de la librería UBlockly y su adaptación para este proyecto.
 
-\subsection {Comparación entre Scratch y Blockly}
+\section{Plataformas de Programación Visual y Kits de Robótica} % << Nuevo título de sección
 
-\begin{table}[h]
+\subsection{Comparación entre Scratch y Blockly}
+Actualmente, Scratch y Blockly son las plataformas dominantes en el ámbito de la programación visual basada en bloques para la educación. Su análisis comparativo ha sido fundamental para definir la dirección del presente proyecto, como se detalla en la Tabla \ref{tab:comparacion_scratch_blockly}: % << Texto introductorio
+\begin{table}[h!] % << h! para intentar forzar aquí
 	\centering
-
 	\begin{tabular}{|p{4cm}|p{4.5cm}|p{4.5cm}|}
 		\hline
 		\textbf{Característica} & \textbf{Scratch} & \textbf{Blockly} \\
@@ -25,15 +25,13 @@ Para la implementación del laboratorio virtual en este Trabajo Fin de Grado, se
 		\textbf{Uso principal} & Aprendizaje de programación visual en educación & Desarrollo de interfaces de programación visual para integración con código real \\
 		\hline
 	\end{tabular}
-
 	\caption{Comparación de Scratch y Blockly}
 	\label{tab:comparacion_scratch_blockly}
 \end{table}
 
-
-\subsection{Comparación entre Lego Wedo 2.0 y Lego spike }
-
-\begin{table}[h]
+\subsection{Comparación entre LEGO WeDo 2.0 y LEGO SPIKE Prime}
+La elección de LEGO WeDo 2.0 como el robot de referencia para la simulación en este proyecto se justifica al analizar sus diferencias fundamentales con otras plataformas de robótica educativa de LEGO, como se detalla en la Tabla \ref{tab:comparacion_lego}: % << Texto introductorio
+\begin{table}[h!] % << h! para intentar forzar aquí
 	\centering
 	\begin{tabular}{|p{4cm}|p{4.5cm}|p{4.5cm}|}
 		\hline
@@ -56,244 +54,227 @@ Para la implementación del laboratorio virtual en este Trabajo Fin de Grado, se
 	\label{tab:comparacion_lego}
 \end{table}
 
+LEGO SPIKE Prime es una adaptación de Scratch hecha por LEGO, por lo que mantiene una estructura de bloques similar a Scratch, pero ajustada a su ecosistema de hardware. LEGO WeDo 2.0 usa una interfaz más sencilla con bloques puramente icónicos (sin palabras), mientras que SPIKE Prime combina texto e íconos.
 
+\section{Arquitectura y Componentes del Prototipo en Unity}
+La implementación del laboratorio virtual en Unity se basa en la adaptación de la librería UBlockly, que proporciona un marco robusto para la programación visual. UBlockly, al estar diseñado sobre los principios de Blockly, ofrece una estructura modular y personalizable que ha sido fundamental como punto de partida para replicar la experiencia de Scratch en un entorno 3D. Este apartado describe la arquitectura principal y los componentes fundamentales que han sido desarrollados o adaptados en el prototipo.
 
-LEGO SPIKE Prime es una adaptación de Scratch hecha por LEGO, por lo que mantiene una estructura de bloques similar a Scratch, pero ajustada a su ecosistema de hardware.
-
-LEGO WeDo 2.0 usa una interfaz más sencilla con bloques puramente icónicos (sin palabras), mientras que SPIKE Prime combina texto e íconos.
-
-\section{Implementación de UBlockly en Unity}
-	UBlockly es una librería basada en Blockly que permite la integración de bloques de programación en Unity. Si bien no está diseñada específicamente para replicar Scratch, su estructura modular y personalizable puede servir como base para desarrollar un entorno de programación similar. 
-	
-	\subsection{Arquitectura de uBlockly}
-	
-	La arquitectura de uBlockly se divide en tres capas principales:
-	
-	\begin{itemize}
-		\item \textbf{Modelo Core:} Gestiona la estructura lógica de los bloques, incluyendo el espacio de trabajo \textbf{Workspace}, la base de datos de bloques y las conexiones entre ellos.
-		\item \textbf{Interfaz de usuario (UI): }  Maneja la representación visual de los bloques y su interacción dentro del editor de Unity.
-		\item \textbf{Ejecución de código: } Se encarga de interpretar y ejecutar la lógica definida en los bloques.
-
-	\end{itemize}
-	
-	\subsection{Espacio de trabajo / Workspace}
-	
-	El Workspace es el contenedor principal donde se almacenan y organizan los bloques. Su principal función es gestionar la disposición y persistencia de los bloques dentro del entorno de programación.
-	
-	\begin{itemize}
-		\item Atributos principales del Workspace
-		\begin{itemize}
-			\item \textbf{Id:} Identificador único del espacio de trabajo.
-			\item \textbf{Options: } Configuraciones del tipo modo de solo lectura, ejecución sincrónica y dirección del texto.
-			\item \textbf{TopBlocks: } Lista de bloques que no están conectados a otros.
-			\item \textbf{BlockDB: } Diccionario con todos los bloques almacenados por su ID
-			\item \textbf{VariableMap: } Estructura para el manejo de variables en el workspace.
-			\item \textbf{ConnectionList: } Base de datos de conexiones entre bloques.
-			\item \textbf{ProcedureDB: } Base de datos de procedimientos definidos dentro del espacio de trabajo.
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Creación y eliminación de bloques}
-	
-	El espacio de trabajo permite la creación de nuevos bloques mediante el uso de la clase BlockFactory y otros métodos para la eliminación y gestión de bloques existentes.
-	
-	\section{Bloques}
-	
-	Cada bloque representa una unidad funcional dentro del Workspace y pueden contener los siguientes elementos:
-	
-	\begin{itemize}
-		\item \textbf{Connection:} Conexiones de entrada y salida
-		\item \textbf{VariableMap: } Relación de variables
-		\item \textbf{Field: } Campos de texto o de selección
-		\item \textbf{Input: } Entradas anidadas
-		\item \textbf{ChildBlocks:} Bloques hijos
-	\end{itemize}
-	
-	\subsection{Jerarquía de un bloque}
-	
-	Cada bloque puede estar compuesto por diferentes elementos jerárquicos:
-	
-	\begin{itemize}
-		\item \textbf{Block: } Bloque superior en el espacio de trabajo 
-		\begin{itemize}
-		
-			\item\textbf{ConnectionOutput }  Conexión de salida
-			\item  \textbf{ConectionPrev }  Conexión previa
-			\item \textbf{ConnectionNext: } Conecta un bloque con el siguiente dentro de la secuencia de ejecución Block(Next)
-			
-		\end{itemize}
-		
-			\item \textbf{Input: } Este puede ser de varios tipos:
-			
-			\begin{itemize}
-				\item \textbf{Field: }
-				\item \textbf{ConnectonInput: } Conexión de entrada
-			\end{itemize} 
-	\end{itemize}
-	
-	
-	\section{Conexiones}
-	
-		Los bloques pueden unirse entre sí a través de un sistema de conexiones. Cada bloque puede tener tres tipos de conexiones principales:
-		
-		\begin{itemize}
-			\item \textbf{outputConnection: } Conecta la salida de un bloque con la entrada de otro
-			\item \textbf{NextConnection: } Conecta un bloque con su bloque superior
-			\item \textbf{PreviousConnection: } Enlaza un bloque con su bloque superior
-		\end{itemize}
-		
-		\subsection{Implementación de Connection en uBlockly}
-		
-			\textbf{Clase Connection }
-			
-			\begin{itemize}
-				\item Verifica la compatibilidad entre conexiones y proporciona funciones para conectar y desconectar bloques mediante código.
-				\item Determina que bloques son compatibles
-				\item Maneja eventos como conexiones, desconexiones y reorganización de bloques
-			\end{itemize}
-			
-			\textbf{Atributos principales} 
-			\begin{itemize}
-				\item \textbf{SourceBlock: } Bloque de origen de la conexión
-				\item \textbf{TargetConnection: } Conexión a la que se encuentra conectado el bloque
-				\item \textbf{IsConnected} Indica si la conexión está activa
-				\item \textbf{Check: } Lista de tipos de valores compatibles con la conexión
-				\item \textbf{Location: } Posición de la conexión en coordenadas del tipo Vector2<int>
-			\end{itemize}
-			
-	\section{Entradas o Inputs}
-		
-		Un Input representa una entrada dentro de un bloque, manejando la alineación y organización de los diferentes elementos visuales dentro del bloque y entre sus atributos principales están los siguientes:
-		
-		\begin{itemize}
-			\item \textbf{Connection: } La conexión que permite enlazar otro bloque dentro del actual
-			\item \textbf{FieldRow: } Lista de Fields que almacenan valores o etiquetas dentro del bloque.
-			\item \textbf{SourceBlock: } Bloque padre al que pertenece la entrada.
-			\item \textbf{ConnectedBlock: } Bloque que esta conectado a esta entrada, si es que existe esta.
-			\item \textbf{Input: } Son campos de datos que representan valores editables en el bloque
-		\end{itemize}	
-	
-	\section{Campos o Fields}
-	
-	Los Field datos dentro de un bloque entre los que se encontrarían etiquetas de texto, entradas editables o selecciones. Sus atributos principales son los siguientes
-	
-	\begin{itemize}
-		\item \textbf{Name: } Identificador único del campo dentro de un bloque
-		\item \textbf{SourceBlock: } Bloque al que se encuentra asociado el campo
-		\item \textbf{Validator: } Incluye funciones de validación para limitar los valores que se pueden ingresar.
-		\item \textbf{IsImage: } Indica si este campo contiene una image en lugar de un texto.
-		\item \textbf{PrefixField o SuffixField: } Son campos adicionales que nos indican que puede acompañar al campo principal dentro de un bloque.
-	\end{itemize} 
-	
-	\section{Variables o VariableMap}
-	
-	El variableMap gestionar la creación, eliminación y renombrado de variables dentro del workSpace y entres sus atributos claves están los siguientes:
-	
-	\begin{itemize}
-		\item \textbf{mVariableMap: } Diccionario de variables que esta agrupado por su tipo
-		\item \textbf{mWorkSpace: } Hace referencia al espacio de trabajo asociado.
-	\end{itemize}
-	
-	\section{Representación de bloques en Unity}
-	
-	Para adaptar uBlockly a Unity, es necesario traducir cada bloque en un objeto GameObject con elementos UI como:
-	
-	\begin{itemize}
-		\item \textbf{Image: } Representa la base del bloque.
-		\item \textbf{TextMeshPro: } Representan las etiquetas de tipo texto.
-		\item \textbf{Button: } Representan los botones para las interacciones.
-		\item \textbf{Anchor Points: } Se utilizan para definir donde se realizan las conexiones entre bloques
-		\item \textbf{LineRenderer: } Representación visual de las conexiones
-		\item \textbf{Bezier Curves: } Refleja la relación entre los bloques en la UI
-	\end{itemize}
-	
-	\section{Serialización y persistencia}
-	
-	Para guardar y cargar bloques utiliza archivos en formato XML y JSON que nos permite almacenar la estructura del WorkSpace y restaurarla cuando sea necesario.
-	
-	\section{Secciones}
-
-Notas del proyecto preconfigurados
-En aquellos proyectos que necesiten para su comprensión y desarrollo de unos conceptos teóricos de una determinada materia o de un determinado dominio de conocimiento, debe existir un apartado que sintetice dichos conceptos.
-
-Algunos conceptos teóricos de \LaTeX{} \footnote{Créditos a los proyectos de Álvaro López Cantero: Configurador de Presupuestos y Roberto Izquierdo Amo: PLQuiz}.
-
-
-
-Las secciones se incluyen con el comando section.
-
-
-
-\subsection{Subsecciones}
-
-Además de secciones tenemos subsecciones.
-
-\subsubsection{Subsubsecciones}
-
-Y subsecciones. 
-
-
-\section{Referencias}
-
-Las referencias se incluyen en el texto usando cite~\cite{wiki:latex}. Para citar webs, artículos o libros~\cite{koza92}, si se desean citar más de uno en el mismo lugar~\cite{bortolot2005, koza92}.
-
-
-\section{Imágenes}
-
-Se pueden incluir imágenes con los comandos standard de \LaTeX, pero esta plantilla dispone de comandos propios como por ejemplo el siguiente:
-
-\imagen{escudoInfor}{Autómata para una expresión vacía}{.5}
-
-
-
-\section{Listas de items}
-
-Existen tres posibilidades:
-
+\subsection{Arquitectura General (Modelo-Vista-Controlador - MVC)}
+El prototipo adopta una arquitectura de software basada en el patrón Modelo-Vista-Controlador (MVC) para promover la modularidad, la mantenibilidad y la escalabilidad del sistema. Esta separación de intereses es crucial para gestionar la complejidad de un entorno interactivo y una simulación 3D.
 \begin{itemize}
-	\item primer item.
-	\item segundo item.
+	\item \textbf{Modelo (Data \& Logic):} Representa la lógica de negocio y el estado del programa. Incluye las estructuras de datos que definen los bloques (\texttt{BlockModel}), sus conexiones (\texttt{ConnectionModel}), entradas (\texttt{InputModel}), campos (\texttt{FieldModel}) y la organización del espacio de trabajo (\texttt{WorkSpaceModel}), así como la gestión de variables (\texttt{VariableMap}) y procedimientos (\texttt{ProcedureDB}). Las operaciones de datos se abstraen de la presentación visual.
+	\item \textbf{Vista (UI \& Visuals):} Se encarga de la representación visual del Modelo. Incluye todos los elementos de la interfaz de usuario de Unity (\texttt{UnityEngine.UI.Image}, \texttt{TMPro.TextMeshProUGUI}, \texttt{UnityEngine.UI.Button}) y la representación 3D del robot (\texttt{RobotBehaviour}). Las vistas observan los cambios en el modelo y se actualizan automáticamente sin modificar directamente los datos subyacentes.
+	\item \textbf{Controlador (Orquestación \& Interaction Logic):} Maneja la interacción del usuario y la lógica de la aplicación, coordinando las comunicaciones entre Modelos y Vistas. Clases como \texttt{AppController}, \texttt{WorkspaceController}, \texttt{BlockDragController}, \texttt{BlockConnectionController} e \texttt{ExecutionController} operan en esta capa, traduciendo las entradas del usuario y las acciones del programa en manipulaciones del Modelo o actualizaciones de la Vista.
 \end{itemize}
 
-\begin{enumerate}
-	\item primer item.
-	\item segundo item.
-\end{enumerate}
-
-\begin{description}
-	\item[Primer item] más información sobre el primer item.
-	\item[Segundo item] más información sobre el segundo item.
-\end{description}
-	
+\subsection{Espacio de Trabajo (\texttt{WorkSpaceModel})}
+El \texttt{WorkSpaceModel} es el contenedor principal que gestiona el estado lógico y la organización de todos los elementos del programa de bloques. Su principal función es mantener la persistencia y disposición de los bloques, variables y procedimientos en el entorno de programación.
 \begin{itemize}
-\item 
+	\item \textbf{Atributos principales del Workspace:}
+	\begin{itemize}
+		\item \textbf{Id:} Identificador único para el espacio de trabajo.
+		\item \textbf{Options:} Configuraciones que definen el comportamiento global, como el modo de solo lectura o la ejecución sincrónica.
+		\item \textbf{TopBlocks:} \texttt{List<BlockModel>} de todos los bloques que no están conectados a otros bloques en una pila superior (es decir, bloques en la cima de la jerarquía).
+		\item \textbf{BlockDB:} \texttt{Dictionary<string, BlockModel>} que almacena todos los bloques presentes en el espacio de trabajo, indexados por su ID único. % << Aquí había un salto de línea sin \item
+		\item \textbf{VariableMap:} Estructura (\texttt{VariableMap}) para la gestión de variables de usuario, incluyendo su creación, eliminación y renombrado.
+		\item \textbf{ConnectionDBList:} \texttt{Dictionary<EConnection, BlockConnectionDB>} que organiza y gestiona las bases de datos de conexiones, optimizando la búsqueda y validación de uniones entre bloques.
+		\item \textbf{ProcedureDB:} Base de datos (\texttt{ProcedureDB}) que gestiona los procedimientos o funciones definidos por el usuario dentro del espacio de trabajo.
+	\end{itemize}
 \end{itemize}
 
-\section{Tablas}
+\subsection{Ciclo de Vida de Bloques: Creación y Eliminación}
+En UBlockly, la gestión de la vida de los bloques sigue un ciclo controlado. La \texttt{BlockFactory} se encarga de instanciar un \texttt{BlockModel} y lo inicializa con su estructura lógica (\texttt{BlockDefinition}), incluyendo sus entradas, campos y conexiones. Este proceso garantiza que cada bloque se configure correctamente desde el momento de su creación.
+\begin{itemize}
+	\item \textbf{Creación de bloques:} La clase \texttt{BlockFactory} permite la instanciación de un \texttt{BlockModel} (sea un bloque real en el \texttt{Workspace} o una plantilla en la \texttt{Toolbox}). Durante este proceso, se crean las \texttt{ConnectionModel} (\texttt{OutputConnection}, \texttt{PreviousConnection}, \texttt{NextConnection}) y las \texttt{InputModel} (que a su vez contienen \texttt{FieldModel} y sus propias \texttt{ConnectionModel} de entrada), asignando siempre la referencia correcta al bloque propietario (\texttt{SourceBlock}). % << Aquí faltaban las llaves de ConnectionModel
+	\item \textbf{Eliminación de bloques:} La eliminación se coordina a través del método \texttt{BlockModel.Dispose()}. Este método no solo retira el bloque de las bases de datos del \texttt{Workspace}, sino que también se encarga de desvincularlo de sus conexiones mediante \texttt{BlockModel.UnPlug()} y de eliminar recursivamente todos sus bloques hijos conectados (liberando así los recursos asociados a la vista y al modelo del bloque). Este proceso garantiza una limpieza efectiva de la memoria y la coherencia del estado del programa.
+\end{itemize}
 
-Igualmente se pueden usar los comandos específicos de \LaTeX o bien usar alguno de los comandos de la plantilla.
+\section{Estructura Lógica de los Bloques (\texttt{BlockModel})}
 
-\tablaSmall{Herramientas y tecnologías utilizadas en cada parte del proyecto}{l c c c c}{herramientasportipodeuso}
-{ \multicolumn{1}{l}{Herramientas} & App AngularJS & API REST & BD & Memoria \\}{ 
-HTML5 & X & & &\\
-CSS3 & X & & &\\
-BOOTSTRAP & X & & &\\
-JavaScript & X & & &\\
-AngularJS & X & & &\\
-Bower & X & & &\\
-PHP & & X & &\\
-Karma + Jasmine & X & & &\\
-Slim framework & & X & &\\
-Idiorm & & X & &\\
-Composer & & X & &\\
-JSON & X & X & &\\
-PhpStorm & X & X & &\\
-MySQL & & & X &\\
-PhpMyAdmin & & & X &\\
-Git + BitBucket & X & X & X & X\\
-Mik\TeX{} & & & & X\\
-\TeX{}Maker & & & & X\\
-Astah & & & & X\\
-Balsamiq Mockups & X & & &\\
-VersionOne & X & X & X & X\\
-} 
+Cada bloque es una unidad fundamental del programa, representada por una instancia de \texttt{BlockModel}. Un \texttt{BlockModel} encapsula la información lógica y las interacciones de un bloque.
+
+\begin{itemize}
+	\item \textbf{Componentes principales de un BlockModel:}
+	\begin{itemize}
+		\item \textbf{Connection:} Los puntos de conexión lógicos del bloque.
+		\begin{itemize}
+			\item \textbf{OutputConnection:} Permite que un bloque que devuelve un valor (ej. número o booleano) se conecte a la entrada de otro.
+			\item \textbf{PreviousConnection:} Enlaza el bloque a una pila superior de sentencias (bloque anterior).
+			\item \textbf{NextConnection:} Conecta este bloque al siguiente en una secuencia lineal de sentencias (bloque inferior en la pila).
+		\end{itemize}
+		\item \textbf{InputList:} \texttt{List<InputModel>} que define las entradas visuales del bloque, que a su vez contienen campos o conexiones para otros bloques.
+		\item \textbf{ChildBlocks:} \texttt{List<BlockModel>} de los bloques lógicamente anidados bajo este bloque (e.g., bloques conectados a entradas de valor o a entradas de sentencia en un bucle).
+		\item \textbf{Data:} Datos adicionales asociados al bloque (ej. configuración interna de un tipo de bloque).
+		\item \textbf{Propiedades de estado:} (\texttt{Disabled}, \texttt{Movable}, \texttt{Editable}, \texttt{IsShadow}, \texttt{Collapsed}, \texttt{InputsInline}) controlan el comportamiento y apariencia del bloque.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Jerarquía Interna y Composición de un Bloque}
+
+La estructura de un programa se construye a partir de la jerarquía de \texttt{BlockModel}s. Un bloque puede ser parte de una cadena lineal de sentencias o actuar como contenedor para otros bloques hijos.
+\begin{itemize}
+	\item Un \textbf{Bloque (\texttt{BlockModel})} se sitúa en la cima de su árbol jerárquico dentro del \texttt{Workspace} (un TopBlock), o es parte de un árbol más grande.
+	\item Las \textbf{Conexiones Principales} (\texttt{OutputConnection}, \texttt{PreviousConnection}, \texttt{NextConnection}) vinculan el bloque a otros, definiendo su lugar en la pila o el flujo de valores.
+	\item Los \textbf{InputModel} (Entradas) de un bloque actúan como puntos de acoplamiento para otros bloques (\texttt{Input Connections}) o como contenedores para \textbf{Fields} (Campos), organizando la disposición visual de los elementos internos. 
+	\item Un \texttt{BlockModel} puede tener otros \texttt{BlockModel}s conectados jerárquicamente a través de sus entradas, constituyendo sus \texttt{ChildBlocks}.
+\end{itemize}
+
+\section{Conexiones (\texttt{ConnectionModel})}
+Las conexiones son el mecanismo central mediante el cual los bloques se unen entre sí, formando la estructura lógica del programa. En UBlockly, cada punto de unión se representa por una instancia de \texttt{ConnectionModel}.
+
+\subsection{Implementación de \texttt{ConnectionModel} }
+La clase \texttt{ConnectionModel} verifica la compatibilidad entre conexiones y gestiona sus estados y relaciones. Es fundamental para el proceso de arrastre y snap (conexiones) de bloques en la interfaz.
+\begin{itemize}
+	\item \textbf{Funcionalidad principal:}
+	\begin{itemize}
+		\item \textbf{Verificación de compatibilidad:} Determina si dos conexiones son lógicamente compatibles según su tipo y las propiedades de \texttt{Check}. (\texttt{CanConnectWithReason()}).
+		\item \textbf{Conexión y desconexión:} Proporciona métodos para establecer y romper la relación entre bloques (\texttt{Connect()}, \texttt{Disconnect()}).
+		\item \textbf{Manejo de eventos:} Notifica a sus observadores (\texttt{ConnectionView}) sobre cambios de estado (\texttt{UpdateState.Connected}, \texttt{Disconnected}, \texttt{Highlight}, \texttt{BumpedAway}).
+		\item \textbf{Lógica de Bumping:} Implementa la capacidad de mover bloques ya conectados cuando un nuevo bloque intenta unirse a una conexión ocupada, reorganizando las pilas existentes (\texttt{ConnectionModel.Connect()} y métodos auxiliares).
+	\end{itemize}
+	\item \textbf{Atributos principales:}
+	\begin{itemize}
+		\item \textbf{SourceBlock:} \texttt{BlockModel} al que pertenece esta conexión. Crucial para la gestión de la jerarquía y la pertenencia a un \texttt{Workspace}.
+		\item \textbf{Type:} Tipo de la conexión (\texttt{EConnection}): \texttt{InputValue}, \texttt{OutputValue}, \texttt{NextStatement}, \texttt{PrevStatement}, o \texttt{DummyInput} (cuando el Input no lleva conexión).
+		\item \textbf{Location:} Posición \textit{lógica} de la conexión en coordenadas del espacio de trabajo (\texttt{Vector2}), que se sincroniza con su posición visual para permitir la detección de snap entre bloques.
+		\item \textbf{TargetConnection:} Referencia a la \texttt{ConnectionModel} a la que este bloque está unido. Es \texttt{null} si no está conectado.
+		\item \textbf{IsConnected:} \texttt{bool} que indica si la conexión está activa.
+		\item \textbf{Check:} \texttt{List<string>} que especifica los tipos de valores compatibles con esta conexión (e.g., Number, Boolean, Statement).
+		\item \textbf{InDB:} \texttt{bool} que indica si la conexión está actualmente registrada en las bases de datos de conexión del \texttt{Workspace} (\texttt{ConnectionDBList}) para búsquedas.
+		\item \textbf{DB / DBOpposite:} Referencias directas a las \texttt{BlockConnectionDB} correspondientes al tipo de esta conexión (\texttt{DB}) y al tipo opuesto (\texttt{DBOpposite}), para búsquedas rápidas.
+	\end{itemize}
+\end{itemize}
+
+\section{Entradas (\texttt{InputModel})}
+Un \texttt{InputModel} representa una entrada dentro de un bloque, ya sea para anidar otros bloques o para contener campos. Gestiona la alineación y organización de los diferentes elementos visuales dentro del bloque y su contribución al layout.
+
+\begin{itemize}
+	\item \textbf{Atributos principales:}
+	\begin{itemize}
+		\item \textbf{Name:} Nombre único de la entrada dentro de su bloque propietario (ej. STEPS, DO).
+		\item \textbf{Type:} Tipo de la entrada (\texttt{EConnection}), indicando si es de valor (\texttt{InputValue}), de sentencia (\texttt{NextStatement}) o dummy (\texttt{DummyInput}).
+		\item \textbf{Connection:} Si la entrada es de tipo \texttt{InputValue} o \texttt{NextStatement}, esta referencia a \texttt{ConnectionModel} permite anidar otro bloque dentro del actual.
+		\item \textbf{FieldRow:} \texttt{List<FieldModel>} que almacena los campos (\textit{Fields}) o etiquetas de texto asociados a esta entrada, definiendo su apariencia interna.
+		\item \textbf{SourceBlock:} \texttt{BlockModel} padre al que pertenece esta entrada, garantizando una referencia coherente en la jerarquía del modelo.
+		\item \textbf{ConnectedBlock:} Si \texttt{Connection} está activa, esta propiedad retorna el \texttt{BlockModel} que está conectado a esta entrada.
+		\item \textbf{Align:} Determina la alineación horizontal de los campos dentro de la entrada (\texttt{EAlign.Left}, \texttt{Center}, \texttt{Right}).
+	\end{itemize}
+\end{itemize}
+
+\section{Campos (\texttt{FieldModel})}
+Los \texttt{FieldModel}s representan los datos y etiquetas individuales dentro de un bloque. Son elementos visuales editables o estáticos que muestran información relevante para la configuración del bloque.
+
+\begin{itemize}
+	\item \textbf{Atributos principales:}
+	\begin{itemize}
+		\item \textbf{Name:} Identificador único del campo dentro de su bloque.
+		\item \textbf{Type:} Tipo del campo (\texttt{field\_label}, \texttt{field\_input}, \texttt{field\_number}, \texttt{field\_dropdown}, etc.), utilizado por la \texttt{FieldFactory} para su instanciación.
+		\item \textbf{mText:} Valor textual actual del campo.
+		\item \textbf{SourceBlock:} \texttt{BlockModel} al que se encuentra asociado este campo.
+		\item \textbf{IsEditable:} \texttt{bool} que indica si el campo permite al usuario modificar su valor en la interfaz.
+		\item \textbf{IsImage:} \texttt{bool} que indica si el campo contiene una imagen en lugar de texto (ej. \texttt{field\_image}).
+		\item \textbf{Validator:} Función delegada (\texttt{FieldValidator}) que se utiliza para aplicar reglas de validación al valor de entrada del usuario, garantizando la consistencia de los datos.
+	\end{itemize}
+\end{itemize}
+
+\section{Variables (\texttt{VariableMap})}
+La clase \texttt{VariableMap} es el componente del \texttt{WorkSpaceModel} que gestiona la creación, eliminación, renombrado y almacenamiento de las variables que los usuarios definen en el entorno de programación.
+
+\begin{itemize}
+	\item \textbf{Atributos clave:}
+	\begin{itemize}
+		\item \textbf{mVariableMap:} \texttt{Dictionary<string, List<VariableModel>>} que agrupa las variables por su tipo (cadena, número, etc.), permitiendo un acceso y una gestión eficientes.
+		\item \textbf{mWorkspace:} Hace referencia a la instancia del \texttt{WorkSpaceModel} asociada, garantizando la pertenencia y el contexto operativo del mapa de variables.
+	\end{itemize}
+\end{itemize}
+
+\section{Sistema de Ejecución (\texttt{CSharpRunner} e \texttt{Cmdtor}s)}
+El corazón de la lógica programable reside en el sistema de ejecución, responsable de interpretar y ejecutar la secuencia de bloques del usuario. En el prototipo, esto se realiza mediante un intérprete directo basado en corrutinas de C\#, orquestado por \texttt{CSharpRunner} y los intérpretes de bloques (\texttt{Cmdtor}s).
+
+\subsection{Clases del sistema de ejecución}
+\begin{itemize}
+	\item \textbf{\texttt{Cmdtor}:} Clase base abstracta para todos los intérpretes de bloques. Cada \texttt{Cmdtor} (o sus subclases: \texttt{ValueCmdtor}, \texttt{VoidCmdtor}, \texttt{EnumeratorCmdtor}) define cómo un tipo de bloque específico traduce su lógica a acciones programáticas. En el prototipo, \texttt{MotionBlockInterpreter} es un ejemplo concreto de esta implementación para el bloque de movimiento.
+	\item \textbf{\texttt{CmdEnumerator}:} Clase auxiliar que envuelve un \texttt{IEnumerator} de un \texttt{Cmdtor}, permitiendo que el \texttt{CSharpRunner} lo gestione como una corrutina en una pila. Facilita la ejecución secuencial y la pausa/reanudar de las operaciones de los bloques.
+	\item \textbf{\texttt{CSharpRunner}:} Componente \texttt{MonoBehaviour} que orquesta la ejecución del programa. Mantiene una pila de corrutinas (\texttt{Stack<IEnumerator>}) para manejar el flujo de ejecución (secuencial, anidado, condicionales, bucles) de los bloques. Permite el control del ciclo de vida del programa (inicio, pausa, reanudación, parada y modo paso a paso). También se encarga de delegar el inicio y fin de las corrutinas a la capa de visualización (\texttt{BlockObserver}) para la animación del robot y la interfaz de usuario. % << Estaba un \item que iniciaba la linea
+\end{itemize}
+\section{Representación Visual y Composición de Bloques en Unity} 
+Para adaptar UBlockly a Unity, cada \texttt{BlockModel} (la representación lógica de un bloque) se traduce en un \texttt{GameObject} con componentes \texttt{UnityEngine.UI} que conforman su \textit{vista}. La \texttt{BlockView} (\texttt{BaseView}) es el componente principal que gestiona esta representación visual y sincroniza el modelo lógico con la interfaz de usuario. Este proceso de adaptación busca replicar la apariencia y el comportamiento de los bloques de Scratch, combinando la flexibilidad de UBlockly con una estética intuitiva.
+
+\subsection{Creación de Prefabs para Bloques en Unity}
+En Unity, un \textbf{Prefab} es un tipo de activo que permite almacenar un \texttt{GameObject} con sus componentes, propiedades y toda su jerarquía de hijos como una plantilla reutilizable. Esta aproximación facilita la creación consistente y el mantenimiento de múltiples instancias de un mismo objeto en una escena o a través del tiempo.
+UBlockly ofrece métodos tanto para generar los bloques de manera procedimental en tiempo de ejecución como para utilizar prefabs prediseñados. Para el desarrollo de este prototipo, se ha optado por un enfoque que combina el uso de prefabs configurados manualmente en el editor de Unity con la flexibilidad de la estructura lógica de UBlockly.
+Esta decisión permite un control granular sobre la apariencia y el comportamiento visual exacto de cada bloque, asegurando que el prototipo se ajuste a la experiencia visual deseada de Scratch. Cada tipo de bloque (como, por ejemplo, mover X pasos) se ha diseñado como un prefab distinto, preconfigurado con su estructura visual base y componentes de \texttt{UnityEngine.UI}.
+
+\subsubsection{Ejemplo de Composición de Bloque: \texttt{motion\_movesteps}}
+Un claro ejemplo de la composición visual de los bloques mediante prefabs es el bloque \texttt{motion\_movesteps}, ilustrado en la Figura \ref{fig:prefab_motion_movesteps}. Este prefab representa el bloque mover 10 pasos y muestra su estructura interna en la jerarquía de Unity, que refleja el anidamiento de componentes \texttt{BlockView}, \texttt{LineGroupView}, \texttt{InputView} y \texttt{FieldView} que construyen el bloque:
+
+\imagen{prefab_motion_movesteps}{Estructura del Prefab \texttt{motion\_movesteps} en la Jerarquía de Unity.}{1} 
+
+La jerarquía interna de este prefab es clave para su funcionamiento y composición:
+\begin{itemize}
+	\item \textbf{\texttt{motion\_movesteps}:} Es el \texttt{GameObject} raíz del prefab, que contiene el script \texttt{BlockView}. Este \texttt{BlockView} es responsable de sincronizar el modelo lógico (\texttt{BlockModel}) con la interfaz visual.
+	\item \textbf{\texttt{Connection\_prev}} y \textbf{\texttt{Connection\_next}:} Hijos directos que representan visualmente los puntos de conexión anterior y siguiente, gestionados por componentes \texttt{ConnectionView}.
+	\item \textbf{\texttt{LineGroup}:} Un \texttt{GameObject} hijo que agrupa los elementos internos de la línea principal del bloque (campos de texto, entradas). Contiene un componente \texttt{LineGroupView} que organiza el layout horizontal de estos elementos.
+	\item \textbf{\texttt{Input\_MoverLabel}:} Un \texttt{GameObject} hijo dentro de \texttt{LineGroup} que representa la etiqueta de texto mover. Contiene un componente \texttt{InputView} (\texttt{Input\_MoverLabel}) que gestiona el texto y sus campos. A su vez, dentro de él, se encuentran las \texttt{FieldView} que contienen la información de texto (mover).
+	\item \textbf{\texttt{Input\_STEPS}:} Otro \texttt{GameObject} hijo dentro de \texttt{LineGroup} que representa la entrada numérica editable (por defecto 10). Contiene un \texttt{InputView} (\texttt{Input\_STEPS}) y dentro de este se anidan:
+	\begin{itemize}
+		\item \textbf{\texttt{Field\_NUM\_FIELD}:} Componente \texttt{FieldView} que gestiona el valor numérico (inicialmente 10). Es un campo editable y en su jerarquía contiene los componentes visuales para mostrar y editar ese valor (\texttt{Text Area}, \texttt{Placeholder}, \texttt{Text}).
+		\item \textbf{\texttt{Connection\_InputView}:} Contiene un componente \texttt{ConnectionView} que representa visualmente el punto de conexión circular para enlazar otros bloques de valor (ej. un número, una variable).
+	\end{itemize}
+	\item \textbf{\texttt{Input\_PasosLabel}:} Un \texttt{GameObject} dentro de \texttt{LineGroup} para la etiqueta de texto pasos. Funciona de manera análoga a \texttt{Input\_MoverLabel}.
+	\item \textbf{\texttt{nextStatementContainer}:} Este \texttt{RectTransform} es un hijo clave que no contiene un \texttt{InputView}, sino que actúa como \textbf{el punto de anclaje y contenedor visual para los bloques que se conectan por debajo} del bloque actual (\texttt{BlockModel.NextConnection}). Cuando un bloque (\texttt{BlockView}) se conecta a este \texttt{NextConnection}, su \texttt{GameObject} raíz es re-parentado a este \texttt{nextStatementContainer}. Esto es fundamental para que las pilas de bloques se apilen y se gestionen correctamente dentro de la interfaz gráfica, manteniendo la coherencia visual del programa.
+\end{itemize}
+
+\subsection{Mapeo Modelo-Vista y Elementos UI} 
+La sincronización entre la lógica de programación (el Modelo, \texttt{BlockModel}) y su presentación visual (la Vista, \texttt{BlockView}) es fundamental. Esta relación bidireccional se mantiene mediante un patrón Observador, donde los cambios en el modelo (\texttt{BlockModel.FireUpdate()}) notifican a la vista (\texttt{BlockView.HandleModelUpdate()}) para que se actualice. A su vez, las interacciones del usuario en la vista son traducidas por los controladores para modificar el modelo.
+\begin{itemize}
+	\item \textbf{Elementos UI comunes:} Los bloques se componen visualmente de una combinación de los siguientes componentes Unity UI, cada uno asociado a una clase \texttt{View} específica:
+	\begin{itemize}
+		\item \textbf{\texttt{Image}:} Utilizado para la forma base del bloque, su color y sus muescas/pestañas características. Se utiliza un componente especializado (\texttt{CustomMeshImage}) que permite la manipulación de la geometría del bloque para adaptarla a la forma de las muescas, pestañas y conexiones de Scratch.
+		\item \textbf{\texttt{TextMeshProUGUI}:} Representan las etiquetas de texto de los bloques (ej. mover, pasos) y los valores numéricos o de texto editables por el usuario.
+		\item \textbf{\texttt{Button}:} Utilizado para elementos interactivos como campos de selección desplegables (\texttt{TMP\_Dropdown} para \texttt{FieldDropdownView} y \texttt{FieldVariableView}) y posibles botones en el futuro (\texttt{FieldButtonView}).
+	\end{itemize}
+\end{itemize}
+
+\subsection{Sistema de Posicionamiento y Tamaño (Layout Manual)} 
+El correcto despliegue visual de los bloques en la interfaz requiere un sistema de layout preciso, dado que Unity UI no siempre ofrece un ajuste automático óptimo para las formas complejas y anidadas de los bloques de programación visual.
+\begin{itemize}
+	\item \textbf{\texttt{RectTransform}, Anchor Points y Pivot:} Todos los elementos UI (\texttt{GameObject}s) de los bloques poseen un componente \texttt{RectTransform}. Su posicionamiento y redimensionamiento se gestionan a través de la manipulación programática de sus propiedades \texttt{anchoredPosition}, \texttt{pivot} y \texttt{anchor} en un \textbf{sistema de layout manual}. Este sistema calcula dinámicamente el tamaño (\texttt{CalculateSize()}) y la posición (\texttt{XY}) de cada \texttt{BlockView} y sus hijos (\texttt{InputView}, \texttt{FieldView}, \texttt{ConnectionView}) en la jerarquía visual de la UI.
+	\item \textbf{Conexiones Visuales (\texttt{ConnectionView}):} Cada \texttt{ConnectionModel} tiene una \texttt{ConnectionView} asociada que representa visualmente el punto de conexión. Estas vistas gestionan el \textit{resaltado visual} (`Highlight`) para indicar posibles conexiones durante el arrastre, y son clave en el \textit{re-parentado y posicionamiento de bloques} tras un "snap". Aunque no se emplean \texttt{LineRenderer} o \texttt{Bezier Curves} para el trazado de las conexiones (como ocurre en otras herramientas de modelado de software), el snap visual y la animación son fundamentales para la experiencia de usuario.
+\end{itemize}
+
+\section{Serialización y Persistencia}
+Para permitir guardar y cargar el estado de los programas del usuario, el prototipo incorpora un sistema de serialización y persistencia. Este sistema se encarga de almacenar la estructura lógica del \texttt{WorkSpaceModel} y de restaurarla cuando sea necesario, permitiendo la continuidad en los proyectos.
+\begin{itemize}
+	\item \textbf{Formato de datos:} La estructura de los bloques y sus relaciones se almacenan en formato \textbf{XML}, el cual permite una representación jerárquica clara del programa.
+	\item \textbf{Clases involucradas:}
+	\begin{itemize}
+		\item \textbf{\texttt{Xml}:} Componente del core de UBlockly responsable de transformar la estructura del \texttt{WorkSpaceModel} a un árbol \texttt{XMLDocument} (\texttt{WorkspaceToDom()}) y viceversa (\texttt{DomToWorkspace()}).
+		\item \textbf{\texttt{WorkspaceSerializer}:} La clase implementada en el prototipo que utiliza las funcionalidades de \texttt{Xml} para \textit{guardar} el \texttt{XML} en las \texttt{PlayerPrefs} de Unity y \textit{cargar} programas desde ellas, proporcionando una persistencia básica para el estado del laboratorio.
+	\end{itemize}
+\end{itemize}
+
+
+\section{Objetivos de Desarrollo Sostenible (ODS) y su Aplicación en el Proyecto}
+Los Objetivos de Desarrollo Sostenible (ODS) son una lista de 17 objetivos globales adoptados por la Asamblea General de la Organización de las Naciones Unidas (ONU) en 2015, como parte de la Agenda 2030 para el Desarrollo Sostenible. Estos objetivos universales e interconectados buscan abordar desafíos globales urgentes, como la pobreza, la desigualdad, el cambio climático, la degradación ambiental, la paz y la justicia. Su integración en proyectos de ingeniería informática refleja un compromiso con la creación de soluciones con un impacto positivo a nivel social, económico y ambiental.
+
+El presente TFG se alinea con los ODS al fomentar una educación inclusiva y al reducir las desigualdades, mediante la democratización del acceso a herramientas de aprendizaje tecnológico.
+
+\subsection{ODS 4: Educación de Calidad} 
+El \textbf{ODS 4: Educación de Calidad} busca Garantizar una educación inclusiva y equitativa de calidad y promover oportunidades de aprendizaje permanente para todos\cite{ONU-ODS}.
+En el contexto de este proyecto, se contribuye a este ODS de las siguientes maneras:
+\begin{itemize}
+	\item \textbf{Acceso equitativo:} El laboratorio virtual reduce significativamente las barreras de entrada a la educación en programación y robótica. Al eliminar la necesidad de hardware físico costoso y laboratorios especializados, el proyecto democratiza el acceso, permitiendo a estudiantes de zonas con recursos limitados o sin acceso a infraestructuras dedicadas, participar en experiencias de aprendizaje enriquecedoras.
+	\item \textbf{Educación inclusiva:} Al ofrecer una interfaz basada en la programación por bloques tipo Scratch, accesible e intuitiva, se facilita el aprendizaje a niños y adolescentes con diversos niveles de experiencia y habilidades. El diseño del entorno está concebido para ser comprensible para un público amplio, desde principiantes hasta usuarios más avanzados.
+	\item \textbf{Aprendizaje permanente:} La adquisición de habilidades en pensamiento computacional y lógico desde edades tempranas sienta una base sólida para el aprendizaje continuo en el ámbito de las tecnologías.
+\end{itemize}
+De esta forma, el proyecto es una herramienta que promueve activamente la participación de una comunidad estudiantil más amplia en las disciplinas STEM \cite{ONU-ODS}.
+
+\subsection{ODS 10: Reducción de las Desigualdades}
+El \textbf{ODS 10: Reducción de las Desigualdades} tiene como meta Reducir la desigualdad en los países y entre ellos \cite{ONU-ODS}. La contribución del proyecto se manifiesta en los siguientes aspectos:
+\begin{itemize}
+	\item \textbf{Democratización del acceso a la tecnología educativa:} El coste de la tecnología educativa es un factor determinante que a menudo excluye a segmentos de la población. Al priorizar el desarrollo de una aplicación para dispositivos Android (como tablets de bajo coste) y utilizar software de código abierto (Unity Personal, C\#, UBlockly), el proyecto minimiza la inversión económica requerida para acceder a estas herramientas didácticas.
+	\item \textbf{Brecha digital y geográfica:} En regiones donde la infraestructura tecnológica y los recursos educativos son escasos, las simulaciones virtuales pueden compensar la falta de laboratorios físicos y equipamiento de robótica. Esto reduce la brecha digital y geográfica, permitiendo que estudiantes de entornos rurales o menos privilegiados accedan a la misma calidad de experiencia de aprendizaje que sus homólogos en áreas urbanas.
+\end{itemize}
+
+Este proyecto no solo facilita el aprendizaje técnico, sino que también sirve como una herramienta para fomentar una sociedad más justa e igualitaria al hacer la educación en programación y robótica más accesible a todos.
