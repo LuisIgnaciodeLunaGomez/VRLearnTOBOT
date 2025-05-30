@@ -50,9 +50,10 @@ El objetivo principal es crear una **alternativa accesible, interactica y didác
   <li> <strong>Motor de desarrollo utilizado</strong> Unity Versión: 6000.0.26f1</li>
   <li> <strong>Lenguaje de programación principal</strong>: C#</li>
   <li> <strong>Interfaz de bloques:</strong> Basado en el repositorio UBlockly, el cual ha sido adaptado a este proyecto</li>
- <li> <strong>Programa de modelado 3D </strong>strong>Blender 4.4.</li>li>
- <li>Programa CAD para diseño de robots</li>strong> Studio 2.0
+ <li> <strong>Programa de modelado 3D </strong>Blender 4.4.</li>
+ <li>Programa CAD para diseño de robots <strong> Studio 2.0</li>
   <li> <strong>Control de versiones</strong>: Git / Github</li>
+  
 <li><strong>Gestión de proyectos</strong>: Zube (Metodológía Ágil)</li>  
 </ul>
 
