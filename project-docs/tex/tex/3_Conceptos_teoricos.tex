@@ -89,7 +89,7 @@ En UBlockly, la gestión de la vida de los bloques sigue un ciclo controlado. La
 	\item \textbf{Eliminación de bloques:} La eliminación se coordina a través del método \texttt{BlockModel.Dispose()}. Este método no solo retira el bloque de las bases de datos del \texttt{Workspace}, sino que también se encarga de desvincularlo de sus conexiones mediante \texttt{BlockModel.UnPlug()} y de eliminar recursivamente todos sus bloques hijos conectados (liberando así los recursos asociados a la vista y al modelo del bloque). Este proceso garantiza una limpieza efectiva de la memoria y la coherencia del estado del programa.
 \end{itemize}
 
-\section{Estructura Lógica de los Bloques (\texttt{BlockModel})}
+\section{El modelo de Bloque (\texttt{BlockModel})}
 
 Cada bloque es una unidad fundamental del programa, representada por una instancia de \texttt{BlockModel}. Un \texttt{BlockModel} encapsula la información lógica y las interacciones de un bloque.
 
@@ -103,7 +103,7 @@ Cada bloque es una unidad fundamental del programa, representada por una instanc
 			\item \textbf{NextConnection:} Conecta este bloque al siguiente en una secuencia lineal de sentencias (bloque inferior en la pila).
 		\end{itemize}
 		\item \textbf{InputList:} \texttt{List<InputModel>} que define las entradas visuales del bloque, que a su vez contienen campos o conexiones para otros bloques.
-		\item \textbf{ChildBlocks:} \texttt{List<BlockModel>} de los bloques lógicamente anidados bajo este bloque (e.g., bloques conectados a entradas de valor o a entradas de sentencia en un bucle).
+		\item \textbf{ChildBlocks:} \texttt{List<BlockModel>} de los bloques lógicamente anidados (principalmente aquellos conectados a entradas de tipo sentencia o los que siguen en la ejecución secuencial vía \texttt{NextConnection}).
 		\item \textbf{Data:} Datos adicionales asociados al bloque (ej. configuración interna de un tipo de bloque).
 		\item \textbf{Propiedades de estado:} (\texttt{Disabled}, \texttt{Movable}, \texttt{Editable}, \texttt{IsShadow}, \texttt{Collapsed}, \texttt{InputsInline}) controlan el comportamiento y apariencia del bloque.
 	\end{itemize}
@@ -195,7 +195,7 @@ El corazón de la lógica programable reside en el sistema de ejecución, respon
 \begin{itemize}
 	\item \textbf{\texttt{Cmdtor}:} Clase base abstracta para todos los intérpretes de bloques. Cada \texttt{Cmdtor} (o sus subclases: \texttt{ValueCmdtor}, \texttt{VoidCmdtor}, \texttt{EnumeratorCmdtor}) define cómo un tipo de bloque específico traduce su lógica a acciones programáticas. En el prototipo, \texttt{MotionBlockInterpreter} es un ejemplo concreto de esta implementación para el bloque de movimiento.
 	\item \textbf{\texttt{CmdEnumerator}:} Clase auxiliar que envuelve un \texttt{IEnumerator} de un \texttt{Cmdtor}, permitiendo que el \texttt{CSharpRunner} lo gestione como una corrutina en una pila. Facilita la ejecución secuencial y la pausa/reanudar de las operaciones de los bloques.
-	\item \textbf{\texttt{CSharpRunner}:} Componente \texttt{MonoBehaviour} que orquesta la ejecución del programa. Mantiene una pila de corrutinas (\texttt{Stack<IEnumerator>}) para manejar el flujo de ejecución (secuencial, anidado, condicionales, bucles) de los bloques. Permite el control del ciclo de vida del programa (inicio, pausa, reanudación, parada y modo paso a paso). También se encarga de delegar el inicio y fin de las corrutinas a la capa de visualización (\texttt{BlockObserver}) para la animación del robot y la interfaz de usuario. % << Estaba un \item que iniciaba la linea
+	\item \textbf{\texttt{CSharpRunner}:} Componente \texttt{MonoBehaviour} que orquesta la ejecución del programa. Mantiene una pila de corrutinas (\texttt{Stack<IEnumerator>}) para manejar el flujo de ejecución (secuencial, anidado, condicionales, bucles) de los bloques. Permite el control del ciclo de vida del programa (inicio, pausa, reanudación, parada y modo paso a paso). El CSharpRunner (a través del CmdRunner) gestiona las corrutinas de los Cmdtor. El BlockObserver es un componente que los Cmdtor (como MotionBlockInterpreter) pueden usar para interactuar con el mundo de Unity (el robot)
 \end{itemize}
 \section{Representación Visual y Composición de Bloques en Unity} 
 Para adaptar UBlockly a Unity, cada \texttt{BlockModel} (la representación lógica de un bloque) se traduce en un \texttt{GameObject} con componentes \texttt{UnityEngine.UI} que conforman su \textit{vista}. La \texttt{BlockView} (\texttt{BaseView}) es el componente principal que gestiona esta representación visual y sincroniza el modelo lógico con la interfaz de usuario. Este proceso de adaptación busca replicar la apariencia y el comportamiento de los bloques de Scratch, combinando la flexibilidad de UBlockly con una estética intuitiva.
