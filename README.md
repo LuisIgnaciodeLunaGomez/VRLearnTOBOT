@@ -27,12 +27,10 @@ El objetivo principal es crear una **alternativa accesible, interactica y didác
 </li>
   <li> 
   🤖 <strong>Simulación de robot LEGO Wedo 2.0: </strong>
-    <<ul>
+    <ul>
     <li> Modelo 3D Interactivo del robot</li>
     <li>Simulación y comportamiento del motor</li>
-      <li>Simulación de sensores>
     </ul>
-  </li>
   <li>
     <strong>Ejecución en tiempo real:</strong> Los programas creados con bloques se traducen y ejecutan para controlar al robot virtual dentro del entorno de simulación.
   </li>
