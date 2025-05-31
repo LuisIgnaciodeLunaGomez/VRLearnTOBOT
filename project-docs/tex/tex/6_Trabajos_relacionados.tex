@@ -1,3 +1,46 @@
 \capitulo{6}{Trabajos relacionados}
 
-Este apartado sería parecido a un estado del arte de una tesis o tesina. En un trabajo final grado no parece obligada su presencia, aunque se puede dejar a juicio del tutor el incluir un pequeño resumen comentado de los trabajos y proyectos ya realizados en el campo del proyecto en curso. 
+Este apartado presenta un resumen comentado de los trabajos y proyectos más relevantes en el campo de la programación por bloques y la robótica educativa. El objetivo es contextualizar el prototipo desarrollado en este Trabajo Fin de Grado (TFG) dentro del panorama actual, identificando las tendencias, fortalezas y limitaciones de las soluciones existentes. Este análisis comparativo ha servido para fundamentar las decisiones de diseño e implementación del proyecto, buscando aportar valor y abordar necesidades específicas.
+
+\section{Plataformas de Programación por Bloques}
+En el ámbito de la programación visual, existen plataformas consolidadas que han servido como inspiración y punto de partida teórico para este proyecto.
+\begin{itemize}
+	\item \textbf{Scratch \cite{Paredes2023}:} Desarrollado por el MIT Media Lab, es la referencia mundial para la enseñanza de la programación visual a niños y jóvenes. Su principal fortaleza reside en su interfaz intuitiva, el modelo de "drag and drop" de bloques, su categorización de colores, y su enfoque en la creación de narrativas y animaciones. Si bien es extremadamente accesible, su ecosistema es relativamente cerrado y no está diseñado para integraciones directas con entornos 3D o hardware robótico específico fuera de su plataforma.
+	\item \textbf{Blockly \cite{Munoz2015}:} Librería de Google de código abierto que proporciona el framework base para construir editores de programación por bloques. Destaca por su alta personalización y capacidad para generar código textual en múltiples lenguajes. Es la base técnica subyacente para numerosas soluciones, incluyendo extensiones hacia el aprendizaje de redes neuronales \cite{Wang2021_BlockDL} o el control de dispositivos IoT \cite{Ionescu2020_BlockIoT}. Aunque potente, carece de la capa de experiencia de usuario y del ecosistema lúdico inherente a Scratch.
+	\item \textbf{UBlockly \cite{UBlockly}:} Como implementación de Blockly en C\# para Unity, UBlockly ha sido la \textit{base técnica} directa de este TFG. Su estructura modular y su capacidad para integrarse con el motor Unity (gestionando modelos de bloques, ejecución mediante corrutinas, y serialización) la convierten en una excelente plataforma para el desarrollo de un editor de bloques funcional y extensible. Nuestro proyecto se basa en la adaptación de UBlockly para replicar la experiencia de Scratch.
+\end{itemize}
+
+\section{Simuladores y Entornos de Robótica Educativa}
+Para abordar la limitación de acceso a hardware físico, han surgido diversos simuladores que permiten a los estudiantes programar robots virtuales.
+\begin{itemize}
+	\item \textbf{Simuladores genéricos basados en Unity:} Existen esfuerzos para desarrollar simuladores 3D de robótica en Unity para la enseñanza de programación o inteligencia artificial \cite{Simulador3DUnity}. Estos proyectos, al igual que el presente TFG, aprovechan las potentes capacidades de renderizado 3D y el entorno de desarrollo versátil de Unity. Suelen enfocarse en una demostración de la viabilidad técnica o en contextos muy específicos (como la robótica industrial), pero a menudo carecen de una interfaz de programación por bloques totalmente integrada o de un fuerte enfoque en la educación preuniversitaria.
+	\item \textbf{Plataformas web con simulación 3D:}
+	\begin{itemize}
+		\item \textbf{Delightex (CoSpaces Edu):} Permite crear entornos 3D y aplicaciones de Realidad Virtual (VR)/Aumentada (AR) programables con bloques o JavaScript \cite{CoSpaces2020_Edu}. Es accesible vía navegador y ofrece un entorno visual atractivo para proyectos creativos, aunque la interacción con robots simulados es a menudo menos detallada que en motores dedicados.
+		\item \textbf{VEXcode VR y CoderZ:} Ofrecen entornos 3D para programar robots educativos específicos (VEX, GoPiGo) mediante bloques o lenguajes textuales. Son excelentes para aprender el currículo de robótica asociado a esos kits, pero son plataformas con licencias o enfoque más específicos que restringen la flexibilidad o la personalización de robots y escenarios, y a menudo no están optimizadas para la creación de contenido 3D personalizado de forma sencilla \cite{roboticaeducativa}.
+	\end{itemize}
+	\item \textbf{Simuladores para hardware específico:}
+	\begin{itemize}
+		\item \textbf{Robot Virtual Worlds :} Ofrece simuladores de alta fidelidad para robots LEGO EV3 o VEX. Proporcionan un alto grado de realismo físico y la capacidad de probar programas diseñados para robots específicos, siendo valiosos para entrenamientos detallados \cite{RobotVirtualWorlds}. No obstante, suelen requerir mayores recursos computacionales y están fuertemente ligados a sus marcas, limitando su adaptabilidad.
+		\item \textbf{Simuladores de Robótica Educativa de Makeblock:} Existen simuladores como Makeblock mBlock que integran un editor de bloques con entornos virtuales 2D/3D para los robots de su marca, promoviendo el pensamiento computacional \cite{roboticaeducativa_makeblock}. Al igual que otros, están centrados en el ecosistema de la marca.
+	\end{itemize}
+	\item \textbf{Juegos Serios y Entornos Inmersivos para Programación:} La investigación demuestra que los \textit{serious games} y los entornos de realidad virtual/aumentada  mejoran la motivación y el aprendizaje de la programación \cite{Alshahrani2024_GamifiedBlock}. Ejemplos como \textbf{GeoBotsVR} combinan aprendizaje de robótica con un entorno inmersivo \cite{GeoBotsVR}, mientras que VR-OCKS explora la programación visual 3D en Realidad Virtual para la resolución de puzles de lógica de movimiento \cite{Segura2020_VROCKS}. Estas soluciones son altamente atractivas, pero la complejidad de integrarlas con plataformas de código abierto para lograr extensibilidad o simulación de modelos robóticos específicos, y la accesibilidad en plataformas móviles de bajo coste, presenta retos aún no resueltos de forma óptima en el mercado generalista.
+\end{itemize}
+
+\section{Herramientas para el Desarrollo de Interfaces de Bloques}
+Existen recursos y frameworks específicos diseñados para ayudar en la creación de interfaces de programación por bloques.
+\begin{itemize}
+	\item \textbf{Blocks Engine 2 \cite{Meadowgames}} Es un paquete de assets para Unity diseñado para facilitar el desarrollo de juegos y aplicaciones con interfaces de bloques. Este motor abstrae gran parte de la complejidad de la lógica de drag and drop, conexiones y validación de bloques en Unity. Representa una alternativa al enfoque de adaptar UBlockly. Si bien ofrece una solución más rápida lista para usar para la UI de bloques, mi decisión de trabajar con UBlockly se fundamenta en la necesidad de tener un control más granular sobre el \textit{modelo lógico subyacente} de los bloques, su \textit{motor de ejecución específico en C\#}, y la flexibilidad para \textit{personalizar profundamente} la lógica del sistema, lo cual es esencial para un Trabajo Fin de Grado enfocado en ingeniería.
+\end{itemize}
+
+\section{Síntesis de la Contribución del Proyecto}
+A pesar de la existencia de numerosas herramientas y plataformas, la \textbf{integración holística de un sistema de programación visual completo, tipo Scratch, con una simulación 3D interactiva de un robot educativo concreto (LEGO WeDo 2.0) en un motor de juegos como Unity, optimizado para plataformas móviles accesibles}, sigue siendo un área con oportunidades significativas de desarrollo.
+
+Pocas soluciones existentes logran el equilibrio óptimo entre:
+\begin{itemize}
+	\item Una \textit{experiencia de usuario lúdica e intuitiva} que motive a niños y adolescentes a programar.
+	\item Un \textit{motor de simulación robótica 3D visualmente convincente} y con la precisión necesaria para un aprendizaje eficaz.
+	\item Una \textit{arquitectura de software robusta y extensible} basada en un motor de juegos profesional como Unity y el lenguaje C\#, permitiendo futuras evoluciones.
+	\item Un \textit{fuerte enfoque en la accesibilidad y el bajo coste}, reflejando un compromiso con los Objetivos de Desarrollo Sostenible.
+\end{itemize}
+La propuesta del presente TFG se distingue por abordar directamente este nicho. Al adaptar UBlockly y fusionar sus capacidades con las funcionalidades avanzadas de Unity, se busca crear un prototipo que no solo demuestra la viabilidad técnica de esta integración, sino que también establece las bases para un laboratorio virtual que vincule y emocione a los estudiantes, al tiempo que contribuye a la democratización de la educación STEAM.
