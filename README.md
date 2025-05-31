@@ -31,8 +31,6 @@ El objetivo principal es crear una **alternativa accesible, interactica y didác
     <li> Modelo 3D Interactivo del robot</li>
     <li>Simulación y comportamiento del motor</li>
       
-    </ul>
-  </li>
   <li>
     <strong>Ejecución en tiempo real:</strong> Los programas creados con bloques se traducen y ejecutan para controlar al robot virtual dentro del entorno de simulación.
   </li>
