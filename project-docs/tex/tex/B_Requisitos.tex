@@ -1,40 +1,75 @@
 \apendice{Especificación de Requisitos}
 
 \section{Introducción}
+A continuación se detalla la especificación de requisitos del proyecto Laboratorio Virtual de Programación y Robótica. Una adecuada definición y gestión de los requisitos es fundamental en ingeniería de software para asegurar que el sistema desarrollado satisfaga las necesidades y expectativas de los usuarios, así como para guiar las fases posteriores de diseño e implementación. Dada la naturaleza de prototipo del presente Trabajo Fin de Grado, esta especificación se centrará en los requisitos que guían la funcionalidad actual del prototipo, así como aquellos objetivos clave que sentarán las bases para futuras expansiones. Los requisitos se clasifican en funcionales (qué debe hacer el sistema) y no funcionales (cómo debe funcionar, relativo a la calidad).
 
-Una muestra de cómo podría ser una tabla de casos de uso:
+\section{Objetivos Generales del Proyecto}
+Los objetivos generales que guían el desarrollo de este laboratorio virtual han sido definidos previamente en el Capítulo 2 de esta memoria. Estos objetivos, que se persiguen tanto a nivel funcional como no funcional, se sintetizan a continuación:
 
-% Caso de Uso 1 -> Consultar Experimentos.
-\begin{table}[p]
-	\centering
-	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
-		\toprule
-		\textbf{CU-1}    & \textbf{Ejemplo de caso de uso}\\
-		\toprule
-		\textbf{Versión}              & 1.0    \\
-		\textbf{Autor}                & Alumno \\
-		\textbf{Requisitos asociados} & RF-xx, RF-xx \\
-		\textbf{Descripción}          & La descripción del CU \\
-		\textbf{Precondición}         & Precondiciones (podría haber más de una) \\
-		\textbf{Acciones}             &
-		\begin{enumerate}
-			\def\labelenumi{\arabic{enumi}.}
-			\tightlist
-			\item Pasos del CU
-			\item Pasos del CU (añadir tantos como sean necesarios)
-		\end{enumerate}\\
-		\textbf{Postcondición}        & Postcondiciones (podría haber más de una) \\
-		\textbf{Excepciones}          & Excepciones \\
-		\textbf{Importancia}          & Alta o Media o Baja... \\
-		\bottomrule
-	\end{tabularx}
-	\caption{CU-1 Nombre del caso de uso.}
-\end{table}
+\begin{itemize}
+	\item \textbf{Desarrollar un prototipo de laboratorio virtual de programación y robótica} que permita a los estudiantes aprender programación mediante bloques.
+	\item \textbf{Replicar la experiencia de usuario y la lógica fundamental de Scratch} en un entorno Unity.
+	\item \textbf{Integrar el sistema de bloques con una simulación 3D en Unity} para la visualización de acciones del robot.
+	\item \textbf{Implementar una simulación básica de un robot LEGO WeDo 2.0} en el entorno virtual.
+	\item \textbf{Garantizar la accesibilidad y portabilidad del prototipo} a plataformas Android (Tablets).
+	\item \textbf{Investigar y analizar plataformas existentes} para informar futuras mejoras.
+	\item \textbf{Adquirir conocimientos técnicos} en Unity y C\# en el contexto del desarrollo de programación visual y simulación.
+\end{itemize}
 
-\section{Objetivos generales}
+\section{Catálogo de Requisitos}
+El siguiente catálogo enumera los requisitos clave del prototipo. Se organizan por tipo y se proporciona un identificador único (RF para Requisito Funcional, RNF para Requisito No Funcional), una descripción concisa, y su prioridad dentro del alcance actual del proyecto (Alta para funcionalidades esenciales del MVP, Media para deseables en el prototipo, Baja para futuras o de mejora).
 
-\section{Catálogo de requisitos}
+\subsection{Requisitos Funcionales (RF)}
+Estos requisitos describen las funcionalidades específicas que el laboratorio virtual debe proporcionar al usuario.
+\begin{enumerate}
+	\item \textbf{RF-001: Gestión de la Interfaz Principal.} El sistema debe presentar una interfaz de usuario principal que incluya paneles para la selección de categorías de bloques, el listado de bloques disponibles y el área de codificación. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-002: Selección de Categorías de Bloques.} El usuario debe poder seleccionar una categoría de bloques para visualizar los bloques disponibles. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-003: Arrastre de Bloques.} El usuario debe poder seleccionar un bloque de la lista de categorías y arrastrarlo hasta el área de codificación. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-004: Conexión de Bloques.} El sistema debe permitir la unión visual (con efecto de snap) y lógica de bloques compatibles mediante arrastrar y soltar. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-005: Desconexión de Bloques.} El usuario debe poder separar bloques previamente conectados. \hfill \textbf{[Prioridad: Media]}
+	\item \textbf{RF-006: Edición de Campos de Bloques.} El sistema debe permitir al usuario editar valores en campos específicos de los bloques (ej. números, texto). \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-007: Ejecución del Programa.} El usuario debe poder iniciar la ejecución de la secuencia de bloques mediante una acción específica (ej. click en bandera verde). \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-008: Detención del Programa.} El usuario debe poder detener la ejecución del programa en cualquier momento (ej. click en botón de stop). \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-009: Visualización del Robot y Simulación.} El sistema debe mostrar un modelo 3D de un robot LEGO WeDo 2.0 en un entorno de simulación. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-010: Ejecución de Movimiento del Robot.} El robot simulado debe ejecutar las acciones de movimiento (ej. mover 10 pasos) programadas con bloques de forma visible en el entorno 3D. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-011: Feedback Visual de Ejecución.} El sistema debe proporcionar feedback visual y textual (ej. mensajes, cuenta atrás, resaltado de bloque en ejecución) sobre el estado del programa y las acciones del robot. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RF-012: Persistencia del Trabajo.} El usuario debe poder guardar y cargar el estado de sus programas de bloques para continuar editándolos en futuras sesiones. \hfill \textbf{[Prioridad: Media]}
+	\item \textbf{RF-013: Carga de Definiciones de Bloques.} 
+	El sistema debe cargar las definiciones estructurales y visuales de los bloques (tipo, categoría, color, campos, conexiones permitidas) desde fuentes externas (archivos XML), permitiendo la configuración y expansión de la librería de bloques disponibles sin necesidad de modificar el código fuente principal de la aplicación.
+	\hfill \textbf{[Prioridad: Alta]}
 
-\section{Especificación de requisitos}
+	
+	\item \textbf{RF-014: Interpretación Bloque-Acción.} 
+	Para cada bloque con comportamiento ejecutable, el sistema debe disponer de un intérprete específico capaz de traducir la lógica y los parámetros del bloque en una acción o secuencia de acciones programáticas en el entorno Unity (ej. convertir el valor 10 del bloque mover 10 pasos en una orden de desplazamiento para el robot).
+	\hfill \textbf{[Prioridad: Alta]}
+
+	
+	\item \textbf{RF-015: Gestión Lógica del Espacio de Trabajo.} 
+	El sistema debe mantener un modelo lógico del espacio de trabajo  que permita al usuario añadir, eliminar y reorganizar bloques. Este modelo debe gestionar la lista de bloques principales  y servir como la fuente autoritativa del estado del programa.
+	\hfill \textbf{[Prioridad: Alta]}
+
+	
+	\item \textbf{RF-016: Descarte de Bloque.} 
+	El usuario debe poder eliminar bloques del espacio de trabajo, arrastrándolos fuera del área de codificación.  La eliminación debe resultar en la correcta desvinculación y disposición del bloque y sus descendientes.
+	\hfill \textbf{[Prioridad: Media]}.
+	
+	\item \textbf{RF-017: Representación Visual de la Jerarquía de Bloques.} 
+	El sistema debe representar visualmente las pilas de bloques conectados secuencialmente  y los bloques anidados dentro de entradas de tipo sentencia, apilándolos y indentándolos correctamente en la interfaz para reflejar la estructura del programa al estilo Scratch.
+	\hfill \textbf{[Prioridad: Alta]}
+
+	
+\end{enumerate}
+
+\subsection{Requisitos No Funcionales (RNF)}
+Estos requisitos describen las cualidades del sistema que garantizan un buen funcionamiento y una experiencia de usuario óptima.
+\begin{enumerate}
+	\item \textbf{RNF-001: Rendimiento de la Interfaz.} La interfaz de programación visual debe responder a las interacciones del usuario (arrastre, conexión) con una latencia mínima, garantizando una experiencia fluida. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RNF-002: Consistencia Visual.} El diseño visual de los bloques y la interfaz debe ser consistente con la estética de Scratch. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RNF-003: Accesibilidad.} El sistema debe ser capaz de ejecutarse en dispositivos Android tipo tablet con hardware común, sin requerimientos técnicos elevados. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RNF-004: Precisión de la Simulación.} El movimiento y el comportamiento del robot simulado deben ser perceptibles y acordes con la lógica programada en los bloques. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RNF-005: Mantenibilidad.} La arquitectura del software debe facilitar la futura modificación y extensión del sistema de bloques y la lógica del robot. \hfill \textbf{[Prioridad: Alta]}
+	\item \textbf{RNF-006: Confiabilidad.} El sistema no debe experimentar caídas o bloqueos inesperados durante la interacción normal o la ejecución de programas. \hfill \textbf{[Prioridad: Media]}
+\end{enumerate}
+
 
 
