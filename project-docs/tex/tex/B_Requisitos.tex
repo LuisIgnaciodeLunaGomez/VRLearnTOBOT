@@ -69,7 +69,121 @@ Estos requisitos describen las cualidades del sistema que garantizan un buen fun
 	\item \textbf{RNF-004: Precisión de la Simulación.} El movimiento y el comportamiento del robot simulado deben ser perceptibles y acordes con la lógica programada en los bloques. \hfill \textbf{[Prioridad: Alta]}
 	\item \textbf{RNF-005: Mantenibilidad.} La arquitectura del software debe facilitar la futura modificación y extensión del sistema de bloques y la lógica del robot. \hfill \textbf{[Prioridad: Alta]}
 	\item \textbf{RNF-006: Confiabilidad.} El sistema no debe experimentar caídas o bloqueos inesperados durante la interacción normal o la ejecución de programas. \hfill \textbf{[Prioridad: Media]}
+	
+	\item \textbf{RNF-007: Modularidad del Código.}
+	La arquitectura del software del sistema debe estar organizada siguiendo el patrón Modelo-Vista-Controlador (MVC), promoviendo una clara separación de responsabilidades. Los componentes dentro de cada capa (Modelo, Vista y Controlador) deben diseñarse con principios de \textit{bajo acoplamiento} (interdependencia mínima entre módulos) y \textit{alta cohesión} (elementos dentro de un módulo con funcionalidades estrechamente relacionadas). Esta estructura facilitará la comprensión del código, la depuración, la modificación aislada de componentes y el mantenimiento general del sistema.
+	\hfill \textbf{[Prioridad: Alta]}
+	
+	\item \textbf{RNF-008: Extensibilidad para Nuevos Bloques.}
+	El diseño del sistema debe permitir la adición de nuevos tipos de bloques de programación con un impacto mínimo y localizado en el código fuente existente. La incorporación de un nuevo bloque debería, idealmente, implicar la creación de:
+	\begin{itemize}
+		\item Una definición de bloque.
+		\item Una clase para su modelo lógico .
+		\item Un prefab para su representación visual en Unity UI .
+		\item Una clase intérprete  si el bloque es ejecutable.
+	\end{itemize}
+	Estos nuevos componentes deben poder integrarse sin requerir modificaciones extensas en el núcleo del sistema o los controladores principales.
+	\hfill \textbf{[Prioridad: Alta]}
+	
+	\item \textbf{RNF-009: Usabilidad y Retroalimentación Visual Clara.}
+	El sistema debe proporcionar indicaciones visuales claras e intuitivas al usuario durante las interacciones clave para facilitar su uso y comprensión:
+	\begin{itemize}
+		\item \textbf{Resaltado de Conexiones Válidas:} Durante la operación de arrastre de un bloque, las posibles conexiones compatibles con otros bloques deben resaltarse visualmente (ej. mediante un cambio de color o una superposición gráfica en el punto de snap) para guiar al usuario hacia una unión correcta. \hfill \textbf{[Prioridad: Alta]}
+		\item \textbf{Retroalimentación ante Conexiones Inválidas:}  Si el usuario intenta realizar una conexión entre bloques incompatibles, el sistema debería, en la medida de lo posible, indicar visualmente que la conexión no es permitida. \hfill \textbf{[Prioridad: Media]}
+		\item \textbf{Indicación de Ejecución:} El bloque que se está ejecutando actualmente debe ser visualmente distinguible para que el usuario pueda seguir el flujo del programa. \hfill \textbf{[Prioridad: Alta]}
+	\end{itemize}
+	
 \end{enumerate}
 
+\section{Especificación de requisitos}
+
+
+
+\subsection{Actores del Sistema}
+Un actor representa un rol desempeñado por un usuario humano, un dispositivo hardware o incluso otro sistema software que interactúa con el sistema. Para el presente prototipo, se identifican los siguientes actores principales:
+
+
+\begin{table}[h!] 
+	\centering
+	\begin{tabularx}{\linewidth}{|p{3cm}|X|} 
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Actor A01: Estudiante (Usuario Principal)}} \\
+		\hline
+		\textbf{Descripción:} & Individuo (generalmente un niño, adolescente o persona en formación) que utiliza el laboratorio virtual para aprender conceptos de programación visual y robótica mediante la creación y ejecución de programas con bloques. \\
+		\hline
+		\textbf{Tipo:} & Humano. \\
+		\hline
+		\textbf{Objetivo Principal:} & Crear programas de bloques para controlar un robot virtual y observar su comportamiento en un entorno de simulación 3D, con el fin de desarrollar habilidades de pensamiento computacional y lógica de programación. \\
+		\hline
+		\textbf{Relaciones con Casos de Uso Principales:} & 
+		\begin{itemize}
+			\item Gestionar la interfaz de programación (CU01 - Ver apartado \ref{sec:CU01_Interfaz}).
+			\item Construir programas con bloques (CU02 - Ver apartado \ref{sec:CU02_Construccion}).
+			\item Ejecutar y simular programas (CU03 - Ver apartado \ref{sec:CU03_Ejecucion}).
+			\item Gestionar proyectos de bloques (CU04 - Ver apartado \ref{sec:CU04_GestionProyectos}).
+		\end{itemize} \\
+		\hline
+	\end{tabularx}
+	\caption{Descripción del Actor A01 - Estudiante.}
+	\label{tabla:Actor_A01_Estudiante} % Etiqueta para referencias cruzadas
+\end{table}
+
+
+\subsection{Casos de uso}
+
+A continuación, se detallan los casos de uso (CU) que describen las interacciones clave entre los actores y el sistema. Cada caso de uso se presentará en una tabla siguiendo un formato estándar.
+
+
+\subsubsection{CU01: Gestionar Interfaz de Programación} \label{sec:CU01_Interfaz}
+\begin{table}[h!] 
+	\centering
+
+	\begin{tabularx}{\linewidth}{|p{3cm}|X|} 
+		\hline
+		\textbf{Caso de Uso ID:} & CU01 \\
+		\hline
+		\textbf{Nombre del Caso de Uso:} & Gestionar Interfaz de Programación \\
+		\hline
+		\textbf{Versión:} & 1.0 \\
+		\hline
+		\textbf{Autor:} & Luis Ignacio de Luna Gómez \\
+		\hline
+		\textbf{Actor(es) Principal(es):} & A01 - Estudiante \\
+		\hline
+		\textbf{Requisitos Funcionales Asociados:} & RF-001, RF-002 \\
+		\hline
+		\textbf{Descripción Concisa:} & El estudiante interactúa con la interfaz principal del laboratorio virtual para acceder a las herramientas de programación. \\
+		\hline
+		\textbf{Precondiciones:} & 
+		\begin{itemize}
+			\item El sistema ha sido iniciado correctamente.
+			\item La interfaz principal es visible.
+		\end{itemize} \\
+		\hline
+		\textbf{Flujo Principal de Eventos (Acciones):} & 
+		\begin{enumerate}
+			\item El Estudiante visualiza los paneles principales: panel de categorías de bloques, panel de listado de bloques (Toolbox), y área de codificación.
+			\item El Estudiante selecciona una categoría de bloques (ej. "Movimiento") en el panel de categorías.
+			\item El sistema actualiza el panel de listado de bloques para mostrar las plantillas de bloques correspondientes a la categoría seleccionada.
+		\end{enumerate} \\
+		\hline
+		\textbf{Postcondiciones:} & 
+		\begin{itemize}
+			\item El panel de listado de bloques muestra los bloques de la categoría seleccionada.
+		\end{itemize} \\
+		\hline
+		\textbf{Excepciones (Flujos Alternativos):} & 
+		\begin{itemize}
+			\item \textbf{E1:} No hay bloques definidos para una categoría seleccionada (el sistema muestra un mensaje informativo o el panel vacío).
+		\end{itemize} \\
+		\hline
+		\textbf{Importancia:} & Alta \\
+		\hline
+		\textbf{Notas Adicionales:} & Este caso de uso es la base para la interacción con el sistema de programación. \\
+		\hline
+	\end{tabularx}
+	\caption{CU01 - Gestionar Interfaz de Programación.}
+	\label{tabla:CU01_Interfaz}
+\end{table}
 
 
