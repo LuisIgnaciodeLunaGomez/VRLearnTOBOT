@@ -20,8 +20,7 @@ using System;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace UBlockly
-{
+
     public sealed class FieldNumberModel : FieldTextInputModel
     {
         [FieldCreator(FieldType = "field_number")]
@@ -217,7 +216,7 @@ namespace UBlockly
             base.SetValue(value); 
         }
 
-    }
+    
 }//Fin clase FieldNumberModel
 
 

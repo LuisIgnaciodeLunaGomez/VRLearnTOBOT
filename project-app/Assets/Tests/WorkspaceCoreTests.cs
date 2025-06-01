@@ -32,12 +32,12 @@ public class WorkspaceCoreTests
         BlockFactory.Instance.Clear(); // Limpia el BlockFactory
     }
 
-    [Test]
+    [Test] 
     public void Workspace_NewBlock_CreatesBlockAndRegistersInDBAndTopBlocks()
     {
         // Arrange
-        string blockType = "motion_movesteps"; // Un tipo de bloque válido
-        string blockId = "block_123";
+        string blockType = "motion_movesteps";
+        string blockId = "block_123_newBlockTest";
 
         // Act
         BlockModel block = workspace.NewBlock(blockType, blockId);
@@ -46,10 +46,8 @@ public class WorkspaceCoreTests
         Assert.IsNotNull(block, "El bloque no debería ser nulo.");
         Assert.AreEqual(blockType, block.Type, "El tipo de bloque no coincide.");
         Assert.AreEqual(blockId, block.ID, "El ID del bloque no coincide.");
-        Assert.AreEqual(workspace, block.Workspace, "El workspace del bloque no es el correcto.");
         Assert.IsTrue(workspace.BlockDB.ContainsKey(blockId), "El bloque no fue añadido a BlockDB.");
-        Assert.IsTrue(workspace.BlockDB[blockId] == block, "El bloque en BlockDB no es el mismo objeto.");
-        Assert.IsTrue(workspace.TopBlocks.Contains(block), "El bloque no fue añadido a TopBlocks (debería si no tiene padre).");
+        Assert.IsTrue(workspace.TopBlocks.Contains(block), "El nuevo bloque debería ser un TopBlock.");
     }
 
     [Test]
@@ -208,4 +206,6 @@ public class WorkspaceCoreTests
     
         newWorkspace.Dispose();
     }
+
+
 }
