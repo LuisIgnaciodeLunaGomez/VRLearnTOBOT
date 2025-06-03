@@ -1,12 +1,239 @@
-\apendice{Especificación de diseño}
+\apendice{Especificación de Diseño}
 
 \section{Introducción}
+Este apéndice presenta la especificación de diseño del prototipo del laboratorio ivrtual de programación y robótica. El diseño del software es una fase crítica que traduce los requisitos funcionales y no funcionales, detallados en el Apéndice B, en una descripción técnica y estructurada de la solución. El propósito de este documento es detallar la arquitectura del sistema, el diseño de los datos que maneja, y el diseño procedimental de sus interacciones clave.
 
-\section{Diseño de datos}
+Se busca proporcionar una visión clara de cómo se han organizado los componentes del software, cómo interactúan entre sí y cómo se ha estructurado la lógica de la aplicación para cumplir con los objetivos del proyecto. Este diseño se ha enfocado en la modularidad, mantenibilidad y escalabilidad, sentando las bases para futuras expansiones del laboratorio virtual. Se presta especial atención a la adaptación de la librería UBlockly dentro del motor Unity y la implementación del patrón Modelo-Vista-Controlador (MVC).
+
+\section{Diseño de Datos}
+El diseño de datos describe las principales entidades de información que el sistema gestiona, sus atributos y las relaciones entre ellas. Este diseño es fundamental para la persistencia, la lógica de negocio y la representación visual de los elementos del programa.
+
+\subsection{Entidades Principales del Modelo}
+El sistema se articula en torno a un conjunto de entidades modelo que representan los conceptos clave de la programación por bloques y la gestión del espacio de trabajo, heredadas y adaptadas de la estructura de UBlockly:
+
+\begin{itemize}
+	\item \textbf{\texttt{WorkSpaceModel}:} Representa el contenedor principal de todo el entorno de programación.
+	\begin{itemize}
+		\item \textbf{Atributos Clave:} \texttt{Id} (identificador), \texttt{Options} (configuración), \texttt{TopBlocks} (lista de bloques raíz), \texttt{BlockDB} (diccionario de todos los bloques), \texttt{VariableMap} (gestor de variables), \texttt{ProcedureDB} (gestor de procedimientos), \texttt{ConnectionDBList} (bases de datos de conexiones optimizadas para búsqueda).
+		\item \textbf{Relaciones:} Contiene múltiples \texttt{BlockModel}s y gestiona las colecciones globales de variables y procedimientos.
+	\end{itemize}
+	
+	\item \textbf{\texttt{BlockModel}:} Representa la estructura lógica y el estado de un bloque individual de programación.
+	\begin{itemize}
+		\item \textbf{Atributos Clave:} \texttt{ID}, \texttt{Type} (ej. motion\_movesteps), \texttt{XY} (posición lógica), \texttt{InputList}, \texttt{OutputConnection}, \texttt{PreviousConnection}, \texttt{NextConnection}, propiedades de estado (\texttt{Disabled}, \texttt{Movable}, \texttt{Collapsed}, etc.).
+		\item \textbf{Relaciones:} Puede tener un \texttt{ParentBlock} y múltiples \texttt{ChildBlocks} (a través de \texttt{NextConnection} o \texttt{InputModel} de tipo sentencia). Se conecta a otros \texttt{BlockModel}s mediante sus \texttt{ConnectionModel}s.
+	\end{itemize}
+	
+	\item \textbf{\texttt{ConnectionModel}:} Define un punto de conexión en un bloque.
+	\begin{itemize}
+		\item \textbf{Atributos Clave:} \texttt{SourceBlock}, \texttt{Type} (\texttt{EConnection}), \texttt{TargetConnection}, \texttt{Check} (tipos compatibles), \texttt{Location} (posición lógica para snapping), \texttt{InDB}, \texttt{DB}, \texttt{DBOpposite}.
+		\item \textbf{Relaciones:} Pertenece a un \texttt{SourceBlock}. Puede estar conectada a una \texttt{TargetConnection} de otro \texttt{BlockModel}.
+	\end{itemize}
+	
+	\item \textbf{\texttt{InputModel}:} Define una entrada dentro de un bloque, que puede contener campos o una conexión para otro bloque.
+	\begin{itemize}
+		\item \textbf{Atributos Clave:} \texttt{Name}, \texttt{Type} (\texttt{EConnection} como \texttt{InputValue}, \texttt{NextStatement} o \texttt{DummyInput}), \texttt{Connection} (si no es Dummy), \texttt{FieldRow} (lista de \texttt{FieldModel}s), \texttt{Align}.
+		\item \textbf{Relaciones:} Pertenece a un \texttt{BlockModel}. Su \texttt{Connection} puede enlazarse a la \texttt{OutputConnection} o \texttt{PreviousConnection} de otro \texttt{BlockModel}.
+	\end{itemize}
+	
+	\item \textbf{\texttt{FieldModel}:} Representa un campo individual dentro de un \texttt{InputModel} (ej. etiqueta, entrada de texto, desplegable).
+	\begin{itemize}
+		\item \textbf{Atributos Clave:} \texttt{Name}, \texttt{Type} (ej. field\_label, field\_number), valor textual (\texttt{mText}), \texttt{IsEditable}.
+		\item \textbf{Relaciones:} Pertenece a un \texttt{InputModel} (a través de su \texttt{FieldRow}).
+	\end{itemize}
+	
+	\item \textbf{\texttt{DataStruct}:} Estructura utilizada por el sistema de ejecución (\texttt{CSharpInterpreter}) para representar los diferentes tipos de datos que los bloques pueden manejar o devolver (booleano, número, string, lista).
+\end{itemize}
+% ( insertar un Diagrama de Clases UML y sus relaciones más importantes.
+% \begin{figure}[H]
+	%    \centering
+	%    \includegraphics[width=0.9\linewidth]{img/diagrama_clases_modelo.png} 
+	%    \caption{Diagrama de Clases UML  de las entidades principales del modelo de bloques.}
+	%    \label{fig:diagrama_clases_modelo}
+	% \end{figure}
+
+\subsection{Persistencia de datos (diseño lógico)}
+El diseño de persistencia para el prototipo se basa en la serialización del \texttt{WorkSpaceModel} completo a un formato \textbf{XML}.
+\begin{itemize}
+	\item \textbf{Estructura XML:} La estructura del XML generado refleja la jerarquía de los bloques, sus inputs, fields, conexiones y valores. Los bloques \textit{TopBlocks} son los elementos raíz bajo la etiqueta \texttt{<xml>}. Los bloques anidados aparecen dentro de las etiquetas \texttt{<value>}, \texttt{<statement>} o \texttt{<next>} de sus bloques padres.
+	\item \textbf{Datos Serializados:} Se serializan el tipo de bloque, su ID, posición (x, y), estado (colapsado, deshabilitado), valores de los campos, y la estructura de conexión con otros bloques.
+	\item \textbf{Mecanismo de Almacenamiento:} Para el prototipo, el XML resultante se almacena localmente utilizando las \texttt{PlayerPrefs} de Unity, gestionado por la clase \texttt{WorkspaceSerializer}.
+\end{itemize}
+Este diseño de datos y persistencia, aunque simple para el prototipo, establece una base que podría extenderse a sistemas de bases de datos más robustos en el futuro.
 
 \section{Diseño arquitectónico}
+La arquitectura del sistema se ha basado en el patrón \textbf{Modelo-Vista-Controlador (MVC)}, adaptado al entorno de desarrollo de Unity y a la estructura de la librería UBlockly.
+
+\subsection{Diagrama de arquitectura general (MVC)}
+Como se detalló en el Capítulo 3 (Conceptos Teóricos, subsección \textit{arquitectura general (Modelo-Vista-Controlador - MVC)}), el sistema se divide en tres capas principales. 
+%  incluir aquí un diagrama de componentes MVC  o referenciar la descripción del Cap. 3
+% \begin{figure}[H]
+	%    \centering
+	%    \includegraphics[width=0.7\linewidth]{img/arquitectura_mvc_general.png} 
+	%    \caption{Diagrama de la Arquitectura Modelo-Vista-Controlador del Prototipo.}
+	%    \label{fig:arquitectura_mvc_general}
+	% \end{figure}
+A continuación, se profundiza en los componentes clave de cada capa y sus interacciones.
+
+\subsection{Componentes clave por capa MVC}
+\begin{itemize}
+	\item \textbf{Capa modelo (core UBlockly y lógica de simulación):}
+	\begin{itemize}
+		\item \texttt{WorkSpaceModel}, \texttt{BlockModel}, \texttt{ConnectionModel}, \texttt{InputModel}, \texttt{FieldModel}: Responsables del estado y la lógica de los bloques, heredados y adaptados de UBlockly.
+		\item \texttt{CSharpInterpreter}, \texttt{Cmdtor}, \texttt{CmdEnumerator}: Componentes del sistema de ejecución de UBlockly, encargados de la interpretación de los bloques.
+		\item \texttt{DataStruct}: Representación de tipos de datos en tiempo de ejecución.
+	\end{itemize}
+	\item \textbf{Capa vista (Unity UI y entorno 3D):}
+	\begin{itemize}
+		\item \texttt{UICanvasView}: Orquestador principal de la interfaz de usuario, gestiona los paneles y la transición entre modos.
+		\item \texttt{BlockListView}: Vista de la toolbox, muestra categorías y plantillas de bloques.
+		\item \texttt{WorkSpaceView}: Vista del área de codificación, contiene y gestiona las \texttt{BlockView}s activas.
+		\item \texttt{BlockView}, \texttt{ConnectionView}, \texttt{InputView}, \texttt{FieldView}, \texttt{LineGroupView}: Componentes \texttt{MonoBehaviour} que renderizan los elementos del modelo en la UI de Unity.
+		\item \texttt{RobotBehaviour}: Aunque contiene lógica de movimiento, su principal función en el MVC es la \textit{representación visual y la animación} del estado del robot dictado por el Modelo/Controlador.
+		\item Escena 3D de Unity: Contiene el entorno y el \texttt{GameObject} del robot.
+	\end{itemize}
+	\item \textbf{Capa controlador (Gestión de interacción y lógica de aplicación):}
+	\begin{itemize}
+		\item \texttt{AppController:} Punto de entrada y orquestador general de la aplicación, inicializa otros controladores.
+		\item \texttt{CategoryController:} Maneja la selección de categorías en la Toolbox.
+		\item \texttt{WorkspaceController:} Gestiona las operaciones a alto nivel sobre el \texttt{WorkSpaceModel} (ej. añadir/eliminar bloques, solicitar guardado/carga).
+		\item \texttt{BlockDragController:} Implementa la lógica de arrastrar bloques, incluyendo el cálculo de offsets y la interacción con el \texttt{DragLayer}.
+		\item \texttt{BlockConnectionController:} Se encarga de la lógica de detección de conexiones válidas (snap) y la gestión del resaltado.
+		\item \texttt{InputController:} Procesa la entrada del usuario en los campos editables de los bloques.
+		\item \texttt{ExecutionController:} Inicia y detiene la ejecución del programa, comunicándose con \texttt{CSharpRunner}.
+		\item \texttt{BlockObserver:} Actúa como un intermediario  entre el sistema de ejecución de bloques y la representación/acción en la Vista 3D (\texttt{RobotBehaviour}).
+	\end{itemize}
+\end{itemize}
+
+\subsection{Flujo de datos e interacciones principales}
+La comunicación entre las capas sigue el patrón Observador y las interacciones directas de los controladores.
+\begin{enumerate}
+	\item \textbf{Interacción del usuario con la vista (UI):}
+	\begin{itemize}
+		\item Un evento de UI (ej. clic en un \texttt{FieldView}, arrastre de un \texttt{BlockView}) es capturado por el componente vista correspondiente.
+		\item La vista notifica al controlador pertinente (ej. \texttt{InputController}, \texttt{BlockDragController}).
+	\end{itemize}
+	\item \textbf{Procesamiento en el controlador:}
+	\begin{itemize}
+		\item El controlador interpreta la acción del usuario.
+		\item Realiza validaciones si es necesario.
+		\item Solicita modificaciones o consultas al modelo (ej. \texttt{WorkspaceController} pide al \texttt{WorkSpaceModel} que conecte dos \texttt{BlockModel}s).
+	\end{itemize}
+	\item \textbf{Actualización del modelo:}
+	\begin{itemize}
+		\item El modelo actualiza su estado interno (ej. \texttt{ConnectionModel.Connect()}).
+		\item Si el estado cambia, el modelo dispara un evento a sus observadores (\texttt{BlockModel.FireUpdate()}).
+	\end{itemize}
+	\item \textbf{Actualización de la vista:}
+	\begin{itemize}
+		\item Las vistas suscritas (ej. \texttt{BlockView}, \texttt{ConnectionView}) reciben la notificación del modelo.
+		\item Las vistas se actualizan para reflejar el nuevo estado del modelo (ej. \texttt{ConnectionView} se redibuja para mostrar una conexión establecida, \texttt{BlockView} recalcula su layout).
+	\end{itemize}
+	\item \textbf{Ejecución del programa:}
+	\begin{itemize}
+		\item El \texttt{ExecutionController}, al recibir la orden de ejecutar, pasa el \texttt{WorkSpaceModel} al \texttt{CSharpRunner}.
+		\item \texttt{CSharpRunner} itera sobre los bloques (\texttt{CmdEnumerator}) y sus intérpretes (\texttt{Cmdtor}).
+		\item Los \texttt{Cmdtor}s pueden leer datos del modelo (ej. valores de campos) y, a través del \texttt{BlockObserver}, enviar comandos a la Vista 3D (\texttt{RobotBehaviour}) para la simulación.
+	\end{itemize}
+\end{enumerate}
+
+%  incluir  de diagrama de Secuencia de alto nivel 
+
+% \begin{figure}[H]
+	%    \centering
+	%    \includegraphics[width=\textwidth]{img/diagrama_secuencia_conexion.png} 
+	%    \caption{Diagrama de Secuencia simplificado para la conexión de dos bloques.}
+	%    \label{fig:diagrama_secuencia_conexion}
+	% \end{figure}
 
 \section{Diseño procedimental}
+El diseño procedimental se centra en describir el flujo de control para las operaciones más significativas del sistema. A continuación, se detallan algunos procedimientos clave:
 
+\subsection{Procedimiento: Arrastre y conexión de un Bloque (\textit{Drag and Snap})}
+\begin{enumerate}
+	\item \textbf{Inicio del arrastre (\texttt{OnBeginDrag} en \texttt{BlockView} o \texttt{BlockTemplateDragSource}):}
+	\begin{itemize}
+		\item Si es una plantilla, se clona el \texttt{BlockModel} y se crea su \texttt{BlockView} asociada (\texttt{BlockFactory}, \texttt{BlockViewFactory}).
+		\item El \texttt{BlockDragController} toma el control. El \texttt{BlockView} se re-parenta al \texttt{DragLayer}.
+		\item Se calcula un offset entre el puntero y el pivote del bloque.
+	\end{itemize}
+	\item \textbf{Durante el arrastre (\texttt{OnDrag} -> \texttt{BlockDragController.HandleDrag()}):}
+	\begin{itemize}
+		\item La posición del \texttt{BlockView} se actualiza siguiendo el puntero más el offset.
+		\item El \texttt{BlockConnectionController.ProcessDrag()} es invocado:
+		\begin{itemize}
+			\item Itera sobre las conexiones del bloque arrastrado (\texttt{BlockModel.GetDraggingConnections()}).
+			\item Para cada conexión, busca en la \texttt{BlockConnectionDB} opuesta las conexiones candidatas cercanas dentro de un radio (\texttt{SearchForClosest()}).
+			\item Valida si la conexión es permitida (\texttt{ConnectionModel.IsConnectionAllowed()}).
+			\item Si hay un candidato válido, la \texttt{ConnectionView} del bloque estático activa su resaltado (\texttt{Highlight(true)}). Si el mejor candidato cambia, el resaltado anterior se desactiva.
+		\end{itemize}
+	\end{itemize}
+	\item \textbf{Fin del arrastre (\texttt{OnEndDrag} -> \texttt{BlockDragController.HandleEndDrag()}):}
+	\begin{itemize}
+		\item El \texttt{BlockConnectionController} finaliza la búsqueda y determina la mejor pareja de conexiones.
+		\item Si se encuentra una conexión válida (\textit{snap}):
+		\begin{itemize}
+			\item Se invoca \texttt{ConnectionModel.Connect()} en los modelos lógicos. Esto puede disparar la lógica de bumping para desplazar bloques existentes.
+			\item La \texttt{BlockView} del bloque arrastrado (o del bloque desplazado) se reparenta al contenedor visual apropiado del bloque padre (ej. \texttt{nextStatementContainer} o un \texttt{InputView}).
+			\item Se actualiza la posición (\texttt{anchoredPosition}) de la \texttt{BlockView} conectada para el encaje visual.
+			\item Se actualiza el layout de los bloques afectados.
+		\end{itemize}
+		\item Si no hay conexión válida, se gestiona la colocación en el espacio de trabajo o el descarte (\texttt{BlockConnectionController.HandleDropPlacement()}):
+		\begin{itemize}
+			\item Si se suelta en el área de codificación, el \texttt{BlockModel} se registra en el \texttt{WorkSpaceModel} (si es un clon nuevo) o su posición se actualiza. El \texttt{BlockView} se reparenta al \texttt{CodingAreaPanelRect}.
+			\item Si se suelta fuera de un área válida, el bloque se elimina (\texttt{BlockModel.Dispose()} y \texttt{BlockView.Dispose()}).
+		\end{itemize}
+		\item Se resetea el estado de arrastre y los resaltados.
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Procedimiento: ejecución de un programa de bloques}
+\begin{enumerate}
+	\item \textbf{Inicio de ejecución (clic en bandera verde):}
+	\begin{itemize}
+		\item \texttt{UICanvasView} notifica a \texttt{AppController}.
+		\item \texttt{AppController} invoca a \texttt{ExecutionController.StartExecution()}.
+		\item  \texttt{AppController}/\texttt{UICanvasView} inicia la transición visual al modo simulación (muestra robot, cuenta atrás).
+	\end{itemize}
+	\item \textbf{Procesamiento por \texttt{ExecutionController} y \texttt{CSharpRunner}:}
+	\begin{itemize}
+		\item \texttt{ExecutionController} valida el \texttt{WorkSpaceModel} y lo pasa a \texttt{CSharp.Runner.Run()}.
+		\item \texttt{CSharpRunner} identifica los bloques de inicio (ej. \texttt{event\_whenflagclicked}) y crea un \texttt{CmdRunner} por cada pila de ejecución.
+		\item Para cada \texttt{CmdRunner}, se crea un \texttt{CmdEnumerator} para el primer bloque ejecutable de la pila.
+	\end{itemize}
+	\item \textbf{Ejecución iterativa por \texttt{CmdRunner}:}
+	\begin{itemize}
+		\item El \texttt{CmdRunnier} inicia una corrutina (\texttt{Run()}) que procesa su pila de \texttt{CmdEnumerator}s.
+		\item En cada paso, toma el \texttt{CmdEnumerator} actual, obtiene su \texttt{Cmdtor} asociado (intérprete) e invoca su método \texttt{Run(blockModel)}.
+		\item El \texttt{Cmdtor.Run()} (que devuelve un \texttt{IEnumerator}) se ejecuta.
+	\end{itemize}
+	\item \textbf{Interpretación del bloque (\texttt{Cmdtor}):}
+	\begin{itemize}
+		\item \textbf{Ejemplo \texttt{MotionBlockInterpreter}:}
+		\begin{itemize}
+			\item Obtiene los parámetros del \texttt{BlockModel} (ej. valor del input STEPS usando \texttt{CSharp.Interpreter.ValueReturn()}).
+			\item Invoca un método en el \texttt{BlockObserver} (ej. \texttt{m\_BlockObserver.MoveRobot(stepsValue)}).
+			\item Realiza un \texttt{yield return} sobre la corrutina devuelta por el \texttt{BlockObserver}, pausando la ejecución del intérprete del bloque actual hasta que la acción del robot termine.
+		\end{itemize}
+	\end{itemize}
+	\item \textbf{Interacción con la simulación (\texttt{BlockObserver} y \texttt{RobotBehaviour}):}
+	\begin{itemize}
+		\item \texttt{BlockObserver.MoveRobot()} obtiene la referencia al \texttt{GameObject} del robot.
+		\item Invoca una corrutina en el \texttt{RobotBehaviour} (ej. \texttt{robotBehaviour.MoveRobotOverTime()}).
+		\item Esta corrutina del \texttt{RobotBehaviour} anima el movimiento del robot en la escena 3D a lo largo del tiempo (ej. usando \texttt{Vector3} y \texttt{yield return null}).
+	\end{itemize}
+	\item \textbf{Continuación del Flujo y Finalización:}
+	\begin{itemize}
+		\item Una vez que la corrutina del \texttt{Cmdtor} (y por ende la del \texttt{BlockObserver} y \texttt{RobotBehaviour}) finaliza, el \texttt{CmdRunner} obtiene el siguiente \texttt{CmdEnumerator} de la pila (\texttt{CmdEnumerator.GetNextCmd()}) y repite el proceso.
+		\item Si no hay más bloques o se invoca \texttt{ExecutionController.StopExecution()}, la ejecución finaliza.
+	\end{itemize}
+\end{enumerate}
+%   Diagrama de Secuencia más detallado
+% \begin{figure}[H]
+	%    \centering
+	%    \includegraphics[width=\textwidth]{img/diagrama_secuencia_ejecucion.png} 
+	%    \caption{Diagrama de Secuencia detallado para la Ejecución de un Programa de Bloques.}
+	%    \label{fig:diagrama_secuencia_ejecucion}
+	% \end{figure}
 
 
