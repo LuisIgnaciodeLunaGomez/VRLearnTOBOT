@@ -1,11 +1,183 @@
-\apendice{Documentación técnica de programación}
+\apendice{Documentación Técnica de Programación}
 
 \section{Introducción}
+A continuación se proporciona la documentación técnica esencial para comprender, compilar, ejecutar y extender el prototipo del laboratorio virtual de programación y robótica que se ha desarrollado en el presente TFG. Este documento esta dirigido a desarrolladores o evaluadores que necesiten interactuar con el código fuente del proyecto y quieran seguir contribuyendo a su definición. En el se detalla la estructura de directorios, las clases principales y sus responsabilidades, las instrucciones para la compilación y ejecución, y un resumen de las pruebas realizadas para validar el sistema.
+%Las pruebas están pendientes de definir si Unity me va a permitir realizar las pruebas con su test framework el cual esta configurado en otra rama para llevarlas a cabo pero hasta que no termine de redactar la memoria y anexos no voy a cambiar de rama ya que al no haber actualizado el repositorio se me borro una gran parte del trabajo que llevaba realizado.
 
-\section{Estructura de directorios}
+El proyecto ha sido desarrollado en el motor de videojuegos \textbf{Unity (Versión 6000.0.2f1)} utilizando el lenguaje de programación \textbf{C\#} codificado en el IDE visual studio. La interfaz de programación por bloques se basa en una adaptación de la librería de código abierto \textbf{UBlockly} \cite{UBlockly} la cual ha sido modificada y adaptada al patrón MVC.
 
-\section{Manual del programador}
+\section{Estructura de Directorios del Proyecto Unity}
+El proyecto en Unity sigue una estructura de directorios organizada para facilitar la navegación y la gestión de los diferentes tipos de activos y scripts. A continuación, se describe la organización de las carpetas principales dentro del directorio \texttt{Assets/}:
+
+\begin{itemize}
+	\item \textbf{\texttt{Assets/Core/}:} Contiene las clases fundamentales de la librería UBlockly que han sido directamente integradas o adaptadas, así como definiciones esenciales.
+	\begin{itemize}
+		\item \texttt{Code/}: Lógica central de UBlockly para la interpretación (\texttt{Cmdtor}, \texttt{CmdEnumerator}, \texttt{CmdRunner}) y generación de código (\texttt{Generator}), así como estructuras de datos (\texttt{DataStruct}, \texttt{Datas}).
+		\item \texttt{CustomDefine/}: Clases y enumeraciones personalizadas o fundamentales para el proyecto, como la estructura \texttt{Number}.
+		\item \texttt{Field/}: Modelos de campos (\texttt{FieldModel}) que no requerían un diálogo UI propio o que son extensiones de UBlockly.
+		\item \texttt{Mutator/}: Lógica para los mutadores de bloques (aunque no se hayan implementado extensivamente en el prototipo).
+		\item \texttt{Variable/}: Clases para la gestión de variables (\texttt{VariableMap}, \texttt{VariableModel}).
+	\end{itemize}
+	\item \textbf{\texttt{Assets/CSharp/}:} Clases específicas para la implementación en C\# de la lógica de UBlockly.
+	\begin{itemize}
+		\item \texttt{Generators/}: (Heredado de UBlockly, no es el foco principal de este TFG, que se centra en la interpretación directa).
+		\item \texttt{Interpreters/}: Clases intérprete (\texttt{Cmdtor}) para cada tipo de bloque ejecutable. Aquí reside \texttt{MotionBlockInterpreter.cs}. Contiene \texttt{CSharpInterpreter.cs} que mapea tipos de bloques a sus intérpretes.
+		\item \texttt{CSharp.cs, CSharpGenerator.cs, CSharpInterpreter.cs, CSharpRunner.cs}: Clases centrales del sistema de UBlockly para C\#.
+	\end{itemize}
+	\item \textbf{\texttt{Assets/Execute/}:} Scripts relacionados directamente con la ejecución y simulación.
+	\begin{itemize}
+		\item \texttt{BlockObserver.cs:} Puente entre la ejecución de bloques y el robot en la simulación.
+		\item \texttt{MotionBlockInterpreter.cs:} (Originalmente lo tenías aquí, pero conceptualmente encaja mejor en \texttt{Assets/CSharp/Interpreters/}. Asegúrate de dónde está realmente).
+		\item \texttt{RobotBehaviour.cs:} Script que controla el comportamiento y animación del GameObject del robot.
+	\end{itemize}
+	\item \textbf{\texttt{Assets/Interfaces/}:} Definiciones de interfaces C\# utilizadas en el proyecto (ej. \texttt{IBlockElement}, \texttt{IObserver}).
+	\item \textbf{\texttt{Assets/Resources/}:} Carpeta especial de Unity para activos que se cargan dinámicamente.
+	\begin{itemize}
+		\item \texttt{XML/Blocks/}: Archivos XML que definen la estructura de los bloques de cada categoría (ej. \texttt{movimiento.xml}, \texttt{eventos.xml}).
+		\item \texttt{XML/}: Archivos XML de configuración general (ej. \texttt{Categories.xml}, \texttt{DefaultToolBox.xml}).
+		\item \texttt{Icons/}: Imágenes para los iconos de la interfaz (bandera verde, stop, etc.) y posiblemente para los bloques.
+		\item \texttt{BlockResSettings.asset}: ScriptableObject que gestiona la carga de recursos como las definiciones de bloques y prefabs (heredado/adaptado de UBlockly).
+		\item Prefabs/: Contiene elementos visuales de Unity para la disposición de vistas como el \texttt{CategoryButtonPrefab} usado para representar el circulo de las categorías
+		\item \texttt{Prefabs/Blocks/:} Contiene el diseño de los prefabs que representan los distintos tipos de bloques. Inicialmente se han creado los siguientes prefabs
+		\begin{itemize}
+			\item \texttt{event\_whenflagclicked} que representa al bloque al hacer click en bandera verde.
+			\item \texttt{Highlight} que representa a resaltado que se muestra cuando se van a conectar dos bloques.
+			\item \texttt{motion\_movesteps} que representa el bloque mover 10 pasos.
+			
+		\end{itemize}
+		Es en esta carpeta de prefabs donde se tienen que incluir los diferentes bloques que se diseñen para cada una de las categorías que hay.
+		\end{itemize}
+	\item \textbf{\texttt{Assets/Scripts/}:} Contiene la mayoría del código C\# desarrollado específicamente para la lógica y la interfaz del prototipo.
+	\begin{itemize}
+		\item \texttt{Blocks/Controller/}: Clases Controlador del patrón MVC (\texttt{AppController.cs}, \texttt{WorkspaceController.cs}, \texttt{BlockDragController.cs}, \texttt{BlockConnectionController.cs}, \texttt{ExecutionController.cs}, \texttt{InputController.cs}, \texttt{CategoryController.cs}).
+		\item \texttt{Blocks/DB/}: Clases relacionadas con la base de datos de conexiones (\texttt{BlockConnectionDB.cs}). (Tu clase estaba aquí)
+		\item \texttt{Blocks/}: Clases auxiliares o generales del sistema de bloques (\texttt{BlockDataLoader.cs}, \texttt{CategoryLoader.cs}, \texttt{WorkspaceSerializer.cs}, etc.).
+		\item \texttt{Definition/}: Clases que definen la estructura de los bloques y argumentos (\texttt{ArgumentDefinition.cs}, \texttt{BlockDefinition.cs}).
+		\item \texttt{Model/BlocksModels/}: Clases Modelo de UBlockly y la adaptación (\texttt{BlockModel.cs}, \texttt{ConnectionModel.cs}, \texttt{InputModel.cs}). 
+		\item \texttt{Model/FieldModels/}: Clases para los modelos de campos (\texttt{FieldLabelModel.cs}, \texttt{FieldNumberInputModel.cs}, etc.).
+		\item \texttt{View/FieldViews/}: Componentes \texttt{MonoBehaviour} para la vista de los campos (\texttt{FieldLabelView.cs}, \texttt{FieldInputView.cs}, etc.).
+		\item \texttt{View/}: Componentes \texttt{MonoBehaviour} para las vistas principales (\texttt{BlockView.cs}, \texttt{ConnectionView.cs}, \texttt{InputView.cs}, \texttt{LineGroupView.cs}, \texttt{BlockListView.cs}, \texttt{WorkSpaceView.cs}, \texttt{UICanvasView.cs}).
+		% \texttt{Configurator/}: Si esta carpeta existe y tiene una función clara.
+		\item \texttt{Observables/}: Implementación del patrón Observador.
+		\item \texttt{Types/}: Enumeraciones y tipos de datos auxiliares.
+	\end{itemize}
+
+	\begin{itemize}
+		
+		\item \texttt{UI/}: Prefabs para elementos de UI como botones de categoría, etc.
+		\item \texttt{Robot/}: Prefab del modelo 3D del robot.
+	\end{itemize}
+	\item \textbf{\texttt{Assets/Scenes/}:} Escenas de Unity utilizadas en el proyecto (ej. la escena principal del laboratorio).
+
+\end{itemize}
+Esta estructura busca separar claramente la lógica del núcleo de UBlockly, las adaptaciones específicas para C\# y Unity, el código de la aplicación (MVC), y los recursos y configuraciones.
+
+\section{Manual del programador (clases y módulos Principales)}
+Dentro de este punto se ofrece una visión general de las clases más importantes y cómo interactúan, enfocándose en los componentes desarrollados o significativamente adaptados para este TFG.
+
+\subsection{Arquitectura MVC y flujo de control}
+Como se detalló en el apéndice C (especificación de diseño), el sistema sigue un patrón MVC. A continuación, se destacan los roles de las clases controladoras clave:
+\begin{itemize}
+	\item \textbf{\texttt{AppController.cs}:} Orquesta la inicialización de la aplicación, incluyendo la carga de recursos, la creación de los modelos y vistas principales, y la instanciación de otros controladores. Maneja la transición entre el modo de programación y el modo de simulación.
+	\item \textbf{\texttt{WorkspaceController.cs}:} Actúa como la interfaz principal para realizar operaciones sobre el \texttt{WorkSpaceModel} (añadir, eliminar, mover bloques). Valida las solicitudes antes de modificar el modelo.
+	\item \textbf{\texttt{BlockDragController.cs}:} Gestiona toda la lógica de arrastre de \texttt{BlockView}s, incluyendo la clonación desde la \texttt{Toolbox}, el reparentado al \texttt{DragLayer} y la actualización de posiciones.
+	\item \textbf{\texttt{BlockConnectionController.cs}:} Trabaja en conjunto con \texttt{BlockDragController} para identificar conexiones válidas, gestionar el resaltado visual y solicitar al \texttt{WorkspaceController} que establezca las conexiones lógicas.
+	\item \textbf{\texttt{ExecutionController.cs}:} Inicia y detiene la ejecución del programa de bloques, interactuando con el \texttt{CSharpRunner} de UBlockly.
+	\item \textbf{\texttt{InputController.cs}:} Procesa los cambios de valor en los campos editables de los bloques (\texttt{FieldView}s), validándolos y solicitando la actualización del \texttt{FieldModel} correspondiente.
+	\item \textbf{\texttt{CategoryController.cs}:} Gestiona la lógica de selección de categorías en la \texttt{Toolbox} y la actualización de la \texttt{BlockListView}.
+\end{itemize}
+
+\subsection{Sistema de bloques (adaptación de UBlockly)}
+\begin{itemize}
+	\item \textbf{Modelos (\texttt{BlockModel}, \texttt{ConnectionModel}, etc.):} Se utiliza la estructura de modelos de UBlockly. La principal adaptación reside en cómo estos modelos son observados y renderizados por las Vistas en Unity UI y cómo interactúan con los controladores.
+	\item \textbf{Vistas (\texttt{BlockView}, \texttt{ConnectionView}, etc.):} Son componentes \texttt{MonoBehaviour} responsables del renderizado. Se han diseñado prefabs para cada tipo de bloque para asegurar una apariencia consistente con Scratch. El sistema de layout manual implementado en \texttt{BaseView} y sus herederos es crucial.
+	\item \textbf{Creación de bloques (\texttt{BlockFactory}, \texttt{BlockDataLoader}):} Los bloques se definen en XML y se cargan usando estas clases para crear instancias de \texttt{BlockModel} y \texttt{BlockDefinition}.
+\end{itemize}
+
+\subsection{Sistema de ejecución y simulación}
+\begin{itemize}
+	\item \textbf{\texttt{CSharpRunner} y \texttt{Cmdtor}:} El sistema de ejecución de UBlockly se ha utilizado con mínimas modificaciones en su núcleo. La adaptación principal ha sido la creación de \texttt{Cmdtor}s específicos como \texttt{MotionBlockInterpreter}.
+	\item \textbf{\texttt{BlockObserver.cs}:} Actúa como un servicio intermediario. Los \texttt{Cmdtor}s le solicitan acciones (ej. mover robot) y el \texttt{BlockObserver} las traduce en llamadas a corrutinas del \texttt{RobotBehaviour.cs}. También gestiona el feedback visual/textual de la ejecución.
+	\item \textbf{\texttt{RobotBehaviour.cs}:} Controla el \texttt{GameObject} del robot, implementando métodos (a menudo corrutinas) para sus acciones (ej. \texttt{MoveRobotOverTime()}).
+\end{itemize}
+Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} necesitaría:
+\begin{enumerate}
+	\item Añadir su definición en un archivo XML en \texttt{Assets/Resources/XML/Blocks/}.
+	\item Crear un prefab para su \texttt{BlockView} en \texttt{Assets/Prefabs/Blocks/} (o donde corresponda).
+	\item (Si es un bloque ejecutable) Crear una nueva clase intérprete que herede de \texttt{Cmdtor} en \texttt{Assets/CSharp/Interpreters/} y registrarla en \texttt{CSharpInterpreter.cs}.
+	\item (Si el bloque realiza una nueva acción del robot) Añadir el método correspondiente en \texttt{RobotBehaviour.cs} y la lógica en \texttt{BlockObserver.cs} para invocarlo.
+\end{enumerate}
 
 \section{Compilación, instalación y ejecución del proyecto}
 
+\subsection{Requisitos Previos}
+\begin{itemize}
+	\item \textbf{Unity Hub} y \textbf{Unity Editor (Versión 6000.0.2f1 o compatible)}.
+	\item Módulo de \textbf{Android Build Support} instalado en Unity (si se va a compilar para Android).
+	\item (Opcional) Un dispositivo Android configurado para pruebas o un emulador Android configurado en Android Studio.
+	\item Git, para clonar el repositorio.
+\end{itemize}
+
+\subsection{Obtención del Código Fuente}
+\begin{enumerate}
+	\item Clonar el repositorio desde GitHub: \\
+	\texttt{git clone [https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT]}
+	\item Abrir el proyecto clonado con Unity Hub, seleccionando la carpeta raíz del proyecto.
+\end{enumerate}
+
+\subsection{Ejecución en el Editor de Unity}
+\begin{enumerate}
+	\item Una vez abierto el proyecto en Unity, localizar la escena principal (ej. en \texttt{Assets/Scenes/UIGUIVRLearnToBot.unity}).
+	\item Abrir la escena principal.
+	\item Pulsar el botón play en la barra de herramientas superior del editor de Unity.
+	\item La aplicación se ejecutará en la ventana game del editor.
+\end{itemize}
+
+%incluir capturas de pantalla que permitan entender mejor esta parte
+\subsection{Compilación y ejecución en dispositivo Android (APK)}
+\begin{enumerate}
+	\item Conectar el dispositivo Android al ordenador con el modo de depuración USB habilitado.
+	\item En Unity, ir a \texttt{File > Build Settings...}.
+	\item Seleccionar \texttt{Android} como plataforma. Si no está activa, pulsar Switch Platform.
+	\item (Opcional) Ajustar las \texttt{Player Settings...} (ej. nombre de la compañía, nombre del producto, identificador del paquete, íconos, orientaciones permitidas).
+	\item Asegurarse de que el dispositivo de prueba esté detectado por Unity (aparecerá en la lista de Run Device).
+	\item Pulsar \texttt{Build And Run}. Unity compilará el proyecto, generará un archivo \texttt{.apk}, lo instalará en el dispositivo conectado y lo ejecutará.
+	\item Alternativamente, pulsar \texttt{Build} para generar solo el archivo \texttt{.apk}, que luego se puede transferir e instalar manualmente en cualquier dispositivo Android compatible.
+\end{itemize}
+
 \section{Pruebas del sistema}
+Dada la naturaleza de prototipo y el desarrollo individual de este TFG, las pruebas se han centrado principalmente en la \textbf{verificación funcional manual} y la \textbf{depuración iterativa} durante el desarrollo de cada característica.
+
+\subsection{Tipos de pruebas realizadas}
+\begin{itemize}
+	\item \textbf{Pruebas de unidad (conceptuales):} Durante el desarrollo de clases individuales (\texttt{BlockModel}, \texttt{ConnectionModel}, intérpretes, controladores), se realizaron pruebas aisladas de sus métodos principales mediante logs (\texttt{Debug.Log}) y el inspector de Unity para verificar que la lógica interna funcionaba como se esperaba antes de su integración. Se diseño una clase específica llamada Logger que permitía ofrecer mayor información en la depuración incluyendo la hora de la ejecución que era fundamental para poder seguir el contenido del archivo editor.log.
+	\item \textbf{Pruebas de integración (amnuales):} Tras la implementación de cada nueva funcionalidad que involucraba múltiples componentes MVC (ej. drag and drop, conexión de bloques, ejecución del robot), se realizaron pruebas manuales exhaustivas en el editor de Unity para verificar que los componentes interactuaban correctamente. Se prestó especial atención a:
+	\begin{itemize}
+		\item La correcta creación y vinculación de modelos y vistas.
+		\item El flujo de eventos entre vistas, controladores y modelos.
+		\item La integridad de las bases de datos de conexiones (\texttt{ConnectionDBList}) después de operaciones de arrastre y conexión (verificado con la herramienta de exportación a JSON).
+		\item La correcta traducción de los bloques a acciones del robot.
+	\end{itemize}
+	\item \textbf{Pruebas funcionales del prototipo:} Se definieron escenarios de prueba clave para validar el flujo principal del laboratorio virtual:
+	\begin{itemize}
+		\item Escenario 1: Crear un programa simple (Bandera verde -> Mover 10 pasos). Ejecutar. Verificar que el robot se mueve correctamente.
+		\item Escenario 2: Crear un programa con múltiples bloques de movimiento. Ejecutar. Verificar secuencia.
+		\item Escenario 3: Guardar un programa. Limpiar el workspace. Cargar el programa guardado. Verificar que se restaura correctamente. Ejecutar.
+		\item Escenario 4: Probar la lógica de bumping al insertar bloques en una pila existente.
+		\item Escenario 5:  Probar el descarte de bloques para verificar que los mismos eran eliminados del espacio de trabajo.
+	\end{itemize}
+	\item \textbf{Pruebas de usabilidad (informales):} Se evaluó la facilidad de uso de la interfaz de forma continua durante el desarrollo, intentando adoptar la perspectiva de un usuario final y corrigiendo flujos de interacción confusos o poco intuitivos.
+	\item \textbf{Pruebas en dispositivo Android (básicas):} Una vez generados los APKs, se realizaron pruebas en una tablet Android para verificar la funcionalidad básica del arrastre, la ejecución y la visualización de la simulación en la plataforma objetivo.
+\end{itemize}
+
+\subsection{Herramientas de depuración utilizadas}
+\begin{itemize}
+	\item \textbf{Consola de Unity y \texttt{Debug.Log}:} Herramienta principal para el seguimiento de variables, flujo de control y detección de errores.
+	\item \textbf{Inspector de Unity:} Para examinar el estado de los \texttt{GameObject}s y sus componentes en tiempo real.
+	\item \textbf{Debugger de Visual Studio:} Para el análisis paso a paso del código C\# y la inspección de variables en puntos críticos.
+	\item \textbf{Herramienta de exportación de \texttt{ConnectionDB} a JSON:} Desarrollada como parte del proyecto para permitir el análisis externo de la coherencia de las bases de datos de conexiones internas de UBlockly.
+\end{itemize}
+
+Aunque no se implementó un framework de pruebas unitarias automatizadas (como NUnit o Unity Test Framework) debido a las limitaciones de tiempo y el enfoque en el desarrollo del prototipo funcional, las estrategias de depuración y pruebas manuales iterativas han sido fundamentales para asegurar la calidad y funcionalidad del sistema entregado.
+
+%esta pendiente de implementar pruebas en Unity mediante el framework correspondiente que actualmente da fallos en las mismas por lo que hay que terminar de refinarlas.
