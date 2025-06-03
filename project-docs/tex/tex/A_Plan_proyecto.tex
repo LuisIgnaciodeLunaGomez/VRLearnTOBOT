@@ -1,49 +1,61 @@
 \apendice{Plan de Proyecto Software}
 \section{Introducción}
-El Plan de Proyecto Software detalla los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del Laboratorio Virtual de Programación y Robótica. Este documento tiene como objetivo establecer un marco de referencia para la ejecución del Trabajo Fin de Grado (TFG), asegurando que el prototipo se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
-
+En este  plan de proyecto software se detallan los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del laboratorio virtual de programación y robótica. El presente anexo tiene como objetivo establecer un marco de referencia para la ejecución del este trabajo, asegurando que el prototipo se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
+\\ %salto de línea
 La planificación se ha enfocado en un desarrollo iterativo, aplicando principios de metodologías ágiles (SCRUM) para dividir el proyecto en tareas, sprints y entregables incrementales. Esto ha permitido una adaptación continua a los desafíos técnicos y una validación temprana de las funcionalidades principales. 
+\\
 
-Este apéndice también incluye un análisis de la viabilidad del proyecto, considerando los recursos humanos y materiales involucrados, los costes asociados estimados para el desarrollo del prototipo y una evaluación básica de los aspectos legales relevantes. El objetivo es demostrar que el proyecto, dentro de su alcance como TFG, es factible y se ha gestionado de manera responsable.
+En este apéndice, también se incluye un análisis de la viabilidad del proyecto, considerando los recursos humanos y materiales involucrados, los costes asociados estimados para el desarrollo del prototipo y una evaluación básica de los aspectos legales relevantes. El objetivo es demostrar que el proyecto, dentro de su alcance como TFG, es factible y se ha gestionado de manera responsable.
 
 \section{Planificación Temporal}
 La ejecución de este Trabajo Fin de Grado se ha gestionado mediante una adaptación de la metodología ágil \textbf{SCRUM}. Esta elección metodológica se fundamenta en la necesidad de un desarrollo iterativo e incremental, permitiendo flexibilidad ante los desafíos técnicos y la evolución de los requisitos inherentes a un proyecto de prototipado y desarrollo de software. La planificación se ha estructurado en ciclos de trabajo o \textit{sprints}, de duración variable (generalmente entre una y tres semanas), con el objetivo de producir incrementos funcionales del laboratorio virtual y facilitar una validación continua del progreso.
 
+ %\vspace{-4.3\baselineskip} %eliminación de espacios en blanco amplios
+ 
 \subsection{Herramientas y Artefactos de Planificación}
 Para llevar a cabo la planificación temporal y el seguimiento del proyecto, se han utilizado diversas herramientas y artefactos metodológicos.
 
+% \vspace{-3.0\baselineskip} %eliminación de espacios en blanco amplios
+ 
 	\begin{itemize}
-	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 13 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura~\ref{fig:github_branches}).
+	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 13 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura \ref{fig:github_branches}).
 	
 	Este enfoque permitió aislar el desarrollo de estas características, experimentar con soluciones sin afectar la estabilidad de la rama principal (\texttt{master}), y facilitó la revisión e integración controlada de los cambios. El historial de \textit{commits} (ver figura \ref{fig:historicocommits}) en cada rama ha proporcionado una trazabilidad detallada de la evolución específica de cada módulo o funcionalidad. Adicionalmente, las funcionalidades de \textit{issues} de GitHub se emplearon para el registro y seguimiento de tareas, así como para la gestión de errores o mejoras identificadas durante el desarrollo.
 	
-	 \textbf{GitHub} ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente; las ramas permitieron gestionar el desarrollo de forma aislada y los \textit{commits} proporcionaron trazabilidad. Las \textit{issues} de GitHub se emplearon para el registro de tareas y la gestión de errores.
 	\end{itemize}
 	
-	% ----- FIGURA DE RAMAS DE GITHUB -----
+		% ----- FIGURA DE HISTORICO DE COMMITS  -----
 	\begin{figure}[H] 
+		\centering
+		
+		\includegraphics[width=1\linewidth]{img/historicocommits.png} 
+		\caption{histograma de commits realizados}
+		\label{fig:historicocommits}
+	\end{figure}
+	% ----- FIN FIGURA -----
+
+
+Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{ZubePlatform}, integrada con GitHub, fue utilizada para la organización y visualización del trabajo. Sus funcionalidades principales empleadas han sido:
+
+	% ----- FIGURA DE RAMAS DE GITHUB -----
+\begin{figure}[H] 
 	\centering
 	
 	\includegraphics[width=1\linewidth]{img/branchsGithub.png} 
 	\caption{Ejemplo de la estructura de ramas utilizada en el repositorio de GitHub del proyecto, mostrando diferentes líneas de desarrollo para funcionalidades clave.}
 	\label{fig:github_branches}
-	\end{figure}
-% ----- FIN FIGURA -----
-
-	% ----- FIGURA DE HISTORICO DE COMMITS  -----
-\begin{figure}[H] 
-	\centering
-	
-	\includegraphics[width=1\linewidth]{img/historicocommits.png} 
-	\caption{histograma de commits realizados}
-	\label{fig:historicocommits}
 \end{figure}
 % ----- FIN FIGURA -----
 
-Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{ZubePlatform}, integrada con GitHub, fue utilizada para la organización y visualización del trabajo. Sus funcionalidades principales empleadas han sido:
 \begin{itemize} 
 	\item \textbf{Gestión de Tareas en Tableros Kanban:} Permitiendo la visualización del flujo de trabajo de cada tarea, desde su planificación (Inbox) hasta su finalización (Done), incluyendo estados intermedios. En la Figura \ref{fig:zube_kanban} se muestra un ejemplo de este tablero. 
 	
+	\begin{figure}[H]
+	\centering 
+	\includegraphics[width=0.5\linewidth]{img/zube_analytics_general.png} 
+	\caption{Analíticas de espacio de trabajo ofrecidas por Zube para el seguimiento de proyectos.}
+	\label{fig:zube_analytics_general}
+\end{figure}
 
 	\item \textbf{Planificación y Seguimiento de Sprints:} Facilitando la definición de objetivos y el conjunto de tareas (historias de usuario con sus respectivos puntos de historia) a abordar en cada iteración. 
 	\item \textbf{Métricas Ágiles y Analíticas del Espacio de Trabajo:} Aunque para un proyecto individual la aplicación estricta de todas las métricas de equipo puede variar, Zube ofrece diversas analíticas (ver Figura~\ref{fig:zube_analytics_general}) que han servido como referencia para evaluar el progreso general.
@@ -56,15 +68,7 @@ Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{
 		\label{fig:zube_kanban}
 	\end{figure}
 	
-	
 	% --- FIGURA ANALYTICS ---
-
-	\begin{figure}[H]
-		\centering 
-		\includegraphics[width=0.5\linewidth]{img/zube_analytics_general.png} 
-		\caption{Analíticas de espacio de trabajo ofrecidas por Zube para el seguimiento de proyectos.}
-		\label{fig:zube_analytics_general}
-	\end{figure}
 	
 	Entre estas métricas, destacan conceptualmente:
 	\begin{itemize}
@@ -83,6 +87,9 @@ Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{
 		\label{fig:burndown_sprint5}
 	\end{figure}
 	
+	
+	La asignación de puntos de historia y su seguimiento en Zube, aunque adaptado a un contexto individual, permitió una estimación cualitativa del esfuerzo y una evaluación continua del avance en las distintas fases del proyecto.
+	
 		\begin{figure}[H] 
 		\centering
 		
@@ -90,11 +97,46 @@ Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{
 		\caption{GráficoBurnup: SP4 - Implantación de la aplicación usando MVC.} 
 		\label{fig:Burnup SP4 - Implantación de la aplicación usando MVC 5}
 	\end{figure}
-	La asignación de puntos de historia y su seguimiento en Zube, aunque adaptado a un contexto individual, permitió una estimación cualitativa del esfuerzo y una evaluación continua del avance en las distintas fases del proyecto.
 \end{itemize}
 
-\subsection{Hitos Principales del Proyecto}
-Se definieron los siguientes hitos clave para marcar puntos significativos en el desarrollo del prototipo:
+\subsection{Organización del Desarrollo por Sprints e Hitos Clave}
+El desarrollo del prototipo se articuló en torno a una serie de \textbf{hitos principales}, que marcaron la consecución de objetivos clave y agruparon el trabajo realizado a lo largo de varios \textit{sprints}. 
+
+\subsubsection{Resumen de Hitos del Proyecto} 
+Los principales hitos que guiaron la evolución del prototipo fueron los siguientes:
+\begin{itemize}
+	\item \textbf{Hito 1: Fundamentos y Arquitectura Inicial.}
+	Configuración del entorno de desarrollo, análisis de la librería UBlockly y definición de la arquitectura Modelo-Vista-Controlador (MVC) como base para el proyecto.
+
+	
+	\item \textbf{Hito 2: Definición del Proyecto y Marco Teórico.}
+	Consolidación de los objetivos del TFG, estudio comparativo de plataformas de robótica y programación visual, y estructuración inicial de la memoria.
+
+	
+	\item \textbf{Hito 3: Prototipo Básico de Interfaz y Pruebas APK.}
+	Desarrollo de la interfaz de usuario para mostrar paneles y categorías de bloques, y primeras pruebas de generación de APK para Android.
+
+	
+	\item \textbf{Hito 4: Funcionalidad del Robot y Reestructuración de la Simulación.}
+	Superación de las limitaciones de la simulación inicial, desarrollo del \texttt{RobotBehaviour}, implementación de los intérpretes de movimiento y evento, y validación del movimiento básico del robot virtual.
+
+	
+	\item \textbf{Hito 5: Implementación de la Arquitectura MVC y Refinamiento de Interacciones.}
+	Reestructuración completa del código para adoptar explícitamente el patrón MVC, desarrollo de los controladores principales y trabajo intensivo en la lógica de conexiones y layout visual de los bloques.
+
+	
+	\item \textbf{Hito 6: Prototipo Funcional con Interacción Drag \& Drop y Simulación.}
+	Logro de una funcionalidad robusta de arrastre, conexión (snap) y apilamiento de bloques. El robot virtual ejecuta de forma controlada las secuencias programadas.
+
+	
+	\item \textbf{Hito 7: Finalización del Prototipo, Pruebas y Documentación.}
+	Pruebas integrales, depuración final, optimización básica y completitud de la memoria del TFG.
+
+\end{itemize}
+
+A continuación, se ofrece un desglose más detallado del trabajo realizado en cada sprint clave:
+
+
 \subsubsection{Sprint 0: Puesta en marcha, Configuración del Entorno e Investigación Inicial}
 
 
