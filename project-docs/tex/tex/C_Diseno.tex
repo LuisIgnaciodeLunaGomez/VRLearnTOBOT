@@ -66,13 +66,17 @@ La arquitectura del sistema se ha basado en el patrón \textbf{Modelo-Vista-Cont
 
 \subsection{Diagrama de arquitectura general (MVC)}
 Como se detalló en el Capítulo 3 (Conceptos Teóricos, subsección \textit{arquitectura general (Modelo-Vista-Controlador - MVC)}), el sistema se divide en tres capas principales. 
-%  incluir aquí un diagrama de componentes MVC  o referenciar la descripción del Cap. 3
-% \begin{figure}[H]
-	%    \centering
-	%    \includegraphics[width=0.7\linewidth]{img/arquitectura_mvc_general.png} 
-	%    \caption{Diagrama de la Arquitectura Modelo-Vista-Controlador del Prototipo.}
-	%    \label{fig:arquitectura_mvc_general}
-	% \end{figure}
+
+	%  incluir aquí un diagrama de componentes MVC  o referenciar la descripción del Cap. 3
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{img/diagrama MVC general.png} 
+	\caption{Visión General de la Arquitectura MVC del Prototipo.}
+	\label{fig:diagramamvc}
+\end{figure}
+
+
+
 A continuación, se profundiza en los componentes clave de cada capa y sus interacciones.
 
 \subsection{Componentes clave por capa MVC}
@@ -83,6 +87,15 @@ A continuación, se profundiza en los componentes clave de cada capa y sus inter
 		\item \texttt{CSharpInterpreter}, \texttt{Cmdtor}, \texttt{CmdEnumerator}: Componentes del sistema de ejecución de UBlockly, encargados de la interpretación de los bloques.
 		\item \texttt{DataStruct}: Representación de tipos de datos en tiempo de ejecución.
 	\end{itemize}
+	
+	%  incluir aquí un diagrama de componentes MVC  o referenciar la descripción del Cap. 3
+	 \begin{figure}[H]
+		   \centering
+		   \includegraphics[width=1\linewidth]{img/capa modelo.png} 
+		  \caption{Diagrama de la capa modelo.}
+	    \label{fig:diagramacapamodelo}
+	 \end{figure}
+	
 	\item \textbf{Capa vista (Unity UI y entorno 3D):}
 	\begin{itemize}
 		\item \texttt{UICanvasView}: Orquestador principal de la interfaz de usuario, gestiona los paneles y la transición entre modos.
@@ -92,6 +105,14 @@ A continuación, se profundiza en los componentes clave de cada capa y sus inter
 		\item \texttt{RobotBehaviour}: Aunque contiene lógica de movimiento, su principal función en el MVC es la \textit{representación visual y la animación} del estado del robot dictado por el Modelo/Controlador.
 		\item Escena 3D de Unity: Contiene el entorno y el \texttt{GameObject} del robot.
 	\end{itemize}
+	
+		 \begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{img/capa vista.png} 
+		\caption{Diagrama de clases de la capa vista.}
+		\label{fig:diagramacapavista}
+	\end{figure}
+	\clearpage
 	\item \textbf{Capa controlador (Gestión de interacción y lógica de aplicación):}
 	\begin{itemize}
 		\item \texttt{AppController:} Punto de entrada y orquestador general de la aplicación, inicializa otros controladores.
@@ -103,8 +124,15 @@ A continuación, se profundiza en los componentes clave de cada capa y sus inter
 		\item \texttt{ExecutionController:} Inicia y detiene la ejecución del programa, comunicándose con \texttt{CSharpRunner}.
 		\item \texttt{BlockObserver:} Actúa como un intermediario  entre el sistema de ejecución de bloques y la representación/acción en la Vista 3D (\texttt{RobotBehaviour}).
 	\end{itemize}
-\end{itemize}
+	
 
+\end{itemize}
+		 \begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{img/capa controlador.png} 
+	\caption{Diagrama de clases de la capa controlador.}
+	\label{fig:diagramacapacontrolador}
+\end{figure}
 \subsection{Flujo de datos e interacciones principales}
 La comunicación entre las capas sigue el patrón Observador y las interacciones directas de los controladores.
 \begin{enumerate}
@@ -137,26 +165,88 @@ La comunicación entre las capas sigue el patrón Observador y las interacciones
 	\end{itemize}
 \end{enumerate}
 
-%  incluir  de diagrama de Secuencia de alto nivel 
 
-% \begin{figure}[H]
-	%    \centering
-	%    \includegraphics[width=\textwidth]{img/diagrama_secuencia_conexion.png} 
-	%    \caption{Diagrama de Secuencia simplificado para la conexión de dos bloques.}
-	%    \label{fig:diagrama_secuencia_conexion}
-	% \end{figure}
 
 \section{Diseño procedimental}
 El diseño procedimental se centra en describir el flujo de control para las operaciones más significativas del sistema. A continuación, se detallan algunos procedimientos clave:
 
+\subsection{Procedimiento: Inicialización de la Interfaz Principal}
+Al iniciar la aplicación, el sistema debe construir y presentar la interfaz de usuario principal. Este proceso es orquestado principalmente por la clase \texttt{UICanvasView} durante su ciclo de vida \texttt{Awake()} o \texttt{Start()}.
+\begin{enumerate}
+	\item \textbf{Carga de Configuraciones Fundamentales:} La \texttt{UICanvasView} invoca al \texttt{BlockResMgr} para cargar configuraciones esenciales, como el archivo XML del \texttt{DefaultToolBox.xml} (que define las categorías y bloques de la toolbox) y los archivos de internacionalización (i18n). A partir de esta información, se inicializa el objeto \texttt{ToolboxConfig} y se cargan los colores asociados a cada categoría de bloques.
+	\item \textbf{Creación del Canvas Principal:} Se instancia el \texttt{GameObject} raíz del Canvas de Unity UI, junto con sus componentes esenciales (\texttt{Canvas}, \texttt{CanvasScaler}, \texttt{GraphicRaycaster}), configurándose para el modo \textit{Screen Space Overlay}.
+	\item \textbf{Construcción de Paneles de UI:} La \texttt{UICanvasView} procede a crear jerárquicamente los diferentes paneles que componen la interfaz:
+	\begin{itemize}
+		\item \textit{Panel Superior de Control:} Se instancia el panel superior, añadiéndole el logo de la aplicación y los iconos interactivos (Bandera Verde, Stop, Guardar, Cargar).
+		\item \textit{Panel Izquierdo (Categorías):} Se crea el panel para los botones de selección de categorías, equipado con un \texttt{ScrollRect} y un contenedor con \texttt{VerticalLayoutGroup} para albergar los botones de categoría que se generarán posteriormente.
+		\item \textit{Paneles Centrales (Workspace):} Se crea un panel intermedio ("WorkArea") que a su vez contiene:
+		\begin{itemize}
+			\item El Panel de Toolbox (Centro-Izquierda, \texttt{BlockListPanelRect}), donde se instanciará \texttt{BlockListView} y que incluye un \texttt{ScrollRect} para la lista de bloques.
+			\item El Área de Codificación (Derecha, \texttt{CodingAreaPanelRect}), donde se instanciará \texttt{WorkSpaceView}.
+		\end{itemize}
+		\item \textit{Capa de Arrastre (\texttt{DragLayer}):} Se instancia un panel transparente superpuesto al área de codificación y la toolbox, destinado a ser el padre temporal de los bloques durante las operaciones de arrastre.
+		\item \textit{Paneles de Mensajes de Simulación:} Se crean los \texttt{GameObject}s para el texto de cuenta atrás y los mensajes del robot, inicialmente ocultos.
+	\end{itemize}
+	\item \textbf{Instanciación del Modelo Principal:} Se crea la instancia del \texttt{WorkSpaceModel}, que actuará como el contenedor lógico de todos los bloques y el estado del programa.
+	\item \textbf{Disponibilidad de la Interfaz:} La \texttt{UICanvasView} marca su inicialización como completa (\texttt{m\_isCoreComponentsReady = true}), permitiendo que otros controladores (\texttt{AppController}) procedan con la vinculación de modelos y la inicialización de funcionalidades más específicas (como la carga de la primera categoría en la Toolbox).
+\end{enumerate}
+
+
+\begin{figure}[H]
+	   \centering
+	   \includegraphics[width=\textwidth]{img/diagramasecuenciainicializacionIP.png} 
+	   \caption{Diagrama de Secuencia: Inicialización interfaz principal.}
+	   \label{fig:diagrama_secuencia_inicializacion_IP}
+ \end{figure}
+ 
+\subsection{Procedimiento: Selección de Categoría y Carga de Bloques en Toolbox}
+Una vez la interfaz está inicializada, el usuario puede interactuar con el panel de categorías para visualizar los bloques disponibles.
+\begin{enumerate}
+	\item El Estudiante pulsa un botón de categoría en el \texttt{Panel de Categorías} de la \texttt{UICanvasView}.
+	\item El evento de clic notifica al \texttt{CategoryController}.
+	\item El \texttt{CategoryController} invoca el método \texttt{ShowBlockCategory} en la \texttt{BlockListView} (Toolbox), pasándole el nombre de la categoría seleccionada y su color.
+	\item La \texttt{BlockListView} primero limpia cualquier plantilla de bloque previamente mostrada (\texttt{ClearBlockTemplates()}).
+	\item Luego, la \texttt{BlockListView} accede a la \texttt{ToolboxConfig} para obtener la lista de tipos de bloques asociados a la categoría seleccionada.
+	\item Para cada tipo de bloque en la lista:
+	\begin{itemize}
+		\item Se invoca a \texttt{BlockFactory.CreateBlock(null, blockType)} para crear un \texttt{BlockModel} plantilla (sin asignarle un workspace).
+		\item Se invoca a \texttt{BlockViewFactory.CreateView(templateModel, blockListViewInstance)} para instanciar el prefab de la \texttt{BlockView} correspondiente a esa plantilla.
+		\item La \texttt{BlockView} plantilla se configura (\texttt{InToolbox = true}, color, se le añade un \texttt{BlockTemplateDragSource}) y se añade como hijo visual del contenedor de la \texttt{BlockListView}.
+	\end{itemize}
+	\item Finalmente, la \texttt{BlockListView} fuerza una actualización de su layout y ajusta el scroll para mostrar los nuevos bloques.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/diagramasecuencia_seleccion_categoria.png} 
+\caption{Diagrama de Secuencia: Selección de categoría y visualización de bloques en toolbox.}
+	\label{fig:sec_select_category}
+\end{figure}
+
+
 \subsection{Procedimiento: Arrastre y conexión de un Bloque (\textit{Drag and Snap})}
 \begin{enumerate}
 	\item \textbf{Inicio del arrastre (\texttt{OnBeginDrag} en \texttt{BlockView} o \texttt{BlockTemplateDragSource}):}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{img/inicioarrastre.png} 
+		\caption{Diagrama de Secuencia: Inicio del arrastre de un bloque.}
+		\label{fig:inicioarrastre}
+	\end{figure}
 	\begin{itemize}
 		\item Si es una plantilla, se clona el \texttt{BlockModel} y se crea su \texttt{BlockView} asociada (\texttt{BlockFactory}, \texttt{BlockViewFactory}).
 		\item El \texttt{BlockDragController} toma el control. El \texttt{BlockView} se re-parenta al \texttt{DragLayer}.
 		\item Se calcula un offset entre el puntero y el pivote del bloque.
 	\end{itemize}
+	
+	 \begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{img/clases factory.png} 
+		\caption{Diagrama de clases constructores - factory.}
+		\label{fig:diagramaclasesfactory}
+	\end{figure}
+	
 	\item \textbf{Durante el arrastre (\texttt{OnDrag} -> \texttt{BlockDragController.HandleDrag()}):}
 	\begin{itemize}
 		\item La posición del \texttt{BlockView} se actualiza siguiendo el puntero más el offset.
@@ -168,6 +258,13 @@ El diseño procedimental se centra en describir el flujo de control para las ope
 			\item Si hay un candidato válido, la \texttt{ConnectionView} del bloque estático activa su resaltado (\texttt{Highlight(true)}). Si el mejor candidato cambia, el resaltado anterior se desactiva.
 		\end{itemize}
 	\end{itemize}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{img/durantearrastre.png} 
+		\caption{Diagrama de Secuencia: Durante del arrastre de un bloque.}
+		\label{fig:durantearrastre}
+	\end{figure}
 	\item \textbf{Fin del arrastre (\texttt{OnEndDrag} -> \texttt{BlockDragController.HandleEndDrag()}):}
 	\begin{itemize}
 		\item El \texttt{BlockConnectionController} finaliza la búsqueda y determina la mejor pareja de conexiones.
@@ -187,7 +284,16 @@ El diseño procedimental se centra en describir el flujo de control para las ope
 	\end{itemize}
 \end{enumerate}
 
-\subsection{Procedimiento: ejecución de un programa de bloques}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/finarrastre.png} 
+	\caption{Diagrama de Secuencia: Fin arrastre de un bloque.}
+	\label{fig:finarrastre}
+\end{figure}
+
+
+\subsection{Procedimiento: Ejecución de un programa de bloques}
+
 \begin{enumerate}
 	\item \textbf{Inicio de ejecución (clic en bandera verde):}
 	\begin{itemize}
@@ -228,12 +334,11 @@ El diseño procedimental se centra en describir el flujo de control para las ope
 		\item Si no hay más bloques o se invoca \texttt{ExecutionController.StopExecution()}, la ejecución finaliza.
 	\end{itemize}
 \end{enumerate}
-%   Diagrama de Secuencia más detallado
-% \begin{figure}[H]
-	%    \centering
-	%    \includegraphics[width=\textwidth]{img/diagrama_secuencia_ejecucion.png} 
-	%    \caption{Diagrama de Secuencia detallado para la Ejecución de un Programa de Bloques.}
-	%    \label{fig:diagrama_secuencia_ejecucion}
-	% \end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/ejecucionprograma.png} 
+	\caption{Diagrama de Secuencia: Ejecución de un programa de bloques}
+	\label{fig:ejecucionprograma}
+\end{figure}
 
 
