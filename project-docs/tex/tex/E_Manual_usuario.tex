@@ -1,11 +1,102 @@
-\apendice{Documentación de usuario}
+\apendice{Documentación de Usuario}
 
 \section{Introducción}
+Bienvenido al Laboratorio Virtual de Programación y Robótica. Esta guía está diseñada para ayudarte a instalar, configurar y utilizar todas las funcionalidades de esta herramienta educativa. El objetivo principal de este laboratorio es proporcionar un entorno accesible e interactivo donde puedas aprender los fundamentos de la programación visual mediante bloques, al estilo de Scratch, y observar cómo tus programas controlan un robot virtual en un entorno 3D.
 
-\section{Requisitos de usuarios}
+Este manual te guiará a través de los requisitos del sistema, el proceso de instalación en un dispositivo Android (Tablet), y el uso paso a paso de las características principales, desde la creación de tu primer programa hasta la simulación del comportamiento del robot.
 
-\section{Instalación}
+\section{Requisitos del sistema y del usuario} 
 
-\section{Manual del usuario}
+\subsection{Requisitos de hardware y software del dispositivo}
+Para asegurar un correcto funcionamiento del Laboratorio Virtual, tu dispositivo (preferentemente una Tablet Android) debe cumplir con los siguientes requisitos mínimos:
+\begin{itemize}
+	\item \textbf{Sistema Operativo:} Android (versión recomendada: Android 8.0 Oreo o superior. Compatible con versiones anteriores con posible impacto en rendimiento). % Ajusta esto según tus pruebas
+	\item \textbf{Procesador:} CPU compatible con arquitectura ARM (ARMv7 con NEON o ARM64).
+	\item \textbf{Memoria RAM:} Se recomienda un mínimo de 2GB de RAM para una experiencia fluida.
+	\item \textbf{Almacenamiento Interno:} Espacio libre suficiente para la instalación de la aplicación (aproximadamente 40 MB). 
+	\item \textbf{Pantalla:} Orientado para tablets, se recomienda una pantalla con resolución y tamaño adecuados para la interacción con bloques.
+\end{itemize}
+
+\subsection{Permisos requeridos por la aplicación}
+Al instalar y/o ejecutar la aplicación por primera vez, podría solicitar los siguientes permisos:
+\begin{itemize}
+	\item \textbf{Almacenamiento:} Para guardar y cargar tus proyectos de bloques. En el prototipo actual, se utiliza almacenamiento interno de la aplicación (\texttt{PlayerPrefs}), por lo que este permiso explícito podría no ser necesario.
+
+\end{itemize}
+La aplicación no requiere acceso a internet para su funcionamiento básico (programación y simulación local).
+
+\section{Instalación de la aplicación en dispositivo Android}
+El Laboratorio Virtual de Programación y Robótica se distribuye como un archivo \texttt{.apk} para su instalación directa en dispositivos Android. Sigue estos pasos:
+
+\begin{enumerate}
+	\item \textbf{Obtener el archivo \texttt{.apk}:} Descarga el archivo \texttt{VrLearnToBOT\_3\_0.apk}  desde la ubicación https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/tree/master/project-app/Release/64bits.
+	\item \textbf{Habilitar Fuentes Desconocidas:}
+	\begin{itemize}
+		\item En tu dispositivo Android, ve a \texttt{Ajustes > Seguridad} (la ruta exacta puede variar según el fabricante y la versión de Android).
+		\item Busca y activa la opción que permite instalar aplicaciones de \textbf{fuentes desconocidas} o \textbf{instalar aplicaciones desconocidas}. Es posible que necesites conceder este permiso específicamente a tu gestor de archivos o navegador desde el cual intentarás abrir el APK.
+		\item \textit{Advertencia de Seguridad:} Este paso es necesario para instalar APKs fuera de Google Play Store. Se recomienda desactivar esta opción después de instalar la aplicación si no la necesitas para otras instalaciones.
+	\end{itemize}
+	\item \textbf{Instalar el \texttt{.apk}:}
+	\begin{itemize}
+		\item Navega hasta la ubicación donde descargaste el archivo \texttt{.apk} utilizando un gestor de archivos.
+		\item Pulsa sobre el archivo \texttt{VrLearnToBOT\_3\_0.apk}.
+		\item El sistema te preguntará si deseas instalar la aplicación. Confirma la instalación.
+		\item Espera a que el proceso de instalación finalice.
+	\end{itemize}
+	\item \textbf{Abrir la Aplicación:} Una vez instalada, encontrarás el icono del Laboratorio Virtual en tu lista de aplicaciones. Púlsalo para iniciar.
+\end{enumerate}
+
+\section{Manual de usuario del prototipo}
+Esta sección te guiará a través de las funcionalidades principales del prototipo del laboratorio virtual.
+
+\subsection{Interfaz principal y navegación}
+Al iniciar la aplicación, serás recibido por la interfaz principal, que se divide en varias áreas clave (ver Figura~\ref{fig:interfaz_principal_overview}):
+\begin{itemize}
+	\item \textbf{Panel de categorías de bloques (izquierda):} Muestra una lista de categorías de bloques disponibles (ej. Movimiento, Eventos). Al pulsar sobre una categoría, se actualizará el panel de la Toolbox.
+	\item \textbf{Panel de Toolbox/Lista de Bloques (centro-izquierda):} Muestra las plantillas de los bloques correspondientes a la categoría seleccionada. Desde aquí puedes arrastrar bloques al área de codificación. En este prototipo no se han añadido todos los bloques que se podrían utilizar para llevar a cabo secuencias de programación completas.
+	\item \textbf{Área de codificación (derecha):} Es el espacio principal donde construirás tus programas arrastrando y conectando bloques.
+	\item \textbf{Panel superior de control:} Contiene los botones para iniciar la ejecución del programa (Bandera Verde), detenerla (Botón Stop), y las opciones para Guardar y Cargar proyectos.
+\end{itemize}
+
+\begin{figure}[H]
+	 \centering
+	   \includegraphics[width=0.8\linewidth]{img/interfaz_principal_overview.png}
+	   \caption{Vista general de la Interfaz Principal del Laboratorio Virtual.}
+    \label{fig:interfaz_principal_overview}
+ \end{figure}
+
+\subsection{Creación de un programa de bloques}
+\begin{enumerate}
+	\item \textbf{Seleccionar una Categoría:} Pulsa sobre una categoría en el panel izquierdo (ej. Eventos).
+	\item \textbf{Arrastrar un Bloque:} En el panel de la Toolbox, mantén pulsado un bloque (ej. el bloque Al hacer clic en Bandera Verde) y arrástralo hacia el Área de Codificación a la derecha. Suelta el bloque en el área.
+	\item \textbf{Añadir más Bloques:} Repite el proceso para otros bloques. Por ejemplo, selecciona la categoría Movimiento y arrastra un bloque Mover 10 Pasos.
+	\item \textbf{Conectar Bloques:} Arrastra el bloque Mover 10 Pasos de forma que su muesca superior se alinee con la pestaña inferior del bloque Al hacer clic en Bandera Verde. El sistema debería mostrar un resaltado visual indicando una conexión válida. Al soltar, los bloques se unirán (snap). Puedes apilar múltiples bloques de esta manera para crear una secuencia.
+	
+	\item \textbf{Editar Valores de los Bloques:} Si un bloque tiene un campo editable (como el número en Mover 10 Pasos), pulsa sobre ese campo. Se mostrará un teclado o un selector para que ingreses el nuevo valor.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{img/unionbloques.png}
+	\caption{Bloques vinculados en el área de codificación.}
+	\label{fig:unionbloques}
+\end{figure}
+
+\subsection{Ejecución y simulación del programa}
+\begin{enumerate}
+	\item \textbf{Iniciar simulación:} Una vez que hayas construido tu programa, pulsa el icono de la \textbf{Bandera Verde} en el panel superior.
+	\item \textbf{Transición a simulación:} La interfaz cambiará para mostrar el entorno de simulación 3D. El robot virtual (inspirado en LEGO WeDo 2.0) aparecerá en la escena.
+	\item \textbf{Cuenta Atrás:} Se mostrará una breve cuenta atrás visual antes de que comience la ejecución del programa.
+	\item \textbf{Ejecución del Robot:} El robot comenzará a ejecutar las acciones programadas en tus bloques. Por ejemplo, si has conectado Mover 10 Pasos, el robot se desplazará hacia adelante.
+	\item \textbf{Feedback Visual:} Observarás el movimiento del robot en tiempo real. .
+	\item \textbf{Detener Simulación:} En cualquier momento, puedes pulsar el \textbf{Botón Stop} (icono rojo) en el panel superior. La ejecución del programa y el movimiento del robot se detendrán, y la interfaz volverá al modo de programación.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{img/simulacion_robot.png}
+	\caption{Pantalla de simulador de ejecucción sin bloques vinculados.}
+	\label{fig:simulacion_robo}
+\end{figure}
 
 
