@@ -18,12 +18,13 @@
  * Manejar eventos de UI propios: Como los clics en los iconos del panel superior (Play, Save, Load, Stop).
  */
 
-using UnityEngine;
-using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster))]
 
@@ -59,6 +60,18 @@ public class UICanvasView : MonoBehaviour
     private GameObject m_UiManagerView;
     private RectTransform m_DragLayerRect; //<-----Panel para el arrastre de los bloques en la escena.
 
+    private GameObject m_ChallengeGoalPanelGO;
+    private TextMeshProUGUI m_ChallengeGoalTextComponent;
+
+    public GameObject ChallengeGoalPanel => m_ChallengeGoalPanelGO;
+    public TextMeshProUGUI ChallengeGoalText => m_ChallengeGoalTextComponent;
+
+
+    public GameObject CanvasGO
+    {
+        get { return m_CanvasGO; }
+    }
+
     [Header("UI de Mensajes de Simulación")]
     private GameObject m_countdownPanelGO; // Panel contenedor para el texto de cuenta atrás
     private Text m_countdownText;
@@ -77,6 +90,8 @@ public class UICanvasView : MonoBehaviour
     private GameObject m_CategoriesPanelGO; // GameObject del panel izquierdo de categorías
     private GameObject m_greenFlagIconGO;   // GameObject del icono de GreenFlag
     private GameObject m_stopFlagIconGO;    // GameObject del icono de StopFlag
+
+
 
     void Awake()
     {
@@ -443,8 +458,29 @@ public class UICanvasView : MonoBehaviour
             logoRect.anchorMin = new Vector2(0, 0.5f);
             logoRect.anchorMax = new Vector2(0, 0.5f);
             logoRect.pivot = new Vector2(0, 0.5f);
-            logoRect.sizeDelta = new Vector2(panel.GetComponent<RectTransform>().rect.width * 0.05f, panel.GetComponent<RectTransform>().rect.height * 0.5f);
+            logoRect.sizeDelta = new Vector2(panel.GetComponent<RectTransform>().rect.width * 0.1f, panel.GetComponent<RectTransform>().rect.height * 0.5f);
             logoRect.anchoredPosition = new Vector2(50, 0); // Desplazamiento a la izquierda
+
+            // --- 2. Añadir el componente Button ---
+            Button logoButton = logo.AddComponent<Button>();
+
+            // --- 3. Configurar el botón ---
+         
+            logoButton.targetGraphic = logoImage;
+
+            // --- 4. Conectar la función OnClick ---
+            AppController appControllerInstance = AppController.Instance;
+
+            if (appControllerInstance != null)
+            {
+                
+                logoButton.onClick.AddListener(appControllerInstance.ReturnToIntroScene);
+            }
+            else
+            {
+                // Si no se encuentra el AppController, el botón no hará nada y se mostrará un error.
+                Debug.LogError("AppLogoButton: No se pudo encontrar una instancia de AppController para asignar la función OnClick.");
+            }
         }
         else
         {
@@ -1243,6 +1279,65 @@ public class UICanvasView : MonoBehaviour
             m_robotMessageText.text = text;
             m_robotMessagePanelGO.SetActive(visible);
         }
+    }
+
+    public void CreateChallengeGoalUI()
+    {
+        // Si el panel ya ha sido creado, no hacemos nada para evitar duplicados.
+        if (m_ChallengeGoalPanelGO != null)
+        {
+            return;
+        }
+
+        // El Canvas es el padre de toda la UI, si no existe, no podemos continuar.
+        if (m_CanvasGO == null)
+        {
+            Debug.LogError("UICanvasView: No se puede crear la UI de objetivos porque m_CanvasGO es nulo.");
+            return;
+        }
+
+        // 1. Crear el GameObject del Panel principal
+        m_ChallengeGoalPanelGO = new GameObject("ChallengeGoalPanel_Generated");
+        m_ChallengeGoalPanelGO.transform.SetParent(m_CanvasGO.transform, false);
+
+        // 2. Configurar el RectTransform del Panel
+        RectTransform panelRect = m_ChallengeGoalPanelGO.AddComponent<RectTransform>();
+
+        // Anclaje en la esquina inferior derecha para que se posicione correctamente
+        panelRect.anchorMin = new Vector2(1, 0); // (X=derecha, Y=abajo)
+        panelRect.anchorMax = new Vector2(1, 0);
+        panelRect.pivot = new Vector2(1, 0); // Pivot en su propia esquina inferior derecha
+
+        // Posición con margen y tamaño fijo
+        panelRect.anchoredPosition = new Vector2(-20, 20); // 20 píxeles desde el borde derecho e inferior
+        panelRect.sizeDelta = new Vector2(450, 100);    // Ancho de 450 y alto de 100
+
+        // 3. Añadir un fondo visual al Panel
+        Image bgImage = m_ChallengeGoalPanelGO.AddComponent<Image>();
+        bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.75f); // Un color oscuro semitransparente
+
+        // 4. Crear el GameObject para el texto como hijo del panel
+        GameObject textGO = new GameObject("GoalText");
+        textGO.transform.SetParent(panelRect, false); // `false` para que no intente ajustar su posición mundial
+
+        // 5. Configurar el componente TextMeshProUGUI
+        m_ChallengeGoalTextComponent = textGO.AddComponent<TextMeshProUGUI>();
+
+        m_ChallengeGoalTextComponent.font = Resources.GetBuiltinResource<TMP_FontAsset>("LiberationSans.ttf");
+        m_ChallengeGoalTextComponent.fontSize = 22;
+        m_ChallengeGoalTextComponent.color = Color.white;
+        m_ChallengeGoalTextComponent.alignment = TextAlignmentOptions.TopLeft;
+        m_ChallengeGoalTextComponent.enableWordWrapping = true; // Permitir que el texto salte de línea
+
+        // 6. Configurar el RectTransform del texto para que ocupe el panel con un padding
+        RectTransform textRect = textGO.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero; // Anclaje para estirarse en todas direcciones del padre (el panel)
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(15, 15);  // Padding: 15px desde la izquierda y abajo
+        textRect.offsetMax = new Vector2(-15, -15); // Padding: 15px desde la derecha y arriba
+
+        // 7. Por defecto, el panel debe empezar oculto. AppController decidirá si lo muestra.
+        m_ChallengeGoalPanelGO.SetActive(false);
     }
 
 }//Fin clase UICanvasView

@@ -14,8 +14,10 @@
  * Descripción: Gestor central de la aplicación (Singleton), coordinando diferentes partes del sistema que no son estrictamente UI o Modelo/Vista de bloques.
  */
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class AppController : MonoBehaviour
 {
@@ -41,6 +43,7 @@ public class AppController : MonoBehaviour
     [SerializeField] private Camera m_main3DCamera; //Referencia a la cámara principal 3D. 
     [SerializeField] private GameObject m_robotEnvironmentRoot; // GameObject raíz del fondo 3D. 
 
+    
     private GameObject m_currentRobotInstance;
     private bool m_IsInitialized = false;
 
@@ -96,8 +99,16 @@ public class AppController : MonoBehaviour
         m_uiManager = FindFirstObjectByType<UICanvasView>();
         if (m_uiManager == null)
         {
-            Debug.LogError("AppController: UICanvasManager not found!");
-            yield break;
+            //Debug.LogError("AppController: UICanvasManager not found!");
+            // yield break;
+            // Si UICanvasView crea su propio GameObject, está bien, solo esperamos
+            yield return null; // Espera un frame para que se ejecute el Awake de UICanvasView
+            m_uiManager = FindFirstObjectByType<UICanvasView>();
+            if (m_uiManager == null)
+            {
+                Debug.LogError("AppController: UICanvasView sigue sin encontrarse tras esperar.");
+                yield break;
+            }
         }
        // Debug.Log("AppController: Found UICanvasView. Waiting for its core UI/View components to be ready (Awake phase)...", this);
         
@@ -266,8 +277,41 @@ public class AppController : MonoBehaviour
         }
 
 
+        string challengeId = ChallengeContext.SelectedChallengeId;
+        ChallengeContext.SelectedChallengeId = null;
+
+        if (!string.IsNullOrEmpty(challengeId))
+        {
+            // **MODO DESAFÍO**
+            Debug.Log($"<color=lime>AppController: Iniciando Desafío con ID: {challengeId}</color>");
+
+            // 1. Pedimos al UICanvasView que cree la UI si no existe.
+            // La función CreateChallengeGoalUI ya comprueba si ya fue creado.
+            m_uiManager.CreateChallengeGoalUI();
+
+            // 2. Usamos las propiedades públicas de m_uiManager para obtener y configurar la UI.
+            // Las referencias NO se guardan en AppController, se acceden a través del UI Manager.
+            GameObject goalPanel = m_uiManager.ChallengeGoalPanel;
+            TextMeshProUGUI goalText = m_uiManager.ChallengeGoalText;
+
+            if (goalPanel != null && goalText != null)
+            {
+                goalPanel.SetActive(true);
+                goalText.text = $"Objetivo:\n{challengeId}";
+            }
+            else
+            {
+                Debug.LogError("AppController: No se pudieron obtener las referencias a la UI de objetivos después de la creación.");
+            }
+        }
+
+
         m_IsInitialized = true;
     }
+
+  
+
+   
 
     /// <summary>
     /// Pedir a UICanvasView que cambie la visibilidad de la UI 
@@ -480,5 +524,13 @@ public class AppController : MonoBehaviour
         m_executionController?.StartExecution();
     }
 
-    }//fin clase AppController
+    public void ReturnToIntroScene()
+    {
+        Debug.Log("Volviendo a la escena de introducción...");
+
+        
+        SceneManager.LoadScene("IntroScene");
+    }
+
+}//fin clase AppController
 

@@ -202,7 +202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be9828aa1471d344faf2241f3302b5e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logoSpriteName: Scratchlogo
+  logoSpriteName: logo
   topIconNames:
   - load_icon
   - save_icon
@@ -414,6 +414,8 @@ MonoBehaviour:
   m_RobotSpawnPoint: {fileID: 2033179302}
   m_main3DCamera: {fileID: 1450677079}
   m_robotEnvironmentRoot: {fileID: 732205333}
+  challengeGoalPanel: {fileID: 0}
+  challengeGoalText: {fileID: 0}
 --- !u!224 &1180055865
 RectTransform:
   m_ObjectHideFlags: 0
