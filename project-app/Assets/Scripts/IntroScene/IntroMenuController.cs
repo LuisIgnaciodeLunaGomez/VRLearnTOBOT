@@ -228,4 +228,39 @@ public class IntroMenuController : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
+
+    /// <summary>
+    /// Este método es llamado por el botón "Ver Muestra" de ChallengeCardUI.
+    /// Reutiliza la lógica existente para mostrar el panel de detalles con el video.
+    /// </summary>
+    /// <param name="videoClip">El clip de video a reproducir.</param>
+    public void ShowVideoPreview(VideoClip videoClip)
+    {
+        // En tu diseño, mostrar el video implica mostrar todo el panel de detalles.
+        // Necesitamos encontrar el ChallengeInfo que corresponde a este video.
+        foreach (var challenge in availableChallenges)
+        {
+            if (challenge.videoPreviewClip == videoClip)
+            {
+                // Encontramos el desafío, ahora mostramos sus detalles.
+                ShowChallengeDetails(challenge);
+                return; // Salimos del bucle una vez encontrado.
+            }
+        }
+    }
+
+    /// <summary>
+    /// Este método es llamado por el botón "Iniciar" de ChallengeCardUI.
+    /// Carga directamente la escena del desafío.
+    /// </summary>
+    /// <param name="challengeData">Los datos del desafío a iniciar.</param>
+    public void StartChallenge(ChallengeInfo challengeData)
+    {
+        if (challengeData.id != null)
+        {
+            Debug.Log($"Iniciando desafío directo: {challengeData.displayName}");
+            // ChallengeContext.SelectedChallengeId = challengeData.id;
+            SceneManager.LoadScene(challengeData.targetSceneToLoad);
+        }
+    }
 }
