@@ -92,46 +92,58 @@ public class PrefabDebugger : MonoBehaviour
 
         fileReportBuilder.AppendLine("-----------------------------------------------------\n");
     }
-    
+
     private void LogAndBuildHierarchyRecursive(Transform currentTransform, int indentationLevel, StringBuilder fileReportBuilder)
     {
+        // --- PASO 1: Procesar el GameObject actual y sus componentes ---
         string indent = new string(' ', indentationLevel * 4);
-        string fileHeader = $"{indent}{currentTransform.gameObject.name} {(currentTransform.gameObject.activeSelf ? "" : "(Inactivo)")}";
-        fileReportBuilder.AppendLine(fileHeader);
-        
-        // --- Versión de Consola ---
-        string consoleHeader = $"{indent}<b>{currentTransform.gameObject.name}</b> {(currentTransform.gameObject.activeSelf ? "" : "<color=grey>(Inactivo)</color>")}";
-        StringBuilder consoleMessageBuilder = new StringBuilder();
-        consoleMessageBuilder.AppendLine(consoleHeader);
-        
+
+        // Preparar los constructores de strings para este nivel de la jerarquía
+        StringBuilder fileNodeBuilder = new StringBuilder();
+        StringBuilder consoleNodeBuilder = new StringBuilder();
+
+        // Añadir la cabecera del GameObject
+        string fileHeader = $"{indent}{currentTransform.gameObject.name} {(currentTransform.gameObject.activeSelf ? "" : "(Inactivo)")}\n";
+        string consoleHeader = $"{indent}<b>{currentTransform.gameObject.name}</b> {(currentTransform.gameObject.activeSelf ? "" : "<color=grey>(Inactivo)</color>")}\n";
+
+        fileNodeBuilder.Append(fileHeader);
+        consoleNodeBuilder.Append(consoleHeader);
+
+        // Iterar sobre los componentes y añadir sus detalles
         Component[] components = currentTransform.GetComponents<Component>();
         foreach (Component component in components)
         {
             if (component is Transform) continue;
 
             string componentName = component.GetType().Name;
+            // Obtenemos los detalles una sola vez
             string componentDetails = GetComponentDetails(component, indent + "    ");
 
-            // --- Fichero ---
-            fileReportBuilder.AppendLine($"{indent}    - {componentName}");
+            // Añadir a la versión para el fichero
+            fileNodeBuilder.AppendLine($"{indent}    - {componentName}");
             if (!string.IsNullOrEmpty(componentDetails))
             {
-                fileReportBuilder.Append(componentDetails);
+                fileNodeBuilder.AppendLine(componentDetails);
             }
 
-            // --- Consola ---
-            consoleMessageBuilder.Append(GetStyledConsoleLine(component, componentName, indent + "    "));
+            // Añadir a la versión para la consola
+            consoleNodeBuilder.Append(GetStyledConsoleLine(component, componentName, indent + "    "));
             if (!string.IsNullOrEmpty(componentDetails))
             {
-                consoleMessageBuilder.Append($"<color=#90A4AE>{componentDetails}</color>"); // Gris azulado para detalles
+                consoleNodeBuilder.Append($"<color=#90A4AE>{componentDetails}</color>");
             }
-            consoleMessageBuilder.AppendLine();
-
+            consoleNodeBuilder.AppendLine();
         }
 
-        Debug.Log(consoleMessageBuilder.ToString(), currentTransform.gameObject);
+        // --- PASO 2: Añadir los resultados de este GameObject a los informes principales ---
 
-        // --- Recursión ---
+        // Añadimos toda la información del nodo al informe de fichero
+        fileReportBuilder.Append(fileNodeBuilder.ToString());
+
+        // Imprimimos toda la información del nodo en la consola como UN ÚNICO mensaje de log
+        Debug.Log(consoleNodeBuilder.ToString(), currentTransform.gameObject);
+
+        // --- PASO 3: Llamada recursiva para los hijos ---
         foreach (Transform child in currentTransform)
         {
             LogAndBuildHierarchyRecursive(child, indentationLevel + 1, fileReportBuilder);
