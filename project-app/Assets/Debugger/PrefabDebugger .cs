@@ -147,6 +147,13 @@ public class PrefabDebugger : MonoBehaviour
 
         switch (c)
         {
+            case BaseView baseView: // Detecta si el componente es una de tus vistas personalizadas.
+                if (!string.IsNullOrEmpty(baseView.DefinitionName))
+                {
+                    // Añade el DefinitionName al informe.
+                    details.Append($"{indent}  - <b><color=#00BCD4>DefinitionName:</color></b> \"<b>{baseView.DefinitionName}</b>\"");
+                }
+                break;
             case HorizontalLayoutGroup hlg:
                 details.AppendLine($"{indent}  - Padding: (L:{hlg.padding.left}, R:{hlg.padding.right}, T:{hlg.padding.top}, B:{hlg.padding.bottom})");
                 details.AppendLine($"{indent}  - Spacing: {hlg.spacing}");
