@@ -9,10 +9,10 @@
  * 
  * Fecha: 12/06/2025
  * 
- * Versión: 2.0.0 (ampliando detalles)
+ * Versión: 2.1.0 (Añadido análisis de RectTransform)
  * 
  * Descripción: Analizador de prefabs para depuración en Unity. Extrae y muestra
- * las propiedades clave de los componentes de UI y Layout.
+ * las propiedades clave de los componentes de UI y Layout, incluyendo RectTransform.
  */
 
 using System;
@@ -52,7 +52,7 @@ public class PrefabDebugger : MonoBehaviour
         StringBuilder fileReportBuilder = new StringBuilder();
 
         fileReportBuilder.AppendLine("=======================================");
-        fileReportBuilder.AppendLine("    INFORME DE ANÁLISIS DE PREFABS (V2 - CON DETALLES)");
+        fileReportBuilder.AppendLine("    INFORME DE ANÁLISIS DE PREFABS (V3 - CON DETALLES Y POSICIONES)");
         fileReportBuilder.AppendLine($"    Generado el: {DateTime.Now:dd-MM-yyyy HH:mm:ss}");
         fileReportBuilder.AppendLine("=======================================\n");
 
@@ -108,6 +108,22 @@ public class PrefabDebugger : MonoBehaviour
 
         fileNodeBuilder.Append(fileHeader);
         consoleNodeBuilder.Append(consoleHeader);
+
+        //  Información del RectTransform (si existe)
+        if (currentTransform is RectTransform rt)
+        {
+            string indentDetails = indent + "    ";
+
+            // Formato para el archivo de texto
+            string rectDetailsFile = $"{indentDetails}-> RectT: Pos({rt.anchoredPosition.x:F2}, {rt.anchoredPosition.y:F2}) Size({rt.sizeDelta.x:F2}, {rt.sizeDelta.y:F2}) Pivot({rt.pivot.x:F1}, {rt.pivot.y:F1})\n";
+            string anchorDetailsFile = $"{indentDetails}         Anchors: Min({rt.anchorMin.x:F1}, {rt.anchorMin.y:F1}) Max({rt.anchorMax.x:F1}, {rt.anchorMax.y:F1})\n";
+            fileNodeBuilder.Append(rectDetailsFile).Append(anchorDetailsFile);
+
+            // Formato para la consola con colores
+            string rectDetailsConsole = $"{indentDetails}<color=#4CAF50>-> <b>RectT:</b> Pos(</color>{rt.anchoredPosition.ToString("F2")}<color=#4CAF50>) Size(</color>{rt.sizeDelta.ToString("F2")}<color=#4CAF50>) Pivot(</color>{rt.pivot.ToString("F1")}<color=#4CAF50>)</color>\n";
+            string anchorDetailsConsole = $"{indentDetails}         <color=#4CAF50>Anchors: Min(</color>{rt.anchorMin.ToString("F1")}<color=#4CAF50>) Max(</color>{rt.anchorMax.ToString("F1")}<color=#4CAF50>)</color>\n";
+            consoleNodeBuilder.Append(rectDetailsConsole).Append(anchorDetailsConsole);
+        }
 
         // Iterar sobre los componentes y añadir sus detalles
         Component[] components = currentTransform.GetComponents<Component>();
