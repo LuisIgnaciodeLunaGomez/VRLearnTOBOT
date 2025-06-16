@@ -23,7 +23,7 @@
 		<!-- Definición de la apariencia y lógica interna -->
 		
 		<Args>
-			<Arg type="field_label" value="mover"/>
+			<Arg type="field_label" name="LABEL_START" value="mover" />
 			<Arg type="input_value" name="STEPS">
 				<!-- Input de Valor -->
 				<Check>Number</Check>
@@ -34,7 +34,7 @@
 				<!-- Campo interno si el input está vacío (shadow) permite que se le inyecten otros bloques -->
 				<!--  -->
 			</Arg>
-			<Arg type="field_label" value="pasos"/>
+			<Arg type="field_label" name ="LABEL_END" value="pasos" />
 		</Args>
 
 		<!-- Añadir SpriteName si es diferente al default/categoría -->

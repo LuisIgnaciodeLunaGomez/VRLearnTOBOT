@@ -373,7 +373,7 @@ public class BlockDragController : MonoBehaviour, IPointerDownHandler, IPointerU
         if (cloneModel == null) { yield break; }
 
         // Clon A 
-        BlockView cloneViewA = BlockViewFactory.CreateView(cloneModel, sourceToolbox);
+        BlockView cloneViewA = BlockViewFactory.CreateView(cloneModel, sourceToolbox, m_DragLayerRect);
         if (cloneViewA == null) { 
             cloneModel.Dispose(false); 
             ResetDragState(eventData); 

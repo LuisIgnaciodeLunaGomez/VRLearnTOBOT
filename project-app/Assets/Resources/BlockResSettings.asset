@@ -31,12 +31,24 @@ MonoBehaviour:
     ResName: 
     TextFile: {fileID: 4900000, guid: ebe24642ec8df2b4095ddbd1699d7e20, type: 3}
     Selected: 1
-  m_BlockViewPrefabPath: Assets/Resources/Prefabs/Blocks
+  m_BlockViewPrefabPath: Assets/Resources/Prefabs/BlockBases
   m_BlockViewPrefabs:
-  - IndexName: motion_movesteps
+  - IndexName: Stack_block_grey
     ResName: 
-    Prefab: {fileID: 1047204425220112, guid: f1adb66dc990b4a1dbd299062b2a0ec9, type: 3}
-  - IndexName: event_whenflagclicked
+    Prefab: {fileID: 1898960113569531903, guid: fc0baecc1b024f445809b19a86a919fd, type: 3}
+  - IndexName: Hat_block_grey
     ResName: 
-    Prefab: {fileID: 1047204425220112, guid: c51b9e37dffd220498ec9a8d5b46e98d, type: 3}
+    Prefab: {fileID: 7316615570951713630, guid: 8b840f0a683f9764d93c3653c357ed6e, type: 3}
+  - IndexName: Block_root_prev
+    ResName: 
+    Prefab: {fileID: 5338266275268263718, guid: a311d814d57da16479ecf61f0ba70c5c, type: 3}
+  - IndexName: cap_block_grey
+    ResName: 
+    Prefab: {fileID: 1898960113569531903, guid: fc0baecc1b024f445809b19a86a919fd, type: 3}
+  - IndexName: boolean_block_grey
+    ResName: 
+    Prefab: {fileID: 5722740899831042099, guid: c0cbceacf7df5524093576b5a229cbbe, type: 3}
+  - IndexName: reporter_block_grey
+    ResName: 
+    Prefab: {fileID: 3308159607224495325, guid: 7aa46d5e2c1e1ff46948387a936e52b5, type: 3}
   m_DialogPrefabs: []
