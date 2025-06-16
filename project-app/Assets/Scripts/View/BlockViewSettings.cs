@@ -157,8 +157,8 @@ public class BlockViewSettings : ScriptableObject
 
     private void OnEnable()
     {
-        // Esto sirve como "valores por defecto" si los RectOffset son null.
-        // Si ya tienen valores asignados desde el Inspector, este código no los sobrescribirá.
+        // sirve como valores por defectos si los RectOffset son null.
+        
         if (BlockInternalPadding == null || BlockInternalPadding.left == 0 && BlockInternalPadding.right == 0 && BlockInternalPadding.top == 0 && BlockInternalPadding.bottom == 0)
         {
             BlockInternalPadding = new RectOffset(12, 12, 8, 8);

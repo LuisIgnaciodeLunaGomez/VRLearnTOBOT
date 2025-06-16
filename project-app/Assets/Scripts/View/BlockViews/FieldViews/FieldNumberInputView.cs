@@ -16,7 +16,6 @@
 
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class FieldNumberInputView : FieldTextInputView 
 {
@@ -29,9 +28,18 @@ public class FieldNumberInputView : FieldTextInputView
         }
     }
 
-    protected override Vector2 CalculateSize() { return base.CalculateSize(); }
+    protected override Vector2 CalculateSize()
+    {
+        // Devolverá el tamaño fijo definido en el padre
+        return base.CalculateSize();
+    }
+    protected override void OnValueChanged(string newValue) 
+    { 
+        base.OnValueChanged(newValue); 
+    }
 
-    protected override void OnValueChanged(string newValue) { base.OnValueChanged(newValue); }
-
-    protected override void RegisterInputListeners() { base.RegisterInputListeners(); }
+    protected override void RegisterInputListeners() 
+    { 
+        base.RegisterInputListeners(); 
+    }
 }//Fin Clase FieldNumberInputView

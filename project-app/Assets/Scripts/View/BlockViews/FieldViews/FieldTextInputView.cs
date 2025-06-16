@@ -24,11 +24,13 @@ public class FieldTextInputView : FieldView
 {
     private TMP_InputField m_InputField;
     private bool m_isUserInput = false; 
-    private bool m_IsUIUpdate = false; 
-    private LayoutElement m_LayoutElement;
+    private bool m_IsUIUpdate = false;     // Bandera para evitar que los eventos de la UI se disparen en un bucle
+                                           //private LayoutElement m_LayoutElement;
+    private Image m_BackgroundImage;
 
-    public TMP_InputField inputFieldPublic { get { return m_InputField; } }
-    protected override void InitializeView()
+    public TMP_InputField inputFieldPublic { get { return m_InputField; } } 
+
+   /* protected override void InitializeView()
     {
         base.InitializeView();
         m_InputField = GetComponent<TMP_InputField>();
@@ -39,6 +41,9 @@ public class FieldTextInputView : FieldView
             Debug.LogError("FieldTextInputView requiere un componente TMP_InputField.", this);
             return; // Salimos para evitar más errores
         }
+
+
+
 
         var settings = BlockViewSettings.Instance;
         if (settings == null)
@@ -60,64 +65,99 @@ public class FieldTextInputView : FieldView
         if (bg != null) bg.color = settings.InputFieldBackground;
     }
 
-    
+    */
+    public override void InitComponents()
+    {
+        base.InitComponents();
+        m_InputField = GetComponent<TMP_InputField>();
+        m_BackgroundImage = GetComponent<Image>(); // El fondo del input
+    }
+
+    // Vincula el modelo de datos.
+    public override void BindModel(FieldModel model)
+    {
+        base.BindModel(model); // Guarda el modelo y añade observadores
+
+        // Desregistra listeners antiguos para evitar duplicados
+        m_InputField.onEndEdit.RemoveAllListeners();
+        // Evento cuando el usuario TERMINA de editar
+
+        m_InputField.onEndEdit.AddListener(HandleEndEdit);
+        m_InputField?.onValueChanged.RemoveAllListeners(); // Limpiamos también este
+        // Evento que se dispara MIENTRAS el usuario escribe
+        m_InputField?.onValueChanged.AddListener(HandleValueChangedFromUI);
+
+        // Asigna el valor inicial que viene del modelo
+        if (m_FieldModel != null)
+        {
+            OnValueChanged(m_FieldModel.GetValue());
+        }
+    }
+
+
     protected override Vector2 CalculateSize()
     {
         var settings = BlockViewSettings.Instance;
-        if (settings == null) return new Vector2(50, 30); // Fallback
-
-        Vector2 size = new Vector2(settings.DefaultInputFieldWidth, settings.DefaultInputFieldHeight);
-
-        // Medimos el texto preferido para que el campo se ajuste
-        string currentText = m_InputField?.text ?? m_FieldModel?.GetValue() ?? "10";
-        Vector2 preferredTextSize = new Vector2(0, 0);
-        if (m_InputField?.textComponent != null)
+        if (settings == null || m_InputField?.textComponent == null)
         {
-            // Añadimos espacio extra para que no quede demasiado justo
-            preferredTextSize = m_InputField.textComponent.GetPreferredValues(currentText + "XX");
+            return new Vector2(50, 30); // Fallback robusto
         }
 
-        // El tamaño final será el del texto más el padding, pero nunca menos que el mínimo por defecto.
+        // Si el campo de texto está vacío, medimos el placeholder. Si no, medimos el texto actual.
+        TMP_Text textComponentToShow = m_InputField.textComponent;
+        string textToMeasure = m_InputField.text;
+
+        if (string.IsNullOrEmpty(textToMeasure) && m_InputField.placeholder is TMP_Text placeholderText)
+        {
+            textComponentToShow = placeholderText;
+            textToMeasure = placeholderText.text;
+        }
+
+        // Si después de todo, no hay texto, devolvemos un tamaño mínimo.
+        if (string.IsNullOrEmpty(textToMeasure))
+        {
+            return new Vector2(settings.MinUnitWidth, settings.DefaultInputFieldHeight);
+        }
+
+        // Medimos el texto.
+        Vector2 preferredTextSize = textComponentToShow.GetPreferredValues(textToMeasure);
+
+        // El tamaño del campo es el del texto + padding.
         float finalWidth = preferredTextSize.x + settings.FieldInputTextPadding.horizontal;
-        float finalHeight = preferredTextSize.y + settings.FieldInputTextPadding.vertical;
 
-        size.x = Mathf.Max(finalWidth, settings.DefaultInputFieldWidth);
-        size.y = Mathf.Max(finalHeight, settings.DefaultInputFieldHeight);
+        // Damos un poco de espacio extra para el cursor y para que no se vea pegado.
+        finalWidth += 15f;
 
-        // El debug que ya tenías está bien
-        Debug.Log($"Frame {Time.frameCount}:   <b>L-- [{GetType().Name}.CalculateSize]</b> en '{gameObject.name}'. Texto: '{currentText}'. Tamaño Calculado: {size.ToString("F2")}", gameObject);
+        // Aplicamos los mínimos
+        finalWidth = Mathf.Max(finalWidth, settings.MinUnitWidth);
+        float finalHeight = settings.DefaultInputFieldHeight;
 
-        return size;
+        return new Vector2(finalWidth, finalHeight);
     }
 
-    // Actualiza el texto del InputField CUANDO EL MODELO CAMBIA
+    // Se llama cuando el MODELO cambia.
     protected override void OnValueChanged(string newValue)
     {
-        if (m_InputField != null && !m_isUserInput) 
+        // Si el cambio viene de la UI, no hacemos nada para evitar un bucle infinito
+        if (m_IsUIUpdate) return;
+
+        if (m_InputField != null)
         {
-            string textToShow = newValue ?? "";
-
-            if (m_InputField.text != textToShow)
-            {
-                m_InputField.text = textToShow;
-
-                Size = CalculateSize();
-            }
-            // Vector2 newSize = CalculateSize();
-            // Size = newSize;
-            // ParentView?.UpdateLayout();
+            // Simplemente actualizamos el texto visual
+            m_InputField.text = newValue ?? "";
         }
     }
+
 
     // Registra el listener para cuando el usuario TERMINA de editar
     protected override void RegisterInputListeners()
     {
-        if (m_InputField != null)
+        /*if (m_InputField != null)
         {
             m_InputField.onSelect.AddListener(HandleSelect);
             m_InputField.onEndEdit.AddListener(HandleEndEdit); 
             m_InputField.onDeselect.AddListener(HandleDeselect);
-        }
+        }*/
     }
 
     // Listener para onEndEdit
@@ -136,30 +176,31 @@ public class FieldTextInputView : FieldView
     //     m_isUserInput = false; // Resetear (podría ser problemático si hay latencia)
     // }
 
-    private void OnSelectInput(string currentVal)
+    /*private void OnSelectInput(string currentVal)
     {
         m_isUserInput = true; 
-    }
-    private void OnDeselectInput(string finalVal)
+    }*/
+    /*private void OnDeselectInput(string finalVal)
     {
         m_isUserInput = false; 
         // HandleInputFieldEndEdit(finalVal);
-    }
+    }*/
 
-    private void HandleSelect(string currentText)
+  /*  private void HandleSelect(string currentText)
     {
         m_IsUIUpdate = true; 
         //BlockDragController.Instance?.SetBlockInteraction(SourceBlockView, false);
-    }
+    }*/
 
     private void HandleEndEdit(string finalValue)
     {
-        // m_IsUIUpdate = false; 
+         m_IsUIUpdate = true;          // Le decimos al sistema que este cambio viene del usuario
+
 
         // Comprobar si el valor realmente cambió respecto al modelo antes de pedir update
         if (m_FieldModel != null && m_FieldModel.GetValue() != finalValue)
         {
-            RequestModelUpdate(finalValue); // Llama al InputController
+            RequestModelUpdate(finalValue); // Pedimos al modelo que se actualice
         }
         m_IsUIUpdate = false; // Resetear flag después de procesar
     }
@@ -181,8 +222,8 @@ public class FieldTextInputView : FieldView
         {
             m_InputField.onEndEdit.RemoveListener(HandleInputFieldEndEdit);
             // m_InputField.onValueChanged.RemoveListener(HandleInputFieldValueChanged);
-            m_InputField.onSelect.RemoveListener(OnSelectInput);
-            m_InputField.onDeselect.RemoveListener(OnDeselectInput);
+           // m_InputField.onSelect.RemoveListener(OnSelectInput);
+           // m_InputField.onDeselect.RemoveListener(OnDeselectInput);
         }
         base.OnDestroy();
     }
@@ -194,5 +235,12 @@ public class FieldTextInputView : FieldView
 
         // 2. Calculo mi propio tamaño basado en mi contenido.
         this.Size = CalculateSize();
+    }
+
+    // Se llama CADA VEZ que el usuario teclea algo en el InputField.
+    private void HandleValueChangedFromUI(string newText)
+    {
+        // Necesito que se recalcule el layout mientras escribimos.
+        MarkDirty();
     }
 }//Fin clase FieldTextInputView

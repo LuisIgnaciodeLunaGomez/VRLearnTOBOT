@@ -310,9 +310,6 @@ public class AppController : MonoBehaviour
     }
 
   
-
-   
-
     /// <summary>
     /// Pedir a UICanvasView que cambie la visibilidad de la UI 
     ///Activar la cámara 3D.
