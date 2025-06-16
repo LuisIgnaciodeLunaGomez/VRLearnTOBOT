@@ -73,7 +73,7 @@ public class BlockConnectionController : MonoBehaviour
 
     }
 
-    public void ProcessDrag(BlockModel draggingBlock, List<ConnectionModel> draggingConnections, Vector2 dragginblockBaseLogicalPosition)
+    public void ProcessDrag(BlockModel draggingBlock)//, List<ConnectionModel> draggingConnections, Vector2 dragginblockBaseLogicalPosition)
     {
         //Debugging
 
@@ -110,7 +110,7 @@ public class BlockConnectionController : MonoBehaviour
         }
 
         //Debug.Log($"[ProcessDrag ENTRY] Dragging: {draggingBlock?.ID}, Num Conns: {draggingConnections?.Count}, BaseLogicalPos: {dragginblockBaseLogicalPosition}"); 
-        if (draggingBlock == null || draggingConnections == null || m_Workspace == null)
+        if (draggingBlock == null /*|| draggingConnections == null*/ || m_Workspace == null)
         {
             Debug.LogWarning("[ProcessDrag EXIT] Null argument.");
             return;
@@ -137,11 +137,11 @@ public class BlockConnectionController : MonoBehaviour
 
         //Debugging
         //Debug.Log($"[ProcessDrag] Received {draggingConnections.Count} connections to process:");
-        for (int i = 0; i < draggingConnections.Count; i++)
+      /*  for (int i = 0; i < draggingConnections.Count; i++)
         {
             //Debug.Log($"  - Conn[{i}]: {ConnectionModel.GetConnectionModelID(draggingConnections[i])}, Has DBOpposite: {draggingConnections[i]?.DBOpposite != null}");
-        }
-
+        }*/
+      /*
         foreach (ConnectionModel myConn in draggingConnections)
         {
             //Debug.Log($"--->>> Starting processing loop for: {ConnectionModel.GetConnectionModelID(myConn)}");
@@ -180,11 +180,11 @@ public class BlockConnectionController : MonoBehaviour
             }
 
             //Busco en la BBDD de tipos opuestos conexiones cercanas
-            myConn.DBOpposite.SearchForClosest(myConn, m_ConnectionSnapDistance, Vector2.zero /*dxy era Vector2.zero*/, out neighbour, out neighbourRadius);
+            myConn.DBOpposite.SearchForClosest(myConn, m_ConnectionSnapDistance, Vector2.zero /*dxy era Vector2.zero*///, out neighbour, out neighbourRadius);
 
            // Debug.Log($"    <- Search Result: Neighbour={ConnectionModel.GetConnectionModelID(neighbour)}, Radius={neighbourRadius}");
 
-            if ((neighbour != null)) //Encontramos un vecino
+          /*  if ((neighbour != null)) //Encontramos un vecino
             {
                 Debug.Log($"    Found Neighbour: {ConnectionModel.GetConnectionModelID(neighbour)}. Checking IsConnectionAllowed...");
                 //  float currentChechRadiusSq = m_ConnectionSearchRadius * m_ConnectionSearchRadius;
@@ -210,7 +210,7 @@ public class BlockConnectionController : MonoBehaviour
 
             }
         }
-
+        */
         //Actualizo el estado del contenido para realizar el drop
        // Debug.Log($"[ProcessDrag EXIT] Loop Finished. Final Best Target: {ConnectionModel.GetConnectionModelID(bestTarget)} (Previous: {ConnectionModel.GetConnectionModelID(oldBestTarget)})");
         m_CurrentBestTargetConnection = bestTarget;
@@ -377,4 +377,47 @@ public class BlockConnectionController : MonoBehaviour
         m_FinalizedSourceCandidate = null;
     }
 
+    /// <summary>
+    /// Intenta conectar el candidato final que se encontró durante el drag.
+    /// Llama a la lógica de conexión del modelo y maneja errores.
+    /// </summary>
+    /// <returns>True si la conexión fue exitosa, de lo contrario false.</returns>
+    public bool TryFinalizeConnection()
+    {
+        // Usamos el método que ya tenías para obtener los candidatos finales
+        GetFinalizedConnections(out ConnectionModel targetConn, out ConnectionModel sourceConn);
+
+        if (targetConn != null && sourceConn != null)
+        {
+            try
+            {
+                // La lógica para determinar quién es el superior se mueve aquí
+                // para mantener la encapsulación.
+                if (targetConn.IsSuperior)
+                {
+                    targetConn.Connect(sourceConn);
+                }
+                else if (sourceConn.IsSuperior)
+                {
+                    sourceConn.Connect(targetConn);
+                }
+                else
+                {
+                    // Este caso no debería ocurrir si CanConnectWithReason funciona bien.
+                    Debug.LogError("Error de lógica: Ninguna de las conexiones es Superior. No se pudo conectar.");
+                    return false;
+                }
+
+                Debug.Log($"<color=green>BlockConnectionController: Conexión exitosa entre {ConnectionModel.GetConnectionModelID(sourceConn)} y {ConnectionModel.GetConnectionModelID(targetConn)}</color>");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error durante ConnectionModel.Connect: {e.Message}");
+                return false;
+            }
+        }
+
+        return false; // No había ninguna conexión válida para finalizar.
+    }
 }//fin clase BlockController

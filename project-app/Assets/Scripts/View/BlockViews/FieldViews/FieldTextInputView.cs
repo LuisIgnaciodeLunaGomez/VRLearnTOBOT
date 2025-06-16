@@ -243,4 +243,9 @@ public class FieldTextInputView : FieldView
         // Necesito que se recalcule el layout mientras escribimos.
         MarkDirty();
     }
+
+    public override Vector2 CalculateFieldSize()
+    {
+        throw new System.NotImplementedException();
+    }
 }//Fin clase FieldTextInputView

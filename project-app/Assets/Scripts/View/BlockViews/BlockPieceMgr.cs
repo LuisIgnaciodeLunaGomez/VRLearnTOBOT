@@ -36,6 +36,8 @@ public class BlockPieceMgr
     public GameObject ImagePrefab { get; private set; }
     public GameObject InputValueSlotPrefab { get; private set; }
 
+    public GameObject ConnectionPrefab { get; private set; }
+
     public GameObject InputStatementSlotPrefab { get; private set; }
     private BlockPieceMgr() 
     {
@@ -49,6 +51,7 @@ public class BlockPieceMgr
         ImagePrefab = Resources.Load<GameObject>("Prefabs/BlocksElements/Field_Image_Prefab");
         InputStatementSlotPrefab = Resources.Load<GameObject>("Prefabs/BlocksElements/Input_StatementSlot_Prefab");
         InputValueSlotPrefab = Resources.Load<GameObject>("Prefabs/BlocksElements/Input_ValueSlot_Prefab");
+        ConnectionPrefab = Resources.Load<GameObject>("Prefabs/BlocksElements/Connection_Prefab");
         // Comprobamos si se cargaron bien
         if (LabelPrefab == null || NumberInputPrefab == null)
             Debug.LogError("BlockPieceMgr: ¡No se pudieron cargar algunos prefabs de piezas desde la carpeta 'Resources/BlockPieces'!");

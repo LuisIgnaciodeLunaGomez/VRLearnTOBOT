@@ -136,6 +136,9 @@ public class BlockFactory
             }
         }
 
+        Debug.Log(block.ToDevString());
+        Debug.Log($"Inputs: {block.InputList.Count}");
+
         return block;
     }
 

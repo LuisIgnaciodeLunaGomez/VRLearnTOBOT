@@ -70,13 +70,15 @@ public class InputController : MonoBehaviour
         }
 
         Debug.Log($"InputController: Requesting WC to set field '{ublocklyField.Name ?? "unnamed"}' to '{processedValue}'");
-        bool success = m_WorkspaceController.RequestFieldSetValue(ublocklyField, processedValue);
+      //  bool success = m_WorkspaceController.RequestFieldSetValue(ublocklyField, processedValue);
 
-           if (!success) 
+        ublocklyField.SetValue(newValueFromUI);
+
+       /* if (!success) 
         {
             Debug.LogWarning($"InputController: WorkspaceController reported failure setting value for field '{ublocklyField.Name ?? "unnamed"}'. Reverting view.");
             RevertFieldView(ublocklyField);
-        }
+        }*/
       }
 
     /**
@@ -84,7 +86,7 @@ public class InputController : MonoBehaviour
       * @param ublocklyDropdownField El modelo UBlockly.FieldDropdown.
       * @param selectedValue El *valor* lógico de la opción seleccionada (no el texto).
       */
-    public void HandleFieldDropdownSelection(FieldDropdownModel ublocklyDropdownField, string selectedValue)
+  /*  public void HandleFieldDropdownSelection(FieldDropdownModel ublocklyDropdownField, string selectedValue)
     {
         if (ublocklyDropdownField == null) return;
         if (m_WorkspaceController == null || m_WorkspaceController.IsReadOnly() || (ublocklyDropdownField.SourceBlock != null && !ublocklyDropdownField.SourceBlock.Editable))
@@ -94,14 +96,14 @@ public class InputController : MonoBehaviour
         }
 
         m_WorkspaceController.RequestFieldSetValue(ublocklyDropdownField, selectedValue);
-    }
+    }*/
 
     /**
       * Llamado por FieldVariableView cuando se elige una variable diferente.
       * @param ublocklyVariableField El modelo UBlockly.FieldVariable.
       * @param newVariableName El *nombre* de la nueva variable seleccionada.
       */
-    public void HandleFieldVariableSelection(FieldVariableModel ublocklyVariableField, string newVariableName)
+   /* public void HandleFieldVariableSelection(FieldVariableModel ublocklyVariableField, string newVariableName)
     {
         if (ublocklyVariableField == null) return;
         if (m_WorkspaceController == null || m_WorkspaceController.IsReadOnly() || (ublocklyVariableField.SourceBlock != null && !ublocklyVariableField.SourceBlock.Editable))
@@ -111,7 +113,7 @@ public class InputController : MonoBehaviour
         }
 
           m_WorkspaceController.RequestFieldVariableChange(ublocklyVariableField, newVariableName);
-    }
+    }*/
 
     /**
      * Busca la vista UBlockly.UGUI.FieldView correspondiente a un modelo UBlockly.Field

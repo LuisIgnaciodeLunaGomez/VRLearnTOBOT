@@ -15,9 +15,10 @@
  */
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class AppController : MonoBehaviour
 {
@@ -36,7 +37,7 @@ public class AppController : MonoBehaviour
     private WorkspaceController m_workspaceController;
     private BlockDragController m_blockDragController;
     private BlockConnectionController m_connectionController;
-
+    
     [Header("Configuración del Robot y Escena 3D")]
     [SerializeField] private GameObject m_RobotPrefab; // carga del robot dinámicamente como un prefab
     [SerializeField] private Transform m_RobotSpawnPoint;
@@ -57,6 +58,7 @@ public class AppController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            // Inicializar sistema base de bloques y recursos
             ScratchBlocks.Init();
             DontDestroyOnLoad(gameObject);
             Logger.Log("<color=orange>AppController: Awake - Singleton instance created and set to DontDestroyOnLoad.</color>");
@@ -118,6 +120,8 @@ public class AppController : MonoBehaviour
 
         m_workspaceModel = m_uiManager.Workspace;
 
+
+       // Inicializar los CONTROLADORES con sus dependencias(Vistas y Modelos)
         m_categoryController = FindFirstObjectByType<CategoryController>();
         if (m_categoryController == null) m_categoryController = gameObject.AddComponent<CategoryController>();
 
@@ -187,7 +191,7 @@ public class AppController : MonoBehaviour
         m_workspaceController = FindFirstObjectByType<WorkspaceController>() ?? gameObject.AddComponent<WorkspaceController>();
 
         if (m_workspaceController == null) m_workspaceController = gameObject.AddComponent<WorkspaceController>();
-        m_workspaceController.InitializeController(m_workspaceModel, m_workspaceView);
+        m_workspaceController.InitializeController(m_workspaceModel, m_workspaceView, m_blockDragController);
        // Debug.Log("AppController: WorkspaceController initialized.");
 
         m_executionController = FindFirstObjectByType<ExecutionController>() ?? gameObject.AddComponent<ExecutionController>();
@@ -244,7 +248,7 @@ public class AppController : MonoBehaviour
 
     //    Debug.Log("AppController: ConnectionController initialized.");
 
-        dragController.InitializeController(m_workspaceModel, m_workspaceView, m_workspaceController, m_connectionController, m_uiManager.DragLayer);
+        dragController.Initialize(/*m_workspaceModel,*/ m_workspaceView, m_workspaceController, m_connectionController, m_uiManager.DragLayer);
      //   Debug.Log("AppController: BlockDragController initialized.");
 
         m_blockListView.InitializeToolbox(

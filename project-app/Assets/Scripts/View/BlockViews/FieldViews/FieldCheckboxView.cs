@@ -137,4 +137,9 @@ public class FieldCheckboxView : FieldView
         this.XY = startPos;
         this.Size = CalculateSize();
     }
+
+    public override Vector2 CalculateFieldSize()
+    {
+        throw new System.NotImplementedException();
+    }
 }//Fin clase FiedlCheckboxView

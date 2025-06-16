@@ -78,23 +78,27 @@ public class VRLearnPrefabBuilder
                 }
 
                 //  5. Construir la VISTA del GO a partir del modelo 
-                
-                GameObject blockViewObject = VRLearnBlockViewBuilder.BuildBlockView(blockModel, null);
 
-                //  6. Guardar el GameObject como un Prefab 
-                string prefabPath = Path.Combine(outputPath, "Block_" + blockType + ".prefab");
+                //GameObject blockViewObject = VRLearnBlockViewBuilder.BuildBlockView(blockModel, null);
+                BlockView blockViewScript = VRLearnBlockViewBuilder.BuildBlockView(blockModel, null);
 
-                // Elimina el prefab antiguo si existe para evitar conflictos.
-                if (File.Exists(prefabPath))
-                    AssetDatabase.DeleteAsset(prefabPath);
+                if (blockViewScript != null)
+                {
+                    GameObject blockViewObject = blockViewScript.gameObject;
+                    //  6. Guardar el GameObject como un Prefab 
+                    string prefabPath = Path.Combine(outputPath, "Block_" + blockType + ".prefab");
 
-                // Guarda el nuevo prefab.
-                PrefabUtility.SaveAsPrefabAsset(blockViewObject, prefabPath);
+                    // Elimina el prefab antiguo si existe para evitar conflictos.
+                    if (File.Exists(prefabPath))
+                        AssetDatabase.DeleteAsset(prefabPath);
 
-                //  7. Limpieza 
-                // Destruye el GO temporal que se creó
-                GameObject.DestroyImmediate(blockViewObject);
+                    // Guarda el nuevo prefab.
+                    PrefabUtility.SaveAsPrefabAsset(blockViewObject, prefabPath);
 
+                    //  7. Limpieza 
+                    // Destruye el GO temporal que se creó
+                    GameObject.DestroyImmediate(blockViewObject);
+                }
                 index++;
             }
         }

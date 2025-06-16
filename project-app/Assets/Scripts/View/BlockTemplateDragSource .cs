@@ -20,14 +20,14 @@ public class BlockTemplateDragSource : MonoBehaviour, IBeginDragHandler, IDragHa
 { 
 
     [Tooltip("Asigna aquí la BlockView de la plantilla asociada a esta máscara")]
-    public BlockView TemplateBlockView;
+    public BlockView m_TemplateBlockView;
     [Tooltip("Asigna aquí el BaseToolbox (o tu equivalente) que contiene esta plantilla")]
-    public BlockListView SourceToolbox;
+    public BlockListView m_SourceToolbox;
     private Camera m_CachedEventCamera = null; // Cachear la cámara
-
+    private BlockController m_ClonedBlockController = null;
     void Start()
     {
-        Canvas rootCanvas = GetComponentInParent<Canvas>();
+       /* Canvas rootCanvas = GetComponentInParent<Canvas>();
         if (rootCanvas != null)
         {
             if (rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
@@ -40,60 +40,60 @@ public class BlockTemplateDragSource : MonoBehaviour, IBeginDragHandler, IDragHa
           
             Debug.LogWarning("BlockTemplateDragSource could not find necessary camera for UI space.", this);
             // m_CachedEventCamera = Camera.main; 
-        }
+        }*/
 
-        if (TemplateBlockView == null)
+        if (m_TemplateBlockView == null)
         {
-            Debug.LogError($"BlockTemplateDragSource en {gameObject.name} no tiene asignada TemplateBlockView.", this);
+            m_TemplateBlockView = GetComponentInParent<BlockView>();
+            if (m_TemplateBlockView == null)
+                Debug.LogError($"BlockTemplateDragSource en '{gameObject.name}' no tiene ni ha podido encontrar su BlockView padre.", this);
         }
-        if (SourceToolbox == null && BlockDragController.Instance != null && BlockDragController.Instance.GetComponentInParent<WorkSpaceView>() != null)
+        if (m_SourceToolbox == null && BlockDragController.Instance != null && BlockDragController.Instance.GetComponentInParent<WorkSpaceView>() != null)
         {
-            SourceToolbox = BlockDragController.Instance.GetComponentInParent<WorkSpaceView>()?.Toolbox;
-            if (SourceToolbox == null)
+            m_SourceToolbox = BlockDragController.Instance.GetComponentInParent<WorkSpaceView>()?.Toolbox;
+            if (m_SourceToolbox == null)
             {
-                // Debug.LogWarning($"BlockTemplateDragSource en {gameObject.name}: No se encontró SourceToolbox automáticamente.", this);
+                m_SourceToolbox = GetComponentInParent<BlockListView>();
+                if (m_SourceToolbox == null)
+                    Debug.LogError($"BlockTemplateDragSource en '{gameObject.name}' no tiene ni ha podido encontrar su BlockListView (Toolbox) padre.", this);
             }
         }
-        else if (SourceToolbox == null)
+       /* else if (m_SourceToolbox == null)
         {
             // Debug.LogError($"BlockTemplateDragSource en {gameObject.name} no tiene asignado SourceToolbox y no se pudo encontrar automáticamente.", this);
-        }
+        }*/
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (TemplateBlockView == null || SourceToolbox == null)
+        // 1. Validaciones previas
+        if (m_TemplateBlockView == null || m_TemplateBlockView.Block == null || BlockDragController.Instance == null || WorkspaceController.Instance == null)
         {
-            Debug.LogError("Cannot start template drag: TemplateBlockView is not assigned.", this);
-            eventData.pointerDrag = null; // Cancela el drag de Unity
+            Debug.LogError("BlockTemplateDragSource: Dependencias críticas (Template, DragController, WorkspaceController) no encontradas. No se puede iniciar el drag.");
+            eventData.pointerDrag = null; // Cancelar el drag de Unity
             return;
         }
-        // Debug.Log($"BlockTemplateDragSource: OnBeginDrag - Requesting drag start for template {TemplateBlockView.BlockType}");
-        if (BlockDragController.Instance == null)
+
+        Debug.Log($"<color=orange>BlockTemplateDragSource: OnBeginDrag para la plantilla de tipo '{m_TemplateBlockView.Block.Type}'</color>");
+
+        // 2. Creación del bloque real en el workspace.
+        // Le pedimos al WorkspaceController que cree un bloque del mismo tipo que nuestra plantilla.
+        // La posición inicial es irrelevante porque el BlockDragController la ajustará inmediatamente.
+        m_ClonedBlockController = WorkspaceController.Instance.CreateNewBlock(
+            m_TemplateBlockView.Block.Type,
+            Vector2.zero
+        );
+
+        if (m_ClonedBlockController == null)
         {
-            Debug.LogError("BlockTemplateDragSource: BlockDragController.Instance is null!", this);
+            Debug.LogError("OnBeginDrag: FAILED to create the new block via WorkspaceController.");
             eventData.pointerDrag = null;
             return;
         }
 
-        // Cálculo del offset local antes de llamar al controlador
-        Vector2 clickOffsetInTemplate;
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-        TemplateBlockView.ViewTransform, // El RectTransform de la plantilla
-        eventData.position,
-        null, //eventCamera si no es Overlay
-         out clickOffsetInTemplate
-);
-    
-        Vector3 templateWorldPos = TemplateBlockView.transform.position;
-        StartCoroutine(BlockDragController.Instance.StartDraggingTemplateInternal(
-     TemplateBlockView,
-     SourceToolbox,
-     eventData/*,
-     clickOffsetInTemplate*/ // Pasas el offset DENTRO del template
-     
- ));
+        // 3.  Iniciamos el drag del NUEVO bloque, no de la plantilla.
+        // Pasamos el controlador del clon al controlador de arrastre.
+        BlockDragController.Instance.StartDrag(m_ClonedBlockController, eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -105,7 +105,15 @@ public class BlockTemplateDragSource : MonoBehaviour, IBeginDragHandler, IDragHa
     public void OnEndDrag(PointerEventData eventData)
     {
 
-        BlockDragController.Instance?.HandleEndDrag(/*null,*/ eventData);
+        // BlockDragController.Instance?.HandleEndDrag(/*null,*/ eventData);
+
+        if (m_ClonedBlockController != null && BlockDragController.Instance.IsDragging)
+        {
+            BlockDragController.Instance.EndDrag(eventData);
+        }
+
+        // Limpiamos la referencia para el próximo drag
+        m_ClonedBlockController = null;
     }
 
    // public bool IsDragging => BlockDragController.Instance != null && BlockDragController.Instance.IsDragging && BlockDragController.Instance.DraggingView == TemplateBlockView;

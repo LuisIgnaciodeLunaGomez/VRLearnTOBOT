@@ -24,11 +24,16 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class WorkspaceController : MonoBehaviour
 {
-   
+    private BlockDragController m_DragController;
+    //Este diccionario es el corazón del workspace.
+    ///  Mapea un ID de bloque (string) a su gestor dedicado (BlockController).
+    private readonly Dictionary<string, BlockController> m_BlockControllers = new Dictionary<string, BlockController>();
+
     public static WorkspaceController Instance { get; private set; }
 
     private WorkSpaceModel m_WorkspaceModel; 
@@ -51,20 +56,60 @@ public class WorkspaceController : MonoBehaviour
         }
 
     }
-    public void InitializeController(WorkSpaceModel workspace, WorkSpaceView view)
+    public void InitializeController(WorkSpaceModel workspace, WorkSpaceView view, BlockDragController dragController)
     {
         m_WorkspaceModel = workspace ?? throw new ArgumentNullException(nameof(workspace));
         m_WorkspaceView = view;
         if (m_WorkspaceView == null) m_WorkspaceView = FindFirstObjectByType<WorkSpaceView>();
         if (m_WorkspaceView == null) Debug.LogError("WorkspaceController: WorkSpaceView reference is missing!", this.gameObject);
         //  Debug.Log("WorkspaceController Initialized with UBlockly.Workspace.");
-       // Debug.LogError($"<color=red>HASHCODE_CHECK - WorkspaceController Initialize - Received/Stored Workspace HashCode: {m_WorkspaceModel?.GetHashCode()}");
+        // Debug.LogError($"<color=red>HASHCODE_CHECK - WorkspaceController Initialize - Received/Stored Workspace HashCode: {m_WorkspaceModel?.GetHashCode()}");
+        m_DragController = dragController;
+
+        Debug.Log("WorkspaceController Initialized with all dependencies.");
 
     }
 
     #region API para Otros Controladores
 
 
+    /// <summary>
+    /// Solicita desenganchar un bloque de sus conexiones.
+    /// Delega la acción al controlador del bloque específico.
+    /// </summary>
+    public void RequestBlockUnplug(string blockId, bool healStack)
+    {
+        if (m_BlockControllers.TryGetValue(blockId, out var controller))
+        {
+            controller.Model.UnPlug(healStack);
+        }
+    }
+
+
+    /// <summary>
+    /// Solicita mover un bloque a una nueva posición lógica.
+    /// </summary>
+    public void RequestBlockMove(string blockId, Vector2 newLogicalPosition)
+    {
+        if (m_BlockControllers.TryGetValue(blockId, out var controller))
+        {
+            if (controller.Model.Movable)
+            {
+                controller.Model.XY = newLogicalPosition;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Devuelve el `BlockController` asociado a un ID, si existe.
+    /// </summary>
+    public BlockController GetBlockController(string blockId)
+    {
+        m_BlockControllers.TryGetValue(blockId, out var controller);
+        return controller;
+    }
+
+    /*
     public BlockModel ConfirmAddBlock(BlockModel potentialBlock)
     {
         Debug.Log($"WorkspaceController.ConfirmAddBlock: Called for block {potentialBlock?.ID} ({potentialBlock?.Type}). isTemplateClone?: true.");
@@ -108,8 +153,8 @@ public class WorkspaceController : MonoBehaviour
         return ublocklyBlock; 
     }
 
-
-    public bool RequestBlockUnplug(BlockModel blockToUnplug, bool healStack) 
+    */
+    /*public bool RequestBlockUnplug(BlockModel blockToUnplug, bool healStack) 
     {
         if (IsReadOnly() || blockToUnplug == null || m_WorkspaceModel == null) return false;
 
@@ -118,9 +163,9 @@ public class WorkspaceController : MonoBehaviour
 
         Debug.Log($"WorkspaceController: Requested Unplug BlockModel {blockToUnplug.ID}.");
         return true; 
-    }
+    }*/
 
-
+    /*
     public void RequestBlockMove(BlockModel block, Vector2 newLogicalPosition) 
     {
         if (IsReadOnly() || block == null || m_WorkspaceModel == null || !block.Movable) return;
@@ -129,16 +174,16 @@ public class WorkspaceController : MonoBehaviour
 
         Debug.Log($"WorkspaceController: BlockModel {block.ID} model XY updated to {newLogicalPosition}. Relying on View updates for ConnectionDB.");
     }
+    */
+    /* public void RequestDeleteBlock(BlockModel block) 
+     {
+         if (IsReadOnly() || block == null || m_WorkspaceModel == null || !block.Deletable) return;
 
-    public void RequestDeleteBlock(BlockModel block) 
-    {
-        if (IsReadOnly() || block == null || m_WorkspaceModel == null || !block.Deletable) return;
+         block.Dispose(false); 
 
-        block.Dispose(false); 
-
-        Debug.Log($"WorkspaceController: Requested deletion of BlockModel {block.ID}.");
-    }
-    public bool RequestConnection(ConnectionModel connection1, ConnectionModel connection2) 
+         Debug.Log($"WorkspaceController: Requested deletion of BlockModel {block.ID}.");
+     }*/
+    /*public bool RequestConnection(ConnectionModel connection1, ConnectionModel connection2) 
     {
         if (IsReadOnly() || connection1 == null || connection2 == null || m_WorkspaceModel == null) return false;
 
@@ -153,34 +198,34 @@ public class WorkspaceController : MonoBehaviour
             Debug.LogWarning($"WorkspaceController: Connection failed - {e.Message}");
             return false;
         }
-    }
-    public bool RequestFieldSetValue(FieldModel fieldModel, string newValue) 
-    {
-        if (IsReadOnly() || fieldModel == null || m_WorkspaceModel == null) return false;
-        if (fieldModel.SourceBlock != null && !fieldModel.SourceBlock.Editable)
-        {
-            Debug.LogWarning("FieldSetValue rejected: BlockModel is not editable.");
-            return false;
-        }
+    }*/
+    /* public bool RequestFieldSetValue(FieldModel fieldModel, string newValue) 
+     {
+         if (IsReadOnly() || fieldModel == null || m_WorkspaceModel == null) return false;
+         if (fieldModel.SourceBlock != null && !fieldModel.SourceBlock.Editable)
+         {
+             Debug.LogWarning("FieldSetValue rejected: BlockModel is not editable.");
+             return false;
+         }
 
-        fieldModel.SetValue(newValue); 
+         fieldModel.SetValue(newValue); 
 
-       
-        Debug.Log($"WorkspaceController: Field '{fieldModel.Name}' value set request processed by UBlockly model.");
 
-             return true;
-    }
+         Debug.Log($"WorkspaceController: Field '{fieldModel.Name}' value set request processed by UBlockly model.");
 
-     public bool RequestFieldVariableChange(FieldVariableModel fieldModel, string newVariableName) 
-    {
-        if (IsReadOnly() || fieldModel == null || m_WorkspaceModel == null) return false;
-        if (fieldModel.SourceBlock != null && !fieldModel.SourceBlock.Editable) return false;
-      fieldModel.SetValue(newVariableName); 
+              return true;
+     }*/
+    /*
+      public bool RequestFieldVariableChange(FieldVariableModel fieldModel, string newVariableName) 
+     {
+         if (IsReadOnly() || fieldModel == null || m_WorkspaceModel == null) return false;
+         if (fieldModel.SourceBlock != null && !fieldModel.SourceBlock.Editable) return false;
+       fieldModel.SetValue(newVariableName); 
 
-        Debug.Log($"WorkspaceController: FieldVariable '{fieldModel.Name}' variable name set request processed for '{newVariableName}'.");
-        return true;
-    }
-
+         Debug.Log($"WorkspaceController: FieldVariable '{fieldModel.Name}' variable name set request processed for '{newVariableName}'.");
+         return true;
+     }*/
+    /*
      public BlockModel RequestCloneBlockBegin(BlockModel templateModelSource, Vector2 initialPosition) 
     {
         if (IsReadOnly() || templateModelSource == null || m_WorkspaceModel == null) return null;
@@ -205,7 +250,7 @@ public class WorkspaceController : MonoBehaviour
         }
         return clonedModel;
     }
-
+    */
 
     public void RegisterClonedBlock(BlockModel block) 
     {
@@ -564,6 +609,76 @@ public class WorkspaceController : MonoBehaviour
       
         pendingCloneModel.Dispose(false); 
 
+    }
+
+    // =========================================================================
+    //  GESTIÓN DEL CICLO DE VIDA DE BLOQUES (Crear y Destruir)
+    // =========================================================================
+
+    /// <summary>
+    /// Crea un nuevo bloque en una posición del workspace.
+    /// Esta función ahora DELEGA la creación a un nuevo BlockController.
+    /// </summary>
+    /// <param name="type">El tipo de bloque (ej. "motion_movesteps").</param>
+    /// <param name="position">La posición LÓGICA donde aparecerá.</param>
+    /// <returns>El BlockController recién creado, o null si falla.</returns>
+    public BlockController CreateNewBlock(string type, Vector2 position)
+    {
+        if (m_WorkspaceModel == null)
+        {
+            Debug.LogError("WorkspaceController: Cannot create block, WorkspaceModel is not initialized.");
+            return null;
+        }
+
+        // 1. Usa BlockFactory para crear el Modelo (datos puros)
+        BlockModel newModel = BlockFactory.Instance.CreateBlock(m_WorkspaceModel, type);
+        if (newModel == null)
+        {
+            Debug.LogError($"WorkspaceController: BlockFactory failed to create a model for type '{type}'.");
+            return null;
+        }
+        newModel.XY = position;
+
+        // 2. Crea el Controlador que gestionará el par Modelo-Vista
+        var newBlockController = new BlockController(newModel, m_WorkspaceView, m_DragController);
+
+        // 3. Añadir el nuevo controlador a nuestro registro
+        m_BlockControllers.Add(newModel.ID, newBlockController);
+
+        Debug.Log($"WorkspaceController: Created and registered new BlockController for Block ID: {newModel.ID}");
+        return newBlockController;
+    }
+
+    /// <summary>
+    /// Destruye un bloque y toda su jerarquía.
+    /// </summary>
+    /// <param name="blockId">El ID del bloque a destruir.</param>
+    public void DeleteBlock(string blockId)
+    {
+        if (m_BlockControllers.TryGetValue(blockId, out BlockController controller))
+        {
+            Debug.Log($"WorkspaceController: Requesting dispose for BlockController with ID: {blockId}");
+
+            // Le decimos al controlador que se limpie a sí mismo
+            controller.Dispose();
+
+            // Lo quitamos de nuestro registro
+            m_BlockControllers.Remove(blockId);
+        }
+        else
+        {
+            Debug.LogWarning($"WorkspaceController: Tried to delete a block with ID '{blockId}', but no corresponding BlockController was found.");
+        }
+    }
+
+    public void DeleteAllBlocks()
+    {
+        // Iteramos sobre una COPIA de las llaves, porque `DeleteBlock` modificará la colección original.
+        List<string> allBlockIds = m_BlockControllers.Keys.ToList();
+        foreach (string blockId in allBlockIds)
+        {
+            DeleteBlock(blockId);
+        }
     }
 
 }//fin WorkSpaceController

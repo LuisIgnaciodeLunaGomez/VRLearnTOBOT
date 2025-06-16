@@ -14,6 +14,7 @@
  * Descripción: 
  */
 
+using System.Linq;
 using UBlockly;
 using UnityEngine;
 
@@ -24,19 +25,38 @@ public static class VRLearnBlockViewBuilder
     /// <summary>
     /// El método principal que construye la vista de un bloque.
     /// </summary>
-    public static GameObject BuildBlockView(BlockModel blockModel, WorkSpaceView workspaceView)
+    public static BlockView BuildBlockView(BlockModel blockModel, WorkSpaceView workspaceView)
     {
         // 1.  VALIDACIÓN y CARGA DEL LIENZO 
         if (blockModel.Definition == null)
         {
-            Debug.LogError($"[VRLearnBlockViewBuilder] El modelo del bloque '{blockModel.Type}' no tiene Definición. No se puede construir la vista.");
+            Logger.LogError($"[VRLearnBlockViewBuilder] El modelo del bloque '{blockModel.Type}' no tiene Definición.");
             return null;
         }
 
-        string spriteName = blockModel.Definition.spriteName;
-        GameObject rootPrefab = BlockResMgr.Get().LoadBlockViewPrefab(spriteName);
+       // string spriteName = blockModel.Definition.spriteName;
+        //GameObject rootPrefab = BlockResMgr.Get().LoadBlockViewPrefab(spriteName);
 
-        if (rootPrefab == null)
+        // No uso el prefab base del sprite para crear el Root, creo uno limpio.
+        // Usaré un "root prefab" genérico si existe para el contenedor de NextStatement, etc.
+
+        GameObject blockRoot = new GameObject("Block_" + blockModel.Type);
+        blockRoot.AddComponent<RectTransform>();
+
+        // 2. AÑADIR SCRIPTS Y COMPONENTES ESENCIALES AL ROOT
+        BlockView blockViewScript = AddViewComponent<BlockView>(blockRoot);
+
+        //ASignación del constructor de la vista 
+        //blockViewScript.SetController(new BlockController(blockModel, workspaceView, BlockDragController.Instance));
+
+        blockRoot.AddComponent<CustomMeshImage>(); // La imagen que dibujará la forma
+        blockRoot.AddComponent<CanvasGroup>();     // Para transparencias
+
+        // Llama al bind ANTES de construir el resto, para que los hijos tengan contexto
+        blockViewScript.BindModel(blockModel, workspaceView);
+
+
+        /*if (rootPrefab == null)
         {
             Logger.LogError($"[VRLearnBlockViewBuilder] No se pudo encontrar el prefab base para el sprite '{spriteName}'. Revisar BlockResMgr y la carpeta de Resources.");
             // Se devuelve un GO vacío para evitar que falle el editor, pero este bloque se verá mal
@@ -98,10 +118,87 @@ public static class VRLearnBlockViewBuilder
             //  PASO 3: AÑADIR A LA JERARQUÍA DEL BLOQUE 
             
             blockViewScript.AddChild(inputViewScript);
+        }*/
+
+        /*
+        // 3. CONSTRUIR CONEXIONES PRINCIPALES (PREVIOUS / NEXT)
+        // El modelo NOS DICE si debemos crear estas vistas.
+        if (blockModel.PreviousConnection != null)
+        {
+            // El prefab "ConnectionPrefab" es un simple GO con un RectTransform y un ConnectionView
+            GameObject prevGO = GameObject.Instantiate(BlockPieceMgr.Get().ConnectionPrefab, blockRoot.transform);
+            prevGO.name = "Connection_prev";
+            var view = AddViewComponent<ConnectionView>(prevGO);
+            view.DefinitionName = "PREVIOUSSTATEMENT";
+        }
+        if (blockModel.NextConnection != null)
+        {
+            GameObject nextGO = GameObject.Instantiate(BlockPieceMgr.Get().ConnectionPrefab, blockRoot.transform);
+            nextGO.name = "Connection_next";
+            var view = AddViewComponent<ConnectionView>(nextGO);
+            view.DefinitionName = "NEXTSTATEMENT";
+
+            // Creamos el contenedor para los bloques hijos.
+            GameObject containerGO = new GameObject("NextStatementContainer");
+            containerGO.AddComponent<RectTransform>().SetParent(blockRoot.transform, false);
+            // Puedes añadir un VerticalLayoutGroup aquí si lo vas a usar para los bloques anidados
         }
 
-        blockViewScript.BuildLayout(); // Inicia la cascada de layout.
-        return blockRoot;
+        // 4. LÓGICA DE AGRUPACIÓN EN LÍNEAS
+        // Aquí está la magia. Iteramos por los inputs lógicos y los agrupamos en líneas visuales.
+
+        LineGroupView currentLineGroupView = null;
+
+        foreach (InputModel inputModel in blockModel.InputList)
+        {
+            // Por ahora, asumimos que todos los inputs van en una sola línea.
+            // Creamos el LineGroup y el InputView la primera vez que los necesitamos.
+            if (currentLineGroupView == null)
+            {
+                GameObject lineGroupGO = new GameObject("LineGroup_0");
+                lineGroupGO.transform.SetParent(blockRoot.transform, false);
+                currentLineGroupView = AddViewComponent<LineGroupView>(lineGroupGO);
+                blockViewScript.AddChild(currentLineGroupView);
+            }
+
+            // ¡IMPORTANTE! El InputView NO se crea por cada InputModel lógico.
+            // Los 'DUMMY_INPUT' se "fusionan" con el Input principal.
+            // Necesitamos una lógica para agrupar los Fields.
+            // Una forma sencilla es tener UN InputView por cada LineGroupView.
+            InputView inputViewScript;
+            if (currentLineGroupView.ChildViews.OfType<InputView>().FirstOrDefault() == null)
+            {
+                GameObject inputGO = new GameObject("Input_Main"); // Solo creamos uno
+                inputGO.transform.SetParent(currentLineGroupView.transform, false);
+                inputViewScript = AddViewComponent<InputView>(inputGO);
+                inputViewScript.DefinitionName = "STEPS"; // Asignación temporal. Idealmente se debería hacer más dinámico
+                currentLineGroupView.AddChild(inputViewScript);
+            }
+            else
+            {
+                inputViewScript = currentLineGroupView.ChildViews.OfType<InputView>().First();
+            }
+
+            // A. CONSTRUIR TODOS los Fields de este input lógico DENTRO de nuestro InputView unificado.
+            foreach (FieldModel fieldModel in inputModel.FieldRow)
+            {
+                BuildFieldView(fieldModel, inputViewScript);
+            }
+
+            // B. CONSTRUIR LA CONEXIÓN si este input la tiene.
+            if (inputModel.Connection != null)
+            {
+                BuildConnectionInputView(inputModel, inputViewScript);
+            }
+        }
+        */
+        //blockViewScript.BuildLayout(); // Inicia la cascada de layout.
+
+        BuildInternalViews(blockModel, blockViewScript);
+
+        Debug.Log($"<color=cyan>--- PREFAB '{blockRoot.name}' CONSTRUIDO. REVISA SU JERARQUÍA ---</color>", blockRoot);
+
+        return blockViewScript;
     }
 
     /// <summary>
@@ -308,5 +405,70 @@ public static class VRLearnBlockViewBuilder
         viewScript.InitComponents();
 
         return viewScript;
+    }
+
+    internal static void BuildInternalViews(BlockModel blockModel, BlockView blockView)
+    {
+        // Limpiar vistas internas previas (importante para mutators)
+        foreach (Transform child in blockView.transform)
+        {
+            // Solo borramos las vistas que no son las conexiones base del prefab
+            var connView = child.GetComponent<ConnectionView>();
+            if (connView == null || connView is ConnectionInputView)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
+        }
+        blockView.ChildViews.Clear();
+
+        // Lógica para agrupar en líneas
+        bool isInline = blockModel.GetInputsInline();
+        LineGroupView currentLineGroup = CreateNewLineGroup(blockView, 0); // La primera línea
+
+        for (int i = 0; i < blockModel.InputList.Count; i++)
+        {
+            InputModel inputModel = blockModel.InputList[i];
+
+            // REVISAR ¿Este input va en una nueva línea?
+            if (i > 0 && (!isInline || inputModel.Type == EConnection.NextStatement))
+            {
+                currentLineGroup = CreateNewLineGroup(blockView, i);
+            }
+
+            // Creamos la VISTA del Input
+            InputView inputView = BuildInputViewAndChildren(inputModel, currentLineGroup);
+            currentLineGroup.AddChild(inputView);
+        }
+    }
+
+   
+    private static InputView BuildInputViewAndChildren(InputModel inputModel, LineGroupView parentGroup)
+    {
+        GameObject inputGO = new GameObject($"InputView_{inputModel.Name}");
+        inputGO.transform.SetParent(parentGroup.transform, false);
+        InputView inputView = AddViewComponent<InputView>(inputGO);
+
+        // Creamos los fields de este input DENTRO de la nueva InputView
+        foreach (var fieldModel in inputModel.FieldRow)
+        {
+            BuildFieldView(fieldModel, inputView);
+        }
+
+        // Creamos la conexión de este input (el "hueco"), si la tiene
+        if (inputModel.Connection != null)
+        {
+            BuildConnectionInputView(inputModel, inputView);
+        }
+
+        return inputView;
+    }
+
+    private static LineGroupView CreateNewLineGroup(BlockView blockView, int index)
+    {
+        GameObject lineGO = new GameObject($"LineGroup_{index}");
+        lineGO.transform.SetParent(blockView.transform, false);
+        LineGroupView lineView = AddViewComponent<LineGroupView>(lineGO);
+        blockView.AddChild(lineView);
+        return lineView;
     }
 }

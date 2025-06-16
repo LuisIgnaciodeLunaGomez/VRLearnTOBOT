@@ -27,6 +27,8 @@ public abstract class FieldView : BaseView
     protected BlockView SourceBlockView => GetComponentInParent<BlockView>(); 
     private TextMeshProUGUI m_TextComponent;
 
+    public abstract Vector2 CalculateFieldSize();
+
     protected BlockModel SourceBlock 
     {
         get

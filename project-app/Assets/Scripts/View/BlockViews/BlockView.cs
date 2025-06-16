@@ -51,6 +51,13 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     //private Vector2 m_CalculatedContentSize;
 
+    private BlockController m_Controller;
+
+    // Eventos que la vista disparará para que el controlador los escuche
+    public event System.Action<PointerEventData> OnBeginDragRequested;
+    public event System.Action<PointerEventData> OnDragRequested;
+    public event System.Action<PointerEventData> OnEndDragRequested;
+
     private MemorySafeBlockObserver mBlockObserver;
     private CanvasGroup m_canvasGroup;
     private Vector2 m_dragStartOffset;
@@ -58,6 +65,17 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     private WorkSpaceView m_WorkspaceView;
 
     private RectTransform m_RectTransform;
+
+    /// <summary>
+    /// Método público para que el BlockController se asigne a sí mismo a esta vista.
+    /// Este es el método que soluciona tu error de compilación.
+    /// </summary>
+    public void SetController(BlockController controller)
+    {
+        m_Controller = controller;
+    }
+
+
 
     public RectTransform GetRectTransform() 
     {
@@ -74,6 +92,22 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     }
 
     public WorkSpaceView WorkspaceView => m_WorkspaceView;
+
+    protected override void Awake()
+    {
+        // Awake se deja casi vacío, solo obtiene los componentes de este GameObject.
+        m_ViewTransform = GetComponent<RectTransform>();
+    }
+
+    protected override void Start()
+    {
+        
+        InitializeView();
+
+        // <<< Log de depuración para verificar qué hijos se han encontrado >>>
+        Debug.Log($"<color=lightblue>[Start/InitializeView] {gameObject.name}</color> encontró {ChildViews.Count} hijos BaseView: {string.Join(", ", ChildViews.Select(c => c.name))}", this);
+    }
+
     protected override void InitializeView()
     {
         base.InitializeView();
@@ -440,7 +474,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
             Debug.Log($"<color=yellow><b>[BlockView.UpdateLayout]</b></color> en '{gameObject.name}': Empezando a posicionar LineGroups. Posición inicial de hijos: {currentChildPos:F2}", gameObject);
 
-            foreach (LineGroupView lineGroup in ChildViews.OfType<LineGroupView>().Where(lg => lg != null && lg.gameObject.activeSelf))
+          /*  foreach (LineGroupView lineGroup in ChildViews.OfType<LineGroupView>().Where(lg => lg != null && lg.gameObject.activeSelf))
             {
                 lineGroup.UpdateLayout(currentChildPos);
 
@@ -449,6 +483,18 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
                 Debug.Log($"    - LineGroup '{lineGroup.gameObject.name}' posicionado. Tamaño: {lineGroup.Size:F2}. Próximo empezará en Y={currentChildPos.y:F2}", gameObject);
 
+            }*/
+
+
+            foreach (LineGroupView lineGroup in GetComponentsInChildren<LineGroupView>())
+            {
+                // Me  aseguro de que es un hijo directo para no procesar nietos
+                if (lineGroup.transform.parent == this.transform)
+                {
+                    lineGroup.UpdateLayout(currentChildPos);
+                    currentChildPos.y -= lineGroup.Height + BlockViewSettings.Instance.VerticalLineSpacing;
+                    Debug.Log($"    - LineGroup '{lineGroup.gameObject.name}' posicionado ...");
+                }
             }
         }
 
@@ -777,30 +823,36 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         if (BlockDragController.Instance != null && BlockDragController.Instance.IsDraggingBlock(this.Block))
 
         {        //if (!InToolbox) 
-            BlockDragController.Instance?.HandleDrag(/*this,*/ eventData);
+                 // BlockDragController.Instance?.HandleDrag(/*this,*/ eventData);
+            OnDragRequested?.Invoke(eventData);
         }
    
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (BlockDragController.Instance != null && BlockDragController.Instance.IsDraggingBlock(this.Block))
-        {
-            //if (!InToolbox) 
-            BlockDragController.Instance?.HandleEndDrag(/*this,*/ eventData);
-        }
+        /* if (BlockDragController.Instance != null && BlockDragController.Instance.IsDraggingBlock(this.Block))
+         {
+             //if (!InToolbox) 
+           //  BlockDragController.Instance?.HandleEndDrag(/*this,*/// eventData);
+
+        //}
         /*else
         {
             Debug.Log($"BlockView ({BlockType}): OnEndDrag called but BlockDragController is null or not dragging this block.");
         }
-        */
+        
         else if (eventData.pointerDrag == this.gameObject && BlockDragController.Instance != null)
         {
             Debug.LogWarning($"BlockView.OnEndDrag: Controller's WasDraggingBlock returned false, but UGUI pointerDrag is this object. Forcing HandleEndDrag.", this.gameObject);
             // if (!InToolbox) 
-            BlockDragController.Instance?.HandleEndDrag(/*this,*/ eventData);
+            //  BlockDragController.Instance?.HandleEndDrag(/*this,*/ //eventData);
 
-        } }
+
+        // }*/
+        OnEndDragRequested?.Invoke(eventData);
+
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -1279,7 +1331,17 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
         }
     }
-
+    /// <summary>
+    /// Marca esta vista (y sus ancestros) como "sucias", forzando un recálculo
+    /// del layout en el próximo LateUpdate.
+    /// </summary>
+    public void MarkLayoutDirty()
+    {
+        if (!m_LayoutIsDirty && this.gameObject.activeInHierarchy)
+        {
+            m_LayoutIsDirty = true;
+        }
+    }
 
 
 }//fin de la clase BlockView

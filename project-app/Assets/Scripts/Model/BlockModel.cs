@@ -61,7 +61,7 @@ public class BlockModel : Observable<int>
     public List<BlockModel> ChildBlocks = new List<BlockModel>();
     public BlockDefinition Definition { get; private set; }
     public BlockView BlockView { get; internal set; }
-
+    public bool IsTemplate => this.Workspace == null;
     /// <summary>
     /// The block's position in workspace units.  (0, 0) is at the workspace's origin; scale does not change this value.
     /// </summary>

@@ -400,6 +400,19 @@ public class WorkSpaceView : MonoBehaviour
        // Debug.LogError("VisualAnchoredPositionToLogicalXY conversion logic NOT IMPLEMENTED YET!"); 
         return visualAnchoredPos; 
     }
+
+    /// <summary>
+    /// Convierte una posición visual (anchoredPosition) dentro de un contenedor a una posición lógica del workspace.
+    /// El inverso de ScreenPointToWorkspaceLogicalPosition.
+    /// </summary>
+    public Vector2 VisualToLogical(Vector2 visualAnchoredPosition, RectTransform container)
+    {
+        if (container == null) return visualAnchoredPosition; // Fallback
+
+        // Asumiendo que el pivote del contenedor es (0, 1) - arriba a la izquierda.
+        // La Y lógica es invertida respecto a la Y de la UI.
+        return new Vector2(visualAnchoredPosition.x, -visualAnchoredPosition.y);
+    }
 } // Fin Clase WorkSpaceView
 
    

@@ -174,4 +174,9 @@ public class FieldInputView : FieldView
         // 2. Calculo mi propio tamaño basado en mi contenido.
         this.Size = CalculateSize();
     }
+
+    public override Vector2 CalculateFieldSize()
+    {
+        throw new System.NotImplementedException();
+    }
 }//Fin clase FielInputView

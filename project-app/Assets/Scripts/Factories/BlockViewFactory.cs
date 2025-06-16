@@ -37,12 +37,16 @@ public static class BlockViewFactory
         }
 
         // Obtener la referencia necesaria a WorkSpaceView
-        WorkSpaceView workspaceView = WorkSpaceView.Active; 
+        //WorkSpaceView workspaceView = WorkSpaceView.Active;
+
+        WorkSpaceView workspaceView = sourceToolbox?.WorkspaceViewForFactory ?? WorkSpaceView.Active;
+
+
         if (workspaceView == null && sourceToolbox is BlockListView scrollList)
         {
             workspaceView = scrollList.WorkspaceViewForFactory; 
         }
-        if (workspaceView == null)
+        if (workspaceView == null && !blockModel.IsTemplate) // Solo es un problema si no es una plantilla
         {
               Debug.LogWarning($"BlockViewFactory: Could not get WorkspaceView for block {blockModel.Type}. Some interactions might fail if it's not a template.");
 
@@ -58,8 +62,8 @@ public static class BlockViewFactory
 
         if (blockPrefab == null)
         {
-            Debug.LogError($"BlockViewFactory: Prefab NOT FOUND for block type '{blockType}'. Check BlockResSettings config or Resources/Prefabs/Blocks path.", workspaceView?.gameObject);
-            return null;
+            Debug.LogError($"<color=red><b>¡PREFAB NO ENCONTRADO!</b></color> BlockViewFactory no encontró el prefab para el tipo de bloque: '{blockType}'. Revisa tu asset 'BlockResSettings' y asegúrate de que la entrada para '{blockType}' está configurada y el prefab está arrastrado correctamente.", BlockResMgr.Get());
+            return null; // Devuelve null para detener el proceso.
         }
 
         // 2. Instanciar el Prefab encontrado
@@ -104,6 +108,7 @@ public static class BlockViewFactory
         { 
             blockColor = workspaceView.Toolbox.GetColorOfBlock(blockType);
         }
+
         blockView.ChangeBgColor(blockColor);
 
         return blockView; 

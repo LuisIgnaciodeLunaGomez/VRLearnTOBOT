@@ -511,8 +511,8 @@ public class BlockListView : MonoBehaviour
 
         // Añadimos el script que iniciará el drag
         BlockTemplateDragSource dragSource = Utilidades.GetOrAddComponent<BlockTemplateDragSource>(dragTriggerGO);
-        dragSource.TemplateBlockView = view;
-        dragSource.SourceToolbox = this; // Pasamos referencia a este Toolbox
+        dragSource.m_TemplateBlockView = view;
+        dragSource.m_SourceToolbox = this; // Pasamos referencia a este Toolbox
 
         // Forzar un re-layout inicial si es necesario por Unity LayoutGroups
         LayoutRebuilder.ForceRebuildLayoutImmediate(view.GetComponent<RectTransform>());

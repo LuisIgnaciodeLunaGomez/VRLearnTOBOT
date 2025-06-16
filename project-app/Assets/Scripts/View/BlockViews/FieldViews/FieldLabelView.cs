@@ -70,6 +70,8 @@ public class FieldLabelView : FieldView
         preferredSize.x = Mathf.Max(preferredSize.x, BlockViewSettings.Instance.MinUnitWidth);
         preferredSize.y = Mathf.Max(preferredSize.y, BlockViewSettings.Instance.MinUnitHeight);
 
+
+      //  Debug.Log($"Field '{m_FieldModel.Name}': Texto '{m_TextMeshPro.text}', Ancho Calculado: {width}");
         return preferredSize;
     }
 
@@ -109,4 +111,8 @@ public class FieldLabelView : FieldView
         // No hacer nada ya que no tiene listeners.
     }
 
+    public override Vector2 CalculateFieldSize()
+    {
+        throw new System.NotImplementedException();
+    }
 }//Fin clase FieldLabelView

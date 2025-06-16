@@ -175,5 +175,45 @@ public class BlockViewSettings : ScriptableObject
         }
     }
 
+    /// <summary>
+    /// Devuelve el tamaño (ancho, alto) de una conexión principal de bloque.
+    /// (Output, Previous, Next).
+    /// </summary>
+    public Vector2 GetConnectionSize(EConnection connectionType)
+    {
+        switch (connectionType)
+        {
+            case EConnection.OutputValue:
+                return new Vector2(this.ValueNotchWidth, this.ValueNotchHeight);
+
+            case EConnection.PrevStatement:
+            case EConnection.NextStatement:
+                // El tamaño es la "pestaña" del puzzle
+                return new Vector2(this.StatementTabWidth, this.StatementTabHeight);
+
+            default:
+                // No debería ser llamado para otros tipos, pero devolvemos cero como fallback.
+                return Vector2.zero;
+        }
+    }
+
+    /// <summary>
+    /// Devuelve el tamaño por defecto de un "hueco" (slot) de input cuando está vacío.
+    /// </summary>
+    public Vector2 GetConnectionSlotSize(EConnection connectionType)
+    {
+        switch (connectionType)
+        {
+            case EConnection.InputValue:
+                return this.InputValueSlotSize;
+
+            case EConnection.NextStatement:
+                return this.InputStatementSlotSize;
+
+            default:
+                // Los Inputs Dummy o tipos inesperados no tienen tamaño de slot.
+                return Vector2.zero;
+        }
+    }
 
 }

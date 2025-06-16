@@ -358,4 +358,9 @@ public class FieldDropdownView : FieldView
         this.XY = startPos;
         this.Size = CalculateSize();
     }
+
+    public override Vector2 CalculateFieldSize()
+    {
+        throw new NotImplementedException();
+    }
 }//Fin clase FieldDropdownView
