@@ -96,26 +96,45 @@ using UnityEngine.UI;
             }
 
             Rect pixelAdjustedRect = this.GetPixelAdjustedRect();
-            //Vector4 adjustedBorders = this.GetAdjustedBorders(border, pixelAdjustedRect);
 
-            //Debug.Log(">>>>>>  this.GetPixelAdjustedRect():  " + pixelAdjustedRect);
-            //Debug.Log(">>>>>>  DataUtility.GetOuterUV(this.overrideSprite): " + outerUV);
-            //Debug.Log(">>>>>>  DataUtility.GetInnerUV(this.overrideSprite): " + innerUV);
-            //Debug.Log(">>>>>>  border: " + border);
-            //                for (int i = 0; i < m_DrawDimensions.Length; i++)
-            //                {
-            //Debug.Log(">>>>>>  m_DrawDimensions " + i + ": " + m_DrawDimensions[i]);
-            //               }
 
-            RectTransform rectTrans = GetComponent<RectTransform>();
-            float xFactor = pixelAdjustedRect.width; // rectTrans.rect.width;
-            float yFactor = pixelAdjustedRect.height;//rectTrans.rect.height;
-            Vector4 factor = new Vector4(xFactor, yFactor, xFactor, yFactor);
 
-            for (int i = 0; i < m_DrawDimensions.Length; i++)
+        // =================================================================
+        //                         BLOQUE DE DEBUG  
+        // =================================================================
+        string debugMessage = $"<color=#9400D3><b>[9-Slice Debug]</b></color> en objeto '{gameObject.name}':\n";
+        debugMessage += $"  - Sprite: '{this.overrideSprite.name}'\n";
+        debugMessage += $"  - Sprite.border (Leído del Asset -> L, B, R, T en píxeles): <b>{this.overrideSprite.border.ToString("F1")}</b>\n";
+        debugMessage += $"  - Pixels Per Unit (Divisor): {this.pixelsPerUnit}\n";
+        debugMessage += $"  - Borde FINAL (Calculado y usado por el script): {border.ToString("F4")}\n";
+        debugMessage += $"  - Outer UV (Coordenadas externas de textura): {outerUV.ToString("F3")}\n";
+        debugMessage += $"  - Inner UV (Coordenadas internas de textura): {innerUV.ToString("F3")}";
+        Debug.Log(debugMessage, this.gameObject);
+        // =================================================================
+        //                  FIN DEL BLOQUE DE DEBUG 
+        // =================================================================
+
+
+        //Vector4 adjustedBorders = this.GetAdjustedBorders(border, pixelAdjustedRect);
+
+        //Debug.Log(">>>>>>  this.GetPixelAdjustedRect():  " + pixelAdjustedRect);
+        //Debug.Log(">>>>>>  DataUtility.GetOuterUV(this.overrideSprite): " + outerUV);
+        //Debug.Log(">>>>>>  DataUtility.GetInnerUV(this.overrideSprite): " + innerUV);
+        //Debug.Log(">>>>>>  border: " + border);
+        //                for (int i = 0; i < m_DrawDimensions.Length; i++)
+        //                {
+        //Debug.Log(">>>>>>  m_DrawDimensions " + i + ": " + m_DrawDimensions[i]);
+        //               }
+
+        /*  RectTransform rectTrans = GetComponent<RectTransform>();
+          float xFactor = pixelAdjustedRect.width; // rectTrans.rect.width;
+          float yFactor = pixelAdjustedRect.height;//rectTrans.rect.height;
+          Vector4 factor = new Vector4(xFactor, yFactor, xFactor, yFactor);
+        */
+        for (int i = 0; i < m_DrawDimensions.Length; i++)
             {
                 Vector4 dimension = m_DrawDimensions[i];
-                dimension.Scale(factor);
+              //  dimension.Scale(factor);
 
                 int xCount = 3;
                 int yCount;

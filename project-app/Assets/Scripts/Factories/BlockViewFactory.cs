@@ -28,7 +28,7 @@ public static class BlockViewFactory
     /// Puede ser null si se crea un bloque directamente en el workspace sin pasar por el toolbox,
     /// en cuyo caso se intentará obtener el WorkspaceView activo.</param>
     /// <returns>La BlockView creada y vinculada, o null si falla.</returns>
-    public static BlockView CreateView(BlockModel blockModel, BlockListView sourceToolbox )
+    public static BlockView CreateView(BlockModel blockModel, BlockListView sourceToolbox, Transform parentTransform)
     {
         if (blockModel == null)
         {
@@ -66,8 +66,9 @@ public static class BlockViewFactory
         try
         {
             // Instanciar sin padre inicial. 
-            blockInstance = GameObject.Instantiate(blockPrefab);
+            blockInstance = GameObject.Instantiate(blockPrefab, parentTransform);
             blockInstance.name = $"BlockView_{blockType}_{blockModel.ID}"; 
+
 
             // Obtener el componente BlockView del Prefab instanciado
             blockView = blockInstance.GetComponent<BlockView>();

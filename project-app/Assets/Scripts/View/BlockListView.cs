@@ -468,7 +468,7 @@ public class BlockListView : MonoBehaviour
         if (templateModel == null) { Debug.LogWarning($"Could not create template MODEL for type: {blockType}"); return null; }
 
         // 2. Creamos Vista desde el Modelo Plantilla
-        BlockView view = BlockViewFactory.CreateView(templateModel, this);
+        BlockView view = BlockViewFactory.CreateView(templateModel, this, parent);
         if (view == null)
         {
             Debug.LogError($"BlockViewFactory failed for template block type {blockType}. Disposing model.", this);
@@ -557,7 +557,7 @@ public class BlockListView : MonoBehaviour
         realBlockModel.XY = m_WorkspaceView.ScreenPointToWorkspaceLogicalPosition(eventData.position, m_WorkspaceView.EventCamera);
 
         // 2. Creamos la vista para el modelo 
-        BlockView cloneView = BlockViewFactory.CreateView(realBlockModel, this);
+        BlockView cloneView = BlockViewFactory.CreateView(realBlockModel, this, m_WorkspaceView.CodingArea);
         if (cloneView == null)
         {
             Debug.LogError($"StartDraggingFromToolbox: BlockViewFactory failed to create BlockView for model {realBlockModel.ID} ({blockType}). Disposing model.", this);

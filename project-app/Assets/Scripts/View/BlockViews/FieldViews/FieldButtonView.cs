@@ -96,36 +96,37 @@ public class FieldButtonView : FieldView
 
     protected override Vector2 CalculateSize()
     {
-        if (m_Button == null) return BlockViewSettings.Get().MinUnitSize;
+        if (m_Button == null)
+        {
+            // Si el botón no existe, no podemos calcular nada. Devolvemos el tamaño mínimo.
+            if (BlockViewSettings.Instance != null)
+            {
+                return new Vector2(BlockViewSettings.Instance.MinUnitWidth, BlockViewSettings.Instance.MinUnitHeight);
+            }
+            return new Vector2(30, 24); // Fallback
+        }
 
-        float preferredWidth = BlockViewSettings.Get().MinUnitSize.x;
-        float preferredHeight = BlockViewSettings.Get().MinUnitSize.y;
+        // Usamos los tamaños mínimos como base.
+        float preferredWidth = BlockViewSettings.Instance.MinUnitWidth;
+        float preferredHeight = BlockViewSettings.Instance.MinUnitHeight;
 
-        // Calcular tamaño basado en el texto, si existe
+        // Si el botón tiene una etiqueta de texto, calculamos su tamaño preferido.
         if (m_Label != null && !string.IsNullOrEmpty(m_Label.text))
         {
-            // Forzar actualización para obtener el tamaño preferido correcto del texto
+            // Forzamos al sistema de UI a recalcular el tamaño del texto para obtener una medida fiable.
             LayoutRebuilder.ForceRebuildLayoutImmediate(m_Label.rectTransform);
-            preferredWidth = LayoutUtility.GetPreferredWidth(m_Label.rectTransform);
-            preferredHeight = LayoutUtility.GetPreferredHeight(m_Label.rectTransform);
+            preferredWidth = m_Label.GetPreferredValues().x;
+            preferredHeight = m_Label.GetPreferredValues().y;
 
-            // Añadir padding/márgenes del botón
-            preferredWidth += 20;  
-            preferredHeight += 10; 
+            // Añadimos un padding visual para que el botón no quede pegado al texto.
+            // Usaremos el padding genérico de los campos de texto como referencia.
+            preferredWidth += BlockViewSettings.Instance.FieldInputTextPadding.horizontal;
+            preferredHeight += BlockViewSettings.Instance.FieldInputTextPadding.vertical;
         }
 
-        // Usar el mayor entre el tamaño calculado y el mínimo del Settings
-        float finalWidth = Mathf.Max(preferredWidth, BlockViewSettings.Get().MinUnitSize.x);
-        float finalHeight = Mathf.Max(preferredHeight, BlockViewSettings.Get().MinUnitSize.y);
-
-        // Considerar el tamaño mínimo del propio componente Button si lo tiene configurado
-        var layoutElement = GetComponent<LayoutElement>();
-        if (layoutElement != null)
-        {
-            finalWidth = Mathf.Max(finalWidth, layoutElement.minWidth);
-            finalHeight = Mathf.Max(finalHeight, layoutElement.minHeight);
-        }
-
+        // El tamaño final del botón será el mayor entre el tamaño de su texto y el mínimo permitido.
+        float finalWidth = Mathf.Max(preferredWidth, BlockViewSettings.Instance.MinUnitWidth);
+        float finalHeight = Mathf.Max(preferredHeight, BlockViewSettings.Instance.MinUnitHeight);
 
         return new Vector2(finalWidth, finalHeight);
     }
@@ -138,5 +139,11 @@ public class FieldButtonView : FieldView
     protected override void RegisterInputListeners()
     {
         throw new System.NotImplementedException();
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin clase FieldButtonView

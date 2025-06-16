@@ -200,25 +200,46 @@ public class FieldVariableView : FieldView
 
     protected override Vector2 CalculateSize()
     {
-        if (m_VariableNameText == null) return BlockViewSettings.Get().MinUnitSize;
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_VariableNameText.rectTransform);
-        float textWidth = LayoutUtility.GetPreferredWidth(m_VariableNameText.rectTransform);
-        float textHeight = LayoutUtility.GetPreferredHeight(m_VariableNameText.rectTransform);
-
-        float buttonWidth = 0;
-        if (m_DropdownButton != null && m_DropdownButton.gameObject.activeSelf)
+        // Hacemos comprobación de seguridad para los Settings.
+        var settings = BlockViewSettings.Instance;
+        if (settings == null)
         {
-            buttonWidth = BlockViewSettings.Get().DropdownArrowWidth;
+            Debug.LogWarning("BlockViewSettings no está disponible. Usando tamaños por defecto para FieldVariableView.");
+            return new Vector2(120, 24); // Fallback
         }
 
-        float totalWidth = textWidth + buttonWidth + BlockViewSettings.Get().ContentSpace.x * 2; // Padding interno
-        float totalHeight = textHeight + BlockViewSettings.Get().ContentSpace.y * 2; // Padding interno
+        // Si no hay etiqueta de texto, devolvemos el tamaño mínimo.
+        if (m_VariableNameText == null)
+        {
+            return new Vector2(settings.MinUnitWidth, settings.MinUnitHeight);
+        }
 
+        // Forzamos un recálculo para obtener el tamaño real que necesita el texto.
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_VariableNameText.rectTransform);
+        float textWidth = m_VariableNameText.GetPreferredValues().x;
+        float textHeight = m_VariableNameText.GetPreferredValues().y;
 
-        // Considerar mínimos
-        totalWidth = Mathf.Max(totalWidth, BlockViewSettings.Get().MinUnitSize.x);
-        totalHeight = Mathf.Max(totalHeight, BlockViewSettings.Get().MinUnitSize.y);
+        float buttonWidth = 0;
+        // Si el botón está activo, sumamos el ancho de la flecha.
+        if (m_DropdownButton != null && m_DropdownButton.gameObject.activeSelf)
+        {
+            buttonWidth = settings.DropdownArrowWidth; // Usamos la nueva propiedad
+        }
+
+        // El ancho total es el texto + el botón + un espaciado entre ellos + un padding general.
+        float totalWidth = textWidth + buttonWidth;
+        if (buttonWidth > 0)
+        {
+            totalWidth += settings.HorizontalElementSpacing; // Usamos el espaciado correcto
+        }
+
+        // Usamos el padding de los campos de texto para que sea consistente.
+        totalWidth += settings.FieldInputTextPadding.horizontal;
+        float totalHeight = textHeight + settings.FieldInputTextPadding.vertical;
+
+        // Finalmente, nos aseguramos de no ser más pequeños que el mínimo absoluto permitido.
+        totalWidth = Mathf.Max(totalWidth, settings.MinUnitWidth);
+        totalHeight = Mathf.Max(totalHeight, settings.MinUnitHeight);
 
         return new Vector2(totalWidth, totalHeight);
     }
@@ -248,4 +269,9 @@ public class FieldVariableView : FieldView
         // QueueForceLayoutUpdate(); // Podría ser necesario
     }
 
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
+    }
 }//Fin clase FieldVariableView

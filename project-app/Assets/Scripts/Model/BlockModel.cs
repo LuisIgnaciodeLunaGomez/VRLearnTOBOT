@@ -59,7 +59,7 @@ public class BlockModel : Observable<int>
     public Mutator Mutator { get; protected set; }
     public BlockModel ParentBlock { get; protected set; }
     public List<BlockModel> ChildBlocks = new List<BlockModel>();
-
+    public BlockDefinition Definition { get; private set; }
     public BlockView BlockView { get; internal set; }
 
     /// <summary>
@@ -110,7 +110,7 @@ public class BlockModel : Observable<int>
 
         workspace.BlockDB.Add(ID, this);
         Workspace = workspace;
-
+       
         OutputConnection = null;
         NextConnection = null;
         PreviousConnection = null;
@@ -125,6 +125,36 @@ public class BlockModel : Observable<int>
         ID = uid; 
         Workspace = null; 
         InputList = new List<InputModel>();
+    }
+
+    /// <summary>
+    /// Nuevo constructor para VRLEARNBlockViewBuilder
+    /// </summary>
+    /// <param name="workspace"></param>
+    /// <param name="definition"></param>
+    /// <param name="opt_id"></param>
+    /// <exception cref="System.ArgumentNullException"></exception>
+    public BlockModel(WorkSpaceModel workspace, BlockDefinition definition, string opt_id = null)
+    {
+        if (workspace == null)
+            throw new System.ArgumentNullException(nameof(workspace));
+
+        this.Workspace = workspace;
+        this.Definition = definition; //Guardamos la definición aquí
+        this.Type = definition.type;
+
+        this.ID = !string.IsNullOrEmpty(opt_id) && workspace.GetBlockById(opt_id) == null
+              ? opt_id
+              : Utilidades.GenUid();
+
+        workspace.BlockDB.Add(this.ID, this);
+
+        this.OutputConnection = null;
+        this.NextConnection = null;
+        this.PreviousConnection = null;
+        this.InputList = new System.Collections.Generic.List<InputModel>();
+
+        workspace.AddTopBlock(this);
     }
 
     /// <summary>
@@ -1132,6 +1162,16 @@ public class BlockModel : Observable<int>
         #endif
 
        
+    }
+
+    /// <summary>
+    /// Asignamos una definición de bloque 
+    /// </summary>
+    /// <param name="def"></param>
+    public void SetDefinition(BlockDefinition def)
+    {
+        if (this.Definition == null) // Solo se puede asignar una vez
+            this.Definition = def;
     }
 
 }//Fin BlockModel

@@ -98,18 +98,28 @@ public class FieldCheckboxView : FieldView
 
     protected override Vector2 CalculateSize()
     {
+
+        // Hacemos una comprobación de seguridad primero.
+        if (BlockViewSettings.Instance == null)
+        {
+            return new Vector2(24, 24); // Devolvemos un tamaño por defecto si los settings no están.
+        }
+
         if (m_Toggle != null)
         {
             RectTransform toggleRect = m_Toggle.GetComponent<RectTransform>();
             if (toggleRect != null)
             {
-                return new Vector2(
-                    Mathf.Max(toggleRect.rect.width, BlockViewSettings.Get().MinUnitSize.x),
-                    Mathf.Max(toggleRect.rect.height, BlockViewSettings.Get().MinUnitSize.y)
-                );
+                // CORREGIDO: Usamos MinUnitWidth y MinUnitHeight por separado.
+                float finalWidth = Mathf.Max(toggleRect.rect.width, BlockViewSettings.Instance.MinUnitWidth);
+                float finalHeight = Mathf.Max(toggleRect.rect.height, BlockViewSettings.Instance.MinUnitHeight);
+
+                return new Vector2(finalWidth, finalHeight);
             }
         }
-        return BlockViewSettings.Get().MinUnitSize; 
+
+        // Fallback por si no hay Toggle asignado, usamos los tamaños mínimos definidos.
+        return new Vector2(BlockViewSettings.Instance.MinUnitWidth, BlockViewSettings.Instance.MinUnitHeight);
     }
 
     protected override void OnValueChanged(string newValue)
@@ -120,5 +130,11 @@ public class FieldCheckboxView : FieldView
     protected override void RegisterInputListeners()
     {
         throw new System.NotImplementedException();
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin clase FiedlCheckboxView

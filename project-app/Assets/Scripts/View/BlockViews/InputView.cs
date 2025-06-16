@@ -36,13 +36,27 @@ public class InputView : BaseView
 
     protected override Vector2 CalculateSize()
     {
-        if (!HasChildren) return BlockViewSettings.Instance.MinUnitSize; 
+        // Hacemos comprobación de seguridad
+        if (BlockViewSettings.Instance == null) return Vector2.zero;
+        if (!HasChildren) return Vector2.zero;
 
         float totalWidth = 0;
-        totalWidth += ChildViews.Sum(v => v.Size.x);
-        totalWidth += Mathf.Max(0, ChildViews.Count - 1) * m_FieldSpacing;
+        float maxHeight = 0;
 
-        float maxHeight = ChildViews.Max(v => v.Size.y);
+        var activeChildren = ChildViews.Where(c => c != null && c.gameObject.activeSelf).ToList();
+
+        for (int i = 0; i < activeChildren.Count; i++)
+        {
+            totalWidth += activeChildren[i].Width;
+            maxHeight = Mathf.Max(maxHeight, activeChildren[i].Height);
+
+            // Si no es el último elemento, añadimos el espaciado
+            if (i < activeChildren.Count - 1)
+            {
+                // CORREGIDO: Usamos HorizontalElementSpacing, no FieldHorizontalPadding
+                totalWidth += BlockViewSettings.Instance.HorizontalElementSpacing;
+            }
+        }
 
         return new Vector2(totalWidth, maxHeight);
     }
@@ -61,6 +75,37 @@ public class InputView : BaseView
         base.InitializeView();
        
     }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        // 1. Me posiciono donde me dice mi padre (LineGroupView)
+        this.XY = startPos;
+        Debug.Log($"<color=orange><b>[InputView.UpdateLayout]</b></color> en '{gameObject.name}': Posicionado en {startPos:F2}", gameObject);
+
+        // 2. Organizo a mis hijos horizontalmente
+        if (HasChildren)
+        {
+            // La posición del primer hijo empieza en el origen LOCAL de este InputView.
+            Vector2 currentChildPos = Vector2.zero;
+
+            foreach (var child in ChildViews.Where(c => c != null && c.gameObject.activeSelf))
+            {
+                // Al llamar a UpdateLayout del hijo, este se encargará de su propio CalculateSize.
+                // Esto resuelve el error de acceso protegido.
+                child.UpdateLayout(currentChildPos);
+
+                // Avanzamos la posición para el siguiente hermano.
+                currentChildPos.x += child.Width + BlockViewSettings.Instance.HorizontalElementSpacing;
+            }
+        }
+
+        // 3. Con todos mis hijos ya medidos y posicionados, calculo mi propio tamaño final.
+        this.Size = CalculateSize();
+        Debug.Log($"<color=orange><b>[InputView.UpdateLayout]</b></color> en '{gameObject.name}': Layout completado. Mi tamaño final: {this.Size:F2}", gameObject);
+
+    }
+
+
 
     public virtual void BindModel(InputModel inputModel, BlockView sourceBlockView)
     {
@@ -112,7 +157,7 @@ public class InputView : BaseView
                     {
                         ConnectionModel inputConnectionModel = m_InputModel.Connection;
                        // Debug.Log($"InputView ('{gameObject.name}'): Found ConnectionInputView '{connectionInputView.gameObject.name}'. Binding to Model: {ConnectionModel.GetConnectionModelID(inputConnectionModel)}.", connectionInputView.gameObject);
-                        connectionInputView.BindModel(inputConnectionModel, sourceBlockView); // sourceBlockView viene como argumento a InputView.BindModel
+                        connectionInputView.BindModel(inputConnectionModel, ParentBlockView); // sourceBlockView viene como argumento a InputView.BindModel
                     }
                     else
                     {

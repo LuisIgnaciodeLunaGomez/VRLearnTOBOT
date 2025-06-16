@@ -19,7 +19,7 @@ using TMPro;
 using UnityEngine.UI; 
 
 [RequireComponent(typeof(TMP_InputField))]
-[RequireComponent(typeof(LayoutElement))]
+//[RequireComponent(typeof(LayoutElement))]
 public class FieldTextInputView : FieldView
 {
     private TMP_InputField m_InputField;
@@ -32,50 +32,61 @@ public class FieldTextInputView : FieldView
     {
         base.InitializeView();
         m_InputField = GetComponent<TMP_InputField>();
-        m_LayoutElement = GetComponent<LayoutElement>();
-        m_LayoutElement.ignoreLayout = false;
+        // No necesitamos el LayoutElement aquí, lo eliminamos
 
-        if (m_InputField == null) Debug.LogError("FieldTextInputView requires a TMP_InputField component.");
+        if (m_InputField == null)
+        {
+            Debug.LogError("FieldTextInputView requiere un componente TMP_InputField.", this);
+            return; // Salimos para evitar más errores
+        }
 
-        m_InputField.contentType = TMP_InputField.ContentType.Standard; // Default
-        
+        var settings = BlockViewSettings.Instance;
+        if (settings == null)
+        {
+            Debug.LogError("BlockViewSettings no están disponibles, no se pueden aplicar estilos al InputField.", this);
+            return;
+        }
+
+        // Configuración del componente de texto interno
         if (m_InputField.textComponent != null)
         {
-            m_InputField.textComponent.fontSize = BlockViewSettings.Instance.DefaultFontSize;
-            m_InputField.textComponent.color = BlockViewSettings.Instance.EditableFieldColor; 
-            m_InputField.textComponent.alignment = TextAlignmentOptions.Center; // Centrado en inputs
+            m_InputField.textComponent.fontSize = settings.DefaultFontSize; // Usar nueva propiedad
+            m_InputField.textComponent.color = settings.EditableFieldColor;
+            m_InputField.textComponent.alignment = TextAlignmentOptions.Center;
         }
-        else
-        {
-            Debug.LogError($"InputField {gameObject.name} has no TextComponent assigned!");
-        }
-        Image bg = m_InputField.GetComponent<Image>(); 
-        if (bg != null) bg.color = BlockViewSettings.Instance.InputFieldBackground;
+
+        // Configuración del fondo del InputField
+        Image bg = m_InputField.GetComponent<Image>();
+        if (bg != null) bg.color = settings.InputFieldBackground;
     }
 
     
     protected override Vector2 CalculateSize()
     {
-        //if (m_InputField == null || m_FieldModel == null) return BlockViewSettings.Get().MinUnitSize * 2; 
+        var settings = BlockViewSettings.Instance;
+        if (settings == null) return new Vector2(50, 30); // Fallback
 
-        
-       // if (bg != null) bg.color = BlockViewSettings.Instance.InputFieldBackground;
-        Vector2 size = new Vector2(BlockViewSettings.Instance.DefaultInputFieldWidth, BlockViewSettings.Instance.DefaultInputFieldHeight);
+        Vector2 size = new Vector2(settings.DefaultInputFieldWidth, settings.DefaultInputFieldHeight);
 
-        string currentText = m_InputField?.text ?? m_FieldModel?.GetValue() ?? "";
-        Vector2 preferredSize = BlockViewSettings.Instance.MinUnitSize * 2; 
+        // Medimos el texto preferido para que el campo se ajuste
+        string currentText = m_InputField?.text ?? m_FieldModel?.GetValue() ?? "10";
+        Vector2 preferredTextSize = new Vector2(0, 0);
         if (m_InputField?.textComponent != null)
-            preferredSize = m_InputField.textComponent.GetPreferredValues(currentText + "XX"); 
+        {
+            // Añadimos espacio extra para que no quede demasiado justo
+            preferredTextSize = m_InputField.textComponent.GetPreferredValues(currentText + "XX");
+        }
 
-        preferredSize.x += BlockViewSettings.Instance.FieldHorizontalPadding * 4; 
-        preferredSize.y += BlockViewSettings.Instance.FieldVerticalPadding * 2;
+        // El tamaño final será el del texto más el padding, pero nunca menos que el mínimo por defecto.
+        float finalWidth = preferredTextSize.x + settings.FieldInputTextPadding.horizontal;
+        float finalHeight = preferredTextSize.y + settings.FieldInputTextPadding.vertical;
 
-        size.x = Mathf.Max(preferredSize.x, BlockViewSettings.Instance.DefaultInputFieldWidth);
-        size.y = Mathf.Max(preferredSize.y, BlockViewSettings.Instance.DefaultInputFieldHeight);
+        size.x = Mathf.Max(finalWidth, settings.DefaultInputFieldWidth);
+        size.y = Mathf.Max(finalHeight, settings.DefaultInputFieldHeight);
 
+        // El debug que ya tenías está bien
+        Debug.Log($"Frame {Time.frameCount}:   <b>L-- [{GetType().Name}.CalculateSize]</b> en '{gameObject.name}'. Texto: '{currentText}'. Tamaño Calculado: {size.ToString("F2")}", gameObject);
 
-        m_LayoutElement.preferredWidth = size.x;
-        m_LayoutElement.preferredHeight = size.y;
         return size;
     }
 
@@ -84,8 +95,14 @@ public class FieldTextInputView : FieldView
     {
         if (m_InputField != null && !m_isUserInput) 
         {
-            m_InputField.text = newValue ?? "";
-            
+            string textToShow = newValue ?? "";
+
+            if (m_InputField.text != textToShow)
+            {
+                m_InputField.text = textToShow;
+
+                Size = CalculateSize();
+            }
             // Vector2 newSize = CalculateSize();
             // Size = newSize;
             // ParentView?.UpdateLayout();
@@ -170,4 +187,12 @@ public class FieldTextInputView : FieldView
         base.OnDestroy();
     }
 
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        // 1. Me posiciono donde me indica mi padre (el InputView).
+        this.XY = startPos;
+
+        // 2. Calculo mi propio tamaño basado en mi contenido.
+        this.Size = CalculateSize();
+    }
 }//Fin clase FieldTextInputView

@@ -155,24 +155,45 @@ public class FieldProcedureView : FieldView
 
     protected override Vector2 CalculateSize()
     {
-        if (mDropdown == null)
-            InitializeView();
-        if (mDropdown == null) return BlockViewSettings.Instance.MinUnitSize; 
+        // Hacemos la comprobación de seguridad para los Settings
+        if (BlockViewSettings.Instance == null)
+        {
+            return new Vector2(150, 24); // Devolvemos un tamaño por defecto
+        }
 
+        if (mDropdown == null || mDropdown.captionText == null)
+        {
+            // Si el dropdown no está listo, devolvemos un tamaño mínimo
+            return new Vector2(BlockViewSettings.Instance.MinUnitWidth * 5, BlockViewSettings.Instance.MinUnitHeight);
+        }
 
-        RectTransform dropdownRect = mDropdown.GetComponent<RectTransform>();
-        float width = dropdownRect.rect.width;
-        float height = dropdownRect.rect.height;
+        // El ancho preferido se basa en el texto más largo de todas las opciones para evitar que se corte
+        float preferredWidth = 0;
+        if (mDropdown.options.Count > 0)
+        {
+            foreach (var option in mDropdown.options)
+            {
+                preferredWidth = Mathf.Max(preferredWidth, mDropdown.captionText.GetPreferredValues(option.text).x);
+            }
+        }
+        else
+        {
+            // Si no hay opciones, medimos un texto de fallback
+            preferredWidth = mDropdown.captionText.GetPreferredValues("No procedures").x;
+        }
 
-        if (width <= 0) width = BlockViewSettings.Instance.MinUnitSize.x * 2; 
-        if (height <= 0) height = BlockViewSettings.Instance.MinUnitSize.y; 
-        // width += BlockViewSettings.Instance.InternalPadding.x * 2;
-        // height += BlockViewSettings.Instance.InternalPadding.y * 2;
+        // Añadimos el ancho de la flechita del dropdown + un padding
+        preferredWidth += BlockViewSettings.Instance.DropdownArrowWidth;
+        preferredWidth += BlockViewSettings.Instance.FieldInputTextPadding.horizontal; // Padding horizontal general
 
-        width += (BlockViewSettings.Instance.ContentMargin?.left ?? 0) + (BlockViewSettings.Instance.ContentMargin?.right ?? 0);
-        height += (BlockViewSettings.Instance.ContentMargin?.top ?? 0) + (BlockViewSettings.Instance.ContentMargin?.bottom ?? 0);
+        // La altura suele ser fija
+        float preferredHeight = BlockViewSettings.Instance.DefaultInputFieldHeight; // Reutilizamos la altura de los input fields para consistencia
 
-        return new Vector2(width, height);
+        // El tamaño final no puede ser menor que los mínimos absolutos.
+        float finalWidth = Mathf.Max(preferredWidth, BlockViewSettings.Instance.MinUnitWidth * 5); // Un mínimo ancho para los desplegables
+        float finalHeight = Mathf.Max(preferredHeight, BlockViewSettings.Instance.MinUnitHeight);
+
+        return new Vector2(finalWidth, finalHeight);
 
     }
 
@@ -210,5 +231,11 @@ public class FieldProcedureView : FieldView
             Debug.LogWarning($"FieldProcedureView ({this.name}): Procedure name '{procedureName}' not found in dropdown options.", this);
            
         }
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin clase FieldProcedureView

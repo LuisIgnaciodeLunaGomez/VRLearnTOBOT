@@ -66,16 +66,41 @@ public class ConnectionView : BaseView
     {
         get
         {
+            // Añadimos comprobación para evitar errores
+            if (BlockViewSettings.Instance == null) return base.ChildStartXY;
+
             if (m_ConnectionType == EConnection.NextStatement)
-                return BlockViewSettings.Instance.StatementConnectPointRect.position; 
-            return base.ChildStartXY; 
+            {
+                // La indentación horizontal es 'StatementTabOffsetX'
+                // La vertical es 0, porque empieza justo debajo.
+                return new Vector2(BlockViewSettings.Instance.StatementTabOffsetX, 0);
+            }
+            return base.ChildStartXY;
         }
     }
 
     protected override Vector2 CalculateSize()
     {
-        
-        return BlockViewSettings.Instance?.ConnectionSize ?? new Vector2(10, 10);
+
+        //return BlockViewSettings.Instance?.ConnectionSize ?? new Vector2(10, 10);
+
+        if (BlockViewSettings.Instance == null) return new Vector2(20, 20); // Fallback
+
+        switch (m_ConnectionType)
+        {
+            case EConnection.PrevStatement:
+            case EConnection.NextStatement:
+                // El tamaño es el ancho del 'diente' y su altura
+                return new Vector2(BlockViewSettings.Instance.StatementTabWidth, BlockViewSettings.Instance.StatementTabHeight);
+
+            case EConnection.InputValue:
+            case EConnection.OutputValue:
+                // El tamaño es el ancho de la muesca triangular y su altura
+                return new Vector2(BlockViewSettings.Instance.ValueNotchWidth, BlockViewSettings.Instance.ValueNotchHeight);
+
+            default:
+                return Vector2.zero; // Las conexiones dummy no tienen tamaño
+        }
     }
 
     protected override void InitializeView()
@@ -105,6 +130,8 @@ public class ConnectionView : BaseView
     public virtual void BindModel(ConnectionModel connectionModel, BlockView sourceBlockView)
     {
         // Debug.Log($"ConnectionView ({gameObject.name}): BindModel START. Model ID received: {ConnectionModel.GetConnectionModelID(connectionModel)}, SourceView: {sourceBlockView?.gameObject.name}", this.gameObject);
+        Debug.Log($"---> [BINDING ATTEMPT] para ConnectionView: '{gameObject.name}' en Block: '{sourceBlockView?.name}'. Modelo asignado: {(connectionModel != null)}", gameObject);
+
         string logPrefix = $"[CV.BindModel '{gameObject.name}' ({m_ConnectionType})]";
 
         if (m_ConnectionModel == connectionModel && m_SourceBlockView == sourceBlockView && m_ConnectionModel != null)
@@ -133,7 +160,7 @@ public class ConnectionView : BaseView
 
         if (m_SourceBlockView == null)
         {
-            Debug.LogError($"ConnectionView ({gameObject.name}): BindModel called without a valid sourceBlockView!", this);
+           // Debug.LogError($"ConnectionView ({gameObject.name}): BindModel called without a valid sourceBlockView!", this);
             
             // throw new ArgumentNullException(nameof(sourceBlockView), "ConnectionView requires a valid source BlockView during BindModel.");
             return;
@@ -886,7 +913,7 @@ public class ConnectionView : BaseView
     }
     protected internal override void OnXYUpdated()
     {
-        //Debug.Log($"OnXYUpdated START for {gameObject.name}. Model:{ConnectionModel.GetConnectionModelID(m_ConnectionModel)}. SourceView Valid: {m_SourceBlockView != null}. Is InToolbox: {m_SourceBlockView?.InToolbox}", this.gameObject);
+        Debug.Log($"OnXYUpdated START for {gameObject.name}. Model:{ConnectionModel.GetConnectionModelID(m_ConnectionModel)}. SourceView Valid: {m_SourceBlockView != null}. Is InToolbox: {m_SourceBlockView?.InToolbox}", this.gameObject);
 
         if (m_SourceBlockView != null && m_SourceBlockView.InToolbox)
         {
@@ -895,9 +922,14 @@ public class ConnectionView : BaseView
             return;
         }
         if (m_ConnectionModel == null) { Debug.LogError("OnXYUpdated: m_ConnectionModel is NULL!", this); return; }
-        if (m_SourceBlockView == null) { Debug.LogError($"OnXYUpdated: m_SourceBlockView is NULL for connection {ConnectionModel.GetConnectionModelID(m_ConnectionModel)}!", this); return; }
+        if (m_SourceBlockView == null) {
+           // Debug.LogError($"OnXYUpdated: m_SourceBlockView is NULL for connection {ConnectionModel.GetConnectionModelID(m_ConnectionModel)}!", this); 
+            return; }
+       
         WorkSpaceView workspaceView = m_SourceBlockView.WorkspaceView;
-        if (workspaceView == null) { Debug.LogError($"OnXYUpdated: SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView (and not InToolbox)!", this); return; }
+        if (workspaceView == null) { //
+                                     //Debug.LogError($"OnXYUpdated: SourceBlockView '{m_SourceBlockView.gameObject.name}' has NULL WorkSpaceView (and not InToolbox)!", this);
+         return; }
 
         //Debug.Log($"OnXYUpdated START calculation for Workspace Connection '{gameObject.name}'. InDB Flag: {m_ConnectionModel.InDB}.", this.gameObject);
         Canvas canvas = workspaceView.RootCanvas;
@@ -905,6 +937,7 @@ public class ConnectionView : BaseView
         if (canvas == null) { Debug.LogError($"OnXYUpdated ({gameObject.name}): RootCanvas is NULL!", this); return; }
         if (workspaceView.CodingArea == null) { Debug.LogError($"OnXYUpdated ({gameObject.name}): CodingArea is NULL!", this); return; }
 
+      
         Vector2 screenPoint;
         if (canvas.renderMode == RenderMode.ScreenSpaceOverlay) screenPoint = RectTransformUtility.WorldToScreenPoint(null, ViewTransform.position);
         else screenPoint = RectTransformUtility.WorldToScreenPoint(eventCamera, ViewTransform.position);
@@ -1023,24 +1056,51 @@ public class ConnectionView : BaseView
     /// <returns></returns>
     private Vector2 CalculateTargetAnchoredPosition(BlockView childView)
     {
-       
-        if (m_ConnectionModel.Type == EConnection.NextStatement)
+
+        // Primero, una comprobación de seguridad.
+        if (m_ConnectionModel == null || BlockViewSettings.Instance == null)
         {
+            Debug.LogError("[CV.CalculateTargetAnchoredPos] Faltan Model o Settings. No se puede calcular la posición.");
+            return Vector2.zero;
+        }
 
-            float offsetX = BlockViewSettings.Instance.StatementConnectPointRect.position.x; 
+        BlockViewSettings settings = BlockViewSettings.Instance;
 
-        
-            float offsetY = 0f; 
+        // Usamos if-else if para manejar las condiciones complejas
 
-            Debug.LogWarning($"[CV.CalculateTargetAnchoredPos] Placeholder for Next->Prev! Returning ({offsetX:F2}, {offsetY:F2}). NEEDS PROPER IMPLEMENTATION.", gameObject);
+        // CASO 1: Es una conexión de Input que es de tipo Statement (un hueco dentro de un bloque "C")
+        if (m_ConnectionModel.Type == EConnection.NextStatement && m_ConnectionModel.Input != null)
+        {
+            // Similar al NextStatement, el hijo se indenta horizontalmente.
+            float offsetX = settings.StatementIndent;
+            float offsetY = 0f;
             return new Vector2(offsetX, offsetY);
         }
 
+        // CASO 2: Es la conexión principal NextStatement de un bloque
+        else if (m_ConnectionModel.Type == EConnection.NextStatement)
+        {
+            // El hijo se posicionará con un desfase horizontal.
+            float offsetX = settings.StatementTabOffsetX;
+            // El hijo se posicionará justo debajo, así que el desfase vertical es 0.
+            float offsetY = 0f;
+            return new Vector2(offsetX, offsetY);
+        }
 
-        // TODO: Añadir lógica similar para conexiones InputValue -> OutputValue etc. si es necesario.
+        // CASO 3: Es una conexión de Input de tipo Valor
+        else if (m_ConnectionModel.Type == EConnection.InputValue)
+        {
+            // Los bloques de valor se centran. La posición objetivo es (0,0) relativo
+            // al RectTransform de esta ConnectionView (el padre visual).
+            return Vector2.zero;
+        }
 
-        Debug.LogError($"[CV.CalculateTargetAnchoredPos] Connection type {m_ConnectionModel.Type} not handled!", gameObject);
-        return Vector2.zero; // Fallback
+        // Si no es ninguno de los casos anteriores, es un error o un tipo no manejado.
+        else
+        {
+            Debug.LogError($"[CV.CalculateTargetAnchoredPos] Tipo de conexión no manejado: {m_ConnectionModel.Type}", gameObject);
+            return Vector2.zero; // Fallback
+        }
     }
 
     /// <summary>
@@ -1179,93 +1239,50 @@ public class ConnectionView : BaseView
     private void PositionHighlightTransform(RectTransform highlightTrans, float parentOffsetY)
     {
         string logPrefix = $"{System.DateTime.Now:HH:mm:ss.fff} [CV.PosHighlightCorrec '{gameObject.name}' ({m_ConnectionType})]";
-        // Debug.Log($"{logPrefix} Attempting to position highlight '{highlightTrans.name}'. Parent: '{highlightTrans.parent.name}'.");
-
-        highlightTrans.localScale = Vector3.one;
-   
-        highlightTrans.anchorMin = new Vector2(0, 1); // Top-Left del padre (ConnectionView)
-        highlightTrans.anchorMax = new Vector2(0, 1); // Top-Left del padre
-        highlightTrans.pivot = new Vector2(0, 1);     // Pivot Top-Left del propio highlight
-        Vector2 targetAnchoredPos = Vector2.zero;    // Lo coloca en la esquina superior-izquierda del padre.
-        highlightTrans.localRotation = Quaternion.identity; // Sin rotación por defecto
-
-
-        //Se obtiene el RectTransfomr de esta ConnectionView (Padre del highlight)
-        RectTransform connectionViewRect = GetRectTransformInternal(); 
-        if (connectionViewRect == null)
-        {
-           // Debug.LogError($"{logPrefix} CRITICAL: Failed to get parent ConnectionView RectTransform. Highlight will use prefab's size: {highlightTrans.sizeDelta.ToString("F2")} and default position.", highlightTrans.gameObject);
-            highlightTrans.anchoredPosition = targetAnchoredPos; // Intentar posicionar con valores por defecto.
-            return; // No se puede continuar de forma fiable sin el tamaño del padre.
-        }
-        Vector2 connectionViewSize = connectionViewRect.rect.size; // El tamaño actual del ConnectionView.
+        Logger.Log($"{logPrefix} Attempting to position highlight '{highlightTrans.name}'. Parent: '{highlightTrans.parent.name}'.");
 
         BlockViewSettings settings = BlockViewSettings.Instance;
-
         if (settings == null)
         {
-            Debug.LogError($"{logPrefix} BlockViewSettings.Instance is NULL. Cannot use settings for offsets/sizes. Highlight may be incorrect.", this.gameObject);
+            Debug.LogError("BlockViewSettings no está disponible. No se puede posicionar el highlight.");
+            return;
         }
 
-        // configuraciones específicas por tipo de conexión.
+        highlightTrans.localScale = Vector3.one;
+        highlightTrans.localRotation = Quaternion.identity;
+
         switch (m_ConnectionType)
         {
             case EConnection.InputValue:
+                highlightTrans.pivot = new Vector2(0.5f, 0); // Pivote abajo-centro
+                highlightTrans.anchorMin = highlightTrans.anchorMax = new Vector2(0, 0.5f); // Centro-izquierda del padre
+                highlightTrans.anchoredPosition = new Vector2(settings.ValueNotchWidth / 2f, 0);
                 highlightTrans.localRotation = Quaternion.Euler(0, 0, -90);
-                highlightTrans.pivot = new Vector2(0.5f, 0); // Pivote Abajo-Centro del highlight
-                highlightTrans.anchorMin = new Vector2(0, 0.5f); // Centro Izquierda de la ConnectionView
-                highlightTrans.anchorMax = new Vector2(0, 0.5f);
-                if (settings != null)
-                {
-                    targetAnchoredPos = new Vector2(settings.NotchWidth / 2f, 0); 
-                }
-            //    Debug.Log($"{logPrefix} InputValue. Using Prefab Size: {highlightTrans.sizeDelta.ToString("F2")}, TargetAP: {targetAnchoredPos.ToString("F2")}", highlightTrans.gameObject);
                 break;
 
             case EConnection.OutputValue:
+                highlightTrans.pivot = new Vector2(0.5f, 1); // Pivote arriba-centro
+                highlightTrans.anchorMin = highlightTrans.anchorMax = new Vector2(1, 0.5f); // Centro-derecha del padre
+                highlightTrans.anchoredPosition = new Vector2(-settings.ValueNotchWidth / 2f, 0);
                 highlightTrans.localRotation = Quaternion.Euler(0, 0, -90);
-                highlightTrans.pivot = new Vector2(0.5f, 1); // Pivote Arriba-Centro del highlight
-                highlightTrans.anchorMin = new Vector2(1, 0.5f); // Centro Derecha de la ConnectionView
-                highlightTrans.anchorMax = new Vector2(1, 0.5f);
-                if (settings != null)
-                {
-                    //Similar a InputValue pero al otro lado
-                    targetAnchoredPos = new Vector2(-settings.NotchWidth / 2f, 0); // Esto lo mueve a la izquierda
-                }
-              //  Debug.Log($"{logPrefix} OutputValue. Using Prefab Size: {highlightTrans.sizeDelta.ToString("F2")}, TargetAP: {targetAnchoredPos.ToString("F2")}", highlightTrans.gameObject);
                 break;
 
             case EConnection.PrevStatement:
-
-                targetAnchoredPos.x = -settings.BlockStartX; ;
-                targetAnchoredPos.y = parentOffsetY * 2f - settings.NotchHeight;
-
-                //Debug.Log($"{logPrefix} PrevStatement. TargetAP: {targetAnchoredPos.ToString("F2")}, Set SizeDelta to match ConnectionView: {highlightTrans.sizeDelta.ToString("F2")}", highlightTrans.gameObject);
-
+                highlightTrans.pivot = highlightTrans.anchorMin = highlightTrans.anchorMax = new Vector2(0, 1); // Top-Left
+                highlightTrans.anchoredPosition = new Vector2(-settings.StatementTabOffsetX, 0);
                 break;
 
             case EConnection.NextStatement:
-                if (settings != null)
-                {
-                   targetAnchoredPos.x = -settings.BlockStartX;
-                   targetAnchoredPos.y = settings.TabHeight;
-                }
-
-                //Debug.Log($"<color=#90EE90>[{gameObject.name}.Highlight]</color> Case NextStatement => Calculated Target=({targetAnchoredPos.x:F2},{targetAnchoredPos.y:F2})");
-
-                if (Type == ViewType.ConnectionInput && settings != null) 
-                {
-                   
-                    Debug.LogWarning($"{logPrefix} Pos: NextStatement INSIDE AN INPUT. Re-evaluar este offset. {targetAnchoredPos}");
-                }
-                //Debug.Log($"{logPrefix} NextStatement. TargetAP: {targetAnchoredPos.ToString("F2")}, Set SizeDelta to match ConnectionView: {highlightTrans.sizeDelta.ToString("F2")}", highlightTrans.gameObject);
+                highlightTrans.pivot = highlightTrans.anchorMin = highlightTrans.anchorMax = new Vector2(0, 1); // Top-Left
+                highlightTrans.anchoredPosition = new Vector2(0, settings.StatementTabHeight); // Posicionado abajo
                 break;
-            default:
-                Debug.LogWarning($"{logPrefix} Connection type {m_ConnectionType} has no specific highlight sizing/anchoring. Using defaults. AP: {targetAnchoredPos.ToString("F2")}, Prefab SizeDelta: {highlightTrans.sizeDelta.ToString("F2")}", highlightTrans.gameObject); break;
-        }
 
-        highlightTrans.anchoredPosition = targetAnchoredPos;
-        //Debug.Log($"{logPrefix} FINAL for '{highlightTrans.name}' -> Anchors: [{highlightTrans.anchorMin.ToString("F2")}, {highlightTrans.anchorMax.ToString("F2")}], Pivot: {highlightTrans.pivot.ToString("F2")}, AnchoredPos: {highlightTrans.anchoredPosition.ToString("F2")}, SizeDelta: {highlightTrans.sizeDelta.ToString("F2")}, LocalRotation: {highlightTrans.localRotation.eulerAngles.ToString("F1")}, WorldPos: {highlightTrans.transform.position.ToString("F3")}", highlightTrans.gameObject);
+            default:
+                highlightTrans.gameObject.SetActive(false); // No mostrar para tipos no visuales
+                break;
+        }
+        
+        Debug.Log($"{logPrefix} FINAL for '{highlightTrans.name}' -> Anchors: [{highlightTrans.anchorMin.ToString("F2")}, {highlightTrans.anchorMax.ToString("F2")}], Pivot: {highlightTrans.pivot.ToString("F2")}, AnchoredPos: {highlightTrans.anchoredPosition.ToString("F2")}, SizeDelta: {highlightTrans.sizeDelta.ToString("F2")}, LocalRotation: {highlightTrans.localRotation.eulerAngles.ToString("F1")}, WorldPos: {highlightTrans.transform.position.ToString("F3")}", highlightTrans.gameObject);
     }
 
     public void SetHighlight(bool show)
@@ -1332,6 +1349,9 @@ public class ConnectionView : BaseView
         return false; // No encontré nada o no era mejor
     }
 
-
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        throw new System.NotImplementedException();
+    }
 }//Fin clase ConnectionView
 

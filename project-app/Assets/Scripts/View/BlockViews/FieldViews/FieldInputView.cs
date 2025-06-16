@@ -100,21 +100,27 @@ public class FieldInputView : FieldView
 
     protected override Vector2 CalculateSize()
     {
+        // Hacemos comprobación de seguridad
+        if (BlockViewSettings.Instance == null) return new Vector2(50, 30); // Fallback
+
+        // Si el InputField no existe, usamos los mínimos definidos
         if (m_InputField == null || m_InputField.textComponent == null)
-            return BlockViewSettings.Get().MinUnitSize; 
+        {
+            return new Vector2(BlockViewSettings.Instance.MinUnitWidth, BlockViewSettings.Instance.MinUnitHeight);
+        }
 
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_InputField.textComponent.rectTransform);
+        // Medimos el texto que tiene para saber el tamaño preferido
+        string currentText = m_InputField.text ?? "";
+        Vector2 preferredSize = m_InputField.textComponent.GetPreferredValues(currentText);
 
-        float preferredWidth = LayoutUtility.GetPreferredWidth(m_InputField.textComponent.rectTransform);
-        float preferredHeight = LayoutUtility.GetPreferredHeight(m_InputField.textComponent.rectTransform);
+        // Añadimos el padding de los campos de texto
+        preferredSize.x += BlockViewSettings.Instance.FieldInputTextPadding.horizontal;
+        preferredSize.y += BlockViewSettings.Instance.FieldInputTextPadding.vertical;
 
-        preferredWidth += 10; 
-        preferredHeight += 5; 
+        // El tamaño final será el mayor entre el del texto con padding, o el tamaño por defecto
+        float finalWidth = Mathf.Max(preferredSize.x, BlockViewSettings.Instance.DefaultInputFieldWidth);
+        float finalHeight = Mathf.Max(preferredSize.y, BlockViewSettings.Instance.DefaultInputFieldHeight);
 
-        float finalWidth = Mathf.Max(preferredWidth, BlockViewSettings.Get().MinUnitSize.x);
-        float finalHeight = Mathf.Max(preferredHeight, BlockViewSettings.Get().MinUnitSize.y);
-
-       
         return new Vector2(finalWidth, finalHeight);
     }
 
@@ -158,5 +164,14 @@ public class FieldInputView : FieldView
     protected override void RegisterInputListeners()
     {
        // throw new System.NotImplementedException();
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        // 1. Me posiciono donde me indica mi padre (el InputView).
+        this.XY = startPos;
+
+        // 2. Calculo mi propio tamaño basado en mi contenido.
+        this.Size = CalculateSize();
     }
 }//Fin clase FielInputView

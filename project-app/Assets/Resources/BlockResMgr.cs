@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: Integración de la estructura de Ublockly dentro del proyecto por semejanza con ScratchBlocks. 
+ * Descripción: Gestor de Recursos para los Prefabs de VRLearnTOBOT
  */
 
 using System;

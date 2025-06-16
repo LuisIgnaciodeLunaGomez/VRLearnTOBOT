@@ -9,7 +9,7 @@
  * 
  * Fecha: 22/02/2025
  * 
- * Versión: 2.0.3
+ * Versión: 2.0.4
  * 
  * Descripción: Clase que representa un bloque visual en la interfaz de usuario premite la vinculación del modelo lógico con la UI
  * 
@@ -17,21 +17,25 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.EventSystems;
+
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using TMPro;
 
 
 [RequireComponent(typeof(CanvasGroup))]
-[RequireComponent(typeof(LayoutElement))]
+//[RequireComponent(typeof(LayoutElement))]
 
 public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHandler //TODO: Interesante mirar IPointerClickHandler
 {
     [SerializeField] private List<Image> m_BgImages = new List<Image>();
     [Tooltip("Asigna aquí la Imagen principal que muestra el color del bloque")]
     [SerializeField] private Image m_PrimaryBackground;
-    private bool m_LayoutIsDirty = false;
+
+     private bool m_LayoutIsDirty = true;// Empieza sucio para el primer layout
+    private bool m_IsExecutingLayout = false; // Flag para evitar recursividad infinita en UpdateLayout
+    public bool LayoutISDirty => m_LayoutIsDirty; // Propiedad para acceder al estado de suciedad del layout
+    // private bool m_LayoutIsDirty = false;
     public override ViewType Type => ViewType.Block;
     public string BlockType => mBlock?.Type ?? "NULL_BLOCK_TYPE";
 
@@ -91,159 +95,97 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     /// </summary>
     public virtual void BindModel(BlockModel block, WorkSpaceView workspaceView)
     {
-        if (mBlock == block && mBlock != null)
-        {
-            Debug.LogWarning($"BlockView ({BlockType}): BindModel called redundantly with the same model.", this.gameObject);
-            return;
-
-        }
+        if (mBlock == block && mBlock != null) return;
         if (block == null)
         {
-            Debug.LogError($"BlockView ({gameObject.name}): Attempted to BindModel with a NULL model!", this);
+            Debug.LogError($"BlockView ({gameObject.name}): Intento de BindModel con un modelo NULL.", this);
             return;
         }
-        if (workspaceView == null)
-        {
-            Debug.LogError($"BlockView ({block.Type}/{gameObject.name}): Attempted to BindModel with a NULL WorkSpaceView!", this);
-            //return;
-        }
+
         if (mBlock != null) UnBindModel();
 
         mBlock = block;
-       m_WorkspaceView = this.InToolbox ? null : workspaceView;
+        m_WorkspaceView = this.InToolbox ? null : workspaceView;
 
-        // Debug.Log($"BlockView ({BlockType}): Assigning WorkspaceView (InstanceID: {m_WorkspaceView?.GetInstanceID()})", this.gameObject);
-
-        //Debug.Log($"BlockView ({BlockType}): BindModel START. Block Model ID: {block?.ID ?? "NULL"}. Workspace: {block?.Workspace?.Id ?? "NULL"}", this.gameObject);
-
-        // Lógica para distinguir entre una template y un bloque normal 
-        bool isTemplate = mBlock?.Workspace == null;
-
-        if (!isTemplate) // no es una platnilla po lo que tiene que tener WS
+        if (!InToolbox && m_WorkspaceView != null)
         {
-           // Debug.Log($"BlockView ({BlockType}): Binding as REGULAR workspace block view.", this.gameObject);
-            WorkSpaceView.Active?.AddBlockView(this); // Añadir a lista activa del workspace
-            mBlockObserver = new MemorySafeBlockObserver(this); // Observer solo para modelos de workspace
+            m_WorkspaceView.AddBlockView(this);
+            mBlockObserver = new MemorySafeBlockObserver(this);
             mBlock.AddObserver(mBlockObserver);
         }
-        else // Si es una plantilla no tiene WS asociado
-        {
-           // Debug.Log($"BlockView ({BlockType}): Binding as TEMPLATE block view.", this.gameObject);
-        }
 
-      //  Debug.Log($"---> BlockView.BindModel ({this.gameObject.name}): About to process ChildViews. Count: {ChildViews?.Count ?? -1}");
+        // --- LÓGICA DE BINDEO CORREGIDA Y DEFINITIVA ---
 
-        if (ChildViews != null)
+        // 1. Recolecta todas las vistas con nombre.
+        var viewDictionary = GetComponentsInChildren<BaseView>(true)
+            .Where(v => v != this && !string.IsNullOrEmpty(v.DefinitionName))
+            .ToDictionary(v => v.DefinitionName, v => v);
+
+        // 2. Bindea las conexiones de primer nivel EXPLÍCITAMENTE.
+        // Conexión PREVIA
+        if (mBlock.PreviousConnection != null)
         {
-            foreach (var v in ChildViews)
+            if (viewDictionary.TryGetValue("PREVIOUSSTATEMENT", out BaseView prevView) && prevView is ConnectionView prevConnView)
             {
-               // Debug.Log($"    - ChildView Found: Name='{v.gameObject.name}', Type='{v.GetType().Name}'");
+                prevConnView.BindModel(mBlock.PreviousConnection, this);
             }
         }
 
-        int inputModelIndex = 0;
-
-        foreach (BaseView childView in ChildViews.Where(c => c != null))
+        // Conexión SIGUIENTE
+        if (mBlock.NextConnection != null)
         {
-            // if (childView.Type == ViewType.Connection)
-
-            //Proceso las conexiones hijas directas - OutputValue, PrevStatemnet y NextStatement
-            if (childView is ConnectionView conView && !(conView is ConnectionInputView))
+            if (viewDictionary.TryGetValue("NEXTSTATEMENT", out BaseView nextView) && nextView is ConnectionView nextConnView)
             {
-              //  Debug.Log($"BlockView ({BlockType}): Found direct ConnectionView: {conView.gameObject.name} (Type:{conView.ConnectionType})", this.gameObject);
-                //ConnectionView conView = childView as ConnectionView;
-                //Obtengo el modelo conexión de BlockModel
-                ConnectionModel conModel = mBlock.GetFirstClassConnection(conView.ConnectionType);
-
-                //Verifico el modelo antes de bindear e informa de error solo si falla
-                if (conModel != null)
-                {
-                   // Debug.Log($" -> Found matching Model: {ConnectionModel.GetConnectionModelID(conModel)}. Binding...", conView.gameObject);
-                    conView.BindModel(conModel, this);
-                    /*    // Guarda la referencia específica (Output/Prev/Next)
-                        if (conView.ConnectionType == EConnection.OutputValue) OutputConnectionView = conView;
-                        else if (conView.ConnectionType == EConnection.PrevStatement) PreviousConnectionView = conView;
-                        else if (conView.ConnectionType == EConnection.NextStatement) NextConnectionView = conView;*/
-                }
-                else
-                {
-                    // Log de Error solo si se esperaba una conexión que el modelo no tiene
-                    Debug.LogError($"BlockView ({BlockType}): Failed to find matching ConnectionModel for direct ConnectionView of type {conView.ConnectionType} on BlockModel '{mBlock.Type}'. Binding view to NULL.", this.gameObject);
-                    conView.BindModel(null, this); // Bindea a null si no hay modelo 
-                }
+                nextConnView.BindModel(mBlock.NextConnection, this);
             }
-
-            //busco LineGroups
-
-            //  else if (childView.Type == ViewType.LineGroup)
-            else if (childView is LineGroupView groupView) //Si ChildeView es un LineGroup
-            {
-               // Debug.Log($"BlockView ({BlockType}): Found LineGroupView: {groupView.gameObject.name}. Binding Inputs within...", groupView.gameObject);
-
-                // mLineGroupViews.Add(groupView);
-
-                for (int i = 0; i < groupView.transform.childCount; i++)
-                {
-                   // Transform lineGroupChildTransform = groupView.transform.GetChild(i);
-                   // InputView inputViewVisual = lineGroupChildTransform.GetComponent<InputView>();
-                    InputView inputViewVisual = groupView.transform.GetChild(i).GetComponent<InputView>();
-
-                    // SI es un InputView hijo DIRECTO del LineGroup
-                    if (inputViewVisual != null)
-                    {
-
-                        InputModel correspondingInputModel = null;
-                        if (inputModelIndex < mBlock.InputList.Count)
-                        {
-                            // Debug.Log($"--> BlockView mapping Visual Child Index {i} ('{inputViewVisual.gameObject.name}') to Logical Model Index {inputModelIndex}.");
-
-                            //  correspondingInputModel = mBlock.InputList[inputModelIndex];
-
-                            //Debug.Log($"--> BlockView mapping Visual Child Index {i} ('{inputViewVisual.gameObject.name}') to Logical Model Index {inputModelIndex}.");
-
-                            // Debug.Log($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}'. Attempting to bind to InputModel index {inputModelIndex} ('{correspondingInputModel?.Name ?? "NULL"}').");
-                            // inputViewVisual.BindModel(correspondingInputModel, this); // Delego el bindeo interno a InputView.BindModel
-                            //inputModelIndex++; // Incrementar SOLO si se procesa un InputView
-
-                            inputViewVisual.BindModel(mBlock.InputList[inputModelIndex], this);
-                        }
-                        else
-                        {
-                            Debug.LogError($"BlockView({BlockType}): InputModel index mismatch for InputView '{inputViewVisual.name}'. Expected index {inputModelIndex} out of bounds ({mBlock.InputList.Count} inputs).");
-                            //    Debug.LogError($"   -> LineGroup Child {i}: Found InputView '{inputViewVisual.gameObject.name}' but NO corresponding InputModel at index {inputModelIndex} (Model has only {mBlock.InputList.Count} inputs). Binding view to NULL.", inputViewVisual.gameObject);
-                            inputViewVisual.BindModel(null, this); // Bindea a null
-                        }
-                        inputModelIndex++; // Incremento el índice del modelo lógico
-                    }
-                    // else: Ignoro otros hijos DIRECTOS de LineGroup (e.g., separadores visuales, si los hubiera)
-                    /*else
-                    {
-                        Debug.Log($"   -> LineGroup Child {i} ('{lineGroupChildTransform.name}'): Not an InputView. Skipping.");
-                    }*/
-                }
-              
-            }
-         
-           // Debug.Log($"---> BlockView.BindModel ({this.gameObject.name}): Finished processing ChildViews. Processed InputViews: {inputModelIndex}");
-
-            //  Debug.Log($"BlockView ({BlockType}): Finished binding children.");
-           /* if (!isTemplate && mBlock?.InputList != null && mBlock.InputList.Count != mBlock.InputList.Count)
-            {
-                Debug.LogError($"BlockView ({BlockType}): Unbound InputModels remaining: {mBlock.InputList.Count - inputModelIndex}. Mismatch in View/Model Input count.", this.gameObject);
-            }*/
-           // Debug.Log($"BlockView ({BlockType}): Finished binding children. Reviewing hierarchy...", this);
-            ReviewBaseViewHierarchy(this, 0); //Depuración recursiva para la jerarquía BaseView dentro de este blockView padre
-
-            RegisterUIEvents();
-            UpdateColor();
-            MarkDirty();
-            QueueForceLayoutUpdate();
-
-           // Debug.Log($"BlockView ({BlockType}): BindModel completed fully.");
-
         }
 
+        // Conexión de SALIDA (Output)
+        if (mBlock.OutputConnection != null)
+        {
+            if (viewDictionary.TryGetValue("OUTPUT", out BaseView outputView) && outputView is ConnectionView outputConnView)
+            {
+                outputConnView.BindModel(mBlock.OutputConnection, this);
+            }
+        }
+
+        // 3. Bindea los inputs y sus componentes internos.
+        foreach (InputModel inputModel in mBlock.InputList)
+        {
+            // Bindea los CAMPOS
+            foreach (FieldModel fieldModel in inputModel.FieldRow)
+            {
+                if (fieldModel != null && viewDictionary.TryGetValue(fieldModel.Name, out BaseView foundFieldView) && foundFieldView is FieldView fieldView)
+                {
+                    fieldView.BindModel(fieldModel);
+                }
+            }
+            // Bindea la CONEXIÓN del input
+            if (inputModel.Connection != null && viewDictionary.TryGetValue(inputModel.Name, out BaseView foundConnView) && foundConnView is ConnectionView connView)
+            {
+                connView.BindModel(inputModel.Connection, this);
+            }
+        }
+
+
+        UpdateColor();
+        MarkDirty();
+        Debug.Log($"<color=lime><b>✔ BINDING COMPLETO para '{gameObject.name}'.</b></color>", gameObject);
     }
+
+    /*
+    private void BindFirstClassConnection(Dictionary<string, BaseView> viewDict, ConnectionModel model)
+    {
+        if (model == null) return;
+        string definitionName = model.Type.ToString().ToUpper();
+        if (viewDict.TryGetValue(definitionName, out BaseView view) && view is ConnectionView connView)
+        {
+            connView.BindModel(model, this);
+        }
+    }
+    */
+
+
     private void RecurseCheckChildBinds(BaseView view)
     {
         if (view == null) return;
@@ -431,136 +373,115 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     {
         get
         {
-            
-            return BlockViewSettings.Instance?.StatementConnectPointRect.position ?? Vector2.zero;
+            // Usar los valores de padding definidos en el Settings.
+            // Y añadimos una comprobación de seguridad por si no se encuentra el asset.
+            if (BlockViewSettings.Instance != null)
+            {
+                return new Vector2(BlockViewSettings.Instance.BlockInternalPadding.left,
+                                 -BlockViewSettings.Instance.BlockInternalPadding.top); // Negativo porque Y va hacia abajo
+            }
 
+            // Si no hay settings, usamos un valor por defecto seguro.
+            return new Vector2(10, -10);
         }
     }
+
+   
 
     protected override Vector2 CalculateSize()
     {
-        string logPrefix = $"[BV.CalculateSize '{gameObject.name}']";
-        if (m_RectTransform == null) { /* LogError y devolver tamaño default */ return BlockViewSettings.Instance?.DefaultBlockSize ?? Vector2.one * 50; }
-        BlockViewSettings settings = BlockViewSettings.Instance;
-        if (settings == null) { /* LogError */ return Vector2.one * 50; }
+        var settings = BlockViewSettings.Instance;
 
-        Vector2 contentSize = Vector2.zero; // Tamaño interno (Fields, Inputs sin bloques)
-        float maxHeight = 0f;
-        float currentY = 0f; // Trackea la posición Y mientras calcula
+        // El tamaño del contenido empieza con los paddings.
+        float contentWidth = BlockViewSettings.Instance.BlockInternalPadding.left + BlockViewSettings.Instance.BlockInternalPadding.right;
+        float contentHeight = BlockViewSettings.Instance.BlockInternalPadding.top + BlockViewSettings.Instance.BlockInternalPadding.bottom;
 
-        // Muesca Superior (Prev)
-        currentY -= settings.InternalPadding.y; // Padding superior
-        bool hasPrev = mBlock?.PreviousConnection != null;
-        if (hasPrev)
+        float maxChildWidth = 0;
+        float totalChildHeight = 0;
+
+        var activeLineGroups = ChildViews.OfType<LineGroupView>()
+                                         .Where(lg => lg != null && lg.gameObject.activeSelf)
+                                         .ToList();
+
+        if (activeLineGroups.Count > 0)
         {
-            currentY -= settings.NotchHeight;
-            // El Ancho lo dictan los LineGroups, la muesca solo añade altura
-        }
-
-        // Contenido Interno (LineGroups)
-        float maxLineWidth = 0f;
-        float totalLineGroupHeight = 0f;
-        int lineGroupIndex = 0;
-
-        // Importante: Primero asegurar que todos los hijos (LineGroup, Input, Field) han calculado su propio tamaño
-        foreach (var child in ChildViews.OfType<BaseView>())
-        { // Usar ChildViews de BaseView
-            if (child is LineGroupView lgv)
+            foreach (var lineGroup in activeLineGroups)
             {
-                // Forzar que calcule su tamaño interno y el de sus hijos
-                // Este UpdateLayout debe calcular el .Size de LineGroupView correctamente
-                lgv.UpdateLayout(Vector2.zero);
-                maxLineWidth = Mathf.Max(maxLineWidth, lgv.Size.x);
-                totalLineGroupHeight += lgv.Size.y;
-                if (lineGroupIndex > 0) totalLineGroupHeight += settings.ContentSpace.y;
-                lineGroupIndex++;
+                totalChildHeight += lineGroup.Height;
+                maxChildWidth = Mathf.Max(maxChildWidth, lineGroup.Width);
             }
-            else if (child is InputView iv)
-            { // Podría haber Inputs directos?
-                iv.UpdateLayout(Vector2.zero); // Asegurar que el input sabe su tamaño
-                maxLineWidth = Mathf.Max(maxLineWidth, iv.Size.x);
-                totalLineGroupHeight += iv.Size.y; // Añadir si es hijo directo
-                // Falta espaciado aquí si hay mezcla... el modelo debería ser consistente.
-            }
-            // Añadir más tipos si son hijos directos que contribuyen al tamaño (raro)
-        }
-        contentSize.x = maxLineWidth;
-        contentSize.y = totalLineGroupHeight;
-        currentY -= contentSize.y; // Restar altura del contenido
-
-        // Debug.Log($"{logPrefix} Internal Content Size Calculated: W={contentSize.x:F2}, H={contentSize.y:F2}");
-
-        // Pestaña Inferior (Next)
-        currentY -= settings.InternalPadding.y; // Padding inferior
-        bool hasNext = mBlock?.NextConnection != null;
-        if (hasNext)
-        {
-            currentY -= settings.TabHeight;
-            // El Ancho se ajusta si es necesario, pero no por el TAB en sí
+            // Añadir el espaciado entre los line groups.
+            totalChildHeight += (activeLineGroups.Count - 1) * settings.VerticalLineSpacing;
         }
 
-        // Calcular Tamaño Final (con Paddings y Mínimos)
-        float finalWidth = contentSize.x + settings.InternalPadding.x + settings.InternalPadding.x; // Paddings laterales
-        // Ver si necesita ser más ancho por la indentación del bloque SIGUIENTE (si está conectado Y TENEMOS CONTENEDOR)
-        if (hasNext && mBlock.NextConnection.IsConnected && m_nextStatementContainer != null)
-        {
-            // Obtener el ancho PREFERIDO del contenedor (que tiene los bloques siguientes)
-            float nextStackWidth = LayoutUtility.GetPreferredWidth(m_nextStatementContainer);
-            // Si GetPreferredWidth no funciona, intentar con sizeDelta si está actualizado
-            if (nextStackWidth <= 0) nextStackWidth = m_nextStatementContainer.sizeDelta.x;
+        contentWidth += maxChildWidth;
+        contentHeight += totalChildHeight;
 
-            float requiredWidthForNext = settings.StatementIndent + nextStackWidth + settings.InternalPadding.x; // Indent + Stack + Padding Derecho
-            finalWidth = Mathf.Max(finalWidth, requiredWidthForNext);
-            // Debug.Log($"{logPrefix} Width adjustment for Next Stack. Child Container Width: {nextStackWidth:F2}. Required Width: {requiredWidthForNext:F2}. Final Width: {finalWidth:F2}");
-        }
+        // El tamaño final no puede ser menor que el mínimo definido.
+        float finalWidth = Mathf.Max(contentWidth, settings.MinBlockSize.x);
+        float finalHeight = Mathf.Max(contentHeight, settings.MinBlockSize.y);
 
-        float finalHeight = Mathf.Abs(currentY); // Altura total es la Y negativa final
-
-        // Aplicar Mínimos
-        finalWidth = Mathf.Max(finalWidth, settings.MinBlockWidth);
-        finalHeight = Mathf.Max(finalHeight, settings.MinBlockHeight);
-
-        Vector2 finalCalculatedSize = new Vector2(finalWidth, finalHeight);
-        // Debug.Log($"{logPrefix} FINAL Calculated Size = {finalCalculatedSize.ToString("F2")}");
-        return finalCalculatedSize;
+        return new Vector2(finalWidth, finalHeight);
     }
 
 
-    public override void UpdateLayout(Vector2 position = default) // Permite que BaseView controle XY y Size
+    public override void UpdateLayout(Vector2 startPos)
     {
-        Vector2 previousSize = this.Size;
-         string logPrefix = $"[BV.UpdateLayout '{gameObject.name}']";
-         Debug.Log($"{logPrefix} ENTRY. Current XY: {this.XY.ToString("F2")}, Size: {this.Size.ToString("F2")}");
+        // 1. Me posiciono donde me han dicho (o en mi posición actual si soy la raíz).
+        this.XY = startPos;
 
-        // Llama a la implementación de BaseView que calculará el tamaño (llamando a nuestro CalculateSize override)
-        // y asignará XY y Size internamente.
-        base.UpdateLayout(position);
-
-        // Ahora this.Size debería tener el tamaño calculado correcto.
-        // Aplícalo al RectTransform.
-        if (m_RectTransform != null)
+        // 2. Organizo a mis hijos (los LineGroups) verticalmente.
+        if (HasChildren)
         {
-            if (m_RectTransform.sizeDelta != this.Size)
+            // La posición local de inicio para el primer hijo, teniendo en cuenta el padding del bloque.
+            Vector2 currentChildPos = new Vector2(
+                     BlockViewSettings.Instance.BlockInternalPadding.left,
+                      -BlockViewSettings.Instance.BlockInternalPadding.top); // Negativo porque Y va hacia abajo
+
+            Debug.Log($"<color=yellow><b>[BlockView.UpdateLayout]</b></color> en '{gameObject.name}': Empezando a posicionar LineGroups. Posición inicial de hijos: {currentChildPos:F2}", gameObject);
+
+            foreach (LineGroupView lineGroup in ChildViews.OfType<LineGroupView>().Where(lg => lg != null && lg.gameObject.activeSelf))
             {
-                //  Debug.Log($"{logPrefix} Applying Size {this.Size.ToString("F2")} to RectTransform sizeDelta.");
-                m_RectTransform.sizeDelta = this.Size;
+                lineGroup.UpdateLayout(currentChildPos);
+
+                // El siguiente LineGroup se posiciona debajo del anterior.
+                currentChildPos.y -= lineGroup.Height + BlockViewSettings.Instance.VerticalLineSpacing;
+
+                Debug.Log($"    - LineGroup '{lineGroup.gameObject.name}' posicionado. Tamaño: {lineGroup.Size:F2}. Próximo empezará en Y={currentChildPos.y:F2}", gameObject);
+
             }
         }
-        else { /* Log Error */ }
 
-        // Forzar actualización de hijos o Layout Groups INTERNOS
-        ForceInternalLayoutUpdate();
+        // 3. Finalmente, con todos los hijos en su sitio, calculo mi propio tamaño.
+        this.Size = CalculateSize();
 
-        if (this.Size != previousSize && ViewTransform.parent != null) // PreviousSize debe ser guardado 
-        {
-            LayoutRebuilder.MarkLayoutForRebuild(ViewTransform.parent as RectTransform);
-            // Debug.Log($"{logPrefix} Size changed. Marked parent '{ViewTransform.parent.name}' for rebuild.");
-        }
+        Debug.Log($"<color=yellow><b>[BlockView.UpdateLayout]</b></color> en '{gameObject.name}': Layout completado. Mi tamaño final es {this.Size:F2}", gameObject);
 
-        // Debug.Log($"{logPrefix} EXIT. Final XY: {this.XY.ToString("F2")}, Size: {this.Size.ToString("F2")}");
-        m_LayoutIsDirty = false; // Marcar como limpio después de actualizar
+
     }
 
+    /// <summary>
+    ///     Método para actualizar la malla (Mesh) y la apariencia visual del bloque.
+    /// </summary>
+
+    public void ApplyVisualAppearance()
+    {
+        var customImage = m_PrimaryBackground as CustomMeshImage;
+        if (customImage == null) return;
+
+        Vector2 finalBlockSize = this.Size;
+        if (finalBlockSize.x <= 0 || finalBlockSize.y <= 0) return;
+
+        // Dibujamos un único rectángulo que abarca todo el bloque
+        Vector4 blockDimension = new Vector4(
+            0,                         // X min
+            -finalBlockSize.y,         // Y min (es negativo)
+            finalBlockSize.x,          // X max
+            0                          // Y max
+        );
+
+        customImage.SetDrawDimensions(new Vector4[] { blockDimension });
+    }
     // OnXYUpdated (Mantener, llama a base)
     protected internal override void OnXYUpdated()
     {
@@ -622,14 +543,23 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
 
     protected internal override void OnSizeUpdated()
     {
-        base.OnSizeUpdated(); // Llamar a Base por si hace algo
-                              // Asegurar que las posiciones de las conexiones se actualizan si el tamaño cambia
-        foreach (var connectionView in ChildViews.OfType<ConnectionView>())
+        base.OnSizeUpdated();
+
+        // Iteramos por TODAS las ConnectionView hijas.
+        var allConnections = GetComponentsInChildren<ConnectionView>();
+
+        foreach (var connectionView in allConnections)
         {
-            connectionView.OnXYUpdated();
+            // AÑADIMOS ESTA CONDICIÓN CRÍTICA:
+            // Solo llamamos a OnXYUpdated SI la conexión TIENE UN MODELO ASIGNADO.
+            if (connectionView.ConnectionModel != null)
+            {
+                connectionView.OnXYUpdated();
+            }
         }
+
         if (m_nextStatementContainer != null)
-        { // Si el contenedor está separado
+        {
             LayoutRebuilder.MarkLayoutForRebuild(m_nextStatementContainer);
         }
     }
@@ -637,6 +567,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     // MarkDirty (Helper, mantener)
     public override void MarkDirty()
     {
+
         if (!m_LayoutIsDirty && gameObject.activeInHierarchy) // Solo marcar si está activo
         {
             // Debug.Log($"[BV.MarkDirty '{gameObject.name}']");
@@ -718,214 +649,6 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
     }
 
 
-    protected /*override*/ Vector2 _CalculateSize()
-    {
-        if (m_RectTransform == null)
-        {
-            Debug.LogError($"BlockView ({BlockType}) CalculateSize: m_RectTransform is NULL at the beginning! Re-assigning.", gameObject);
-            m_RectTransform = GetComponent<RectTransform>();
-            if (m_RectTransform == null)
-            {
-                Debug.LogError($"BlockView ({BlockType}) CalculateSize: FAILED to re-assign m_RectTransform. Returning default size.", gameObject);
-                return BlockViewSettings.Instance?.DefaultBlockSize ?? new Vector2(100, 30);
-            }
-        }
-        BlockViewSettings settings = BlockViewSettings.Instance;
-        if (settings == null)
-        {
-            Debug.LogError("BlockViewSettings instance is null! Cannot calculate size correctly.");
-            return Vector2.one * 50;
-        }
-
-        //  CALCULAR EL TAMAÑO DEL CONTENIDO INTERNO DE ESTE BLOQUE (LineGroups)
-        Vector2 currentBlockDirectContentSize = Vector2.zero; // Tamaño solo de los LineGroups directos
-        bool alignRight = false;
-        float accumulatedLineGroupHeight = 0f;
-        float maxLineGroupWidth = 0f;
-
-        // actualiza el layout de todos los LineGroupView hijos para que sus .Size sean correctos
-        foreach (BaseView childView in ChildViews)
-        {
-            if (childView is LineGroupView groupView)
-            {
-                // Suponiendo que UpdateLayout establece groupView.XY y calcula su tamaño
-                groupView.UpdateLayout(Vector2.zero); // El offset real se aplicará al generar dimensions
-            }
-        }
-
-        // Ahora suma los tamaños de los LineGroup
-        int lineGroupCount = 0;
-        foreach (BaseView childView in ChildViews)
-        {
-            if (childView is LineGroupView groupView)
-            {
-                maxLineGroupWidth = Mathf.Max(maxLineGroupWidth, groupView.Size.x);
-                accumulatedLineGroupHeight += groupView.Size.y;
-                lineGroupCount++;
-                if (lineGroupCount > 1) // Si no es el primer LineGroup, añade espacio
-                {
-                    accumulatedLineGroupHeight += settings.ContentSpace.y;
-                }
-
-                InputView lastInputView = groupView.LastChild as InputView;
-                if (lastInputView != null && lastInputView.AlignRight)
-                {
-                    alignRight = true;
-                }
-            }
-        }
-        currentBlockDirectContentSize.x = maxLineGroupWidth;
-        currentBlockDirectContentSize.y = accumulatedLineGroupHeight;
-
-        Debug.Log($"BlockView ({BlockType}) - Initial Direct Content Size: {currentBlockDirectContentSize}");
-
-
-        //  PASO 2: GESTIONAR EL NEXTCONNECTION 
-        ConnectionModel nextConnectionModel = mBlock?.NextConnection;
-        BlockView nextBlockActualView = null; // El BlockView del bloque SIGUIENTE si está conectado
-        float heightOfFollowingStack = 0f;  // Altura de TODA la pila que cuelga del nextBlockActualView
-        float widthOfFollowingStack = 0f;   // Ancho MÁXIMO de la pila que cuelga del nextBlockActualView (para ajustar el padre)
-        bool hasNextConnectionDefined = nextConnectionModel != null; // Si este bloque TIENE un conector Next (aunque no esté conectado)
-        bool isNextActuallyConnected = hasNextConnectionDefined && nextConnectionModel.IsConnected && nextConnectionModel.TargetBlock != null;
-
-        if (isNextActuallyConnected)
-        {
-            Debug.Log($"BlockView ({BlockType}) - NextConnection IS CONNECTED. Getting next block's view and size...");
-            ConnectionView localNextConnView = GetConnectionView(EConnection.NextStatement);
-            if (localNextConnView != null)
-            {
-                nextBlockActualView = localNextConnView.TargetBlockView;
-            }
-
-            if (nextBlockActualView != null)
-            {
-                if (nextBlockActualView.GetRectTransform() != null)
-                {
-                    // Forzar que el bloque siguiente y toda su pila calculen su tamaño.
-                    
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(nextBlockActualView.GetRectTransform());
-                    heightOfFollowingStack = nextBlockActualView.Size.y; 
-                    widthOfFollowingStack = nextBlockActualView.Size.x;  
-                    Debug.Log($"  -> Next Block View '{nextBlockActualView.name}' Size AFTER ForceRebuild: ({widthOfFollowingStack:F2}, {heightOfFollowingStack:F2})");
-                }
-                else
-                {
-                    Debug.LogError($"BlockView ({BlockType}): Next block '{nextBlockActualView.name}' has null RectTransform!", nextBlockActualView.gameObject);
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"BlockView ({BlockType}): NextConnection Model is connected, but TargetBlockView not found in its ConnectionView.", this.gameObject);
-            }
-        }
-
-        //  PASO 3: CALCULAR EL TAMAÑO TOTAL DE ESTE BLOQUE ---
-        Vector2 finalCalculatedSize = Vector2.zero;
-
-        //  ancho del contenido directo de este bloque
-        finalCalculatedSize.x = currentBlockDirectContentSize.x;
-        //  altura del contenido directo de este bloque
-        finalCalculatedSize.y = currentBlockDirectContentSize.y;
-
-        // padding interno general
-        finalCalculatedSize.x += settings.InternalPadding.x + settings.InternalPadding.x;
-        finalCalculatedSize.y += settings.InternalPadding.y + settings.InternalPadding.y;
-
-        // Si hay un NextConnection (conectado o no), la forma del bloque lo incluye (pestaña/muesca).
-        if (hasNextConnectionDefined)
-        {
-            // La pestaña "C" (o muesca para el prev) del propio bloque añade a su altura.
-            finalCalculatedSize.y += settings.TabHeight; 
-            Debug.Log($"  Added TabHeight ({settings.TabHeight}) for NextConnection visual shape. Y is now {finalCalculatedSize.y}");
-
-            if (isNextActuallyConnected && heightOfFollowingStack > 0)
-            {
-                // Añadir la altura de la pila que le sigue
-                finalCalculatedSize.y += heightOfFollowingStack;
-                Debug.Log($"  Added HeightOfFollowingStack ({heightOfFollowingStack}). Y is now {finalCalculatedSize.y}");
-
-                // Asegurar que el ancho de este bloque acomode el bloque siguiente si está indentado
-                float requiredWidthForNext = widthOfFollowingStack + settings.StatementIndent + settings.InternalPadding.x; // Ancho del hijo + indent + padding derecho de este bloque
-                finalCalculatedSize.x = Mathf.Max(finalCalculatedSize.x, requiredWidthForNext);
-                Debug.Log($"  Adjusted width for next stack. X is now {finalCalculatedSize.x} (required: {requiredWidthForNext})");
-            }
-        }
-
-        // Asegurar tamaño mínimo
-        finalCalculatedSize.x = Mathf.Max(finalCalculatedSize.x, settings.MinBlockWidth);
-        finalCalculatedSize.y = Mathf.Max(finalCalculatedSize.y, settings.MinBlockHeight);
-
-        Debug.Log($"BlockView ({BlockType}) - Intermediate Final Calculated Size: {finalCalculatedSize}");
-
-
-        //  GENERAR LA LISTA 'dimensions' PARA CustomMeshImage 
-      
-        List<Vector4> dimensions = new List<Vector4>();
-        Vector2 currentDrawOffset = Vector2.zero; //  empezamos desde (0,0) local para las 'dimensions'
-
-        // Muesca Previous (Superior)
-        currentDrawOffset.y -= settings.InternalPadding.y; // Empezar debajo del padding superior
-        if (mBlock.PreviousConnection != null)
-        {
-            dimensions.Add(new Vector4(
-                settings.InternalPadding.x + settings.StatementIndent, // x0
-                currentDrawOffset.y,                                       // y0 (top de la muesca)
-                settings.InternalPadding.x + settings.StatementIndent + settings.StatementConnectorVisualWidth, // x1
-                currentDrawOffset.y - settings.NotchHeight                 // y1 (bottom de la muesca)
-            ));
-            currentDrawOffset.y -= settings.NotchHeight;
-            Debug.Log($"   Added PrevNotch. Offset.y = {currentDrawOffset.y}. Dimensions Count: {dimensions.Count}");
-        }
-
-        // Contenido (LineGroups)
-        float lineGroupStartX = settings.InternalPadding.x;
-        float runningHeightForLineGroups = 0; // Acumulador para la altura del contenido de los LineGroups
-
-        // Primero calculamos la altura total de todos los LineGroups más sus espacios
-
-        if (currentBlockDirectContentSize.y > 0)
-        {
-            dimensions.Add(new Vector4(
-                lineGroupStartX,                    // x0
-                currentDrawOffset.y,                // y0 (donde terminó la muesca previa, o el top)
-                lineGroupStartX + currentBlockDirectContentSize.x, // x1 (ancho del contenido directo)
-                currentDrawOffset.y - currentBlockDirectContentSize.y // y1 (altura total de linegroups + spaces)
-            ));
-            currentDrawOffset.y -= currentBlockDirectContentSize.y;
-            Debug.Log($"   Added MainContent. Offset.y = {currentDrawOffset.y}. ContentSize=({currentBlockDirectContentSize.x}, {currentBlockDirectContentSize.y}). Dimensions Count: {dimensions.Count}");
-        }
-
-        // Muesca/Pestaña Next (Inferior)
-        currentDrawOffset.y -= settings.InternalPadding.y; // Espacio antes de la pestaña Next
-        if (hasNextConnectionDefined)
-        {
-            dimensions.Add(new Vector4(
-                settings.InternalPadding.x + settings.StatementIndent, // x0
-                currentDrawOffset.y,                                       // y0 (top de la pestaña)
-                settings.InternalPadding.x + settings.StatementIndent + settings.StatementConnectorVisualWidth, // x1
-                currentDrawOffset.y - settings.TabHeight                   // y1 (bottom de la pestaña)
-            ));
-            currentDrawOffset.y -= settings.TabHeight; // Esta es la altura de la forma de la pestaña en sí
-            Debug.Log($"   Added NextNotch/Tab. Offset.y = {currentDrawOffset.y}. Dimensions Count: {dimensions.Count}");
-        }
-
-        Debug.Log($"BlockView ({BlockType}) - FINISHED DIMENSIONS LIST GENERATION. Total Dimensions: {dimensions.Count}");
-        if (m_BgImages != null && m_BgImages.Count > 0 && m_BgImages[0] is CustomMeshImage customImage)
-        {
-           
-            customImage.SetDrawDimensions(dimensions.ToArray());
-        }
-        else if (m_PrimaryBackground is CustomMeshImage mainCustomImageBG) // Fallback si m_BgImages[0] no es, pero PrimaryBackground sí
-        {
-            mainCustomImageBG.SetDrawDimensions(dimensions.ToArray());
-        }
-
-        // Esto lo hace BaseView.UpdateLayout()
-        // LayoutRebuilder.MarkLayoutForRebuild(m_RectTransform);
-
-        Debug.LogWarning($"BlockView ({BlockType}) CalculateSize FINISHED. Returning finalCalculatedSize = {finalCalculatedSize}. (InternalContentSize was {currentBlockDirectContentSize})", this.gameObject);
-        return finalCalculatedSize;
-    }
     
     public void BuildLayout()
     {
@@ -1405,7 +1128,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             }
         }
     }
-
+    /*
     public static void EditorInitialDisplayUpdate(FieldView fieldView, FieldModel fieldModel, string errorText = null)
     {
         if (fieldView == null || fieldModel == null) return;
@@ -1438,7 +1161,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
                 if (tmpComp != null) tmpComp.text = displayText;
             }
         }
-    }
+    }*/
 
     private float GetStackHeightBelow(BlockView startBlock)
     {
@@ -1458,7 +1181,7 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
             if (currentSize.y <= 0)
             {
                 Debug.LogWarning($"      !!! Block '{current.name}' reported Zero or Negative height ({currentSize.y}). Using default estimate.", current.gameObject);
-                totalHeight += (BlockViewSettings.Instance?.DefaultBlockSize.y ?? 30f);
+                totalHeight += (BlockViewSettings.Instance?.MinBlockSize.y ?? 30f);
             }
             else
             {
@@ -1524,5 +1247,40 @@ public class BlockView : BaseView, IBeginDragHandler, IDragHandler, IEndDragHand
         // Debug.LogWarning($"BlockView ({gameObject.name}): Could not find InputView for ConnectionView '{connView.gameObject.name}'.", this);
         return null;
     }
+
+    private void LateUpdate()
+    {
+
+        // Solo el BlockView raíz de una jerarquía (el que no tiene padre) debe iniciar el layout
+        if (m_LayoutIsDirty && !m_IsExecutingLayout && this.ParentView == null)
+        {
+
+            // <<< DEBUG >>>
+            Debug.LogWarning($"<color=yellow>--- INICIO LAYOUT COMPLETO (FRAME {Time.frameCount}) ---</color> en '{gameObject.name}' porque m_LayoutIsDirty era true.");
+
+            m_IsExecutingLayout = true; // Bloqueamos para evitar re-entrada
+
+            try
+            {
+                // La magia empieza aquí. Llamamos a UpdateLayout desde la raíz.
+                UpdateLayout(this.XY);
+                ApplyVisualAppearance(); // Aplicamos la malla 9-slice al final
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error catastrófico durante el ciclo de layout en '{gameObject.name}': {ex}", gameObject);
+            }
+            finally
+            {
+                m_LayoutIsDirty = false;
+                m_IsExecutingLayout = false; // Desbloqueamos
+                Debug.Log($"<color=cyan>--- FRAME {Time.frameCount}: FIN Layout para '{gameObject.name}' ---</color>", gameObject);
+            }
+
+        }
+    }
+
+
+
 }//fin de la clase BlockView
 

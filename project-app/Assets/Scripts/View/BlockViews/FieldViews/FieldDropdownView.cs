@@ -56,26 +56,39 @@ public class FieldDropdownView : FieldView
     //  Calcular Tamaño
     protected override Vector2 CalculateSize()
     {
-        
-        if (BlockViewSettings.Instance != null) 
+
+        // Hacemos la comprobación de seguridad primero
+        if (BlockViewSettings.Instance == null)
         {
-            float preferredWidth = LayoutUtility.GetPreferredWidth(m_Dropdown.GetComponent<RectTransform>());
-            if (preferredWidth <= 0)
-            {
-                        preferredWidth = BlockViewSettings.Instance.MinUnitSize.x * 4;
-            }
-
-            float height = BlockViewSettings.Instance.MinUnitSize.y; 
-
-            return new Vector2(preferredWidth, height);
-
-            // return BlockViewSettings.Instance.MinUnitSize * new Vector2(4, 1);
+            Debug.LogWarning("BlockViewSettings no encontrado, usando tamaños por defecto para FieldDropdownView.");
+            return new Vector2(100, 24); // Fallback
         }
-        else
+
+        if (m_Dropdown == null || m_Dropdown.captionText == null)
         {
-            Debug.LogError("FieldDropdownView could not calculate size because BlockViewSettings.Instance is null.");
-            return new Vector2(100, 20); 
+            return new Vector2(BlockViewSettings.Instance.MinUnitWidth * 4, BlockViewSettings.Instance.MinUnitHeight);
         }
+
+        // Calculamos el ancho preferido basado en el texto más largo de las opciones,
+        // que es la forma más robusta de medir un dropdown.
+        float preferredWidth = 0;
+        foreach (var option in m_Dropdown.options)
+        {
+            preferredWidth = Mathf.Max(preferredWidth, m_Dropdown.captionText.GetPreferredValues(option.text).x);
+        }
+
+        // Añadimos un padding extra para dar espacio al icono del desplegable.
+        preferredWidth += 40f;
+
+        // Nos aseguramos de que no sea más pequeño que un mínimo razonable.
+        // CORREGIDO: Usamos MinUnitWidth.
+        preferredWidth = Mathf.Max(preferredWidth, BlockViewSettings.Instance.MinUnitWidth * 4);
+
+        // La altura suele ser fija.
+        // CORREGIDO: Usamos MinUnitHeight.
+        float preferredHeight = BlockViewSettings.Instance.MinUnitHeight;
+
+        return new Vector2(preferredWidth, preferredHeight);
     }
     protected override void OnValueChanged(string newValue)
     {
@@ -338,5 +351,11 @@ public class FieldDropdownView : FieldView
             // Debug.Log("Dropdown selection didn't change the logical value.");
         }
 
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin clase FieldDropdownView

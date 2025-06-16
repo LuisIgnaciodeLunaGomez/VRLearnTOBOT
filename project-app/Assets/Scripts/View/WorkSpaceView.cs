@@ -234,7 +234,7 @@ public class WorkSpaceView : MonoBehaviour
         if (block == null) return null;
         if (m_blockViews.ContainsKey(block.ID)) return m_blockViews[block.ID];
 
-        BlockView view = BlockViewFactory.CreateView(block, sourceToolbox);
+        BlockView view = BlockViewFactory.CreateView(block, sourceToolbox, m_codingArea);
         if (view == null) return null; 
 
         view.InToolbox = false; 
@@ -322,7 +322,7 @@ public class WorkSpaceView : MonoBehaviour
          
             Debug.Log("WorkSpaceView.OnDestroy: Cleaning up UBlockly...");
             ScratchBlocks.Dispose(); 
-            BlockViewSettings.Dispose(); 
+           // BlockViewSettings.Dispose(); 
             BlockResMgr.Dispose();       
             // Resources.UnloadUnusedAssets(); 
 

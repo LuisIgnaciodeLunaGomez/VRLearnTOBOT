@@ -113,7 +113,15 @@ public class FieldColorView : FieldView, IPointerClickHandler
 
     protected override Vector2 CalculateSize()
     {
-        return BlockViewSettings.Get().FieldColorSize; 
+        // Comprobación de seguridad
+        if (BlockViewSettings.Instance == null)
+        {
+            Debug.LogWarning("BlockViewSettings no encontrado. Usando tamaño por defecto para FieldColorView.");
+            return new Vector2(36f, 24f); // Devolvemos un valor por defecto si no hay settings
+        }
+
+        // Ahora que sabemos que Instance no es null, podemos acceder a la propiedad de forma segura.
+        return BlockViewSettings.Instance.FieldColorSize;
     }
 
     protected override void OnValueChanged(string newValue)
@@ -124,5 +132,11 @@ public class FieldColorView : FieldView, IPointerClickHandler
     protected override void RegisterInputListeners()
     {
         throw new System.NotImplementedException();
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin FieldColorView

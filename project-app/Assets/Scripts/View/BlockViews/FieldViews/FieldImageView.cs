@@ -18,8 +18,8 @@
 using UnityEngine;
 using UnityEngine.UI; 
 
-[RequireComponent(typeof(Image))] 
-[RequireComponent(typeof(LayoutElement))]
+//[RequireComponent(typeof(Image))] 
+//[RequireComponent(typeof(LayoutElement))]
 public class FieldImageView : FieldView
 {
     private Image m_Image;
@@ -30,20 +30,40 @@ public class FieldImageView : FieldView
     {
         base.InitializeView();
         m_Image = GetComponent<Image>();
-        m_LayoutElement = GetComponent<LayoutElement>();
-        m_LayoutElement.ignoreLayout = false;
+        m_LayoutElement = GetComponent<LayoutElement>(); // Puede ser null
+
+        // Protegemos la asignación
+        if (m_LayoutElement != null)
+        {
+            m_LayoutElement.ignoreLayout = false;
+        }
 
         if (m_Image == null) Debug.LogError("FieldImageView requires an Image component.");
-
-        m_Image.preserveAspect = true; 
+        m_Image.preserveAspect = true;
     }
 
     protected override Vector2 CalculateSize()
     {
-        Vector2 size = m_ImageSize + new Vector2(BlockViewSettings.Instance.FieldHorizontalPadding * 2, BlockViewSettings.Instance.FieldVerticalPadding * 2);
-        m_LayoutElement.preferredWidth = size.x;
-        m_LayoutElement.preferredHeight = size.y;
-        return size;
+        // Comprobación de seguridad
+        if (BlockViewSettings.Instance == null)
+        {
+            return m_ImageSize; // Devolvemos el tamaño base si no hay settings.
+        }
+
+        // Obtenemos los paddings horizontal y vertical del RectOffset correspondiente.
+        float horizontalPadding = BlockViewSettings.Instance.FieldInputTextPadding.horizontal; // .horizontal suma .left y .right
+        float verticalPadding = BlockViewSettings.Instance.FieldInputTextPadding.vertical;     // .vertical suma .top y .bottom
+
+        Vector2 finalSize = m_ImageSize + new Vector2(horizontalPadding, verticalPadding);
+
+        // Protegemos el acceso al LayoutElement opcional.
+        if (m_LayoutElement != null)
+        {
+            m_LayoutElement.preferredWidth = finalSize.x;
+            m_LayoutElement.preferredHeight = finalSize.y;
+        }
+
+        return finalSize;
     }
 
     protected override void OnValueChanged(string newIconName)
@@ -81,5 +101,11 @@ public class FieldImageView : FieldView
     protected override void RegisterInputListeners()
     {
         // No hacer nada
+    }
+
+    public override void UpdateLayout(Vector2 startPos)
+    {
+        this.XY = startPos;
+        this.Size = CalculateSize();
     }
 }//Fin clase FieldImageView
