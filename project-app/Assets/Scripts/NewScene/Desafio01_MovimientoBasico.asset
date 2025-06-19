@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da2d025dd2afa8345997e8e142262d37, type: 3}
+  m_Name: Desafio01_MovimientoBasico
+  m_EditorClassIdentifier: 
+  challengeTitle: "Desaf\xEDo 1: Primeros Pasos"
+  challengeDescription: "\xA1Bienvenido, programador!\r\n\r\nTu primer objetivo es
+    simple: familiarizarte con los comandos b\xE1sicos.\r\n\r\r\n1. Mover 2 pasos\r\n\n\xA1Escribe
+    tu c\xF3digo en el editor y pulsa EJECUTAR!"

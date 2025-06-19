@@ -231,29 +231,57 @@ public static class BlockDataLoader
             defaultValue = argNode.Attribute("defaultValue")?.Value
         };
 
-        if (type == "input_value" || type == "input_statement")
+        // Convertimos la estructura XML a un JObject que nuestra FieldFactory entiende
+        arg.DefinitionJson = ConvertArgXmlToJson(argNode);
+
+        XElement fieldNode = argNode.Element("Field");
+        if (fieldNode != null)
         {
-            XElement checkNode = argNode.Element("Check");
+            arg.shadowFieldType = fieldNode.Attribute("type")?.Value;
+            arg.shadowFieldName = fieldNode.Attribute("name")?.Value;
+            arg.defaultValue = fieldNode.Attribute("value")?.Value; // Para el valor del campo sombra
+        }
+
+        XElement checkNode = argNode.Element("Check");
+        if (checkNode != null)
+        {
             arg.checks = ParseCheckNode(checkNode);
         }
-        if (type == "input_value")
+        /* if (type == "input_value" || type == "input_statement")
+         {
+             XElement checkNode = argNode.Element("Check");
+             arg.checks = ParseCheckNode(checkNode);
+         }
+         if (type == "input_value")
+         {
+             XElement fieldNode = argNode.Element("Field");
+             if (fieldNode != null)
+             {
+                 arg.shadowFieldType = fieldNode.Attribute("type")?.Value;
+                 arg.shadowFieldName = fieldNode.Attribute("name")?.Value;
+                 arg.defaultValue = fieldNode.Attribute("defaultValue")?.Value ?? arg.defaultValue;
+             }
+         }
+         if (type == "field_dropdown")
+         {
+             IEnumerable<XElement> optionNodes = argNode.Element("Options")?.Elements("Option");
+             arg.dropdownOptions = ParseDropdownOptions(optionNodes);
+         }
+
+        // Si es un InputValue (que tiene conexión), también parseamos su sombra.
+        if (type == BlockInputType.Value)
         {
             XElement fieldNode = argNode.Element("Field");
             if (fieldNode != null)
             {
                 arg.shadowFieldType = fieldNode.Attribute("type")?.Value;
-                arg.shadowFieldName = fieldNode.Attribute("name")?.Value;
-                arg.defaultValue = fieldNode.Attribute("defaultValue")?.Value ?? arg.defaultValue;
             }
         }
-        if (type == "field_dropdown")
-        {
-            IEnumerable<XElement> optionNodes = argNode.Element("Options")?.Elements("Option");
-            arg.dropdownOptions = ParseDropdownOptions(optionNodes);
-        }
+
+
 
         arg.DefinitionJson = ConvertFieldXmlToJson(argNode); 
-
+        */
 
         return arg;
     }
@@ -535,4 +563,69 @@ public static class BlockDataLoader
         return json;
     }
 
+    /// <summary>
+    /// Convierte la información relevante de un nodo <Arg> del XML
+    /// a un JObject que FieldFactory pueda entender. Es un traductor.
+    /// </summary>
+    private static JObject ConvertArgXmlToJson(XElement argNode)
+    {
+        /* string fieldType = argNode.Attribute("type")?.Value;
+         if (string.IsNullOrEmpty(fieldType)) return null;
+
+         JObject json = new JObject();
+         json["type"] = fieldType;
+
+         string name = argNode.Attribute("name")?.Value;
+         if (!string.IsNullOrEmpty(name)) json["name"] = name;
+
+         // Damos prioridad al atributo 'value', luego a 'defaultValue', y si no, al contenido del tag
+         string value = argNode.Attribute("value")?.Value ?? argNode.Attribute("defaultValue")?.Value ?? argNode.Value;
+         if (!string.IsNullOrEmpty(value)) json["text"] = value; // UBlockly usa 'text' para el valor del label
+
+         // Lógica específica para dropdowns, que necesitan un array 'options'
+         if (fieldType == "field_dropdown")
+         {
+             JArray optionsArray = new JArray();
+             var optionsNodes = argNode.Element("Options")?.Elements("Option");
+             if (optionsNodes != null)
+             {
+                 foreach (var optNode in optionsNodes)
+                 {
+                     string display = optNode.Attribute("display")?.Value ?? optNode.Value;
+                     string optionValue = optNode.Value;
+                     optionsArray.Add(new JArray(display, optionValue));
+                 }
+             }
+             json["options"] = optionsArray;
+         }
+
+         // Pasar otros atributos directamente (para min, max en field_number)
+         foreach (var attr in argNode.Attributes())
+         {
+             if (attr.Name.LocalName != "type" && attr.Name.LocalName != "name" && attr.Name.LocalName != "value")
+             {
+                 json[attr.Name.LocalName] = attr.Value;
+             }
+         }*/
+
+        string fieldType = argNode.Attribute("type")?.Value;
+        if (!fieldType.StartsWith("field_") && !fieldType.StartsWith("input_")) return null;
+
+        JObject json = new JObject();
+        json["type"] = fieldType;
+
+        string name = argNode.Attribute("name")?.Value;
+        if (!string.IsNullOrEmpty(name)) json["name"] = name;
+
+        // El "text" de JSON corresponde a `value` o al contenido del XML.
+        json["text"] = argNode.Attribute("value")?.Value ?? argNode.Value;
+
+        // Para los inputs, el "defaultValue" es lo que va en el campo sombra.
+        string shadowValue = argNode.Element("Field")?.Attribute("value")?.Value;
+        if (!string.IsNullOrEmpty(shadowValue))
+            json["value"] = shadowValue;
+
+
+        return json;
+    }
 }// Fin de la clase BlockDataLoader
