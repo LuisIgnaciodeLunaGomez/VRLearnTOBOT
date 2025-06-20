@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/UIGUIVRLearnToBot.unity
     guid: fcdc1d9bae954304aa948589d1aab3e8
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 2f3650ba01340f14195b3c5aed03ab6c
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 812bbaba6bd291343abfefc4ca92d1a9, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
