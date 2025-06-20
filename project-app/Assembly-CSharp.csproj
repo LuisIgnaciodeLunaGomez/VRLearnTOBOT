@@ -88,6 +88,7 @@
     <Compile Include="Assets\Scripts\View\BlockView.cs" />
     <Compile Include="Assets\Core\Field\FieldAngle.cs" />
     <Compile Include="Assets\Scripts\Model\FieldModels\FiedlNumberInputModel.cs" />
+    <Compile Include="Assets\Scripts\IntroScene\ChallengeCardUI.cs" />
     <Compile Include="Assets\Scripts\Blocks\Controller\BlockConnectionController.cs" />
     <Compile Include="Assets\Scripts\View\FieldViews\FieldDropdownView.cs" />
     <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldNumberDialog.cs" />
@@ -102,8 +103,8 @@
     <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\CustomDropdown.cs" />
     <Compile Include="Assets\Core\Mutator\Mutator.cs" />
     <Compile Include="Assets\Scripts\View\UGUIUBlockly\BaseToolBox.cs" />
-    <Compile Include="Assets\Scripts\View\LineGroupView.cs" />
     <Compile Include="Assets\Core\Code\Names.cs" />
+    <Compile Include="Assets\Scripts\View\LineGroupView.cs" />
     <Compile Include="Assets\Scripts\Blocks\Controller\InputController.cs" />
     <Compile Include="Assets\Scripts\Configurador\Extensions\CustomDropdown.cs" />
     <Compile Include="Assets\Scripts\Configurador\Dialogs\VariableNameDialog.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Assets\Scripts\Model\BlockCategoryDefinitionData.cs" />
     <Compile Include="Assets\Scripts\Factories\InputFactory.cs" />
     <Compile Include="Assets\Core\Code\Runner.cs" />
+    <Compile Include="Assets\Scripts\IntroScene\ChallengeContext.cs" />
     <Compile Include="Assets\Scripts\Factories\FieldFactory.cs" />
     <Compile Include="Assets\Scripts\ResourcesDebugger.cs" />
     <Compile Include="Assets\Core\Code\CmdRunner.cs" />
@@ -217,6 +219,7 @@
     <Compile Include="Assets\CSharp\CSharpGenerator.cs" />
     <Compile Include="Assets\CSharp\Generators\Math_CSharp.cs" />
     <Compile Include="Assets\Resources\BlockResMgr.cs" />
+    <Compile Include="Assets\Scripts\IntroScene\IntroMenuController.cs" />
     <Compile Include="Assets\Scripts\Model\FieldModels\FieldTextInputModel.cs" />
     <Compile Include="Assets\Scripts\Factories\MutatorClassAtribute.cs" />
     <Compile Include="Assets\Core\Mutator\ProcedureMutators\ProcedureDB.cs" />
@@ -1456,16 +1459,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Muse.StyleTrainer.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Muse.StyleTrainer.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Muse.StyleTrainer.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Muse.StyleTrainer.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
