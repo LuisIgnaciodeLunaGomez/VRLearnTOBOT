@@ -72,21 +72,38 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator RunProgramAndFinish(List<Instruction> program)
     {
+        var status = new RobotController.ExecutionStatus();
         // El robot ejecuta el programa
-        robot.ExecuteProgram(program);
+        //robot.ExecuteProgram(program, status);
 
        
-        yield return StartCoroutine(robot.ExecuteProgram(program));
+        yield return robot.ExecuteProgram(program, status);
 
-        OnExecutionFinished();
+        OnExecutionFinished(status.collided);
+
+        if (status.collided)
+        {
+            Debug.LogWarning("El robot ha colisionado durante la ejecución del programa.");
+        }
+        //  OnExecutionFinished(program);
     }
-    public void OnExecutionFinished()
+    public void OnExecutionFinished(bool causedByCollision)
     {
         // El robot  avisa que ha terminado
-        uiManager.SetOutputText("¡Ejecución Completada!", Color.green);
+        // Comprobamos el resultado
+        if (causedByCollision)
+        {
+            // Si hubo colisión, le decimos al UIManager que muestre este mensaje
+            uiManager.SetOutputText("¡El robot ha colisionado!", new Color(1, 0.8f, 0)); // Un color naranja/ámbar
+        }
+        else
+        {
+            // Si no hubo colisión, le decimos que muestre el mensaje de éxito
+            uiManager.SetOutputText("¡Ejecución Completada!", Color.green);
+        }
         uiManager.SetButtonsInteractable(true); // Reactivar botones
         uiManager.UpdateChronometer(0);
-        uiManager.SetOutputText("Programa borrado. Listo.", Color.white);
+       // uiManager.SetOutputText("Programa borrado. Listo.", Color.white);
     }
 
     public void ProcessAndRunProgram(List<Instruction> program)

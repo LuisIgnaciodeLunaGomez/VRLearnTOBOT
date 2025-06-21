@@ -48,7 +48,7 @@ public class CommandParser
                         errorMessage = $"Error Sintaxis Línea {i + 1}: Usa 'mover <numero> pasos'.";
                         return false;
                     }
-                    program.Add(new Instruction(CommandType.MoveForward, steps));
+                    currentInstructionList.Add(new Instruction(CommandType.MoveForward, steps));
                     break;
 
                 case "girar":
@@ -59,11 +59,11 @@ public class CommandParser
                     }
                     if (parts[1] == "izquierda")
                     {
-                        program.Add(new Instruction(CommandType.TurnLeft));
+                        currentInstructionList.Add(new Instruction(CommandType.TurnLeft));
                     }
                     else if (parts[1] == "derecha")
                     {
-                        program.Add(new Instruction(CommandType.TurnRight));
+                        currentInstructionList.Add(new Instruction(CommandType.TurnRight));
                     }
                     else
                     {

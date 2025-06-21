@@ -33,6 +33,9 @@ public class RobotController : MonoBehaviour
     private Rigidbody rb;
     private bool collisionDetected = false;
     private bool forceStop = false;
+    public IDE_UIManager uiManager;
+    public class ExecutionStatus { public bool collided = false; }
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -52,7 +55,7 @@ public class RobotController : MonoBehaviour
         forceStop = false;
     }
 
-    public IEnumerator ExecuteProgram(List<Instruction> program)
+    public IEnumerator ExecuteProgram(List<Instruction> program, ExecutionStatus status)
     {
         // if (isExecuting) return;
         // StartCoroutine(ExecutionRoutine(program));
@@ -65,9 +68,11 @@ public class RobotController : MonoBehaviour
         yield return StartCoroutine(ProcessInstructionList(program));
     }
 
-    private IEnumerator ProcessInstructionList(List<Instruction> program)
+    private IEnumerator ProcessInstructionList(List<Instruction> program/*, ExecutionStatus status*/)
     {
         isExecuting = true;
+
+        var status = new ExecutionStatus(); //Objeto de estado de ejecución
         foreach (var instruction in program)
         {
             if (forceStop)
@@ -80,7 +85,7 @@ public class RobotController : MonoBehaviour
             switch (instruction.Type)
             {
                 case CommandType.MoveForward:
-                    yield return StartCoroutine(MoveForwardRoutine(instruction.Value));
+                    yield return StartCoroutine(MoveForwardRoutine(instruction.Value, status));
                     break;
                 case CommandType.TurnLeft:
                     yield return StartCoroutine(TurnRoutine(-90));
@@ -114,7 +119,7 @@ public class RobotController : MonoBehaviour
         }
         isExecuting = false;
         // Notificar al GameManager que hemos terminado
-        GameManager.Instance.OnExecutionFinished();
+        GameManager.Instance.OnExecutionFinished(false); //false significa sin colisión
     }
 
     private IEnumerator _MoveForwardRoutine(float steps)
@@ -155,7 +160,7 @@ public class RobotController : MonoBehaviour
         rb.MovePosition(targetPosition);
     }
 
-    private IEnumerator MoveForwardRoutine(float steps)
+    private IEnumerator MoveForwardRoutine(float steps, ExecutionStatus status)
     {
 
         //Cáculo la distancia que representa un "paso" en unidades de Unity.
@@ -175,12 +180,20 @@ public class RobotController : MonoBehaviour
         {
             Debug.Log($"¡COLISIÓN INMINENTE con {hitInfo.collider.name} a {hitInfo.distance} unidades!");
            
-            distanceToMove = hitInfo.distance/* - 0.01f*/;
+            distanceToMove = hitInfo.distance + 0.01f;
 
             // Si la distancia es negativa (empezamos ya tocando), no nos movemos.
             if (distanceToMove < 0) distanceToMove = 0;
+
+            collisionDetected = true;
+
+
         }
 
+        if (distanceToMove <= 0.001f)
+        {
+            yield break;
+        }
         //  MOVIMIENTO PRECISO 
         // Ahora ejecutamos el movimiento, pero con la distancia segura que hemos calculado.
         // Si no hubo colisión, distanceToMove sigue siendo igual a 'steps'.
@@ -203,28 +216,30 @@ public class RobotController : MonoBehaviour
         rb.MovePosition(targetPosition);
 
         // Si hemos chocado
-        if (willCollide)
+        if (collisionDetected)
         {
             Debug.Log("Movimiento interrumpido por colisión. El resto del programa se detendrá.");
-           
+            status.collided = true;
             yield break;
         }
     }
 
     private IEnumerator TurnRoutine(float angle)
     {
-        Quaternion fromRotation = transform.rotation;
-        Quaternion toRotation = transform.rotation * Quaternion.Euler(0, angle, 0);
+        Quaternion fromRotation = rb.rotation;
+        Quaternion toRotation = fromRotation * Quaternion.Euler(0, angle, 0);
         float time = 0;
         float duration = Mathf.Abs(angle) / turnSpeed;
 
         while (time < duration)
         {
-            transform.rotation = Quaternion.Slerp(fromRotation, toRotation, time / duration);
+            Quaternion newRotation /*transform.rotation*/ = Quaternion.Slerp(fromRotation, toRotation, time / duration);
+
+            rb.MoveRotation(newRotation);
             time += Time.deltaTime;
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
-        transform.rotation = toRotation; // Asegurar rotación exacta
+        rb.MoveRotation(toRotation);// transform.rotation = toRotation; // Asegurar rotación exacta
     }
 
     void OnDisable()
