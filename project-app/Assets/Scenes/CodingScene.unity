@@ -397,7 +397,7 @@ GameObject:
   - component: {fileID: 119906819}
   - component: {fileID: 119906818}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: "\xC1reaDesafio"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -478,6 +478,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1915973364}
   - {fileID: 241389950}
   - {fileID: 1025947446}
   - {fileID: 1602857348}
@@ -850,7 +851,7 @@ GameObject:
   - component: {fileID: 247062188}
   m_Layer: 0
   m_Name: Muro Oeste
-  m_TagString: Untagged
+  m_TagString: Muro
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1389,7 +1390,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.000023136614}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &580007155
@@ -2050,6 +2051,103 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 906997810}
   m_CullTransparentMesh: 1
+--- !u!1 &924445541
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 924445544}
+  - component: {fileID: 924445543}
+  - component: {fileID: 924445542}
+  - component: {fileID: 924445545}
+  m_Layer: 0
+  m_Name: RobotControlador
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!54 &924445542
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924445541}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 3
+--- !u!114 &924445543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924445541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfb20b906457fc94ea96c751396bc37b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
+  turnSpeed: 10
+--- !u!4 &924445544
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924445541}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.686, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1140894967}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &924445545
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924445541}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.51430744, y: 0.13913229, z: 0.3625076}
+  m_Center: {x: -0.24284634, y: -0.029666647, z: -0.012432329}
 --- !u!1 &933073871
 GameObject:
   m_ObjectHideFlags: 0
@@ -2064,7 +2162,7 @@ GameObject:
   - component: {fileID: 933073873}
   m_Layer: 0
   m_Name: Muro Sur
-  m_TagString: Untagged
+  m_TagString: Muro
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2243,15 +2341,15 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 924445544}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.823
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2259,7 +2357,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalRotation.x
@@ -2267,7 +2365,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalRotation.z
@@ -2279,7 +2377,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -2293,20 +2391,15 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
+      propertyPath: m_TagString
+      value: Robot
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 65702495048144492, guid: 6ec370f8c7de141499582b667951b118, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1140894963}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1140894965}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1140894966}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6ec370f8c7de141499582b667951b118, type: 3}
 --- !u!1 &1075590119
 GameObject:
@@ -2594,73 +2687,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1095989089}
   m_CullTransparentMesh: 1
---- !u!1 &1140894962 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6ec370f8c7de141499582b667951b118, type: 3}
+--- !u!4 &1140894967 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6ec370f8c7de141499582b667951b118, type: 3}
   m_PrefabInstance: {fileID: 1061328167}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1140894963
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1140894962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfb20b906457fc94ea96c751396bc37b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 1
-  turnSpeed: 90
---- !u!65 &1140894965
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1140894962}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &1140894966
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1140894962}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1 &1141036302
 GameObject:
   m_ObjectHideFlags: 0
@@ -2713,7 +2744,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentChallenge: {fileID: 11400000, guid: 92cf2e3f1e2fdc14e8b7c6b49de702b4, type: 2}
-  robot: {fileID: 1140894963}
+  robot: {fileID: 924445543}
   uiManager: {fileID: 1141036303}
 --- !u!4 &1141036305
 Transform:
@@ -2743,7 +2774,7 @@ GameObject:
   - component: {fileID: 1158359185}
   - component: {fileID: 1158359184}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: Button_Borrar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3106,7 +3137,7 @@ GameObject:
   - component: {fileID: 1434198855}
   m_Layer: 0
   m_Name: Muro Norte
-  m_TagString: Untagged
+  m_TagString: Muro
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3575,7 +3606,7 @@ GameObject:
   - component: {fileID: 1602857350}
   - component: {fileID: 1602857349}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: BotonesAcciones
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3789,7 +3820,7 @@ GameObject:
   - component: {fileID: 1696826805}
   - component: {fileID: 1696826804}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Button_Ejecutar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4143,16 +4174,16 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1915973361}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 100}
-  m_LocalScale: {x: 0.10691672, y: 0.10691672, z: 0.10691672}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 119906821}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -1675.1785}
-  m_SizeDelta: {x: 960.00006, y: -84.507}
+  m_AnchoredPosition: {x: 6, y: -329}
+  m_SizeDelta: {x: 0, y: -84.507}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1932270665
 GameObject:
@@ -4284,7 +4315,7 @@ GameObject:
   - component: {fileID: 1952789775}
   m_Layer: 0
   m_Name: Muro Este
-  m_TagString: Untagged
+  m_TagString: Muro
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4622,9 +4653,8 @@ SceneRoots:
   - {fileID: 440068977}
   - {fileID: 1356881580}
   - {fileID: 119906821}
-  - {fileID: 1915973364}
   - {fileID: 1141036305}
-  - {fileID: 1061328167}
   - {fileID: 253631176}
   - {fileID: 749323613}
   - {fileID: 1970465418}
+  - {fileID: 924445544}

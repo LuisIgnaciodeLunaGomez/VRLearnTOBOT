@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: Sistema para detectar colisiones entre el robot y los muros,
+ * Descripción: Sistema para detectar colisiones entre el robot y los muros.
  */
 
 

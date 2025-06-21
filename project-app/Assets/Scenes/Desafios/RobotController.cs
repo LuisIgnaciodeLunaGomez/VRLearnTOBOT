@@ -24,15 +24,20 @@ public class RobotController : MonoBehaviour
     public float moveSpeed = 1.0f; // Unidades de Unity por segundo
     public float turnSpeed = 90.0f; // Grados por segundo
 
+    [Tooltip("La distancia en unidades de Unity que representa un 'paso' en el lenguaje de comandos.")]
+    public float distanciaPorPaso = 0.4f;
+
     private bool isExecuting = false;
     private Vector3 startPosition;
     private Quaternion startRotation;
-
+    private Rigidbody rb;
     private bool collisionDetected = false;
     private bool forceStop = false;
     void Awake()
     {
-        // Guardar el estado inicial para poder resetear
+        rb = GetComponent<Rigidbody>();
+        Debug.Log($"Rigidbody encontrado. Is Kinematic: {rb.isKinematic}");
+
         startPosition = transform.position;
         startRotation = transform.rotation;
     }
@@ -102,6 +107,9 @@ public class RobotController : MonoBehaviour
                         }
                     }
                     break;
+                case CommandType.MoveForDuration:
+                    yield return StartCoroutine(MoveForDurationRoutine(instruction.Value));
+                    break;
             }
         }
         isExecuting = false;
@@ -109,11 +117,11 @@ public class RobotController : MonoBehaviour
         GameManager.Instance.OnExecutionFinished();
     }
 
-    private IEnumerator MoveForwardRoutine(float steps)
+    private IEnumerator _MoveForwardRoutine(float steps)
     {
         // 1. Calcular las posiciones de inicio y fin ANTES de movernos.
         Vector3 startPosition = transform.position;
-        Vector3 targetPosition = startPosition + transform.forward * steps;
+        Vector3 targetPosition = startPosition + transform.forward * steps / 10;
 
         // 2. Calcular cuánto tiempo debería durar el movimiento basado en la velocidad.
         float duration = steps / moveSpeed;
@@ -131,17 +139,75 @@ public class RobotController : MonoBehaviour
 
             // S usa Lerp para movernos suavemente desde el inicio hasta el fin.
             // elapsedTime / duration nos da un valor que va de 0 a 1.
-            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
-
+            Vector3 newPosition =/*transform.position*/  Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration);
+            rb.MovePosition(newPosition);
             // Avanzamos el cronómetro.
             elapsedTime += Time.deltaTime;
-            yield return null; // Espera al siguiente frame.
+            yield return new WaitForFixedUpdate();
         }
 
         // 4. Asegurarse de que el robot termina EXACTAMENTE en la posición final.
-        if (!forceStop)
+        /* if (!forceStop)
+         {
+             transform.position = targetPosition;
+         }*/
+
+        rb.MovePosition(targetPosition);
+    }
+
+    private IEnumerator MoveForwardRoutine(float steps)
+    {
+
+        //Cáculo la distancia que representa un "paso" en unidades de Unity.
+        float distanciaRealEnUnidades = steps * distanciaPorPaso;
+
+
+        // --- CONSULTA PROACTIVA DE COLISIÓN ---
+        RaycastHit hitInfo;
+        // Lanzamos un "molde" con la forma de nuestro collider hacia adelante.
+        // Comprobamos hasta una distancia de 'steps'.
+        bool willCollide = rb.SweepTest(transform.forward, out hitInfo, distanciaRealEnUnidades, QueryTriggerInteraction.Ignore);
+
+        float distanceToMove = distanciaRealEnUnidades;
+
+        // Si se predice una colisión...
+        if (willCollide)
         {
-            transform.position = targetPosition;
+            Debug.Log($"¡COLISIÓN INMINENTE con {hitInfo.collider.name} a {hitInfo.distance} unidades!");
+           
+            distanceToMove = hitInfo.distance/* - 0.01f*/;
+
+            // Si la distancia es negativa (empezamos ya tocando), no nos movemos.
+            if (distanceToMove < 0) distanceToMove = 0;
+        }
+
+        //  MOVIMIENTO PRECISO 
+        // Ahora ejecutamos el movimiento, pero con la distancia segura que hemos calculado.
+        // Si no hubo colisión, distanceToMove sigue siendo igual a 'steps'.
+
+        Vector3 startPosition = transform.position;
+        // Usamos transform.forward para la dirección, que es el eje Z azul local.
+        Vector3 targetPosition = startPosition + transform.forward * distanceToMove;
+        float duration = distanceToMove / moveSpeed;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            
+            rb.MovePosition(Vector3.Lerp(startPosition, targetPosition, elapsedTime / duration));
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        // Aseguramos la posición final precisa.
+        rb.MovePosition(targetPosition);
+
+        // Si hemos chocado
+        if (willCollide)
+        {
+            Debug.Log("Movimiento interrumpido por colisión. El resto del programa se detendrá.");
+           
+            yield break;
         }
     }
 
@@ -167,16 +233,16 @@ public class RobotController : MonoBehaviour
         StopAllCoroutines();
     }
 
-   /* void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log("OnCollisionEnter se ha disparado con " + collision.gameObject.name);
-        // Este evento se llama cuando nuestro collider (robot) toca otro (muro)
-        if (collision.gameObject.CompareTag("Muro"))
-        {
-            Debug.Log("¡Colisión con un muro detectada!");
-            collisionDetected = true;
-        }
-    }*/
+    /* void OnCollisionEnter(Collision collision)
+     {
+         Debug.Log("OnCollisionEnter se ha disparado con " + collision.gameObject.name);
+         // Este evento se llama cuando nuestro collider (robot) toca otro (muro)
+         if (collision.gameObject.CompareTag("Muro"))
+         {
+             Debug.Log("¡Colisión con un muro detectada!");
+             collisionDetected = true;
+         }
+     }*/
 
     public void StopDueToCollision()
     {
@@ -188,4 +254,21 @@ public class RobotController : MonoBehaviour
             forceStop = true;
         }
     }
+
+
+    // Rutina para moverse durante un tiempo determinado
+    private IEnumerator MoveForDurationRoutine(float duration)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < duration)
+        {
+            // Nos movemos hacia adelante a velocidad constante.
+            
+            rb.MovePosition(transform.position + transform.forward * moveSpeed * Time.fixedDeltaTime);
+
+            elapsedTime += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
 }

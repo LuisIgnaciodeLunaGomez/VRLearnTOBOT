@@ -23,7 +23,8 @@ public enum CommandType
     MoveForward,
     TurnLeft,
     TurnRight,
-    Repeat
+    Repeat,
+    MoveForDuration
 }
 
 public class Instruction

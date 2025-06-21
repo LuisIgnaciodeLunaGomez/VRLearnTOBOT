@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
     public RobotController robot;
     public IDE_UIManager uiManager;
 
+    private Coroutine executionTimerCoroutine;
     void Awake()
     {
         if (Instance == null) { Instance = this; } else { Destroy(gameObject); }
@@ -84,14 +85,30 @@ public class GameManager : MonoBehaviour
         // El robot  avisa que ha terminado
         uiManager.SetOutputText("¡Ejecución Completada!", Color.green);
         uiManager.SetButtonsInteractable(true); // Reactivar botones
+        uiManager.UpdateChronometer(0);
+        uiManager.SetOutputText("Programa borrado. Listo.", Color.white);
     }
 
     public void ProcessAndRunProgram(List<Instruction> program)
     {
+        if (executionTimerCoroutine != null) StopCoroutine(executionTimerCoroutine);
+        executionTimerCoroutine = StartCoroutine(ExecutionTimer());
         uiManager.SetButtonsInteractable(false);
         robot.ResetToInitialState();
 
         uiManager.SetOutputText("Ejecutando programa...", Color.cyan);
         StartCoroutine(RunProgramAndFinish(program));
+    }
+
+    private IEnumerator ExecutionTimer()
+    {
+        float elapsedTime = 0f;
+        while (true)
+        {
+            // Actualizamos la UI en cada frame
+            uiManager.UpdateChronometer(elapsedTime);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
     }
 }

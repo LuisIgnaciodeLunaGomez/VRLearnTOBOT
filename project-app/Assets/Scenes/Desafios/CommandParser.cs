@@ -98,13 +98,21 @@ public class CommandParser
 
                 case "fin_repetir":
                     if (instructionStack.Count <= 1)
-                    { // Solo debería estar el programa principal
+                    { 
                         errorMessage = $"Error Línea {i + 1}: 'fin_repetir' sin un 'repetir' correspondiente."; return false;
                     }
                     // Hemos terminado el bloque, salimos un nivel en la pila.
                     instructionStack.Pop();
                     break;
-
+                case "mover_durante":
+                    if (parts.Length != 3 || !float.TryParse(parts[1], out float duration) || parts[2] != "segundos")
+                    {
+                        errorMessage = $"Error Sintaxis Línea {i + 1}: Usa 'mover_durante <numero> segundos'.";
+                        return false;
+                    }
+                    // Añadimos a la lista la nueva instrucción
+                    currentInstructionList.Add(new Instruction(CommandType.MoveForDuration, duration));
+                    break;
 
                 default:
                     errorMessage = $"Error Comando Línea {i + 1}: '{parts[0]}' no reconocido.";

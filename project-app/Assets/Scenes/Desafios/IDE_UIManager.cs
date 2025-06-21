@@ -36,6 +36,10 @@ public class IDE_UIManager : MonoBehaviour
     public Button clearButton;
     public TextMeshProUGUI outputText;
 
+    [Header("UI de Estado")]
+    public TextMeshProUGUI chronometerText;
+
+
     //Lista de instrucciones válidas
     private List<Instruction> programInstructions = new List<Instruction>();
     private ProgramBuilder programBuilder = new ProgramBuilder();
@@ -137,5 +141,12 @@ public class IDE_UIManager : MonoBehaviour
         }
     }
 
-  
+    public void UpdateChronometer(float time)
+    {
+        if (chronometerText != null)
+        {
+            // "F2" formatea el número para mostrar solo 2 decimales
+            chronometerText.text = $"Tiempo: {time:F2}s";
+        }
+    }
 }
