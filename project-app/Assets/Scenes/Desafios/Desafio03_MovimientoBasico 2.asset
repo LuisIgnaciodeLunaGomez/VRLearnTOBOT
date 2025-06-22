@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da2d025dd2afa8345997e8e142262d37, type: 3}
+  m_Name: Desafio03_MovimientoBasico 2
+  m_EditorClassIdentifier: 
+  challengeTitle: "Desaf\xEDo 3: Depuraci\xF3n y Bugs"
+  shortDescription: "El programa que se adjunta deber\xEDa de dibujar una \"L\" pero
+    no es as\xED tiene errores \xBFEres capaz de corregirlo?"
+  detailedInstructions: "Este es el programa escrito pero tiene errores\n\n1. mover
+    4 pasos\n2. Girar Izquierda\n3. Mover 2 pasos\n4. repetir 2 veces\n5. girar derecha\n6.
+    fin_repetir\n\nModif\xEDcalo y pulsa Ejecutar"

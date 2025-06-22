@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class IDE_UIManager : MonoBehaviour
 {
@@ -137,7 +138,7 @@ public class IDE_UIManager : MonoBehaviour
         if (challenge != null)
         {
             challengeTitleText.text = challenge.challengeTitle;
-            challengeDescriptionText.text = challenge.challengeDescription;
+            challengeDescriptionText.text = challenge.detailedInstructions;
         }
     }
 
@@ -148,5 +149,11 @@ public class IDE_UIManager : MonoBehaviour
             // "F2" formatea el número para mostrar solo 2 decimales
             chronometerText.text = $"Tiempo: {time:F2}s";
         }
+    }
+
+    public void GoToMenuScene()
+    {
+        Debug.Log("Volviendo a la escena del menú principal...");
+        SceneManager.LoadScene("MenuScene");
     }
 }

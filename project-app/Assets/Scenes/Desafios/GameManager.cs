@@ -37,15 +37,18 @@ public class GameManager : MonoBehaviour
 
     void Start() 
     {
-        // Cargar y mostrar el desafío actual
-        if (currentChallenge != null)
+        if (ChallengeLoader.Instance != null && ChallengeLoader.Instance.SelectedChallenge != null)
         {
+            // Usamos el desafío que se seleccionó en el menú.
+            currentChallenge = ChallengeLoader.Instance.SelectedChallenge;
+
+         
             uiManager.DisplayChallenge(currentChallenge);
         }
         else
         {
-            // Mensaje por si se olvida asignar un desafío
-            uiManager.SetOutputText("No hay ningún desafío cargado.", Color.yellow);
+            Debug.LogError("No se pudo cargar el desafío. ChallengeLoader no encontrado o no hay desafío seleccionado.");
+            uiManager.SetOutputText("ERROR: No se pudo cargar el desafío.", Color.red);
         }
     }
     /*

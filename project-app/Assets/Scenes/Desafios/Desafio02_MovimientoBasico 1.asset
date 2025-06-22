@@ -10,26 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da2d025dd2afa8345997e8e142262d37, type: 3}
-  m_Name: Desafio01_MovimientoBasico
+  m_Name: Desafio02_MovimientoBasico 1
   m_EditorClassIdentifier: 
-  challengeTitle: "Desaf\xEDo 1: Secuenciaci\xF3n"
-  shortDescription: "Vamos a hacer que el robot se desplace haciendo una Z\n "
+  challengeTitle: "Desaf\xEDo 2: Bucles"
+  shortDescription: En este desafio vas a aprender a usar bucles para que el robot
+    haga las mismas instrucciones varias veces.
   detailedInstructions: 'Escribe las siguientes instrucciones y pulsa + por cada
     una
 
 
-    1. Girar derecha
+    1. repetir 4 veces
 
-    2. Mover 5 pasos
+    2. mover 5 pasos
 
-    3. Girar Izquierda
+    3. girar derecha
 
     4.
-    Mover 5 pasos
-
-    5. Girar derecha
-
-    6. Mover 5 pasos
+    fin_repetir
 
 
-    Pulsa EJECUTAR'
+    Pulsa Ejecutar'

@@ -16,16 +16,20 @@
 
 using UnityEngine;
 
-
 [CreateAssetMenu(fileName = "Nuevo Desafio", menuName = "RoboCode/Desafio")]
 public class ChallengeData : ScriptableObject
 {
     [Header("Información del Desafío")]
     public string challengeTitle;
 
-    [TextArea(4, 8)] // Esto hace que el campo de texto sea más grande en el Inspector
-    public string challengeDescription;
+    [Tooltip("Un resumen corto para mostrar en la tarjeta del menú de selección.")]
+    [TextArea(2, 4)]
+    public string shortDescription;
 
-    // TODO  se podrían  añadir más cosas como condiciones de victoria, tiempo límite, etc.
+
+    [Tooltip("Instrucciones detalladas y la tarea a realizar en la escena del desafío.")]
+    [TextArea(4, 10)]
+    public string detailedInstructions;
+
 }
 
