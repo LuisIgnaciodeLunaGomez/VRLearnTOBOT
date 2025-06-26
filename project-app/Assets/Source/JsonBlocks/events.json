@@ -1,0 +1,18 @@
+[
+  {
+    "type": "event_when_flag_clicked",
+    "message0": "al hacer clic en %1",
+    "args0": [
+      {
+        "type": "field_image",
+        "src": "GreenFlag.png",
+        "width": 24,
+        "height": 24,
+        "alt": "bandera verde"
+      }
+    ],
+    "nextStatement": null,
+    "colour": "#FFBF00",
+    "tooltip": "Ejecuta el script cuando se presiona la bandera verde."
+  }
+]

@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e91ea5b95dee6a41ac89de5fd4efdc9, type: 3}
+  m_Name: BlockResSettings
+  m_EditorClassIdentifier: 
+  m_LoadType: 1
+  m_I18nFiles:
+  - IndexName: en
+    ResName: en
+    TextFile: {fileID: 4900000, guid: afa1fc73b742c8d428ad7ec9cfc7ed9b, type: 3}
+    Selected: 1
+  m_BlockJsonFiles:
+  - IndexName: event
+    ResName: event
+    TextFile: {fileID: 4900000, guid: be057e622eea64045a91cb60ebe3d3ff, type: 3}
+  - IndexName: control
+    ResName: control
+    TextFile: {fileID: 4900000, guid: 59a9a4dea03e50a43a550e851914baea, type: 3}
+  - IndexName: motion
+    ResName: motion
+    TextFile: {fileID: 4900000, guid: 49498671ffe3e534cbbee5d6086359c7, type: 3}
+  m_ToolboxFiles:
+  - IndexName: default
+    ResName: toolbox_default
+    TextFile: {fileID: 4900000, guid: 5c0bdd5df6d904a27af2a1b56125a6e0, type: 3}
+    Selected: 1
+  m_BlockViewPrefabPath: Assets/UBlocklyData/BlockGenPrefabs/
+  m_BlockViewPrefabs:
+  - IndexName: event_when_flag_clicked
+    ResName: Block_event_when_flag_clicked
+    Prefab: {fileID: 8281536058422022361, guid: e50c337e2ef5ecd4e97a43303907535d, type: 3}
+  - IndexName: controls_repeat
+    ResName: Block_controls_repeat
+    Prefab: {fileID: 6035745930954242202, guid: f90cf2310e49b0344b4de7ac07290561, type: 3}
+  - IndexName: controls_whileUntil
+    ResName: Block_controls_whileUntil
+    Prefab: {fileID: 16300963641776508, guid: 661fca29f8db5af45bc8e367be622700, type: 3}
+  - IndexName: motion_move_steps
+    ResName: Block_motion_move_steps
+    Prefab: {fileID: 7360168679975924787, guid: b36ff0ede92f6bf45b3e54746cbf412b, type: 3}
+  m_DialogPrefabs:
+  - IndexName: variable_nae
+    ResName: Dialog_variable_name
+    Prefab: {fileID: 1697861216391924, guid: fee558f14cd3140b09a337b98d7d4bc3, type: 3}
+  - IndexName: field_angle
+    ResName: Dialog_field_angle
+    Prefab: {fileID: 1107725967878834, guid: 68d5f6bc04264406d8b99ef763b753d6, type: 3}
+  - IndexName: field_dropdown
+    ResName: Dialog_field_dropdown
+    Prefab: {fileID: 1107725967878834, guid: 70c883d37b9bb4399b7f2f55ba8de5a4, type: 3}
+  - IndexName: field_number
+    ResName: Dialog_field_number
+    Prefab: {fileID: 1107725967878834, guid: 06f0152adcb664067b8a4751865ed8e2, type: 3}
+  - IndexName: field_variable
+    ResName: Dialog_field_dropdown
+    Prefab: {fileID: 1107725967878834, guid: 70c883d37b9bb4399b7f2f55ba8de5a4, type: 3}
+  - IndexName: message
+    ResName: Dialog_message
+    Prefab: {fileID: 1298321731554776, guid: 5da45033f06ed41499ebc70ed69b4d41, type: 3}

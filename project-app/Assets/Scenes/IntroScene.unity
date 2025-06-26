@@ -181,7 +181,7 @@ MonoBehaviour:
     description: "Aprende lo b\xE1sico: c\xF3mo arrastrar bloques desde la caja de
       herramientas, conectarlos y eliminarlos si cometes un error."
     videoPreviewClip: {fileID: 32900000, guid: b6576d8dc254bcb468342ab32f7656a4, type: 3}
-    targetSceneToLoad: UIGUIVRLearnToBot
+    targetSceneToLoad: UGUIScene
     thumbnailSpriteName: move_erase_blocks
   - id: challenge_02_driving
     displayName: Conduciendo su robot
@@ -189,7 +189,7 @@ MonoBehaviour:
       adelante' para programar tu primera secuencia y ver al robot cobrar vida en
       el escenario 3D."
     videoPreviewClip: {fileID: 0}
-    targetSceneToLoad: UIGUIVRLearnToBot
+    targetSceneToLoad: UGUIScene
     thumbnailSpriteName: conduciendo_su_robot
   - id: challenge_03_loops
     displayName: Usando Bucles
@@ -197,7 +197,7 @@ MonoBehaviour:
       que tu robot dibuje un cuadrado sin tener que repetir el mismo c\xF3digo una
       y otra vez."
     videoPreviewClip: {fileID: 0}
-    targetSceneToLoad: UIGUIVRLearnToBot
+    targetSceneToLoad: UGUIScene
     thumbnailSpriteName: usando_bucles
 --- !u!1 &85872156
 GameObject:
@@ -886,9 +886,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 45697499}
+      - m_Target: {fileID: 45697497}
         m_TargetAssemblyTypeName: IntroMenuController, Assembly-CSharp
-        m_MethodName: OnFreeProgrammingClicked
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

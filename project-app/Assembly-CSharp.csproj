@@ -18,16 +18,18 @@
     <FileAlignment>512</FileAlignment>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>0169;USG0001</NoWarn>
+    <DefineConstants>UNITY_6000_0_26;UNITY_6000_0;UNITY_6000;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2021_2_OR_NEWER;UNITY_2021_3_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2022_2_OR_NEWER;UNITY_2022_3_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2023_2_OR_NEWER;UNITY_2023_3_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_INCLUDE_TESTS;ENABLE_AR;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EVENT_QUEUE;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_EDITOR_GAME_SERVICES;ENABLE_UNITY_GAME_SERVICES_ANALYTICS_SUPPORT;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_GENERATE_NATIVE_PLUGINS_FOR_ASSEMBLIES_API;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_ENGINE_CODE_STRIPPING;ENABLE_ONSCREEN_KEYBOARD;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;ENABLE_MARSHALLING_TESTS;ENABLE_VIDEO;ENABLE_NAVIGATION_OFFMESHLINK_TO_NAVMESHLINK;ENABLE_ACCELERATOR_CLIENT_DEBUGGING;ENABLE_ACCESSIBILITY;TEXTCORE_1_0_OR_NEWER;EDITOR_ONLY_NAVMESH_BUILDER_DEPRECATED;PLATFORM_ANDROID;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;UNITY_CAN_SHOW_SPLASH_SCREEN;UNITY_HAS_GOOGLEVR;UNITY_HAS_TANGO;ENABLE_SPATIALTRACKING;ENABLE_ETC_COMPRESSION;PLATFORM_EXTENDS_VULKAN_DEVICE;PLATFORM_HAS_MULTIPLE_SWAPCHAINS;UNITY_ANDROID_SUPPORTS_SHADOWFILES;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;PLATFORM_EXTENDS_VULKAN_PIPELINE_CACHE;PLATFORM_SUPPORTS_SPLIT_GRAPHICS_JOBS;PLATFORM_HAS_ADDITIONAL_API_CHECKS;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;NET_4_6;NET_UNITY_4_8;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_INPUT_SYSTEM;TEXTCORE_FONT_ENGINE_1_5_OR_NEWER;TEXTCORE_TEXT_ENGINE_1_5_OR_NEWER;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Temp\bin\Debug\</OutputPath>
-    <DefineConstants>UNITY_6000_0_26;UNITY_6000_0;UNITY_6000;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2021_2_OR_NEWER;UNITY_2021_3_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2022_2_OR_NEWER;UNITY_2022_3_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2023_2_OR_NEWER;UNITY_2023_3_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_INCLUDE_TESTS;ENABLE_AR;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EVENT_QUEUE;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_EDITOR_GAME_SERVICES;ENABLE_UNITY_GAME_SERVICES_ANALYTICS_SUPPORT;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_GENERATE_NATIVE_PLUGINS_FOR_ASSEMBLIES_API;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_ENGINE_CODE_STRIPPING;ENABLE_ONSCREEN_KEYBOARD;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;ENABLE_MARSHALLING_TESTS;ENABLE_VIDEO;ENABLE_NAVIGATION_OFFMESHLINK_TO_NAVMESHLINK;ENABLE_ACCELERATOR_CLIENT_DEBUGGING;ENABLE_ACCESSIBILITY;TEXTCORE_1_0_OR_NEWER;EDITOR_ONLY_NAVMESH_BUILDER_DEPRECATED;PLATFORM_ANDROID;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;UNITY_CAN_SHOW_SPLASH_SCREEN;UNITY_HAS_GOOGLEVR;UNITY_HAS_TANGO;ENABLE_SPATIALTRACKING;ENABLE_ETC_COMPRESSION;PLATFORM_EXTENDS_VULKAN_DEVICE;PLATFORM_HAS_MULTIPLE_SWAPCHAINS;UNITY_ANDROID_SUPPORTS_SHADOWFILES;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;PLATFORM_EXTENDS_VULKAN_PIPELINE_CACHE;PLATFORM_SUPPORTS_SPLIT_GRAPHICS_JOBS;PLATFORM_HAS_ADDITIONAL_API_CHECKS;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;NET_4_6;NET_UNITY_4_8;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_INPUT_SYSTEM;ENABLE_LEGACY_INPUT_MANAGER;TEXTCORE_FONT_ENGINE_1_5_OR_NEWER;TEXTCORE_TEXT_ENGINE_1_5_OR_NEWER;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0169;USG0001</NoWarn>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,8 +37,6 @@
     <OutputPath>Temp\bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0169;USG0001</NoWarn>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <NoConfig>true</NoConfig>
@@ -48,7 +48,7 @@
   <PropertyGroup>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UnityProjectGenerator>Package</UnityProjectGenerator>
-    <UnityProjectGeneratorVersion>2.0.22</UnityProjectGeneratorVersion>
+    <UnityProjectGeneratorVersion>2.0.23</UnityProjectGeneratorVersion>
     <UnityProjectGeneratorStyle>Legacy</UnityProjectGeneratorStyle>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>Android:13</UnityBuildTarget>
@@ -63,166 +63,172 @@
     <Analyzer Include="C:\Users\Luis\Documents\GitHub\VRLearnTOBOT\project-app\Library\PackageCache\com.unity.muse.common\ThirdParty\AppUI\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\CustomMeshImageDefine.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Loop_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Text_CSharp.cs" />
     <Compile Include="Assets\Scripts\Options\WorkSpaceOptions.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\BlockStatusView.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldFactory.cs" />
+    <Compile Include="Assets\Source\Script\Core\Variable\VariableMap.cs" />
     <Compile Include="Assets\Scripts\Logger.cs" />
-    <Compile Include="Assets\Scripts\Model\WorkSpaceModel.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldDropdownDialog.cs" />
-    <Compile Include="Assets\Core\Variable\VariableMap.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldVariableModel.cs" />
-    <Compile Include="Assets\Execute\RobotBehaviour .cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\CategoryController.cs" />
-    <Compile Include="Assets\Scripts\Blocks\CategoryLoader.cs" />
-    <Compile Include="Assets\Scripts\Factories\BlockFactory.cs" />
-    <Compile Include="Assets\Core\Mutator\ProcedureMutators\ProcedureMutator.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\WorkSpaceController.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Coroutine_CSharp.cs" />
-    <Compile Include="Assets\Scripts\View\BaseView.cs" />
-    <Compile Include="Assets\Scripts\Types\FieldTypes.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\MutatorDialogs\ItemListMutatorDialog.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldAngleDialog.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldButtonModel.cs" />
-    <Compile Include="Assets\CSharp\CSharp.cs" />
-    <Compile Include="Assets\Core\Code\Datas.cs" />
-    <Compile Include="Assets\Scripts\View\BlockView.cs" />
-    <Compile Include="Assets\Core\Field\FieldAngle.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FiedlNumberInputModel.cs" />
-    <Compile Include="Assets\Scripts\IntroScene\ChallengeCardUI.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\BlockConnectionController.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldDropdownView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldNumberDialog.cs" />
-    <Compile Include="Assets\Scripts\Model\ConnectionPair.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Text_CSharp.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutators\IfElseMutator.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\AppController.cs" />
-    <Compile Include="Assets\Scripts\Configurador\XML\XML.cs" />
-    <Compile Include="Assets\Scripts\View\BlockTemplateDragSource .cs" />
-    <Compile Include="Assets\Scripts\Factories\BlockViewFactory.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldTextInputView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\CustomDropdown.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutator.cs" />
-    <Compile Include="Assets\Scripts\View\UGUIUBlockly\BaseToolBox.cs" />
-    <Compile Include="Assets\Core\Code\Names.cs" />
-    <Compile Include="Assets\Scripts\View\LineGroupView.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\InputController.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Extensions\CustomDropdown.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\VariableNameDialog.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldImageView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\CustomMeshImage.cs" />
-    <Compile Include="Assets\CSharp\CSharpInterpreter.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Variables_CSharp.cs" />
-    <Compile Include="Assets\Scripts\Configurador\I18n\MsgDefine.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutators\ItemListMutator.cs" />
-    <Compile Include="Assets\Scripts\Model\BlockModel.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Math_CSharp.cs" />
-    <Compile Include="Assets\Scripts\Configurador\I18n\I18n.cs" />
-    <Compile Include="Assets\Core\Code\Interpreter.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldButtonView.cs" />
-    <Compile Include="Assets\CSharp\CSharpRunner.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\ExecutionController.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldNumberModel.cs" />
-    <Compile Include="Assets\Core\Code\Generator.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\DialogFactory.cs" />
-    <Compile Include="Assets\Scripts\Model\ConnectionModel.cs" />
-    <Compile Include="Assets\Core\Code\Cmdtor.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\UIEventListener.cs" />
-    <Compile Include="Assets\Scripts\Observables\ProcedureObserver.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutators\IndexAtMutator.cs" />
-    <Compile Include="Assets\Scripts\View\WorkSpaceView.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Logic_CSharp.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModel.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\MsgDialog.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldLabelView.cs" />
-    <Compile Include="Assets\Scripts\View\ConnectionInputView.cs" />
-    <Compile Include="Assets\Interfaces\IObserver.cs" />
-    <Compile Include="Assets\Scripts\DebugConnectionData.cs" />
-    <Compile Include="Assets\Scripts\Model\BlockCategoryDefinitionData.cs" />
-    <Compile Include="Assets\Scripts\Factories\InputFactory.cs" />
-    <Compile Include="Assets\Core\Code\Runner.cs" />
-    <Compile Include="Assets\Scripts\IntroScene\ChallengeContext.cs" />
-    <Compile Include="Assets\Scripts\Factories\FieldFactory.cs" />
-    <Compile Include="Assets\Scripts\ResourcesDebugger.cs" />
-    <Compile Include="Assets\Core\Code\CmdRunner.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutators\MathIsDivisibleByMutator.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Controller\BlockDragController.cs" />
-    <Compile Include="Assets\CSharp\Generators\Coroutine_CSharp.cs" />
-    <Compile Include="Assets\Scripts\View\FieldView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldColorDialog.cs" />
-    <Compile Include="Assets\Scripts\Types\BlockInputType.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\MutatorDialogs\IfElseMutatorDialog.cs" />
-    <Compile Include="Assets\Scripts\View\InputView.cs" />
-    <Compile Include="Assets\Core\Field\FieldDate.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldDropdownModel .cs" />
-    <Compile Include="Assets\Scripts\Observables\MemorySafeConnectionObserver .cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldCheckboxModel .cs" />
-    <Compile Include="Assets\Scripts\Configurador\JSON\JsonExtensions.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\ToolBox\ToolBoxCategory.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Options\WorkspaceOptions.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Loop_Lua.cs" />
+    <Compile Include="Assets\Scenes\Desafios\SceneNavigator.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutators\IndexAtMutator.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Loop_CSharp.cs" />
+    <Compile Include="Assets\Scripts\Scenes\RobotTester.cs" />
+    <Compile Include="Assets\Scenes\Desafios\ChallengeLoader.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutator.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\DialogFactory.cs" />
+    <Compile Include="Assets\Scenes\Desafios\MenuManager.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Variables_Lua.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\LuaInterpreter.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Cmdtor.cs" />
+    <Compile Include="Assets\Scripts\Debugger\DebugConnectionData.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\MutatorFactory.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\PlayControlView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Colour_Lua.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\CSharpRunner.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\MutatorDialogs\ItemListMutatorDialog.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\LineGroupView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\XmlView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Math_CSharp.cs" />
+    <Compile Include="Assets\Scripts\Scenes\SceneRunner.cs" />
+    <Compile Include="Assets\Scripts\Scenes\GameAPI.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutators\IfElseMutator.cs" />
+    <Compile Include="Assets\Scenes\Desafios\CameraManager.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\LuaRunner.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldDropdown.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\MutatorDialogs\IfElseMutatorDialog.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\VariableNameDialog.cs" />
+    <Compile Include="Assets\Scripts\Scenes\SceneLoader.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldInputView.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Runner.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldVariable.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\FieldView.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\CmdEnumerator.cs" />
+    <Compile Include="Assets\Source\Script\Core\Block\BlockDefinition.cs" />
+    <Compile Include="Assets\Source\Script\Core\Variable\VariableModel.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\ProcedureMutators\ProcedureCallMutator.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\ProcedureMutators\ProcedureMutator.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Logic_Lua.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\LuaGenerator.cs" />
+    <Compile Include="Assets\Source\Script\Core\CustomDefine\Number.cs" />
+    <Compile Include="Assets\Source\Script\Core\Controllers\WorkspaceController.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\BlocklyUI.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldColorView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldImageView.cs" />
+    <Compile Include="Assets\Scenes\Desafios\ProgramBuilder.cs" />
+    <Compile Include="Assets\Scenes\Desafios\MuroController.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldLabelView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Toolbox\ClassicToolbox.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\FieldDialogs\FieldColorDialog.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\CSharp.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\CodeDefs.cs" />
+    <Compile Include="Assets\Source\Script\Core\Connection\ConnectionDB.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\BlockViewSettings.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldButtonView.cs" />
+    <Compile Include="Assets\Scenes\Desafios\CommandParser.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\FieldDialogs\FieldDropdownDialog.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\InputView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Logic_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\FieldDialogs\FieldNumberDialog.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldCheckbox.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutators\DropdownOptionsMutator.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\List_CSharp.cs" />
+    <Compile Include="Assets\Scenes\Desafios\CommandSystem.cs" />
+    <Compile Include="Assets\Scripts\Interfaces\IObserver.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\ProcedureMutators\ProcedureDB.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutators\MathIsDivisibleByMutator.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\BaseDialog.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldCheckboxView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Toolbox\ScratchToolbox.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Variables_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Extensions\UIEventListener.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Extensions\CustomMeshImageDefine.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\BaseView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Text_Lua.cs" />
+    <Compile Include="Assets\Scripts\Scenes\ChallengeCardUI.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldVariableView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Coroutine_CSharp.cs" />
+    <Compile Include="Assets\Scripts\Debugger\PrefabDebugger .cs" />
+    <Compile Include="Assets\Source\Script\Core\Connection\Connection.cs" />
+    <Compile Include="Assets\Source\Script\Core\Xml.cs" />
+    <Compile Include="Assets\Source\Script\Core\CustomDefine\ObservePattern.cs" />
+    <Compile Include="Assets\Scripts\Enumerators\Enumerators.cs" />
+    <Compile Include="Assets\Source\Script\Core\Block\BlockFactory.cs" />
     <Compile Include="Assets\Scripts\PrefabValidator.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\Procedure_CSharp.cs" />
-    <Compile Include="Assets\Core\Mutator\ProcedureMutators\ProcedureCallMutator.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\FieldDialogs\FieldDialog.cs" />
-    <Compile Include="Assets\Scripts\Definition\ArgumentDefinition.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldImageModel.cs" />
-    <Compile Include="Assets\Scripts\Configurador\ScratchBlocks.cs" />
-    <Compile Include="Assets\Scripts\Model\VariableModel.cs" />
-    <Compile Include="Assets\Scripts\View\BlockStatusView.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldColorView.cs" />
-    <Compile Include="Assets\Core\Code\CmdEnumerator.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Options\VariableUtils.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldLabelModel.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Extensions\UGUIHelper.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldVariableView.cs" />
-    <Compile Include="Assets\Enumerators\Enumerators.cs" />
-    <Compile Include="Assets\Core\Code\CodeDefs.cs" />
-    <Compile Include="Assets\Scripts\Observables\VariableObserver.cs" />
-    <Compile Include="Assets\Core\Mutator\Mutators\DropdownOptionsMutator.cs" />
-    <Compile Include="Assets\Core\Mutator\ProcedureMutators\Procedure.cs" />
-    <Compile Include="Assets\Scripts\View\ConnectionView.cs" />
-    <Compile Include="Assets\Scripts\Utilidades.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldProcedureView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Extensions\UIEventListener.cs" />
-    <Compile Include="Assets\Scripts\Blocks\BlockDataLoader.cs" />
-    <Compile Include="Assets\CSharp\Generators\Logic_CSharp.cs" />
-    <Compile Include="Assets\Core\Mutator\ProcedureMutators\ProcedureDefinitionMutator.cs" />
-    <Compile Include="Assets\Scripts\Observables\Observable.cs" />
-    <Compile Include="Assets\Scripts\Blocks\DB\BlockConnectionDB.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldCheckboxView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\Extensions\UGUIHelper.cs" />
-    <Compile Include="Assets\Core\Field\FieldCreatorAttribute.cs" />
-    <Compile Include="Assets\Scripts\Model\InputModel.cs" />
-    <Compile Include="Assets\Interfaces\IBlockElement.cs" />
-    <Compile Include="Assets\Execute\MotionBlockInterpreter .cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldInputView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\MutatorDialogs\ProcedureDefinitionMutatorDialog.cs" />
-    <Compile Include="Assets\Scripts\View\FieldViews\FieldNumberInputView.cs" />
-    <Compile Include="Assets\Scripts\Definition\BlockDefinition.cs" />
-    <Compile Include="Assets\CSharp\Interpreters\List_CSharp.cs" />
-    <Compile Include="Assets\Scripts\Configurador\Dialogs\BaseDialog.cs" />
-    <Compile Include="Assets\CSharp\Generators\Loop_CSharp.cs" />
-    <Compile Include="Assets\CSharp\Generators\Text_CSharp.cs" />
-    <Compile Include="Assets\Scripts\Factories\MutatorFactory.cs" />
-    <Compile Include="Assets\Core\CustomDefine\Number.cs" />
-    <Compile Include="Assets\Scripts\Definition\Define.cs" />
-    <Compile Include="Assets\Scripts\Model\ConnectionModelExtensions.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\BlockView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\WorkspaceView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Loop_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\ProcedureMutators\Procedure.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Math_Lua.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldColour.cs" />
+    <Compile Include="Assets\Source\Script\Core\CustomDefine\Vector.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Extensions\CustomMeshImage.cs" />
+    <Compile Include="Assets\Source\Script\Core\Utils.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldLabel.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Toolbox\ToolboxConfig.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\MotionInterpreter.cs" />
+    <Compile Include="Assets\Source\Script\Core\Define.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\BlockViewBuilder.cs" />
+    <Compile Include="Assets\Scenes\Desafios\ExecutionTimerView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\ConnectionView.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\Fields\FieldDropdownView.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Logic_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Views\ConnectionInputView.cs" />
+    <Compile Include="Assets\Scripts\Interfaces\IBlockElement.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Interpreter.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\FieldDialogs\FieldAngleDialog.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\CmdRunner.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldAngle.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Procedure_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\ProcedureMutators\ProcedureDefinitionMutator.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Extensions\UGUIHelper.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldDate.cs" />
+    <Compile Include="Assets\Source\Script\Core\Blockly.cs" />
+    <Compile Include="Assets\Source\Script\I18n\MsgDefine.cs" />
+    <Compile Include="Assets\Source\Script\Core\Workspace.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldNumber.cs" />
+    <Compile Include="Assets\Source\Script\Core\Controllers\BlockController.cs" />
+    <Compile Include="Assets\Source\Libs\JsonExtension.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Datas.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Variables_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\Core\Block\Block.cs" />
+    <Compile Include="Assets\Scripts\Debugger\ResourcesDebugger.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\CSharpGenerator.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\MutatorDialogs\ProcedureDefinitionMutatorDialog.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Generator.cs" />
+    <Compile Include="Assets\Source\Script\Core\Controllers\ToolBoxController.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Toolbox\BaseToolbox.cs" />
+    <Compile Include="Assets\Source\Script\Core\Variable\Variables.cs" />
+    <Compile Include="Assets\Scripts\Execute\RobotBehaviour .cs" />
+    <Compile Include="Assets\Source\Script\Core\Mutator\Mutators\ItemListMutator.cs" />
+    <Compile Include="Assets\Scripts\Scenes\IntroMenuController.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Math_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\BlockViewFactory.cs" />
+    <Compile Include="Assets\Source\Script\Core\Code\Names.cs" />
+    <Compile Include="Assets\Scripts\Scenes\ScriptManager.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldImage.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\CSharpInterpreter.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\FieldDialogs\FieldDialog.cs" />
+    <Compile Include="Assets\Scenes\Desafios\CollisionTextLogger.cs" />
+    <Compile Include="Assets\Source\Script\I18n\I18n.cs" />
     <Compile Include="Assets\Scripts\BlockLogicalMetrics.cs" />
-    <Compile Include="Assets\Scripts\View\BlockViewSettings.cs" />
-    <Compile Include="Assets\Execute\BlockObserver .cs" />
-    <Compile Include="Assets\Scripts\View\UICanvasView.cs" />
-    <Compile Include="Assets\Scripts\Configurador\UGUI\ToolBox\ToolboxConfig.cs" />
-    <Compile Include="Assets\Scripts\WorkspaceSerializer.cs" />
-    <Compile Include="Assets\Core\Field\FieldColour.cs" />
-    <Compile Include="Assets\Scripts\Observables\MemorySafeBlockObserver.cs" />
-    <Compile Include="Assets\Scripts\View\BlockListView.cs" />
-    <Compile Include="Assets\Scripts\Blocks\Medidor.cs" />
-    <Compile Include="Assets\CSharp\CSharpGenerator.cs" />
-    <Compile Include="Assets\CSharp\Generators\Math_CSharp.cs" />
-    <Compile Include="Assets\Resources\BlockResMgr.cs" />
-    <Compile Include="Assets\Scripts\IntroScene\IntroMenuController.cs" />
-    <Compile Include="Assets\Scripts\Model\FieldModels\FieldTextInputModel.cs" />
-    <Compile Include="Assets\Scripts\Factories\MutatorClassAtribute.cs" />
-    <Compile Include="Assets\Core\Mutator\ProcedureMutators\ProcedureDB.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Dialogs\MsgDialog.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\List_Lua.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\FieldTextInput.cs" />
+    <Compile Include="Assets\Scenes\Desafios\GameManager.cs" />
+    <Compile Include="Assets\Source\Script\Core\Field\Field.cs" />
+    <Compile Include="Assets\Source\Script\UGUIView\Extensions\CustomDropdown.cs" />
+    <Compile Include="Assets\Source\Script\Core\Input\Input.cs" />
+    <Compile Include="Assets\Source\Script\Res\BlockResMgr.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Generators\Coroutine_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\Core\Input\InputFactory.cs" />
+    <Compile Include="Assets\Scenes\Desafios\ChallengeData.cs" />
+    <Compile Include="Assets\Scenes\Desafios\RobotController.cs" />
+    <Compile Include="Assets\Scripts\Scenes\ChallengeContext.cs" />
+    <Compile Include="Assets\Scenes\Desafios\IDE_UIManager.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\CSharp\Interpreters\Text_CSharp.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Generators\Procedure_Lua.cs" />
+    <Compile Include="Assets\Source\Script\CodeDB\Lua\Lua.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
@@ -253,9 +259,11 @@
     <None Include="Assets\Resources\XML\Blocks\Operadores.xml" />
     <None Include="Assets\Resources\XML\DefaultToolBox.xml" />
     <None Include="Assets\Resources\XML\Blocks\Control.xml" />
+    <None Include="Assets\PrefabAnalysisLogs\Prefab_Analysis_V2_2025-06-20_18-04-49.txt" />
     <None Include="Assets\Resources\XML\Blocks\MisBloques.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\Resources\XML\Blocks\Sonido.xml" />
+    <None Include="Assets\Source\Libs\Newtonsoft.Json.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
@@ -1459,16 +1467,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Muse.StyleTrainer.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Muse.StyleTrainer.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Muse.StyleTrainer.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Muse.StyleTrainer.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">

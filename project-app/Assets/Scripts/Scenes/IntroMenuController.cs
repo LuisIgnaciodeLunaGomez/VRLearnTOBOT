@@ -8,8 +8,7 @@ using UnityEngine.Video;
 
 public class IntroMenuController : MonoBehaviour
 {
-    // ... (TODAS TUS VARIABLES PÚBLICAS Y STRUCTS) ...
-    // Se quedan exactamente como las tienes.
+
 
     [Header("Paneles Principales")]
     public GameObject mainOptionsPanel;
@@ -170,7 +169,7 @@ public class IntroMenuController : MonoBehaviour
             }
         }
 
-        // Configura los botones AHORA, cuando es seguro.
+      
         if (detailStartButton != null)
         {
             detailStartButton.onClick.RemoveAllListeners();
@@ -198,14 +197,11 @@ public class IntroMenuController : MonoBehaviour
         }
     }
 
-    // El resto de tus funciones como OnFreeProgrammingClicked, Show/HideChallengeSelectionPanel...
-    // Se quedan como están.
-
     public void OnFreeProgrammingClicked()
     {
         Debug.Log("Iniciando modo de Programación Libre...");
         ChallengeContext.SelectedChallengeId = null;
-        SceneManager.LoadScene("UIGUIVRLearnToBot");
+        SceneManager.LoadScene("UGUIScene");
     }
 
     public void ShowChallengeSelectionPanel()
@@ -236,15 +232,12 @@ public class IntroMenuController : MonoBehaviour
     /// <param name="videoClip">El clip de video a reproducir.</param>
     public void ShowVideoPreview(VideoClip videoClip)
     {
-        // En tu diseño, mostrar el video implica mostrar todo el panel de detalles.
-        // Necesitamos encontrar el ChallengeInfo que corresponde a este video.
         foreach (var challenge in availableChallenges)
         {
             if (challenge.videoPreviewClip == videoClip)
             {
-                // Encontramos el desafío, ahora mostramos sus detalles.
                 ShowChallengeDetails(challenge);
-                return; // Salimos del bucle una vez encontrado.
+                return; 
             }
         }
     }
