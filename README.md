@@ -1,6 +1,10 @@
 ![VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
 
-[![GitHub issues cerradas](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub issues cerradas](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues)
+[![Último commit](https://img.shields.io/github/last-commit/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/commits/main)
+[![Licencia: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Lenguaje principal](https://img.shields.io/github/languages/top/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
+[![Tamaño del código](https://img.shields.io/github/languages/code-size/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
 
 <h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0)</h1>
 
