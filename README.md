@@ -1,6 +1,6 @@
 ![VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
 
-[![GitHub issues](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues)
+[![GitHub issues cerradas](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues?q=is%3Aissue+is%3Aclosed)
 
 <h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0)</h1>
 
