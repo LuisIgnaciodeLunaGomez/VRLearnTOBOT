@@ -2,21 +2,23 @@
 
 El presente capítulo tiene como objetivo describir las técnicas metodológicas y las herramientas de desarrollo que se han utilizado para llevar a cabo el proyecto. Se detallarán los aspectos más destacados de cada elección, justificando el porqué de su utilización frente a posibles alternativas, y cómo estas herramientas han contribuido al logro de los objetivos planteados. Para mejorar la comprensión, las herramientas se han agrupado en subsecciones según su área de aplicación.
 
-\section{Metodología de Desarrollo: Agile con SCRUM}
+\section{Metodología de desarrollo: Agile con SCRUM}
 El desarrollo del prototipo de laboratorio virtual se ha abordado mediante la aplicación de principios de metodologías ágiles, en particular el marco de trabajo \textbf{SCRUM}. Este enfoque, a diferencia de modelos lineales o en cascada, ha sido fundamental por su énfasis en la flexibilidad, la colaboración y la entrega continua de valor. Permite una rápida adaptación a los desafíos técnicos y a la evolución de los requisitos durante el desarrollo de un proyecto complejo y en evolución como este.
 
 \begin{itemize}
-	\item \textbf{Planificación Iterativa (Sprints):} El desarrollo se ha estructurado en \textit{sprints} de duración fija (ej. 1-3 semanas), al final de los cuales se obtenía un incremento funcional y probado del prototipo.
-	\item \textbf{Roles y Colaboración:} El rol de tutor (D. Carlos López Nozal) ha adoptado las funciones de \textit{Product Owner} (priorizando funcionalidades y validando incrementos) y \textit{Scrum Master} (guiando la aplicación de la metodología). El rol del alumno (autor del TFG) ha sido el de \textit{Equipo de Desarrollo}.
-	\item \textbf{Monitorización del Progreso:} La plataforma \textbf{Zube} \cite{ZubePlatform} ha sido utilizada para la gestión de proyectos, integrándose con GitHub y permitiendo el uso de tableros Kanban para planificar tareas, asignar puntos de historia y realizar seguimiento visual del progreso.
-	\item \textbf{Integración Continua y Calidad del Código:} Como parte del compromiso con la calidad del software, se han explorado prácticas de Integración Continua (CI), aunque no completamente automatizadas, con revisiones periódicas del código en GitHub y una inspección básica de las estructuras y coherencia implementadas, detectando posibles errores y problemas de estilo o rendimiento.
+	\item \textbf{Planificación iterativa (Sprints):} El desarrollo se ha estructurado en \textit{sprints} de duración fija (ej. 1-3 semanas), al final de los cuales se obtenía un incremento funcional y probado del prototipo.
+	
+	\item \textbf{Adaptación y pivote estratégico:} La naturaleza ágil de SCRUM fue clave para gestionar la evolución del proyecto. Tras evaluar la complejidad de implementar un motor de layout visual completo, la metodología permitió pivotar estratégicamente hacia un modelo híbrido. Este cambio se gestionó como una redefinición del alcance dentro de un sprint, asegurando la entrega de un Producto Mínimo Viable (MVP) sin comprometer los plazos ni la calidad del núcleo funcional
+	\item \textbf{Roles y colaboración:} El rol de tutor (D. Carlos López Nozal) ha adoptado las funciones de \textit{Product Owner} (priorizando funcionalidades y validando incrementos) y \textit{Scrum Master} (guiando la aplicación de la metodología). El rol del alumno (autor del TFG) ha sido el de \textit{Equipo de Desarrollo}.
+	\item \textbf{Monitorización del progreso:} La plataforma \textbf{Zube} \cite{ZubePlatform} ha sido utilizada para la gestión de proyectos, integrándose con GitHub y permitiendo el uso de tableros Kanban para planificar tareas, asignar puntos de historia y realizar seguimiento visual del progreso.
+	\item \textbf{Integración continua y calidad del código:} Como parte del compromiso con la calidad del software, se han explorado prácticas de integración continua (CI), aunque no completamente automatizadas, con revisiones periódicas del código en GitHub y una inspección básica de las estructuras y coherencia implementadas, detectando posibles errores y problemas de estilo o rendimiento.
 \end{itemize}
 
-Esta metodología ha permitido validar el prototipo de forma continua con la funcionalidad principal (movimiento del robot) e identificar los desafíos para las fases futuras de forma temprana, asegurando que el esfuerzo se centrara en las áreas de mayor impacto para el TFG.
+La adopción de SCRUM no solo ha facilitado la gestión del proyecto, sino que ha sido el pilar que ha permitido una toma de decisiones ágil ante desafíos técnicos, reorientando el esfuerzo hacia la creación de un MVP robusto y funcional.
 
-\section{Herramientas Core para el Desarrollo de Software}
+\section{Herramientas core para el desarrollo de software}
 
-\subsection{Motor de Videojuegos: Unity 6 y Lenguaje C\#}
+\subsection{Motor de videojuegos: Unity 6 y Lenguaje C\#}
 El corazón del laboratorio virtual reside en el motor de videojuegos \textbf{Unity \textit{Versión: 6000.0.26f1}}, elegido por su potente capacidad para la creación de entornos 3D interactivos y simulaciones en tiempo real. La decisión de utilizar Unity, frente a motores exclusivamente de renderizado, se fundamenta en sus capacidades para:
 \begin{itemize}
 	\item \textbf{Simulación 3D avanzada:} Permite el modelado, animación y simulación de la física del robot, esenciales para replicar comportamientos realistas.
@@ -26,7 +28,7 @@ El corazón del laboratorio virtual reside en el motor de videojuegos \textbf{Un
 \end{itemize}
 El lenguaje de programación principal utilizado es \textbf{C\#}. La integración nativa de C\# con Unity permite el desarrollo de scripts eficientes basados en programación orientada a objetos (POO), y el uso intensivo de \textbf{corruutinas} (\texttt{IEnumerator}) para la gestión de la lógica asíncrona de la ejecución de bloques y animaciones, crucial para una experiencia fluida del usuario. El entorno de desarrollo integrado (IDE) principal ha sido \textbf{Visual Studio}.
 
-\subsection{Modelado 3D y Creación de Modelos de Robot}
+\subsection{Modelado 3D y creación de modelos de robot}
 Para la creación del modelo 3D del robot y la representación de componentes específicos de LEGO WeDo 2.0, se han utilizado herramientas de modelado dedicadas:
 \begin{itemize}
 	\item \textbf{Blender (Versión 4.4):} Como software de modelado 3D principal. Blender permitió diseñar un modelo de robot de forma personalizada, optimizar la malla para asegurar un rendimiento eficiente en tiempo real en Unity, y exportar los modelos en formatos compatibles.
@@ -34,31 +36,37 @@ Para la creación del modelo 3D del robot y la representación de componentes es
 \end{itemize}
 Esta fase ha sido fundamental para transformar la idea de un robot LEGO WeDo 2.0 virtual en un activo 3D funcional dentro de Unity, que sirve como base para la simulación, con una estética inspirada en robots educativos como LEGO WeDo 2.0, asegurando la cohesión visual del proyecto.
 
-\subsection{Framework de Interfaz de Programación: UBlockly}
-El núcleo de la interfaz de programación visual del prototipo se basa en la adaptación de la librería \textbf{UBlockly} \cite{UBlockly}, una implementación de Blockly en C\# para Unity. Esta elección, en lugar de un desarrollo desde cero, se justifica por:
+\subsection{ Programación visual y textual: UBlockly y DSL propio}
+
 \begin{itemize}
-	\item \textbf{Base Lógica Sólida:} UBlockly proporciona una estructura ya desarrollada para la representación de bloques como modelos lógicos (\texttt{BlockModel}, \texttt{InputModel}, \texttt{FieldModel}) y la gestión de sus conexiones (\texttt{ConnectionModel}, \texttt{BlockConnectionDB}), lo que acelera el desarrollo.
-	\item \textbf{Motor de Ejecución Propio:} Incluye un sistema de intérpretes directos basados en clases \texttt{Cmdtor} y la orquestación de corrutinas con \texttt{CSharpRunner}, fundamental para traducir la lógica de bloques en acciones ejecutables en Unity.
-	\item \textbf{Extensibilidad y Personalización:} La arquitectura de UBlockly es altamente modular, permitiendo la adaptación a las necesidades de este proyecto. Se ha extendido para replicar las funcionalidades y la estética de Scratch, adaptando sus componentes a un entorno MVC y facilitando la creación de bloques específicos para el robot (ej. \texttt{motion\_movesteps}).
-	\item \textbf{Adaptación visual a Unity UI:} Se han creado \textbf{prefabs} de \texttt{GameObject}s que contienen las \texttt{BlockView}s personalizadas con componentes \texttt{UnityEngine.UI} (\texttt{Image}, \texttt{TextMeshProUGUI}, \texttt{Button}), que se corresponden directamente con los \texttt{BlockModel}s lógicos. Esto ha permitido controlar al detalle la apariencia y comportamiento de los bloques en la interfaz. Elementos clave como el \texttt{nextStatementContainer} dentro de la jerarquía de los prefabs, son puntos de anclaje visuales para asegurar la correcta apilación de los bloques.
+	\item \textbf{Base lógica para programación por bloques:} UBlockly proporcionó una estructura de referencia para la representación lógica de bloques (\texttt{Block}) y la gestión de sus conexiones (\texttt{Connection}). Esta base fue utilizada para implementar los bloques estructurales del sistema, como el bloque de evento inicial y los bucles, acelerando el desarrollo de la parte visual.
+	\item \textbf{Desarrollo de un lenguaje de dominio específico (DSL):} Para los comandos de acción del robot (movimiento y giro), se optó por diseñar e implementar un DSL textual. Esta decisión permitió un control más directo sobre la semántica de las acciones del robot y simplificó la ejecución, eliminando la necesidad de un motor de layout visual complejo para estos comandos. La implementación incluyó:
+	\begin{itemize}
+		\item Un Parser (\texttt{CommandParser}) que analiza el código escrito por el usuario.
+		\item Un Intérprete (\texttt{RobotController}) que ejecuta la secuencia de instrucciones resultante.
+	\end{itemize}
+	\item \textbf{Implementación híbrida:} La combinación de bloques visuales para la estructura y código textual para las acciones conforma el núcleo híbrido del prototipo. Esta aproximación no solo es una solución pragmática a los desafíos técnicos, sino que también ofrece un modelo pedagógico de transición, donde los usuarios aprenden la estructura del programa visualmente y practican la codificación de comandos de forma escrita.
 \end{itemize}
 
-\section{Persistencia de Datos del Programa}
+\section{Persistencia de datos del programa}
 Para permitir guardar y cargar los programas creados por el usuario, el prototipo incorpora un sistema de persistencia básico.
+\subsection{ Sistema de gestión de Desafíos y guardado de código}
+ La persistencia de datos en el prototipo se aborda de dos maneras complementarias:
+\begin{itemize}
+	\item \textbf{Gestión de desafíos con Scriptable Objects:} La definición de los desafíos (título, descripción, etc.) se gestiona mediante \textbf{Scriptable Objects} (ChallengeData). Este enfoque de Unity permite desacoplar los datos del contenido de la lógica del juego, facilitando la creación y modificación de nuevos desafíos sin necesidad de cambiar el código. Un gestor (ChallengeLoader) se encarga de la persistencia de la selección del usuario entre escenas.
+	\item \textbf{Persistencia del programa de usuario (No implementada en el MVP):} Aunque la arquitectura de UBlockly analizada incluía un sistema de serialización a XML, en la versión actual del prototipo no se ha implementado una funcionalidad de guardado/carga del programa creado por el usuario. La lógica de los desafíos está diseñada para ser resuelta en una sola sesión, enfocándose en la resolución de problemas y la ejecución inmediata del código. La implementación de la persistencia se considera una línea de trabajo futura.
+\end{itemize}
 
-\subsection{Serialización a XML y Almacenamiento en PlayerPrefs}
-El estado del programa, representado por la estructura lógica del \texttt{WorkSpaceModel} (que incluye todos los \texttt{BlockModel}s, sus conexiones y sus datos), se serializa a formato \textbf{XML}. La clase \texttt{Xml} de UBlockly se encarga de esta transformación del modelo a XML y viceversa (\texttt{WorkspaceToDom()} y \texttt{DomToWorkspace()}). La clase \texttt{WorkspaceSerializer} de la solución desarrollada utiliza estas funcionalidades para \textit{guardar el XML resultante en las \texttt{PlayerPrefs}} de Unity y \textit{cargarlo} desde ahí. Esta solución es adecuada para un prototipo, dada su simplicidad y su funcionalidad de almacenamiento local rápido y básico para la continuidad en los proyectos de usuario.
 
+\section{Herramientas para gestión de proyectos y desarrollo}
 
-\section{Herramientas para Gestión de Proyectos y Desarrollo}
-
-\subsection{Control de Versiones: Git y GitHub}
+\subsection{Control de versiones: Git y GitHub}
 El control de versiones es fundamental para el desarrollo colaborativo y el seguimiento de los cambios en el código. \textbf{Git} ha sido utilizado como sistema de control de versiones distribuido, permitiendo un registro detallado del historial del proyecto y la gestión eficiente de las distintas ramas de desarrollo. El repositorio en \textbf{GitHub} ha servido como plataforma de alojamiento remoto, facilitando la colaboración, el versionado y la sincronización del código fuente. Sus características, como la gestión de *issues* y *milestones* han sido valiosas para estructurar y monitorizar el avance del proyecto.
 
-\subsection{Asistencia en Codificación: GitHub Copilot}
+\subsection{Asistencia en codificación: GitHub Copilot}
 Durante la fase de implementación, se ha hecho uso de \textbf{GitHub Copilot}, una herramienta de asistencia en la codificación basada en Inteligencia Artificial \cite{GitHubCopilot}. Copilot, que se integra con IDEs como Visual Studio, ofrece sugerencias de código en tiempo real, completado automático y la generación de fragmentos de código basados en el contexto. Esto ha contribuido a aumentar la eficiencia del desarrollo, reduciendo la necesidad de escribir código repetitivo y facilitando la exploración de patrones de programación. Su aplicación se ha limitado a tareas de apoyo, manteniendo el control total del código en manos del desarrollador.
 
-\subsection{Edición y Compilación de Documentación: TeXstudio y LaTeX}
+\subsection{Edición y compilación de documentación: TeXstudio y LaTeX}
 La documentación de la memoria del Trabajo Fin de Grado ha sido elaborada utilizando \textbf{LaTeX} como sistema de composición de textos, conocido por su capacidad para generar documentos de alta calidad tipográfica y su robustez en la gestión de referencias bibliográficas. La herramienta \textbf{TeXstudio} ha actuado como Entorno de Desarrollo Integrado (IDE) para LaTeX, facilitando la escritura, la corrección ortográfica y gramatical, el resaltado de sintaxis y la previsualización en tiempo real del documento. Esta combinación ha sido esencial para la producción de una memoria técnica profesional.
 .
 
