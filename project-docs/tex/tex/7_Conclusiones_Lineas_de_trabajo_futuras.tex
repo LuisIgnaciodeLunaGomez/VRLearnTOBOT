@@ -1,10 +1,11 @@
-\capitulo{7}{Conclusiones y Líneas de trabajo futuras}
+\capitulo{7}{Conclusiones y líneas de trabajo futuras}
 
 Todo proyecto debe incluir las conclusiones que se derivan de su desarrollo, destacando los logros alcanzados y los aprendizajes obtenidos. Este capítulo final presenta una síntesis de los resultados del proyecto, tanto funcionales como técnicos. Además, se ofrece un informe crítico detallado que expone las limitaciones del prototipo actual y delinea una serie de líneas de trabajo futuras, que permiten trazar una hoja de ruta para la evolución y expansión del laboratorio virtual de programación y robótica.
 
 \section{Conclusiones}
 
-El presente Trabajo Fin de Grado ha abordado el desarrollo de un \textbf{prototipo funcional de laboratorio virtual de programación y robótica}, basado en el motor de videojuegos Unity 6 y el lenguaje de programación C\#. A lo largo del proyecto, se ha implementado con éxito el \textbf{núcleo de un entorno de programación visual} (inspirado en Scratch) y un \textbf{sistema de simulación 3D básico} para un robot virtual, inspirado en la funcionalidad y estética de kits como LEGO WeDo 2.0. El proyecto ha demostrado la viabilidad técnica de combinar una interfaz de programación por bloques con una simulación robótica interactiva en un entorno accesible.
+El presente Trabajo Fin de Grado ha culminado con el desarrollo de un prototipo funcional de un laboratorio virtual para la enseñanza de la programación y la robótica, implementado en el motor Unity 6 con C\#. El proyecto ha logrado con éxito el objetivo principal de crear un entorno de aprendizaje híbrido, que combina una interfaz visualmente estructurada con un sistema de programación textual basado en un lenguaje de dominio específico (DSL) propio. Esta solución ha demostrado la viabilidad técnica de un modelo pedagógico de transición, donde los usuarios aprenden los fundamentos de la algoritmia y el control de un robot 3D sin la curva de aprendizaje inicial de la sintaxis compleja, pero practicando la escritura de código.
+
 
 Los principales logros y aprendizajes del proyecto incluyen:
 
@@ -16,21 +17,21 @@ Los principales logros y aprendizajes del proyecto incluyen:
 	\item \textbf{Gestión de proyectos en un entorno Agile:} La aplicación de la metodología SCRUM, utilizando Zube y GitHub, ha sido fundamental para gestionar la complejidad, priorizar tareas y adaptarse a los retos técnicos emergentes durante el desarrollo del prototipo.
 \end{itemize}
 
-\section{Líneas de Trabajo Futuras}
+\section{Líneas de trabajo futuras}
 
 El presente proyecto establece una base sólida sobre la que se pueden desarrollar mejoras y ampliaciones significativas para que el laboratorio virtual evolucione hacia una solución educativa integral. A continuación, se presentan algunas de las posibles líneas de trabajo futuras:
 
-\subsection{Extensión y Diversificación del Sistema de Bloques}
+\subsection{Extensión y diversificación del sistema de bloques}
 Inicialmente, el prototipo implementa un conjunto limitado de bloques para demostrar su viabilidad. Para una solución completa, se plantea:
 \begin{itemize}
 	\item \textbf{Ampliación de categorías de bloques:} Incorporar todas las categorías estándar de Scratch (ej. Sonido, Apariencia, Sensores).
 	\item \textbf{Implementación de bloques avanzados:} Extender la funcionalidad para incluir estructuras de control más complejas como bucles, condicionales, funciones (procedimientos y bloques My Blocks), listas y operaciones con variables y operadores lógicos/matemáticos avanzados. Esto implicaría la adaptación de los intérpretes (\texttt{Cmdtor}s) y la generación de prefabs visuales para cada nuevo tipo de bloque.
 	\item \textbf{Expansión del modelo de eventos:} Desarrollar la capacidad para gestionar y responder a un rango más amplio de eventos, más allá de la bandera verde, permitiendo interacciones más complejas con el entorno virtual.
 	\item \textbf{Sistema de depuración visual interactiva:} Crear herramientas visuales en la interfaz que permitan a los estudiantes seguir el flujo de ejecución del programa paso a paso, visualizar el estado de las variables y detectar errores en tiempo real, facilitando la comprensión y la resolución de problemas de lógica.
-	\item \textbf{Integración de Bloques con Hardware Simulado Detallado:} Extender los bloques para representar el comportamiento detallado de motores (velocidad, dirección) y sensores (distancia, color, toque) del LEGO WeDo 2.0.
+	\item \textbf{Integración de bloques con hardware simulado detallado:} Extender los bloques para representar el comportamiento detallado de motores (velocidad, dirección) y sensores (distancia, color, toque) del LEGO WeDo 2.0.
 \end{itemize}
 
-\subsection{Mejora de la Simulación 3D e Interactividad}
+\subsection{Mejora de la simulación 3D e interactividad}
 Actualmente, la simulación se centra en el movimiento básico del robot. Para mejorar la experiencia de aprendizaje y la inmersión, se pueden introducir mejoras como:
 \begin{itemize}
 	\item \textbf{Entornos dinámicos e interactivos:} Diseñar escenarios 3D donde el robot pueda interactuar con obstáculos, objetos móviles o elementos activables (puertas, palancas), y responder a estímulos del entorno simulado (ej. zonas con distinto tipo de terreno que afecten el movimiento, etc.).
@@ -39,7 +40,7 @@ Actualmente, la simulación se centra en el movimiento básico del robot. Para m
 	\item \textbf{Realidad Virtual (VR) y Aumentada (AR):} Explorar la portabilidad y adaptación del prototipo a plataformas de Realidad Virtual (VR) o Aumentada (AR), utilizando las capacidades nativas de Unity para ofrecer experiencias aún más inmersivas y atractivas para el aprendizaje.
 \end{itemize}
 
-\subsection{Evaluación de la Efectividad Educativa y Usabilidad}
+\subsection{Evaluación de la efectividad educativa y usabilidad}
 Una limitación inherente a la fase de prototipado es la ausencia de una validación exhaustiva con usuarios reales. Para futuras adaptaciones, es fundamental realizar:
 \begin{itemize}
 	\item \textbf{Estudios de usabilidad y experiencia de usuario (UX):} Realizar pruebas formales con grupos de estudiantes de diversas edades y niveles de experiencia, empleando metodologías como el test A/B o encuestas de satisfacción, para evaluar la facilidad de uso de la interfaz, la intuición del sistema de bloques y la efectividad general de la plataforma.
@@ -47,24 +48,36 @@ Una limitación inherente a la fase de prototipado es la ausencia de una validac
 	\item \textbf{Recopilación de métricas de interacción y comportamiento:} Implementar herramientas de análisis y telemetría para recolectar datos anónimos sobre cómo los estudiantes interactúan con el sistema (tiempo dedicado, bloques utilizados, errores comunes, caminos de solución), lo cual permitiría identificar áreas de mejora y optimizar la experiencia de aprendizaje.
 \end{itemize}
 
-\subsection{Integración con Hardware Físico}
+\subsection{Integración con hardware físico}
 Aunque el prototipo actual se centra en la simulación virtual, el objetivo a largo plazo incluye la interacción con robots reales. Las posibles mejoras en esta línea abarcan:
 \begin{itemize}
 	\item \textbf{Conexión en tiempo real con LEGO WeDo 2.0 (Física):} Desarrollar un módulo de comunicación (mediante Bluetooth Low Energy) que permita la ejecución directa del código programado con bloques en el robot físico LEGO WeDo 2.0, creando un puente entre la programación virtual y la experiencia tangible.
 	\item \textbf{Compatibilidad con otros kits de robótica:} Ampliar el sistema para permitir la programación y el control de otros dispositivos de robótica educativa, como Arduino o micro:bit, a través de interfaces de programación de bajo nivel (APIs o protocolos de comunicación específicos) para esos dispositivos.
 \end{itemize}
 
-\subsection{Optimización del Rendimiento, Portabilidad y Localización}
+\subsection{Optimización del rendimiento, portabilidad y localización}
 Para maximizar la accesibilidad y el alcance del laboratorio virtual, es esencial abordar aspectos de optimización y portabilidad.
 \begin{itemize}
 	\item \textbf{Optimización del rendimiento en Unity:} Llevar a cabo una fase de optimización exhaustiva para reducir el consumo de recursos de la aplicación (CPU, GPU, RAM), lo cual permitiría su ejecución más fluida en dispositivos de bajo rendimiento, como tablets básicas o computadoras más antiguas, maximizando la inclusión.
-	\item \textbf{Portabilidad a Versión Web del Entorno:} Desarrollar una versión ejecutable del laboratorio virtual directamente en navegadores web (utilizando tecnologías como Unity WebGL), eliminando la necesidad de instalación y facilitando un acceso instantáneo desde cualquier dispositivo con conexión a internet.
+	\item \textbf{Portabilidad a versión web del entorno:} Desarrollar una versión ejecutable del laboratorio virtual directamente en navegadores web (utilizando tecnologías como Unity WebGL), eliminando la necesidad de instalación y facilitando un acceso instantáneo desde cualquier dispositivo con conexión a internet.
 	\item \textbf{Localización del Sistema:} Traducir la interfaz de usuario, las descripciones de los bloques y los tutoriales a múltiples idiomas. Esto expandiría el alcance educativo de la plataforma a nivel global, eliminando barreras lingüísticas.
 \end{itemize}
 
+
+\subsection{Reflexiones sobre el proceso de desarrollo y la adaptación}
+Una de las lecciones más significativas aprendidas durante este TFG ha sido la gestión de la complejidad técnica al adaptar repositorios de código abierto existentes. El objetivo inicial de replicar completamente el sistema visual de Scratch, tomando UBlockly como base, se reveló como un desafío de una magnitud considerablemente mayor a la anticipada.
+
+El proceso de ingeniería inversa para comprender el funcionamiento interno de UBlockly, una librería con documentación limitada, requirió un gran esfuerzo de investigación y análisis. Lo que inicialmente parecía un problema sutil de implementación de layouts visuales se convirtió en un obstáculo significativo, especialmente en la recreación de bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), que requieren una manipulación dinámica de la geometría y la jerarquía de las vistas.
+
+Lejos de ser un fracaso, este desafío representó un punto de inflexión crítico y formativo. Puso de manifiesto la importancia de la evaluación realista de los plazos y del alcance en un proyecto de ingeniería de software. La decisión de pivotar hacia un modelo híbrido no fue un abandono del objetivo, sino una redefinición estratégica para garantizar la entrega de un producto funcional y coherente, centrando el esfuerzo en los aspectos donde se podía aportar mayor valor: el diseño de un lenguaje, su intérprete y la simulación interactiva.
+
+Esta experiencia ha reforzado la conciencia sobre la dificultad de integrar sistemas complejos y ha subrayado la importancia de la modularidad y la arquitectura flexible, principios que guiaron tanto la refactorización inicial a MVC como el diseño final del prototipo. Los conocimientos adquiridos durante este proceso de adaptación y resolución de problemas constituyen uno de los aprendizajes más valiosos del proyecto
+
 \section{Conclusión Final}
 
-El desarrollo de este laboratorio virtual representa un avance significativo en la enseñanza de la programación y la robótica mediante entornos visuales y simulados. La adaptación de UBlockly en Unity ha culminado en un prototipo funcional que no solo demuestra la viabilidad técnica de esta innovadora integración, sino que también valida su potencial educativo. La aplicación de los conocimientos de ingeniería informática adquiridos durante el Grado ha sido fundamental, permitiendo no solo abordar los desafíos técnicos, sino también diseñar un sistema capaz de transformar la compleja tarea de programar en una actividad lúdica y accesible.
+El desarrollo de este laboratorio virtual representa una trayectoria de ingeniería completa, desde la concepción de una idea ambiciosa hasta la entrega de un prototipo funcional y pragmático. La investigación inicial, centrada en la adaptación de UBlockly, demostró rápidamente la inmensa complejidad de replicar sistemas de programación visual como Scratch, especialmente en la generación dinámica de bloques de control de flujo. Este desafío, lejos de ser un fracaso, se convirtió en una valiosa lección sobre la gestión de la complejidad y la importancia de la adaptación estratégica.
 
-Las líneas de trabajo futuras esbozadas abren un camino prometedor para convertir este prototipo en una herramienta educativa integral, más robusta, inclusiva y universal. Personalmente, este Trabajo Fin de Grado ha supuesto un valioso aprendizaje en arquitectura de software, desarrollo avanzado en Unity y adaptación de sistemas complejos. Este proyecto no solo es una prueba de las habilidades de ingeniería desarrolladas, sino que también refleja un compromiso con la democratización del conocimiento y la aplicación de la tecnología como motor para una educación STEAM más equitativa y motivadora, dando un primer paso hacia la superación de las barreras impuestas por la necesidad de hardware físico costoso
+El pivote hacia un enfoque híbrido ha culminado en un prototipo que valida un modelo pedagógico original y técnicamente sólido. La aplicación de los conocimientos del Grado en Ingeniería Informática ha sido fundamental, no solo para implementar el sistema final de intérprete de comandos, sino también para analizar la arquitectura inicial, identificar sus obstáculos y tomar decisiones de diseño informadas. El proyecto resultante es, por tanto, una prueba de las habilidades de ingeniería desarrolladas y un reflejo del compromiso con la creación de herramientas educativas accesibles, en línea con los Objetivos de Desarrollo Sostenible.
+
+Las líneas de trabajo futuras, que incluyen retomar la implementación completa del sistema visual, no se plantean como una tarea pendiente, sino como el siguiente paso lógico en un proyecto de mayor envergadura. Personalmente, este Trabajo Fin de Grado ha sido un aprendizaje profundo en arquitectura de software, desarrollo avanzado en Unity y resolución de problemas complejos. La intención de continuar esta línea de investigación, posiblemente durante un futuro máster en diseño de videojuegos, subraya la pasión y el conocimiento generados por este TFG, que considero un primer paso firme y exitoso.
 
