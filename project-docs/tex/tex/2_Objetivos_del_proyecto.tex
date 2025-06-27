@@ -2,13 +2,11 @@
 
 \section{Introducción}
 
-El presente Trabajo Fin de Grado tiene como objetivo principal el desarrollo de un \textbf{prototipo de laboratorio virtual de programación y robótica} que permita a los estudiantes aprender programación mediante bloques. Este laboratorio ha sido desarrollado en el motor de videojuegos \textbf{Unity 6} y utilizando el lenguaje de programación \textbf{CSharp}.
+El presente Trabajo Fin de Grado tiene como objetivo principal el desarrollo de un \textbf{prototipo de laboratorio virtual de programación y robótica}  \textbf{enfocado en la enseñanza de los fundamentos de la lógica algorítmica a través de un sistema de desafíos interactivos}  que permita a los estudiantes aprender programación mediante bloques y código escrito. Este laboratorio ha sido desarrollado con el motor de videojuegos \textbf{Unity 6} junto con el lenguaje de programación \textbf{CSharp} para la programación de las clases necesarias para que se lleve a cabo su ejecución.
 
 La educación en robótica y programación ha demostrado ser una herramienta clave en el aprendizaje del pensamiento computacional. Sin embargo, uno de los principales desafíos en la enseñanza de la robótica es la dependencia de hardware físico, lo que limita el acceso a estudiantes en contextos de escasos recursos.
 
-Para abordar esta problemática, el laboratorio virtual combinará un \textbf{entorno de simulación 3D}, que permitirá visualizar la ejecución de los programas, con un \textbf{sistema de bloques de programación}, basado en la lógica de \textbf{Scratch}. Este sistema se inspira en la robótica educativa, con la intención de simular a futuro un robot tipo LEGO WeDo 2.0 virtual, implementándose en este prototipo los mecanismos de movimiento fundamentales.
-
-Además, se ha analizado el repositorio \textbf{UBlockly}, una implementación en Unity que permite la programación por bloques. Aunque UBlockly no está diseñado específicamente para replicar los bloques de Scratch, ha representado una base sólida y clave para evaluar su adaptabilidad e integración en este trabajo \cite{UBlockly}. Su estudio ha permitido definir estrategias para la implementación y optimización del sistema propuesto en este proyecto.
+Para abordar esta problemática, el laboratorio virtual combinará un \textbf{entorno de simulación 3D}, que permitirá visualizar la ejecución de los programas, con un \textbf{sistema de programación basado en un lenguaje de comandos textual}. Este sistema se inspira en la robótica educativa, con la intención de simular un robot tipo LEGO WeDo 2.0 virtual, implementándose en este prototipo los mecanismos de movimiento fundamentales.
 
 Para ello, se establecen los siguientes objetivos específicos que se han perseguido y alcanzado, parcial o totalmente, durante el desarrollo del prototipo:
 
@@ -17,32 +15,33 @@ Para ello, se establecen los siguientes objetivos específicos que se han perseg
 Estos objetivos están relacionados con las funcionalidades que el prototipo de laboratorio virtual debe cumplir para ofrecer una experiencia educativa inicial.
 
 \begin{enumerate}
-	\item \textbf{Diseñar e implementar el núcleo de un sistema de programación por bloques.}
+	\item \textbf{Diseñar y desarrollar un sistema híbrido de programación para robótica educativa.}
 	\begin{itemize}
-		\item Replicar la lógica de interacción visual y el comportamiento fundamental de Scratch (arrastre, conexión y ejecución de bloques).
-		\item Adaptar e integrar la estructura de UBlockly como base para la gestión de bloques y su traducción a acciones ejecutables en Unity. Esto ha implicado el diseño e implementación de los siguientes bloques \textit{funcionales en el prototipo}:
+		\item Crear un entorno de programación que combine la programación visual por bloques para las estructuras principales del programa, con la programación textual para la definición de secuencias de comandos específicas.
+		\item Implementar el núcleo de un sistema de programación por bloques inspirado en Scratch, enfocado en los elementos esenciales para la estructuración de un programa:
 		\begin{itemize}
-			\item \textbf{Bloque de movimiento:} (\texttt{motion\_movesteps}) para controlar el desplazamiento lineal del robot en la simulación 3D.
-			\item \textbf{Bloque de eventos:} (\texttt{event\_whenflagclicked}) para iniciar la secuencia de ejecución del programa.
-		
+			\item \textbf{Bloque de evento de inicio:}  como punto de partida de la ejecución.
+			\item \textbf{Bloques de programación estructurada:} como bucles o condicionales que sirven de contenedores para otras instrucciones.
+			\item \textbf{Bloques de movimiento: } Bloques específicos que permitan al robot girar o moverse en alguna dirección.
 		\end{itemize}
-		\item Evaluar y aplicar aspectos clave de UBlockly para lograr una implementación eficiente y escalable de la lógica de programación visual tipo Scratch en Unity.
+		\item Desarrollar un Lenguaje de Dominio Específico (DSL) textual para los comandos de bajo nivel del robot (mover, girar), y un \textbf{parser} para validar y procesar dichos comandos.
 	\end{itemize}
-	
-	\item \textbf{Integrar el sistema de bloques con un entorno de simulación 3D en Unity.}
-	\begin{itemize}
-		\item Implementar un entorno de programación visual (\texttt{WorkSpaceView} y \texttt{BlockListView}) como una interfaz interactiva en Unity donde se pueden arrastrar, soltar y conectar bloques replicando el entorno Scratch.
-		\item Desarrollar un sistema de ejecución de bloques (\texttt{CSharpRunner} y \texttt{Cmdtor}s) que traduzca dinámicamente las instrucciones programadas con bloques en acciones ejecutadas por el robot simulado en Unity.
-		\item Configurar un entorno de simulación 3D (\texttt{RobotBehaviour} y escenas) que permita la visualización en tiempo real del comportamiento del robot virtual (\texttt{RobotBehaviour}) al ejecutar las instrucciones de los bloques.
-		\item Diseñar una interfaz de usuario intuitiva (\texttt{UICanvasView}) que facilite la transición entre los modos de programación y simulación, orientada a la accesibilidad y facilidad de uso para el público objetivo.
-	\end{itemize}
-	
-	\item \textbf{Implementar un prototipo de simulación para un robot LEGO WeDo 2.0.}
-	\begin{itemize}
-		\item Crear un modelo 3D básico de un robot genérico inspirado en la estética LEGO WeDo 2.0.
-		\item Dotar al robot virtual de funcionalidades esenciales para su movimiento en el entorno simulado, ejecutando comandos interpretados desde los bloques (ej. desplazamiento).
-		\item  Asegurar que la experiencia de simulación demuestre el flujo completo desde la interfaz de bloques hasta la acción visual del robot en el entorno 3D, validando la viabilidad del concepto principal.
-	\end{itemize}
+
+\item \textbf{Integrar el sistema de programación híbrido con un entorno de simulación 3D.}
+\begin{itemize}
+	\item Implementar un área de trabajo  interactiva en Unity donde se puedan arrastrar y conectar los bloques visuales.
+	\item Desarrollar un motor de ejecución  que recorra la estructura de bloques y, cuando encuentre un bloque de código textual, invoque al parser y ejecute las instrucciones resultantes en el robot simulado.
+	\item Configurar un entorno de simulación 3D  que permita la visualización en tiempo real del comportamiento del robot, respondiendo tanto a la estructura de bloques como a los comandos textuales.
+	\item Implementar un sistema de detección de colisiones que detenga la ejecución y proporcione feedback inmediato al usuario.
+\end{itemize}
+
+\item \textbf{Implementar un prototipo de laboratorio virtual basado en desafíos.}
+\begin{itemize}
+	\item Crear un modelo 3D de un robot genérico inspirado en la estética de kits educativos como el robot Lego Wedo 2.0.
+	\item Dotar al robot virtual de las funcionalidades de movimiento y rotación necesarias para completar los desafíos.
+	\item Diseñar un sistema de gestión de desafíos que permita definir objetivos concretos, cargando dinámicamente las instrucciones y la configuración de la escena.
+	\item Asegurar que el prototipo demuestre el flujo completo desde la construcción del programa híbrido hasta la simulación de su resultado en el entorno 3D.
+\end{itemize}
 \end{enumerate}
 
 \section{Objetivos No Funcionales}
