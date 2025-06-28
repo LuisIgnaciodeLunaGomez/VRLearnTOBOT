@@ -1,64 +1,63 @@
-\apendice{Plan de Proyecto Software}
+\apendice{Plan de proyecto software}
 \section{Introducción}
-En este  plan de proyecto software se detallan los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del laboratorio virtual de programación y robótica. El presente anexo tiene como objetivo establecer un marco de referencia para la ejecución del este trabajo, asegurando que el prototipo se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
+En este  plan de proyecto software se detallan los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del laboratorio virtual de programación y robótica. El presente anexo tiene como objetivo establecer un marco de referencia para la ejecución de este trabajo, asegurando que el producto mínimo viable se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
 \\ %salto de línea
 La planificación se ha enfocado en un desarrollo iterativo, aplicando principios de metodologías ágiles (SCRUM) para dividir el proyecto en tareas, sprints y entregables incrementales. Esto ha permitido una adaptación continua a los desafíos técnicos y una validación temprana de las funcionalidades principales. 
 \\
 
 En este apéndice, también se incluye un análisis de la viabilidad del proyecto, considerando los recursos humanos y materiales involucrados, los costes asociados estimados para el desarrollo del prototipo y una evaluación básica de los aspectos legales relevantes. El objetivo es demostrar que el proyecto, dentro de su alcance como TFG, es factible y se ha gestionado de manera responsable.
 
-\section{Planificación Temporal}
+\section{Planificación temporal}
 La ejecución de este Trabajo Fin de Grado se ha gestionado mediante una adaptación de la metodología ágil \textbf{SCRUM}. Esta elección metodológica se fundamenta en la necesidad de un desarrollo iterativo e incremental, permitiendo flexibilidad ante los desafíos técnicos y la evolución de los requisitos inherentes a un proyecto de prototipado y desarrollo de software. La planificación se ha estructurado en ciclos de trabajo o \textit{sprints}, de duración variable (generalmente entre una y tres semanas), con el objetivo de producir incrementos funcionales del laboratorio virtual y facilitar una validación continua del progreso.
 
  %\vspace{-4.3\baselineskip} %eliminación de espacios en blanco amplios
  
-\subsection{Herramientas y Artefactos de Planificación}
+\subsection{Herramientas y artefactos de planificación}
 Para llevar a cabo la planificación temporal y el seguimiento del proyecto, se han utilizado diversas herramientas y artefactos metodológicos.
 
 % \vspace{-3.0\baselineskip} %eliminación de espacios en blanco amplios
  
 	\begin{itemize}
-	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 13 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura \ref{fig:github_branches}).
+	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 17 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura \ref{fig:github_branches}).
 	
 	Este enfoque permitió aislar el desarrollo de estas características, experimentar con soluciones sin afectar la estabilidad de la rama principal (\texttt{master}), y facilitó la revisión e integración controlada de los cambios. El historial de \textit{commits} (ver figura \ref{fig:historicocommits}) en cada rama ha proporcionado una trazabilidad detallada de la evolución específica de cada módulo o funcionalidad. Adicionalmente, las funcionalidades de \textit{issues} de GitHub se emplearon para el registro y seguimiento de tareas, así como para la gestión de errores o mejoras identificadas durante el desarrollo.
 	
 	\end{itemize}
-	
-		% ----- FIGURA DE HISTORICO DE COMMITS  -----
+		% ----- FIGURA DE RAMAS DE GITHUB -----
 	\begin{figure}[H] 
 		\centering
 		
-		\includegraphics[width=1\linewidth]{img/historicocommits.png} 
-		\caption{histograma de commits realizados}
-		\label{fig:historicocommits}
+		\includegraphics[width=1\linewidth]{img/branchsGithub.png} 
+		\caption{Ejemplo de la estructura de ramas utilizada en el repositorio de GitHub del proyecto, mostrando diferentes líneas de desarrollo para funcionalidades clave.}
+		\label{fig:github_branches}
 	\end{figure}
 	% ----- FIN FIGURA -----
+	
 
-
-Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{ZubePlatform}, integrada con GitHub, fue utilizada para la organización y visualización del trabajo. Sus funcionalidades principales empleadas han sido:
-
-	% ----- FIGURA DE RAMAS DE GITHUB -----
+% ----- FIGURA DE HISTORICO DE COMMITS  -----
 \begin{figure}[H] 
 	\centering
 	
-	\includegraphics[width=1\linewidth]{img/branchsGithub.png} 
-	\caption{Ejemplo de la estructura de ramas utilizada en el repositorio de GitHub del proyecto, mostrando diferentes líneas de desarrollo para funcionalidades clave.}
-	\label{fig:github_branches}
+	\includegraphics[width=1\linewidth]{img/historicocommits.png} 
+	\caption{histograma de commits realizados}
+	\label{fig:historicocommits}
 \end{figure}
 % ----- FIN FIGURA -----
 
-\begin{itemize} 
-	\item \textbf{Gestión de Tareas en Tableros Kanban:} Permitiendo la visualización del flujo de trabajo de cada tarea, desde su planificación (Inbox) hasta su finalización (Done), incluyendo estados intermedios. En la Figura \ref{fig:zube_kanban} se muestra un ejemplo de este tablero. 
-	
 	\begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.5\linewidth]{img/zube_analytics_general.png} 
 	\caption{Analíticas de espacio de trabajo ofrecidas por Zube para el seguimiento de proyectos.}
 	\label{fig:zube_analytics_general}
 \end{figure}
+Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{ZubePlatform}, integrada con GitHub, fue utilizada para la organización y visualización del trabajo. Sus funcionalidades principales empleadas han sido:
 
-	\item \textbf{Planificación y Seguimiento de Sprints:} Facilitando la definición de objetivos y el conjunto de tareas (historias de usuario con sus respectivos puntos de historia) a abordar en cada iteración. 
-	\item \textbf{Métricas Ágiles y Analíticas del Espacio de Trabajo:} Aunque para un proyecto individual la aplicación estricta de todas las métricas de equipo puede variar, Zube ofrece diversas analíticas (ver Figura~\ref{fig:zube_analytics_general}) que han servido como referencia para evaluar el progreso general.
+
+\begin{itemize} 
+	\item \textbf{Gestión de tareas en tableros Kanban:} Permitiendo la visualización del flujo de trabajo de cada tarea, desde su planificación (Inbox) hasta su finalización (Done), incluyendo estados intermedios. En la Figura \ref{fig:zube_kanban} se muestra un ejemplo de este tablero. 
+	
+	\item \textbf{Planificación y seguimiento de sprints:} Facilitando la definición de objetivos y el conjunto de tareas (historias de usuario con sus respectivos puntos de historia) a abordar en cada iteración. 
+	\item \textbf{Métricas ágiles y analíticas del espacio de trabajo:} Aunque para un proyecto individual la aplicación estricta de todas las métricas de equipo puede variar, Zube ofrece diversas analíticas (ver Figura~\ref{fig:zube_analytics_general}) que han servido como referencia para evaluar el progreso general.
 	
 		% --- FIGURA KANBAN ---
 	\begin{figure}[H]
@@ -99,45 +98,43 @@ Complementariamente, la plataforma de gestión de proyectos \textbf{Zube} \cite{
 	\end{figure}
 \end{itemize}
 
-\subsection{Organización del Desarrollo por Sprints e Hitos Clave}
+\subsection{Organización del desarrollo por sprints e hitos clave}
 El desarrollo del prototipo se articuló en torno a una serie de \textbf{hitos principales}, que marcaron la consecución de objetivos clave y agruparon el trabajo realizado a lo largo de varios \textit{sprints}. 
 
-\subsubsection{Resumen de Hitos del Proyecto} 
+\subsubsection{Resumen de hitos del proyecto} 
 Los principales hitos que guiaron la evolución del prototipo fueron los siguientes:
 \begin{itemize}
-	\item \textbf{Hito 1: Fundamentos y Arquitectura Inicial.}
-	Configuración del entorno de desarrollo, análisis de la librería UBlockly y definición de la arquitectura Modelo-Vista-Controlador (MVC) como base para el proyecto.
+	\item \textbf{Hito 1: Fundamentos y arquitectura inicial.}
+	Configuración del entorno de desarrollo, análisis de la librería UBlockly para analizar la posibilidad de reutilizarla en el proyecto.
 
 	
-	\item \textbf{Hito 2: Definición del Proyecto y Marco Teórico.}
+	\item \textbf{Hito 2: Definición del proyecto y marco teórico.}
 	Consolidación de los objetivos del TFG, estudio comparativo de plataformas de robótica y programación visual, y estructuración inicial de la memoria.
 
 	
-	\item \textbf{Hito 3: Prototipo Básico de Interfaz y Pruebas APK.}
+	\item \textbf{Hito 3: Prototipo básico de interfaz y pruebas APK.}
 	Desarrollo de la interfaz de usuario para mostrar paneles y categorías de bloques, y primeras pruebas de generación de APK para Android.
 
 	
-	\item \textbf{Hito 4: Funcionalidad del Robot y Reestructuración de la Simulación.}
+	\item \textbf{Hito 4: Funcionalidad del robot y reestructuración de la simulación.}
 	Superación de las limitaciones de la simulación inicial, desarrollo del \texttt{RobotBehaviour}, implementación de los intérpretes de movimiento y evento, y validación del movimiento básico del robot virtual.
 
 	
-	\item \textbf{Hito 5: Implementación de la Arquitectura MVC y Refinamiento de Interacciones.}
-	Reestructuración completa del código para adoptar explícitamente el patrón MVC, desarrollo de los controladores principales y trabajo intensivo en la lógica de conexiones y layout visual de los bloques.
+	\item \textbf{Hito 5: Reto técnico y pivote estratégico.} Tras la implementación de las bases, se identificó que la creación de un motor de layout dinámico para los bloques de control de flujo complejos (ej. bucles anidados) era un desafío técnico mayor de lo previsto. En línea con la metodología ágil, tomé la decisión estratégica de pivotar hacia un sistema híbrido. El objetivo era mantener una estructura visual pero introducir un DSL textual para los comandos, asegurando así la viabilidad del proyecto.
+
+	\item \textbf{Hito 6: Desarrollo del sistema híbrido (MVP).} Implementación del CommandParser, el ProgramBuilder y el IDE\_UIManager. Adaptación del GameManager y RobotController para ejecutar la List<Instruction> generada por el parser. Diseño de la estructura de ChallengeData para los desafíos.
+	
+	\item \textbf{Hito 7: Finalización y pruebas del MVP.} Pruebas integrales del flujo completo (selección de desafío -> escritura de código -> ejecución -> simulación con colisiones). Depuración final y completitud de la memoria del TFG.
 
 	
-	\item \textbf{Hito 6: Prototipo Funcional con Interacción Drag \& Drop y Simulación.}
-	Logro de una funcionalidad robusta de arrastre, conexión (snap) y apilamiento de bloques. El robot virtual ejecuta de forma controlada las secuencias programadas.
 
-	
-	\item \textbf{Hito 7: Finalización del Prototipo, Pruebas y Documentación.}
-	Pruebas integrales, depuración final, optimización básica y completitud de la memoria del TFG.
 
 \end{itemize}
 
 A continuación, se ofrece un desglose más detallado del trabajo realizado en cada sprint clave:
 
 
-\subsubsection{Sprint 0: Puesta en marcha, Configuración del Entorno e Investigación Inicial}
+\subsubsection{Sprint 0: Puesta en marcha, configuración del entorno e investigación inicial}
 
 
 %g GRAFICO DEL SPRINT----
@@ -150,22 +147,22 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 
 
 \begin{itemize}
-	\item \textbf{Duración:} Semana 1 (del 15 al 22 de Enero de 2025). 
-	\item \textbf{Objetivo Principal:} Establecer las bases del proyecto, configurar el entorno de desarrollo y realizar una investigación exhaustiva de las herramientas y librerías clave, con especial foco en UBlockly.
+	\item \textbf{Duración:} Semana 1 (del 15 al 22 de enero de 2025). 
+	\item \textbf{Objetivo principal:} Establecer las bases del proyecto, configurar el entorno de desarrollo y realizar una investigación exhaustiva de las herramientas y librerías clave, con especial foco en UBlockly.
 	    \item \textbf{Contexto:} Tras las reuniones iniciales con el tutor para definir el alcance y los objetivos del TFG, este primer sprint se centró en preparar toda la infraestructura técnica y conceptual necesaria para iniciar la implementación y la configuración de las diferentes partes del repositorio en el que se iba a trabajar.
-	\item \textbf{Tareas Principales y Resultados:}
+	\item \textbf{Tareas principales y resultados:}
 	\begin{itemize}
 		\item Instalación y configuración de las herramientas de desarrollo: Unity (Versión 6000.0.2f1), C\#, Visual Studio, Git y Zube.
 		\item Creación del repositorio del proyecto en GitHub e integración inicial con Zube para la gestión de tareas.
-		\item Análisis profundo de la arquitectura y componentes del repositorio UBlockly: se estudiaron sus clases \texttt{BlockModel}, \texttt{ConnectionModel}, el sistema de ejecución (\texttt{CSharpRunner}, \texttt{Cmdtor}s) y su integración con Unity UI.
+		\item Análisis profundo de la arquitectura y componentes del repositorio UBlockly: se estudiaron sus clases \texttt{Block}, \texttt{Connection}, el sistema de ejecución (\texttt{CSharpRunner}, \texttt{Cmdtor}s) y su integración con Unity UI.
 	
 		\item Esbozo inicial de la estructura de la interfaz de usuario principal (\texttt{UICanvasView}) en Unity, incluyendo la disposición de los paneles para categorías, toolbox y área de codificación.
 		\item Investigación sobre la representación de robots educativos como LEGO WeDo 2.0 en entornos 3D y los principios de la programación visual estilo Scratch.
 		\end{itemize}
-	\item \textbf{Hito Alcanzado:} Entorno de desarrollo  plenamente operativo.  Comprensión clara de la base técnica de UBlockly para su adaptación.
+	\item \textbf{Hito alcanzado:} Entorno de desarrollo  plenamente operativo.  Comprensión clara de la base técnica de UBlockly para su adaptación.
 	\end{itemize}
 	
-\subsubsection{Sprint 1: Resumen de Objetivos y Comparativa de Trabajos Relacionados} 
+\subsection{Sprint 1: Resumen de objetivos y comparativa de trabajos relacionados} 
 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
@@ -176,10 +173,10 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 \end{figure}
 
 \begin{itemize}
-	\item \textbf{Duración;} Del 30 de Enero de 2025 al 12 de Febrero de 2025. % <-- TOMADO DE TU IMAGEN (¡Ajusta si estas son fechas futuras!)
-	\item \textbf{Objetivo Principal:} Consolidar los objetivos del TFG con un enfoque en la tríada LEGO-Scratch-Unity, realizar un estudio comparativo de robots y paletas de trabajo, y avanzar en la documentación técnica y conceptual.
+	\item \textbf{Duración;} Del 30 de enero de 2025 al 12 de febrero de 2025. 
+	\item \textbf{Objetivo principal:} Consolidar los objetivos del TFG con un enfoque en la tríada LEGO-Scratch-Unity, realizar un estudio comparativo de robots y paletas de trabajo, y avanzar en la documentación técnica y conceptual.
 	\item \textbf{Contexto:} Tras la puesta en marcha inicial del proyecto (Sprint 0), este sprint se centró en definir con mayor precisión el alcance técnico y teórico, así como en establecer una base sólida para la comparativa con trabajos existentes y la estructuración de la memoria.
-	\item \textbf{Tareas Clave Realizadas} :
+	\item \textbf{Tareas clave realizadas} :
 	\begin{itemize}
 		\item Elaboración de un resumen de los objetivos del proyecto, con un enfoque específico en la integración y adaptación de los paradigmas de LEGO, Scratch y Unity.
 		\item Creación y refinamiento de la lista de acrónimos a utilizar en la documentación.
@@ -190,15 +187,15 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 		\item Ajuste de la terminología interna del proyecto (ej. cambiar etiqueta formación a learning).
 		\item Concreción de los objetivos educativos del laboratorio, alineándolos con conceptos de accesibilidad, herramientas de calidad y desarrollo sostenible (ODS).
 		\item Inicio de la sección de Trabajos Relacionados de la memoria, incluyendo la preparación de una tabla comparativa con las plataformas analizadas.
-		\item Definición del alcance inicial de la gamificación (aunque su implementación completa se planificara para fases posteriores).
+	
 		\item Delimitación conceptual del Laboratorio Virtual frente a un entorno virtual genérico.
 		\item Avance en la documentación contextualizada del proyecto, asegurando que cada concepto teórico estuviera bien anclado y justificado.
 		\item Documentación de las decisiones de diseño y técnicas tomadas hasta la fecha.
 	\end{itemize}
-	\item \textbf{Hito Alcanzado:} Objetivos del TFG refinados y claramente enfocados. Primera versión del análisis comparativo de plataformas y robots. Estructura inicial de la memoria del TFG definida y con contenido preliminar en secciones clave. Protocolos de gestión de código y tareas establecidos.
+	\item \textbf{Hito alcanzado:} Objetivos del TFG refinados y claramente enfocados. Primera versión del análisis comparativo de plataformas y robots. Estructura inicial de la memoria del TFG definida y con contenido preliminar en secciones clave. Protocolos de gestión de código y tareas establecidos.
 \end{itemize}
 	
-\subsubsection{Sprint 2: Creación de un Prototipo de Prueba y Avance Documental}
+\subsection{Sprint 2: Creación de un prototipo de prueba y avance documental}
 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
@@ -208,10 +205,10 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\label{fig:burndownsp2}
 \end{figure}
 \begin{itemize}
-	\item \textbf{Duración:} Del 12 de Febrero de 2025 al 5 de Marzo de 2025.  
-	\item \textbf{Objetivo Principal:} Desarrollar una primera prueba funcional del robot virtual (inspirado en WeDo 2.0) capaz de moverse en el entorno 3D de Unity, crear un APK para pruebas en dispositivo, y avanzar significativamente en la documentación y estructuración de la memoria del TFG.
+	\item \textbf{Duración:} Del 12 de febrero de 2025 al 5 de marzo de 2025.  
+	\item \textbf{Objetivo principal:} Desarrollar una primera prueba funcional del robot virtual (inspirado en WeDo 2.0) capaz de moverse en el entorno 3D de Unity, crear un APK para pruebas en dispositivo, y avanzar significativamente en la documentación y estructuración de la memoria del TFG.
 	\item \textbf{Contexto:} Sobre la base de los objetivos y la investigación del sprint anterior, este sprint se enfocó en materializar un primer prototipo ejecutable y en consolidar la estructura de la memoria, abordando aspectos técnicos y de contenido.
-	\item \textbf{Tareas Clave Realizadas:}
+	\item \textbf{Tareas clave realizadas:}
 	\begin{itemize}
 		\item Diseño y desarrollo de una prueba inicial de movimiento para el robot virtual WeDo 2.0 en Unity.
 		\item Generación de un archivo APK (Android Package Kit) para la instalación y prueba del prototipo en un dispositivo Android físico.
@@ -234,10 +231,10 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 		\item Elaboración del resumen y título del trabajo para ser incluidos en la memoria.
 		\item Se configuro la herramienta de latex para la generación de los pdfs.
 	\end{itemize}
-	\item \textbf{Hito Alcanzado:} Primera versión de un prototipo de aplicación donde se podía ver los distintos paneles y la proyección de las categorías de los bloques. Avance sustancial en la redacción de la introducción, objetivos, y marco teórico de la memoria. Gestión de tareas y versionado en GitHub/Zube consolidada.
+	\item \textbf{Hito alcanzado:} Primera versión de un prototipo de aplicación donde se podía ver los distintos paneles y la proyección de las categorías de los bloques. Avance sustancial en la redacción de la introducción, objetivos, y marco teórico de la memoria. Gestión de tareas y versionado en GitHub/Zube consolidada.
 \end{itemize}
 
-\subsubsection{Sprint 3: Reevaluación y Desarrollo del Prototipo Funcional del Robot}
+\subsubsection{Sprint 3: Reevaluación y desarrollo del prototipo funcional del robot}
 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
@@ -248,31 +245,31 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 \end{figure}
 
 \begin{itemize}
-	\item \textbf{Duración:} Del 5 de Marzo de 2025 al 19 de Marzo de 2025. 
-	\item \textbf{Objetivo Principal:} Superar las limitaciones de la simulación básica inicial (basada en la ejecución directa de UBlockly que no permitía una exportación APK satisfactoriao) y desarrollar un prototipo funcional donde el movimiento de un robot virtual 3D fuese visible, controlable a través de los bloques, y empaquetable como una aplicación Android.
-	\item \textbf{Contexto y Reevaluación:} Las pruebas realizadas en sprints anteriores con la estructura de ejecución directa de UBlockly revelaron que, si bien permitían una lógica de movimiento básica (ej. mover una esfera en el escenario de Unity), no se adaptaban adecuadamente para generar una aplicación Android (\texttt{.apk}) donde un robot 3D claramente identificable ejecutara las acciones programadas por bloques. Esto motivó una \textbf{reestructuración del enfoque de la simulación y la interacción}, orientándolo hacia una mayor integración entre la lógica de los bloques de UBlockly (adaptada) y un sistema de control del robot más robusto y visualmente representativo en Unity.
-      \item \textbf{Tareas Clave Realizadas}:
+	\item \textbf{Duración:} Del 5 de marzo de 2025 al 19 de marzo de 2025. 
+	\item \textbf{Objetivo principal:} Superar las limitaciones de la simulación básica inicial (basada en la ejecución directa de UBlockly que no permitía una exportación APK satisfactoria) y desarrollar un prototipo funcional donde el movimiento de un robot virtual 3D fuese visible, controlable a través de los bloques, y empaquetable como una aplicación Android.
+	\item \textbf{Contexto y reevaluación:} Las pruebas realizadas en sprints anteriores con la estructura de ejecución directa de UBlockly revelaron que, si bien permitían una lógica de movimiento básica (ej. mover una esfera en el escenario de Unity), no se adaptaban adecuadamente para generar una aplicación Android (\texttt{.apk}) donde un robot 3D claramente identificable ejecutara las acciones programadas por bloques. Esto motivó una \textbf{reestructuración del enfoque de la simulación y la interacción}, orientándolo hacia una mayor integración entre la lógica de los bloques de UBlockly (adaptada) y un sistema de control del robot más robusto y visualmente representativo en Unity.
+      \item \textbf{Tareas clave realizadas}:
 \begin{itemize}
-	\item \textbf{Desarrollo del Robot Virtual y Pruebas de Movimiento:}
+	\item \textbf{Desarrollo del robot virtual y pruebas de movimiento:}
 	\begin{itemize}
 		\item Construcción y/o refinamiento de la versión física del robot con piezas de Lego reales (modelo 3D) para la simulación en Unity.
 		\item Implementación y depuración de la lógica para la traducción de bloques en una ejecución del movimiento, asegurando que las instrucciones del bloque \ se convirtieran en acciones concretas del robot virtual 
 		\item Definición y ejecución de la definición prueba en el entorno 3D con el robot virtual para validar su comportamiento básico.
 	\end{itemize}
-	\item \textbf{Funcionalidad de Bloques (Movimiento y Eventos):}
+	\item \textbf{Funcionalidad de bloques (movimiento y eventos):}
 	\begin{itemize}
 		\item Desarrollo del Bloque mover - inclusión inputs, asegurando que el bloque de movimiento pudiera aceptar y procesar correctamente los valores de entrada (ej. número de pasos). Se trabajo en entender la estructura de JSON de definición de bloques de UBlockly para adaptarlo al XML con el que se iba a trabajar la configuración de cada tipo de bloque. Se especifican los argumentos que lleva cada bloque (ver \ref{fig:xmlbloque}) que permiten definir su jerarquía.
 		\item Se inicio la implementación de la funcionalidad para Arrastrar y soltar bloques mover y eventos, permitiendo la composición básica de programas visuales.
-		\item Ajuste del "Bloque mover - posicionar las etiquetas" para una correcta visualización de sus componentes internos.
+		\item Ajuste del Bloque mover - posicionar las etiquetas para una correcta visualización de sus componentes internos.
 		\item Trabajo en el Bloque eventos - para incluir campos imagen (bandera verde) y posicionar las etiquetas, mejorando la configuración y apariencia del bloque de inicio de eventos.
 		\item Se empezo a desarrollar de la funcionalidad para soltar bloques en el área de codificación .
 		\item Se pautaron las bases para la creación y gestión de crear conexiones entre bloques para los bloques de movimiento y evento.
 	\end{itemize}
-	\item \textbf{Generación y Pruebas en Dispositivo Android:}
+	\item \textbf{Generación y pruebas en dispositivo Android:}
 	\begin{itemize}
 		\item Creación y configuración del proyecto para generar un archivo APK (Crear la apk de prueba para su ejecución) para permitir pruebas directas en dispositivos Android.
 	\end{itemize}
-	\item \textbf{Gestión del Contenido Visual y Documentación:}
+	\item \textbf{Gestión del contenido visual y documentación:}
 	\begin{itemize}
 		\item Ajustar tamaño bloques al contenido para mejorar la presentación visual y el layout dinámico de los bloques según sus campos e inputs .
 		\item Grabación de video robot real de demostración del prototipo funcional del robot para documentación y seguimiento del progreso.
@@ -280,7 +277,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	
 
 \end{itemize}
-	\item \textbf{Hito Alcanzado:} Se dio forma al prototipo funcional con un robot físico que ejecutaba secuencias de bloques de movimiento iniciadas por un bloque de evento que marcan la base para el prototipo a desarrollar. Se logró la capacidad de generar un APK funcional para pruebas en dispositivo, superando las limitaciones anteriores. Se define además que las versiones deberán ser en 32 y 64 bits por incompatibilidad del Tutor para ponerlo a prueba.
+	\item \textbf{Hito alcanzado:} Se dio forma al prototipo funcional con un robot físico que ejecutaba secuencias de bloques de movimiento iniciadas por un bloque de evento que marcan la base para el prototipo a desarrollar. Se logró la capacidad de generar un APK funcional para pruebas en dispositivo, superando las limitaciones anteriores. Se define además que las versiones deberán ser en 32 y 64 bits por incompatibilidad del Tutor para ponerlo a prueba.
 \end{itemize}
 
 	% --- FIGURA XML ---
@@ -292,7 +289,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\label{fig:xmlbloque}
 \end{figure}
 
-\subsubsection{Sprint 4: Reestructuración Arquitectónica e Implementación del Patrón MVC} 
+\subsection{Sprint 4: Reestructuración arquitectónica e implementación del patrón MVC} 
 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
@@ -302,27 +299,27 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\label{fig:burndownsp4}
 \end{figure}
 \begin{itemize}
-	\item \textbf{Duración Estimada:} Del 26 de marzo de 2025 al 9 de abril de 2025.
+	\item \textbf{Duración:} Del 26 de marzo de 2025 al 9 de abril de 2025.
 	
-	\item \textbf{Objetivo Principal:} Reestructurar la arquitectura del proyecto para implementar de forma explícita el patrón Modelo-Vista-Controlador (MVC). El objetivo era lograr una separación clara de responsabilidades que permitiera modificar o extender componentes del Modelo, la Vista o los Controladores de forma más independiente, mejorando la mantenibilidad y escalabilidad del sistema.
-	\item \textbf{Contexto y Motivación:} Tras el desarrollo inicial de funcionalidades en sprints anteriores (Sprint 3), se identificó la necesidad de una arquitectura más robusta para gestionar la creciente complejidad, especialmente en la interacción entre la lógica de los bloques (UBlockly), la interfaz de usuario de Unity (Canvas) y la simulación del robot. El patrón MVC fue seleccionado por su probada eficacia en la organización de este tipo de sistemas.
-	\item \textbf{Tareas Clave Realizadas y Resultados:}
+	\item \textbf{Objetivo principal:} Reestructurar la arquitectura del proyecto para implementar de forma explícita el patrón Modelo-Vista-Controlador (MVC). El objetivo era lograr una separación clara de responsabilidades que permitiera modificar o extender componentes del nodelo, la vista o los controladores de forma más independiente, mejorando la mantenibilidad y escalabilidad del sistema.
+	\item \textbf{Contexto y motivación:} Tras el desarrollo inicial de funcionalidades en sprints anteriores (Sprint 3), se identificó la necesidad de una arquitectura más robusta para gestionar la creciente complejidad, especialmente en la interacción entre la lógica de los bloques (UBlockly), la interfaz de usuario de Unity (Canvas) y la simulación del robot. El patrón MVC fue seleccionado por su probada eficacia en la organización de este tipo de sistemas.
+	\item \textbf{Tareas clave realizadas y resultados:}
 	\begin{itemize}
-		\item \textbf{Análisis y Diseño MVC Aplicado al Proyecto:}
+		\item \textbf{Análisis y diseño MVC aplicado al proyecto:}
 		\begin{itemize}
-			\item Identificación de las clases existentes que correspondían a cada capa del patrón MVC (Modelo, Vista, Controlador).
-			\item Diseño de las nuevas clases Controlador necesarias para orquestar las interacciones y la lógica de la aplicación.
+			\item Identificación de las clases existentes que correspondían a cada capa del patrón MVC (modelo, vista, controlador).
+			\item Diseño de las nuevas clases controlador necesarias para orquestar las interacciones y la lógica de la aplicación.
 		\end{itemize}
-		\item \textbf{Refactorización y Creación de Componentes Modelo:}
+		\item \textbf{Refactorización y creación de componentes modelo:}
 		\begin{itemize}
-			\item Consolidación de las clases que representan el estado y la lógica de negocio pura (ej. \texttt{BlockModel}, \texttt{ConnectionModel}, \texttt{WorkSpaceModel} heredados y adaptados de UBlockly) como la capa Modelo, asegurando su independencia de la interfaz de Unity.
+			\item Consolidación de las clases que representan el estado y la lógica de negocio pura (ej. \texttt{BlockModel}, \texttt{ConnectionModel}, \texttt{WorkSpaceModel} heredados y adaptados de UBlockly) como la capa modelo, asegurando su independencia de la interfaz de Unity.
 		\end{itemize}
-		\item \textbf{Refactorización y Creación de Componentes Vista:}
+		\item \textbf{Refactorización y creación de componentes vista:}
 		\begin{itemize}
 			\item Definición y/o ajuste de las clases \texttt{View} (ej. \texttt{BlockView}, \texttt{InputView}, \texttt{UICanvasView}) para que su única responsabilidad fuera la representación visual de los datos del Modelo y la captura de eventos de UI, delegando la lógica a los Controladores.
 			\item Se revisaron los prefabs de Unity para asegurar que la jerarquía de GameObjects reflejara esta separación.
 		\end{itemize}
-		\item \textbf{Implementación de Clases Controlador:}
+		\item \textbf{Implementación de clases controlador (primera refactorización):}
 		\begin{itemize}
 			\item Creación e implementación de los controladores principales, como:
 			\begin{itemize}
@@ -333,16 +330,16 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 				\item \texttt{InputController:} Manejo de la entrada de datos en los campos de los bloques.
 				\item \texttt{CategoryController:} Gestión de la selección y muestra de categorías de bloques.
 			\end{itemize}
-			\item Establecimiento de los mecanismos de comunicación entre Controladores y las capas de Modelo y Vista (principalmente mediante el patrón Observador y llamadas a métodos específicos).
+			\item Establecimiento de los mecanismos de comunicación entre controladores y las capas de modelo y vista (principalmente mediante el patrón observador y llamadas a métodos específicos).
 		\end{itemize}
-		\item \textbf{Eliminación de Clases y Código Obsoleto:} Se identificaron y eliminaron clases o fragmentos de código que resultaron redundantes o incompatibles con la nueva arquitectura MVC, simplificando la base del código.
+		\item \textbf{Eliminación de clases y código obsoleto:} Se identificaron y eliminaron clases o fragmentos de código que resultaron redundantes o incompatibles con la nueva arquitectura MVC, simplificando la base del código.
 	.
 	\end{itemize}
-	\item \textbf{Hito Alcanzado/Resultado del Sprint:} El proyecto fue transformado exitosamente para operar bajo una arquitectura MVC. Se definieron y crearon los principales controladores, separando la lógica de la presentación y el estado. Esta reestructuración sentó una base mucho más sólida, modular y mantenible para el desarrollo de las funcionalidades subsiguientes y para la futura expansión del laboratorio virtual.
+	\item \textbf{Hito alcanzado:} El proyecto fue transformado exitosamente para operar bajo una arquitectura MVC. Se definieron y crearon los principales controladores, separando la lógica de la presentación y el estado. Esta reestructuración sentó una base mucho más sólida, modular y mantenible para el desarrollo de las funcionalidades subsiguientes y para la futura expansión del laboratorio virtual.
 \end{itemize}
 
 
-\subsubsection{Sprint 5: Revisión Profunda de MVC, Interacción de Bloques y Layout Visual}
+\subsection{Sprint 5: Revisión profunda de MVC, Interacción de bloques y layout visual}
 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
@@ -354,42 +351,42 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 
 \begin{itemize}
 	\item \textbf{Duración:} Del 9 de abril de 2025 al 24 de abril de 2025.
-	\item \textbf{Objetivo Principal:} Refinar la implementación MVC, abordar los complejos desafíos de la detección de conexiones y el posicionamiento de bloques entre diferentes paneles de Unity UI, y comenzar a preparar la escena de simulación del robot.
-	\item \textbf{Contexto y Motivación:} Con la estructura MVC base implementada en el sprint anterior, este sprint se centró en hacer que la interacción con los bloques (arrastre, snap, posicionamiento) funcionara de manera robusta y visualmente coherente, enfrentando las particularidades del sistema de coordenadas de Unity y el funcionamiento interno de UBlockly. Se detectó que la interacción entre los distintos paneles de la UI (\texttt{Toolbox}, \texttt{DragLayer}, \texttt{CodingArea}) y sus sistemas de coordenadas relativos eran una fuente importante de complejidad para la lógica de snap y el layout visual.
-	\item \textbf{Tareas Clave Realizadas y Resultados:}
+	\item \textbf{Objetivo principal:} Refinar la implementación MVC, abordar los complejos desafíos de la detección de conexiones y el posicionamiento de bloques entre diferentes paneles de Unity UI, y comenzar a preparar la escena de simulación del robot.
+	\item \textbf{Contexto y motivación:} Con la estructura MVC base implementada en el sprint anterior, este sprint se centró en hacer que la interacción con los bloques (arrastre, snap, posicionamiento) funcionara de manera robusta y visualmente coherente, enfrentando las particularidades del sistema de coordenadas de Unity y el funcionamiento interno de UBlockly. Se detectó que la interacción entre los distintos paneles de la UI (\texttt{Toolbox}, \texttt{DragLayer}, \texttt{CodingArea}) y sus sistemas de coordenadas relativos eran una fuente importante de complejidad para la lógica de snap y el layout visual.
+	\item \textbf{Tareas Clave realizadas y resultados:}
 	\begin{itemize}
-		\item \textbf{Refinamiento de la Interacción Modelo-Vista-Controlador:}
+		\item \textbf{Refinamiento de la interacción Modelo-Vista-Controlador:}
 		\begin{itemize}
 			\item Revisión y ajuste del código de los intérpretes y generadores de UBlockly para asegurar su correcta adecuación al patrón MVC y su interacción con los nuevos controladores.
 			\item Consolidación de la lógica en los controladores \texttt{BlockDragController} y \texttt{BlockConnectionController} para la gestión del arrastre de bloques, la detección de posibles conexiones y la interacción con el \texttt{WorkSpaceModel} a través del \texttt{WorkspaceController}.
 		\end{itemize}
-		\item \textbf{Desafíos en la Detección de Conexiones y Layout:}
+		\item \textbf{Desafíos en la detección de conexiones y layout:}
 		\begin{itemize}
 			\item Se inició un trabajo intensivo en la lógica de detección de conexiones (\texttt{PreviousConnection}, \texttt{NextConnection}, \texttt{InputValue}). Este esfuerzo reveló la complejidad de gestionar las posiciones relativas de los bloques cuando se mueven entre paneles con diferentes sistemas de coordenadas (Canvas local vs. Screen space, etc.).
 			\item Desarrollo de un \textbf{depurador visual/herramienta de log} para monitorizar en tiempo real las conexiones registradas en la base de datos de conexiones (\texttt{BlockConnectionDB}) y el estado de las \texttt{ConnectionModel}. Esta herramienta fue crucial para diagnosticar y resolver errores de desajuste, conexiones incorrectas o bloques que no se encontraban para el snap (\ref{fig:logsconexiones} )
 		\end{itemize}
-		\item \textbf{Posicionamiento y Comportamiento de Arrastre de Bloques:}
+		\item \textbf{Posicionamiento y comportamiento de arrastre de bloques:}
 		\begin{itemize}
 			\item Se realizaron múltiples iteraciones para asegurar que, al iniciar el arrastre desde la \texttt{Toolbox}, el bloque clonado se posicionara correctamente bajo el cursor en la capa de arrastre (\texttt{DragLayer}) y siguiera la trayectoria del ratón de forma precisa.
 			\item Se logró que los bloques se depositaran correctamente en el \texttt{CodingAreaPanel} al soltar el ratón.
 			\item \textit{Trabajo pendiente identificado:} Se detectó la necesidad de implementar la lógica para eliminar un bloque si, al soltarlo, no aterriza dentro de un área válida (como el \texttt{CodingAreaPanel}), replicando el comportamiento de Scratch.
 		\end{itemize}
-		\item \textbf{Reevaluación de la Creación de Vistas de Bloques (Descubrimiento sobre UBlockly/Prefabs):}
+		\item \textbf{Reevaluación de la creación de vistas de bloques (Descubrimiento sobre UBlockly/Prefabs):}
 		\begin{itemize}
 			\item Durante el análisis para resolver problemas de layout y conexiones distorsionadas, se descubrió que el enfoque óptimo (y el utilizado por el UBlockly original) es la creación de \textbf{prefabs preconfigurados en el editor de Unity} para cada tipo de bloque. Estos prefabs ya contienen la jerarquía correcta de componentes \texttt{View} (hijos visuales).
 			\item Este hallazgo llevó a un \textbf{replanteamiento parcial de la estrategia de instanciación de vistas}, enfocándose más en clonar y configurar estos prefabs en lugar de construir la jerarquía visual de cada bloque completamente desde cero en tiempo de ejecución. El objetivo era que la estructura del prefab dictara la disposición interna, evitando errores de posicionamiento derivados de contenedores dinámicos.
 		\end{itemize}
-		\item \textbf{Problemas y Avances en el Snap Visual:}
+		\item \textbf{Problemas y avances en el snap visual:}
 		\begin{itemize}
 			\item Se logró la detección lógica de conexiones \texttt{NextConnection} y \texttt{PreviousConnection} y su vinculación en el modelo.
 			\item \textit{Desafío persistente identificado:} Al realizar el snap visual, se observaron distorsiones en la imagen del bloque o la destrucción inesperada de la \texttt{BlockView}. Se identificó la necesidad de una revisión más profunda del sistema de layout manual (BaseView.UpdateLayout()) y cómo interactúa con las propiedades del RectTransform al re-parentar y ajustar tamaños tras una conexión.
 		\end{itemize}
-		\item \textbf{Preparación Inicial de la Escena de Simulación:}
+		\item \textbf{Preparación inicial de la escena de simulación:}
 		\begin{itemize}
 			\item Se comenzó a configurar la escena 3D en Unity donde el robot operaría, definiendo el entorno básico y la cámara.
 		\end{itemize}
 	\end{itemize}
-	\item \textbf{Hito Alcanzado/Resultado del Sprint:} Se logró una mejora significativa en el arrastre y posicionamiento inicial de los bloques en el área de codificación. Se identificaron y comenzaron a abordar los complejos desafíos del snap visual y la correcta gestión de coordenadas entre paneles. El descubrimiento sobre el uso óptimo de prefabs de UBlockly marcó un punto de inflexión para la estrategia de representación visual. Se dispone de una herramienta de depuración de conexiones. La escena básica para la simulación del robot está iniciada.
+	\item \textbf{Hito alcanzado:} Se logró una mejora significativa en el arrastre y posicionamiento inicial de los bloques en el área de codificación. Se identificaron y comenzaron a abordar los complejos desafíos del snap visual y la correcta gestión de coordenadas entre paneles. El descubrimiento sobre el uso óptimo de prefabs de UBlockly marcó un punto de inflexión para la estrategia de representación visual. Se dispone de una herramienta de depuración de conexiones. La escena básica para la simulación del robot está iniciada.
 \end{itemize}
 
 
@@ -402,7 +399,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\label{fig:logsconexiones}
 \end{figure}
 
-\subsubsection{Sprint 6: Implementación de Interacción Drag \& Drop y Pruebas Iniciales del Prototipo de Simulación} 
+\subsection{Sprint 6: Implementación de interacción Drag \& Drop y Pruebas iniciales del prototipo de simulación} 
 %g GRAFICO DEL SPRINT----
 \begin{figure}[H]
 	\centering 
@@ -412,12 +409,12 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 \end{figure} 
 
    \begin{itemize}
-		\item \textbf{Duración:} Del 24 de abril de 2025 al 29 de ,ayo de 2025.
-	\item \textbf{Objetivo Principal:} Lograr una funcionalidad de arrastrar y soltar (\textit{drag and drop}) robusta para los bloques, incluyendo la conexión (snap) visual y lógica entre ellos. Comenzar las pruebas del prototipo con la secuencia bandera verde seguida de mover 10 pasos para validar el flujo completo hasta la simulación del movimiento del robot.
-	\item \textbf{Contexto y Desafíos:} Este sprint se enfrentó directamente a los desafíos de layout y posicionamiento identificados en el sprint anterior, particularmente en cómo las vistas de los bloques (\texttt{BlockView}) interactúan dentro de los diferentes paneles de Unity UI (Toolbox, DragLayer, Área de Codificación) y sus respectivos sistemas de coordenadas. La correcta implementación del snap visual y lógico era crítica. Adicionalmente, un contratiempo personal (una afección médica ocular provocada por un episodio de alergía intenso) impactó la capacidad de trabajo y extendió la duración de esta fase más allá de lo inicialmente previsto.
-	\item \textbf{Tareas Clave Realizadas y Resultados:}
+		\item \textbf{Duración:} Del 24 de abril de 2025 al 29 de mayo de 2025.
+	\item \textbf{Objetivo principal:} Lograr una funcionalidad de arrastrar y soltar (\textit{drag and drop}) robusta para los bloques, incluyendo la conexión (snap) visual y lógica entre ellos. Comenzar las pruebas del prototipo con la secuencia bandera verde seguida de mover 10 pasos para validar el flujo completo hasta la simulación del movimiento del robot.
+	\item \textbf{Contexto y desafíos:} Este sprint se enfrentó directamente a los desafíos de layout y posicionamiento identificados en el sprint anterior, particularmente en cómo las vistas de los bloques (\texttt{BlockView}) interactúan dentro de los diferentes paneles de Unity UI (Toolbox, DragLayer, Área de Codificación) y sus respectivos sistemas de coordenadas. La correcta implementación del snap visual y lógico era crítica. Adicionalmente, un contratiempo personal (una afección médica ocular provocada por un episodio de alergía intenso) impactó la capacidad de trabajo y extendió la duración de esta fase más allá de lo inicialmente previsto.
+	\item \textbf{Tareas clave realizadas y resultados:}
 	\begin{itemize}
-		\item \textbf{Refinamiento del Sistema de Conexiones (Drag \& Drop):}
+		\item \textbf{Refinamiento del sistema de conexiones (Drag \& Drop):}
 		\begin{itemize}
 			\item Se revisó y ajustó la lógica para la detección de posiciones cercanas entre los puntos de conexión de los bloques (\texttt{Connection\_next}, \texttt{Connection\_prev}, \texttt{Connection\_output}), utilizando los \textit{prefabs} de bloques diseñados y sus \texttt{ConnectionView}s.
 			\item Se abordaron los problemas de conversión entre sistemas de coordenadas globales (pantalla) y locales (Canvas de cada panel) para el correcto posicionamiento y seguimiento de los bloques durante el arrastre.
@@ -425,58 +422,251 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 			
 			\item Se logró el snap inicial entre dos bloques (ej. \texttt{event\_whenflagclicked} y \texttt{motion\_movesteps}), donde el bloque inferior se unía correctamente al bloque superior.
 		\end{itemize}
-		\item \textbf{Implementación de Apilamiento de Bloques (Stacking) y Lógica de Bumping:}
+		\item \textbf{Implementación de apilamiento de bloques (stacking) y lógica de Bumping:}
 		\begin{itemize}
-			\item Se trabajó en extender la funcionalidad de"snap para permitir el apilamiento de múltiples bloques secuenciales (más de dos). Inicialmente, las conexiones \texttt{PreviousConnection} y \texttt{NextConnection} presentaban problemas al intentar conectar un tercer bloque a una pila ya existente.
+			\item Se trabajó en extender la funcionalidad de snap para permitir el apilamiento de múltiples bloques secuenciales (más de dos). Inicialmente, las conexiones \texttt{PreviousConnection} y \texttt{NextConnection} presentaban problemas al intentar conectar un tercer bloque a una pila ya existente.
 			\item Se identificó y corrigió un error crítico (una referencia nula a la cámara en el sistema \textit{Screen Space Overlay} de Unity UI) que impedía el correcto funcionamiento del snap visual en pilas más largas.
 			\item Se programó e integró la lógica de bumping: cuando un bloque se inserta en medio de una pila ya conectada, los bloques inferiores se desplazan correctamente para hacer espacio, y las conexiones se rehacen de forma adecuada. Se depuró la obtención de la propiedad \texttt{Location} en las \texttt{ConnectionModel}, crucial para esta funcionalidad.
 			\item Se validó el apilamiento con múltiples bloques \texttt{motion\_movesteps} bajo un bloque \texttt{event\_whenflagclicked}.
 		\end{itemize}
 		
-	\item \textbf{Desarrollo de la Simulación y Movimiento del Robot:}
+	\item \textbf{Desarrollo de la simulación y movimiento del robot:}
 	\begin{itemize}
 		\item Se configuró la escena 3D con el fondo y el posicionamiento inicial del robot virtual. 
-		\item \textbf{Desarrollo del Controlador del Robot (\texttt{RobotBehaviour}):} Se creó (o consolidó) el script \texttt{RobotBehaviour} encargado de recibir órdenes de movimiento (ej. mover N unidades) y ejecutar las transformaciones y animaciones correspondientes del \texttt{GameObject} del robot en la escena 3D, utilizando corrutinas de Unity para lograr movimientos suaves y controlados en el tiempo.
+		\item \textbf{Desarrollo del controlador del robot (\texttt{RobotBehaviour}):} Se creó (o consolidó) el script \texttt{RobotBehaviour} encargado de recibir órdenes de movimiento (ej. mover N unidades) y ejecutar las transformaciones y animaciones correspondientes del \texttt{GameObject} del robot en la escena 3D, utilizando corrutinas de Unity para lograr movimientos suaves y controlados en el tiempo.
 		\item \textbf{Implementación del Intérprete de Movimiento y Eventos:} Se desarrollaron y/o adaptaron los intérpretes específicos (\texttt{Cmdtor}s) para los bloques clave del prototipo:
 		\begin{itemize}
 			\item El \texttt{MotionBlockInterpreter} fue implementado para procesar el bloque \texttt{motion\_movesteps}, extrayendo el parámetro de distancia y traduciéndolo en una orden para el \texttt{BlockObserver}.
 			\item Se implementó la lógica de interpretación para el bloque \texttt{event\_whenflagclicked} para que funcionara como punto de inicio de la ejecución del programa.
 		\end{itemize}
-		\item \textbf{Integración del Sistema de Observación y Comunicación (\texttt{BlockObserver}):} Se refinó el \texttt{BlockObserver} para que actuara como el puente crucial entre el sistema de ejecución de bloques (los \texttt{Cmdtor}s) y el \texttt{RobotBehaviour}. Esta clase es responsable de recibir las órdenes lógicas (ej. mover 10 pasos) y delegar la ejecución de la animación/movimiento al \texttt{RobotBehaviour}, gestionando además el estado de la simulación.
-		\item \textbf{Pruebas de Traducción y Ejecución del Flujo Completo:} Se realizaron verificaciones exhaustivas para asegurar que la secuencia de bloques de evento y movimiento se traducía correctamente, a través de los intérpretes y el observador, en una secuencia de acciones lógicas y visuales ejecutables por el robot en el entorno 3D.
-		\item Se integraron los botones de Bandera Verde y Stop en la \texttt{UICanvasView} para permitir al usuario controlar el inicio y la detención de la ejecución del programa y la transición al modo de simulación.
+		\item \textbf{Integración del sistema de observación y comunicación (\texttt{BlockObserver}):} Se refinó el \texttt{BlockObserver} para que actuara como el puente crucial entre el sistema de ejecución de bloques (los \texttt{Cmdtor}s) y el \texttt{RobotBehaviour}. Esta clase es responsable de recibir las órdenes lógicas (ej. mover 10 pasos) y delegar la ejecución de la animación/movimiento al \texttt{RobotBehaviour}, gestionando además el estado de la simulación.
+		\item \textbf{Pruebas de traducción y ejecución del flujo completo:} Se realizaron verificaciones exhaustivas para asegurar que la secuencia de bloques de evento y movimiento se traducía correctamente, a través de los intérpretes y el observador, en una secuencia de acciones lógicas y visuales ejecutables por el robot en el entorno 3D.
+		\item Se integraron los botones de bandera verde y stop en la \texttt{UICanvasView} para permitir al usuario controlar el inicio y la detención de la ejecución del programa y la transición al modo de simulación.
 		\item Se implementó la lógica de cuenta atrás visual antes de iniciar el movimiento del robot, proporcionando un feedback claro al usuario sobre el inicio inminente de la simulación.
-		\item \textit{Desafío y Solución en la Simulación del Movimiento:} Inicialmente, se observaron problemas donde el robot se movía de forma errática (salía disparado) o no respetaba la secuencia de la cuenta atrás. Se abordó este desafío mediante:
+		\item \textit{Desafío y solución en la simulación del movimiento:} Inicialmente, se observaron problemas donde el robot se movía de forma errática (salía disparado) o no respetaba la secuencia de la cuenta atrás. Se abordó este desafío mediante:
 		\begin{itemize}
 			\item Configuración del \texttt{Rigidbody} del robot como \texttt{isKinematic = true} para un control programático del movimiento, evitando interferencias no deseadas con el motor de físicas de Unity.
-			\item Depuración detallada de la cadena de ejecución de corrutinas entre \texttt{CSharpRunner}, \texttt{MotionBlockInterpreter}, \texttt{BlockObserver}, y \texttt{RobotBehaviour} para asegurar que la espera (yield return) se propagaba correctamente y que las acciones del robot solo comenzaban tras la finalización de la cuenta atrás y en respuesta directa a las instrucciones de los bloques interpretados.
+			\item Depuración detallada de la cadena de ejecución de corrutinas entre \texttt{CSharpRunner}, \texttt{MotionBlockInterpreter},\\ \texttt{BlockObserver}, y \texttt{RobotBehaviour} para asegurar que la espera (yield return) se propagaba correctamente y que las acciones del robot solo comenzaban tras la finalización de la cuenta atrás y en respuesta directa a las instrucciones de los bloques interpretados.
 		\end{itemize}
 	\end{itemize}
-		\item \textbf{Herramientas de Depuración Adicionales:}
+		\item \textbf{Herramientas de depuración adicionales:}
 		\begin{itemize}
-			\item Se habilitó la funcionalidad de exportar la base de datos de conexiones (estado del \texttt{WorkSpaceModel}) para facilitar la depuración y el análisis del estado interno del sistema durante las pruebas de conexión. % (Si esta tarea corresponde a este sprint)
+			\item Se habilitó la funcionalidad de exportar la base de datos de conexiones (estado del \texttt{WorkSpace}) para facilitar la depuración y el análisis del estado interno del sistema durante las pruebas de conexión. 
 		\end{itemize}
 	\end{itemize}
-	\item \textbf{Hito Alcanzado/Resultado del Sprint:} Se logró una funcionalidad de \textit{drag and drop} y snap robusta para los bloques del prototipo (\texttt{event\_whenflagclicked} y \texttt{motion\_movesteps}), incluyendo el apilamiento múltiple y la lógica de bumping. El robot virtual ejecuta los movimientos programados en la escena 3D tras una cuenta atrás, de forma controlada. El flujo principal programar-ejecutar-simular es funcional y demostrable. El sistema permite una exportación del estado de la base de datos de conexiones para depuración.
+	\item \textbf{Hito alcanzado:} Se logró una funcionalidad de \textit{drag and drop} y snap robusta para los bloques del prototipo (\texttt{event\_whenflagclicked} y \texttt{motion\_movesteps}), incluyendo el apilamiento múltiple y la lógica de bumping. El robot virtual ejecuta los movimientos programados en la escena 3D tras una cuenta atrás, de forma controlada. El flujo principal programar-ejecutar-simular es funcional y demostrable. El sistema permite una exportación del estado de la base de datos de conexiones para depuración.
 \end{itemize}
 
-\section{Estudio de Viabilidad}
+\subsection{Sprint 7: Diseño y fundamentos del sistema} 
 
-\subsection{Viabilidad Económica}
+\item \textbf{Duración: Del 29 de mayo de 2025 al 5 de junio de 2025}
+
+\item\textbf{Objetivo principal:} Producir una primera versión íntegra y de alta calidad de la memoria del Trabajo Fin de Grado, documentando todo el proceso, desde la investigación inicial y la implementación de la arquitectura de bloques.
+
+\item\textbf{Contexto y motivación:} La primera fase de desarrollo habría concluido. Era fundamental dedicar un sprint completo a la consolidación de la documentación para asegurar que la memoria reflejase de manera precisa, honesta y profesional todo el trabajo realizado hasta este momento, las decisiones tomadas y los aprendizajes obtenidos, preparando la documentación para ser posteriormente revisada en otro sprint para su preparación de cara a una defensa final.
+
+Se procedió a la redacción sistemática de cada uno de los capítulos y apéndices del documento, abordando las siguientes secciones:
+
+	\item \textbf{Capítulo 1 - Introducción:} Desarrollo del marco contextual del proyecto. Se justificó la relevancia de la robótica educativa, se introdujeron los conceptos de programación visual, se expuso la problemática de la brecha digital alineada con los ODS, y se presentó la narrativa del proyecto.
+	
+	\item \textbf{Capítulo 2 - Objetivos del Proyecto:} Definición formal de los objetivos, separándolos en funcionales y no funcionales. Los objetivos se redactaron para estar en perfecta consonancia con las características del prototipo hasta este momento desarrollado.
+	
+	\item \textbf{Capítulo 3 - Conceptos Teóricos:} Documentación de la base teórica del proyecto. Se incluyó un análisis comparativo de plataformas de referencia (Scratch, Blockly, LEGO). Se detalló la arquitectura inicial investigada, basada en UBlockly, destacando la refactorización a un patrón MVC como aportación propia. 
+	
+	\item \textbf{Capítulo 4 - Técnicas y Herramientas:} Descripción de la metodología y el stack tecnológico utilizado. Se detalló la aplicación de SCRUM para la gestión del proyecto, el uso de Unity 6 y C\#, las herramientas de modelado 3D, y los sistemas de control de versiones y gestión de tareas como Git, GitHub y Zube.
+	
+	\item \textbf{Capítulo 5 - Diseño e Implementación del Prototipo:} Este fue el capítulo de mayor desarrollo técnico, donde se detalló la implementación del proyecto en dos fases:
+	\begin{itemize}
+		\item \textbf{Arquitectura Inicial:} Se documentó la implementación del sistema de bloques visuales, la arquitectura MVC diseñada y los complejos sistemas de interacción como el BlockDragController y BlockConnectionController.
+	
+	\end{itemize}
+	
+	\item \textbf{Capítulo 6 - Trabajos Relacionados:} Se realizó un estudio del estado del arte, comparando el prototipo desarrollado con otras plataformas existentes.
+	
+	\item \textbf{Capítulo 7 - Conclusiones y Líneas de Trabajo Futuras:} Se redactaron las conclusiones principales, enfatizando los logros alcanzados y los aprendizajes obtenidos. Se propusieron líneas futuras del trabajo realizado hasta esta fecha.
+	
+	\item \textbf{Bibliografía:} Se recopilaron y formatearon todas las referencias bibliográficas utilizadas a lo largo del documento utilizando un gestor de citas compatible con LaTeX, asegurando la rigurosidad académica.
+\end{itemize}
+
+\item \textbf{Redacción de Apéndices y Anexos:}
+\begin{itemize}
+	\item \textbf{Anexo - Plan de Proyecto Software:} Se documentó de manera detallada todo el plan de gestión del proyecto, incluyendo:
+	\begin{itemize}
+		\item La descripción de la metodología SCRUM y las herramientas utilizadas (Zube, GitHub).
+		\item Un desglose de los hitos principales del proyecto.
+		\item Una descripción pormenorizada de cada sprint, con sus objetivos, tareas y resultados.
+		\item Inclusión de artefactos visuales como los gráficos burndown de Zube y capturas de pantalla de los tableros Kanban.
+		\item Un análisis completo de la viabilidad económica, legal/ética y técnica del proyecto.
+	\end{itemize}
+\end{itemize}
+
+\item \textbf{Hito Alcanzado:} Una primera versión completa y coherente de la memoria del TFG y sus anexos, lista para ser revisada en profundidad por el tutor. La redacción refleja fielmente la evolución del proyecto, sus contribuciones técnicas y los aprendizajes del proceso. En este sprint se acuerda entre tutor y autor que el producto no es viable para ser presentado en una primera defensa y se establecen nuevas líneas de trabajo para mejorar lo existente.
+
+\subsection{Sprint 8: Introducción guiada y desafios de programación}
+
+\item \textbf{Duración:} Del 5 de junio de 2025 al 12 de junio de 2025
+\item\textbf{Objetivo principal:} Transformar el prototipo de un simple sandbox de programación en una herramienta educativa estructurada, mediante el diseño e implementación de un sistema de desafíos guiados. El objetivo era crear un flujo de usuario completo, desde un menú principal hasta la resolución de un problema concreto en el entorno de simulación.
+\item\textbf{Contexto y motivación:} Con un motor de simulación funcional donde el robot se movía y giraba de forma predecible, el siguiente paso lógico era darle un propósito educativo a estas acciones. Se identificó que, para maximizar el aprendizaje y la motivación del usuario, era necesario contextualizar la programación dentro de objetivos específicos y medibles. Este sprint representó un punto de inflexión clave, desplazando el foco desde la pura mecánica de la programación (visual o textual) hacia la aplicación de la lógica para la resolución de problemas.
+\item \textbf{Tareas clave realizadas y resultados:}
+\begin{itemize}
+	\item \textbf{Consolidación de la simulación base:}
+	\begin{itemize}
+		\item Se estabilizó y refinó el comportamiento del \texttt{RobotController}, asegurando que el movimiento (mover X pasos) y el giro (girar Y grados) fueran consistentes y predecibles.
+		\item Se implementó un sistema multicámara (CameraManager) en la escena de simulación, permitiendo al usuario cambiar la perspectiva para observar la acción del robot desde diferentes ángulos.
+	\end{itemize}
+	
+	\item \textbf{Diseño del sistema de gestión de desafíos:}
+	\begin{itemize}
+		\item Se tomó la decisión de utilizar Scriptable Objects para definir la estructura de los desafíos (ChallengeData). Este enfoque de Unity permite encapsular los datos de cada desafío (título, descripción detallada, etc.) como activos independientes en el proyecto, facilitando enormemente la creación, gestión y expansión del contenido educativo sin necesidad de modificar el código.
+		\item Se diseñó un ChallengeLoader, un gestor con patrón Singleton, responsable de persistir la selección del desafío del usuario entre escenas, asegurando que el contexto elegido en el menú se transfiera correctamente a la escena de programación.
+	\end{itemize}
+	
+	\item \textbf{Implementación de la interfaz de usuario del menú:}
+	\begin{itemize}
+		\item Se diseñó e implementó la escena de menú principal (MenuScene), que incluye un panel de bienvenida y una sección para la selección de desafíos.
+		\item Se crearon las tarjetas de desafío (ChallengeCardUI) como prefabs que se instancian dinámicamente para cada ChallengeData disponible, mostrando su título y descripción.
+		\item Se integró la funcionalidad para que al hacer clic en una tarjeta, se pueda iniciar la carga del desafío correspondiente.
+	\end{itemize}
+	
+	\item \textbf{Integración del contexto del desafío en la escena de programación:}
+	\begin{itemize}
+		\item Se adaptó el GameManager en la escena de programación (CodingScene) para que, al iniciarse, consultara al ChallengeLoader y obtuviera los datos del desafío seleccionado.
+		\item La `IDE\_UIManager` se modificó para mostrar dinámicamente el título y las instrucciones del desafío activo, proporcionando al usuario un objetivo claro.
+		\item Se añadió un cronómetro visual a la interfaz de simulación (ExecutionTimerView), que se activa durante la ejecución del programa, añadiendo un elemento de feedback y métrica sobre el rendimiento del programa del usuario.
+	\end{itemize}
+	
+	\item \textbf{Creación de contenido inicial:}
+	\begin{itemize}
+		\item Se crearon los primeros 1-2 desafíos simples como activos ChallengeData, validando así todo el flujo del sistema, desde su selección en el menú hasta su resolución en el entorno de programación y simulación.
+	\end{itemize}
+	
+	\item \textbf{Hito Alcanzado:} El prototipo evolucionó de ser un simple editor de código a convertirse en un laboratorio virtual con un flujo educativo completo y estructurado. Se implementó un sistema robusto y escalable para la gestión de desafíos. El usuario ahora puede seleccionar una tarea, entender sus objetivos y tratar de resolverla en un entorno interactivo y con propósito, lo que representa la base del Producto Mínimo Viable (MVP) final.
+\end{itemize}
+
+\subsection{Sprint 9: Simulador de código y robot}
+
+\item \textbf{Duración:} Del 19 de junio al 26 de junio de 2025.
+
+\item \textbf{Objetivo Principal:} Realizar un pivote estratégico en el enfoque del proyecto ante los desafíos técnicos encontrados con la generación de bloques complejos. A propuesta del tutor, el nuevo objetivo era desarrollar un prototipo funcional basado en un sistema de programación híbrido, que combinara una estructura de bloques visual para la organización del programa con un lenguaje de comandos textual (DSL) para las acciones del robot.
+
+\item \textbf{Contexto y motivación (El desafío de los bloques tipo C):}
+El trabajo realizado en sprints anteriores había permitido establecer una arquitectura MVC robusta y un sistema funcional de arrastre y conexión para bloques simples. Sin embargo, al intentar implementar bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), se encontraron obstáculos técnicos que excedían las estimaciones iniciales. La replicación de estos bloques requería un motor de layout dinámico extremadamente complejo, capaz de redimensionar y reorganizar geométricamente los bloques contenedores en tiempo real, una tarea de una magnitud considerable
+
+Este desafío representó un punto de inflexión crítico, no solo desde una perspectiva técnica, sino también metodológica. Puso de manifiesto una realidad fundamental en cualquier proyecto de ingeniería: la necesidad de tomar decisiones importantes para asegurar la entrega de un Producto Mínimo Viable (MVP) funcional cuando surgen complejidades imprevistas. El considerable esfuerzo y las horas dedicadas a la investigación y al desarrollo de la arquitectura inicial no podían quedar en un proyecto inacabado.
+
+Asimismo, este momento subrayó la enorme dificultad que implica el desarrollo de un sistema complejo por una única persona. Fue la tenacidad y la convicción en el valor del trabajo realizado hasta la fecha lo que impulsó la búsqueda de una solución alternativa. En lugar de percibir el obstáculo como un fracaso, se abordó como una oportunidad para redefinir el problema y pivotar estratégicamente.
+
+La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una decisión consciente y pragmática. Se optó por un sistema híbrido que, manteniendo la claridad visual de un programa estructurado, introdujera la codificación textual manteniendo la programación por bloques adaptando el diseño de bloques al código diseñado en el repositorio de referencia. Este reenfoque permitió aprovechar todo el trabajo de base realizado (simulador 3D, arquitectura de control del robot) y centrar el esfuerzo restante en un nuevo núcleo técnico, el diseño de un DSL y su intérprete, que aportaría un valor pedagógico y técnico igualmente significativo.
+\item \textbf{Tareas clave realizadas y resultados:}
+\begin{itemize}
+	\item \textbf{Diseño e implementación del intérprete de código textual:}
+	\begin{itemize}
+		\item \textbf{Definición del DSL:} Se diseñó la gramática para el lenguaje de comandos del robot, incluyendo mover, girar, y, crucialmente, las estructuras de control repetir N veces, repetir por\_siempre y su correspondiente cierre fin_repetir.
+		\item \textbf{Creación del Parser (\texttt{CommandParser}):} Se implementó el analizador que procesa el código fuente textual. Este componente valida la sintaxis, identifica los comandos y sus argumentos, y gestiona las estructuras anidadas mediante una pila (Stack), traduciendo el código a una lista de objetos Instruction.
+	\end{itemize}
+	
+	
+	\item \textbf{Integración del nuevo flujo de ejecución:}
+	\begin{itemize}
+		\item Se modificó el \texttt{GameManager} para orquestar el nuevo flujo: UI -> Parser -> Ejecutor.
+		\item El \texttt{RobotController} se adaptó para recibir y procesar la `List<Instruction>` generada por el parser, implementando una corrutina (`ProcessInstructionList`) capaz de ejecutar tanto comandos simples como bucles anidados de forma recursiva.
+	\end{itemize}
+	
+	\item \textbf{Implementación del sistema de desafíos y escenas:}
+	\begin{itemize}
+		\item Se creó el sistema de ChallengeData (Scriptable Objects) y ChallengeLoader para gestionar la selección de desafíos desde una nueva escena de menú (MenuScene).
+		\item Se desarrollaron las primeras versiones de la \textbf{escena de introducción} y el **menú de selección**, estableciendo el flujo completo de la aplicación, desde el inicio hasta la programación y simulación.
+	\end{itemize}
+	
+	\item \textbf{Pruebas del Sistema Híbrido:}
+	\begin{itemize}
+		\item Se realizaron pruebas exhaustivas del nuevo sistema, validando que el robot ejecutaba correctamente secuencias complejas de comandos textuales, incluyendo bucles finitos e infinitos.
+		\item Se implementó la lógica de detección de colisiones (CollisionTextLogger, MuroController) para que el robot se detuviera al chocar, añadiendo una capa de interacción realista con el entorno.
+	\end{itemize}
+	
+	\item \textbf{Diseño de una Interfaz de Programación Híbrida (\texttt{IDE\_UIManager}):}
+	
+	Se rediseñó la interfaz de usuario para dar cabida a dos modos de programación interconectados, sirviendo como un puente entre la codificación visual y la textual.
+	
+	\begin{itemize}
+		\item \textbf{Modo de programación textual (basado en DSL):} Se implementó una nueva vista para que los usuarios pudieran aprender a programar con código escrito y ver su ejecución inmediata en la simulación del robot. Esta vista incluye:
+		\begin{itemize}
+			\item Un campo de entrada de texto donde el usuario introduce los comandos del DSL.
+			\item Un sistema que, al añadir un comando, instancia un prefab visual (\texttt{commandBlockPrefab}), creando una representación secuencial del programa que mantiene la claridad de un sistema de bloques.
+			\item La reconfiguración del botón ejecutar para enviar el código fuente completo al \texttt{CommandParser} para su análisis y posterior ejecución.
+		\end{itemize}
+		
+		\item \textbf{Modo de programación visual (Basado en UBlockly):} En lugar de descartar el trabajo previo, este se adaptó y se integró como una segunda modalidad de programación. Basándose en la arquitectura MVC y desarrollando nuevos controladores y eliminando los anteriores y se configuró un espacio de trabajo que permite:
+		\begin{itemize}
+			\item Arrastrar y conectar los bloques de evento y movimiento (\texttt{motion\_movesteps}) que ya eran funcionales.
+			\item Ejecutar las secuencias de bloques directamente a través del motor de UBlockly (CSharp.Runner), traduciendo las acciones al mismo RobotController utilizado por el modo textual.
+			\item uso de bloques tipo C para repetir X veces.
+		
+		\end{itemize}
+	\end{itemize}
+	Esta doble funcionalidad permite al usuario elegir su método de aprendizaje preferido o incluso transicionar de uno a otro, validando la flexibilidad de la arquitectura y la viabilidad de ambos enfoques dentro del mismo prototipo.
+	
+\end{itemize}
+
+\item \textbf{Hito Alcanzado:} Se completó con éxito el pivote estratégico del proyecto. El resultado es un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
+
+\subsection{Sprint 10: Revisión producto mínimo viable y memoria TFG}
+
+\item \textbf{Duración:} Del 26 de junio al 4 de julio de 2025.
+
+\item \textbf{Objetivo principal:}  Realizar una revisión exhaustiva del prototipo para asegurar su estabilidad y pulir la experiencia de usuario. Completar la redacción final de la memoria y sus anexos, garantizando la coherencia, precisión y calidad del documento para su entrega y defensa.
+
+\item \textbf{Contexto y motivación:} Con el producto mínimo viable (MVP) híbrido completamente funcional, este último sprint se dedicó a la fase de estabilización y empaquetado. El enfoque se desplazó del desarrollo de nuevas funcionalidades a la mejora de la calidad del producto existente y a la producción de una documentación técnica que reflejara con exactitud el trabajo realizado, los desafíos superados y los aprendizajes obtenidos.
+
+\item \textbf{Tareas clave realizadas y resultados:}
+\begin{itemize}
+	\item \textbf{Refinamiento y limpieza del código fuente:}
+	\begin{itemize}
+		\item Se llevó a cabo una revisión integral del repositorio en GitHub, eliminando código obsoleto o comentado que ya no era relevante para la versión final del proyecto.
+		\item Se optimizaron y refactorizaron pequeñas partes del código para mejorar su legibilidad y eficiencia, asegurando que la base de código fuera limpia y comprensible.
+		\item Se verificó que todos los comentarios en el código fueran pertinentes y aportaran valor para entender la lógica implementada.
+	\end{itemize}
+	
+	\item \textbf{Pulido de la interfaz de usuario y la experiencia (UX):}
+	\begin{itemize}
+		\item Se realizó una revisión completa de todos los textos de la interfaz de usuario (`IDE\_UIManager`, menús, descripciones de desafíos), corrigiendo erratas y mejorando la claridad de los mensajes para el usuario final.
+		\item Se ajustó la disposición y el anclaje de elementos visuales, como imágenes y botones, para asegurar una apariencia consistente y profesional en diferentes resoluciones de pantalla.
+	\end{itemize}
+	
+	\item \textbf{Consolidación de la memoria del TFG:}
+	\begin{itemize}
+		\item Se redactó la versión final de todos los capítulos de la memoria, asegurando que la narrativa del pivote estratégico y el sistema híbrido fuera coherente a lo largo de todo el documento con respecto a la versión que se realizo en otro sprint anterior.
+		\item Se revisaron y corrigieron todas las secciones para mejorar la cohesión, la claridad y la precisión técnica, incorporando el feedback del tutor.
+		\item Se regeneraron todas las figuras (diagramas, capturas de pantalla) y tablas, asegurando que estuvieran correctamente numeradas, etiquetadas y referenciadas en el texto.
+		\item Se reviso  la bibliografía, verificando que todas las citas estuvieran correctamente incluidas.
+	\end{itemize}
+	
+	\item \textbf{Completitud de los anexos:}
+	\begin{itemize}
+		\item Se finalizó la redacción del diferentes anexos que se incluyen en el Trabajo Final de Grado.
+	\end{itemize}
+\end{itemize}
+
+\item \textbf{Hito alcanzado:} Entrega de un MVP estable, pulido y funcional. Se completó la versión final de la memoria del TFG y sus anexos, listos para su presentación. El proyecto se encuentra en un estado consolidado que no solo cumple con los objetivos redefinidos, sino que también documenta de manera transparente y profesional todo el ciclo de vida del desarrollo. 
+
+
+\section{Estudio de viabilidad}
+
+\subsection{Viabilidad económica}
 Dado que este proyecto se desarrolla en el marco de un Trabajo Fin de Grado, los costes económicos se limitan principalmente a los recursos de hardware y software ya disponibles por el estudiante y la universidad, y a servicios de bajo o nulo coste para desarrolladores individuales.
 
-\subsubsection{Costes de Personal}
+\subsection{Costes de personal}
 El desarrollo ha sido realizado por un único estudiante como parte de su formación académica. No se contemplan costes salariales directos asociados al desarrollo del prototipo. El tiempo dedicado se considera inversión en aprendizaje y cumplimiento de los requisitos del TFG.
 La labor de tutorización por parte del profesor D. Carlos López Nozal se enmarca dentro de sus funciones docentes en la Universidad de Burgos.
 
-\subsubsection{Costes de Hardware}
+\subsection{Costes de hardware}
 \begin{itemize}
-	\item \textbf{Equipo de Desarrollo:} Se ha utilizado un ordenador personal estándar con capacidad suficiente para ejecutar Unity, Blender y las herramientas de desarrollo. 
-	\item \textbf{Dispositivo de Prueba (Tablet Android):} Para las pruebas de portabilidad y usabilidad, se ha utilizado una tablet Android genérica.
+	\item \textbf{Equipo de desarrollo:} Se ha utilizado un ordenador personal estándar con capacidad suficiente para ejecutar Unity, Blender y las herramientas de desarrollo. 
+	\item \textbf{Dispositivo de prueba (Tablet Android):} Para las pruebas de portabilidad y usabilidad, se ha utilizado una tablet Android genérica.
 	\item \textbf{Coste estimado de amortización de hardware (simulado):} Si se tuviera que estimar un coste de amortización para un proyecto independiente, se podría considerar un valor simbólico, pero para este TFG, los costes directos son nulos.
 \end{itemize}
 
-\subsubsection{Costes de Software y Servicios}
+\subsection{Costes de software y servicios}
 \begin{itemize}
 	\item \textbf{Unity 6 (Personal Edition):} Licencia gratuita para estudiantes y desarrolladores individuales.
 	\item \textbf{C\# y Visual Studio Community:} Herramientas gratuitas.
@@ -485,37 +675,37 @@ La labor de tutorización por parte del profesor D. Carlos López Nozal se enmar
 	\item \textbf{LEGO Digital Designer / Studio 2.0:} Software gratuito de LEGO para diseño.
 	\item \textbf{GitHub:} Plan gratuito para repositorios públicos o privados (si aplica cuenta de estudiante).
 	\item \textbf{Zube:} Ofrece planes gratuitos o de bajo coste para pequeños equipos o uso individual en proyectos de código abierto. Se ha utilizado bajo estas condiciones o como herramienta de prueba.
-	\item \textbf{PlayerPrefs (Unity):} Almacenamiento local integrado, sin coste adicional.
+
 \end{itemize}
 En resumen, los costes económicos directos para el desarrollo del prototipo han sido \textbf{mínimos o nulos}, aprovechando licencias educativas, software de código abierto y recursos preexistentes.
 
-\subsection{Viabilidad Legal y Ética}
+\subsection{Viabilidad legal y ética}
 
-\subsubsection{Licencias de Software}
+\subsection{Licencias de software}
 \begin{itemize}
 	\item \textbf{Unity Personal Edition:} Su licencia permite el desarrollo y distribución de proyectos siempre que no se superen ciertos umbrales de ingresos o financiación, lo cual no aplica a este TFG.
 	\item \textbf{UBlockly:} Generalmente distribuido bajo una licencia permisiva de código abierto (Apache 2.0). Se ha respetado la licencia original al adaptar el código, manteniendo las atribuciones correspondientes si fueran necesarias (aunque en este caso, la adaptación es para un TFG y no para redistribución comercial del UBlockly original).
 	\item \textbf{Otros componentes (Blender, etc.):} Se han utilizado bajo sus respectivas licencias de código abierto.
 \end{itemize}
 
-\subsubsection{Propiedad Intelectual}
+\subsection{Propiedad intelectual}
 El código fuente desarrollado específicamente para este TFG, así como los diseños y modelos 3D originales creados, son propiedad intelectual del autor (Luis Ignacio de Luna Gómez) y de la Universidad de Burgos, según la normativa aplicable a Trabajos Fin de Grado. La adaptación del código de UBlockly se ha realizado con el fin de crear una nueva obra derivada para un propósito académico y de investigación.
 
-\subsubsection{Privacidad de Datos}
-El prototipo actual, al utilizar \texttt{PlayerPrefs} para el almacenamiento local de los programas, no recopila ni transmite datos personales del usuario a servidores externos. Por lo tanto, los requisitos de normativas de protección de datos como GDPR son mínimos en esta fase. Si en futuras líneas de trabajo se integrasen servicios en la nube que manejen datos de usuario, sería necesario realizar un análisis exhaustivo y aplicar las políticas de privacidad correspondientes.
+\subsection{Privacidad de datos}
+Los requisitos de normativas de protección de datos como GDPR son mínimos en esta fase. Si en futuras líneas de trabajo se integrasen servicios en la nube que manejen datos de usuario, sería necesario realizar un análisis exhaustivo y aplicar las políticas de privacidad correspondientes.
 
-\subsubsection{Consideraciones Éticas}
+\subsection{Consideraciones éticas}
 El proyecto tiene un fin educativo y busca promover el acceso a la tecnología. Se ha evitado el uso de assets o recursos con derechos de autor restrictivos sin la debida licencia. El diseño de la interfaz y la simulación buscan ser inclusivos y no discriminatorios.
 
-\subsection{Viabilidad Técnica}
+\subsection{Viabilidad técnica}
 La viabilidad técnica del prototipo se ha demostrado mediante su implementación funcional.
 \begin{itemize}
-	\item \textbf{Tecnologías Maduras:} Unity y C\# son tecnologías robustas y ampliamente documentadas, lo que ha facilitado el desarrollo.
+	\item \textbf{Tecnologías maduras:} Unity y C\# son tecnologías robustas y ampliamente documentadas, lo que ha facilitado el desarrollo.
 	\item \textbf{Adaptabilidad de UBlockly:} A pesar de no estar diseñado para replicar Scratch directamente, la arquitectura de UBlockly ha demostrado ser lo suficientemente flexible para ser adaptada a los requisitos del proyecto mediante la implementación de un patrón MVC y la personalización de vistas y controladores.
-	\item \textbf{Limitaciones del Prototipo:} El prototipo actual implementa un conjunto limitado de bloques y funcionalidades. La viabilidad de expandirlo a un sistema completo con todas las características de Scratch dependería de un esfuerzo de desarrollo continuado, pero las bases técnicas establecidas son sólidas.
+	\item \textbf{Limitaciones del prototipo:} El prototipo actual implementa un conjunto limitado de bloques y funcionalidades. La viabilidad de expandirlo a un sistema completo con todas las características de Scratch dependería de un esfuerzo de desarrollo continuado, pero las bases técnicas establecidas son sólidas.
 	\item \textbf{Rendimiento:} El prototipo, con su alcance actual, funciona de manera fluida en un equipo de desarrollo estándar y se espera un rendimiento aceptable en tablets Android de gama media, aunque esto requeriría pruebas específicas en la plataforma objetivo como parte de una línea futura.
 \end{itemize}
 En conclusión, el proyecto se considera viable tanto económica como legal y técnicamente dentro del contexto de un Trabajo Fin de Grado enfocado en el desarrollo de un prototipo funcional.
 
 
-%Falta incluir los gráficos del burndown de cada sprint.
+
