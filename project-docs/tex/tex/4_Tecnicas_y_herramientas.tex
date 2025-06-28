@@ -29,7 +29,7 @@ El modelo del robot se creó con \textbf{Blender}, tomando como referencia la es
 	\item \textbf{Implementación híbrida:} La combinación de bloques visuales para la estructura y código textual para las acciones conforma el núcleo híbrido del prototipo. Esta aproximación no solo es una solución pragmática a los desafíos técnicos, sino que también ofrece un modelo pedagógico de transición, donde los usuarios aprenden la estructura del programa visualmente y practican la codificación de comandos de forma escrita.
 \end{itemize}
 
-\subsection{ Sistema de gestión de Desafíos y guardado de código}
+\subsection{ Sistema de gestión de desafíos y guardado de código}
  La persistencia de datos en el prototipo se aborda de dos maneras complementarias:
 \begin{itemize}
 	\item \textbf{Gestión de desafíos con Scriptable Objects:} La definición de los desafíos (título, descripción, etc.) se gestiona mediante \textbf{Scriptable Objects} (ChallengeData). Este enfoque de Unity permite desacoplar los datos del contenido de la lógica del juego, facilitando la creación y modificación de nuevos desafíos sin necesidad de cambiar el código. Un gestor (ChallengeLoader) se encarga de la persistencia de la selección del usuario entre escenas.
