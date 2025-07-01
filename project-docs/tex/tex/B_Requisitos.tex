@@ -3,11 +3,11 @@
 \section{Introducción}
 Dentro de este apéndice, se detalla la especificación de requisitos del proyecto del laboratorio virtual de programación y robótica. Una adecuada definición y gestión de los requisitos es fundamental en ingeniería de software para asegurar que el sistema desarrollado satisfaga las necesidades y expectativas de los usuarios, así como para guiar las fases posteriores de diseño e implementación. Dada la naturaleza de prototipo del presente Trabajo Fin de Grado, esta especificación se centrará en los requisitos que guían la funcionalidad actual del prototipo, así como aquellos objetivos clave que sentarán las bases para futuras expansiones. Los requisitos se clasifican en funcionales (qué debe hacer el sistema) y no funcionales (cómo debe funcionar, relativo a la calidad).
 
-\section{Objetivos Generales del Proyecto}
+\section{Objetivos generales del proyecto}
 Los objetivos generales que guían el desarrollo de este laboratorio virtual han sido definidos previamente en el Capítulo 2 de la memoria. Estos objetivos, que se persiguen tanto a nivel funcional como no funcional, se sintetizan a continuación:
 
 \begin{itemize}
-	\item \textbf{Desarrollar un prototipo de laboratorio virtual de programación y robótica} que permita a los estudiantes aprender programación mediante bloques.
+	\item \textbf{Desarrollar un prototipo de laboratorio virtual de programación y robótica} que permita a los estudiantes aprender programación mediante bloques y código escrito.
 	\item \textbf{Replicar la experiencia de usuario y la lógica fundamental de Scratch} en un entorno Unity para después ejecutar una aplicación en un dispositivo android.
 	\item \textbf{Integrar el sistema de bloques con una simulación 3D en Unity} para la visualización de acciones del robot.
 	\item \textbf{Implementar una simulación básica de un robot LEGO WeDo 2.0} en el entorno virtual.
@@ -16,71 +16,65 @@ Los objetivos generales que guían el desarrollo de este laboratorio virtual han
 	\item \textbf{Adquirir conocimientos técnicos} en Unity y C\# en el contexto del desarrollo de programación visual y simulación.
 \end{itemize}
 
-\section{Catálogo de Requisitos}
+\section{Catálogo de requisitos}
 El siguiente catálogo enumera los requisitos clave del prototipo. Se organizan por tipo y se proporciona un identificador único (RF para Requisito Funcional, RNF para Requisito No Funcional) y una descripción concisa del mismo.
 
-\subsection{Requisitos Funcionales (RF)}
+\subsection{Requisitos funcionales (RF)}
 Estos requisitos describen las funcionalidades específicas que el laboratorio virtual debe proporcionar al usuario.
+
+\subsection{Gestión del entorno y desafíos}
+
+
 \begin{enumerate}
-	\item \textbf{RF-001: Gestión de la Interfaz Principal.} El sistema debe presentar una interfaz de usuario principal que incluya paneles para la selección de categorías de bloques, el listado de bloques disponibles y el área de codificación.
-	\\
-	\item \textbf{RF-002: Selección de Categorías de Bloques.} El usuario debe poder seleccionar una categoría de bloques para visualizar los bloques disponibles. 
-	\\
-	\item \textbf{RF-003: Arrastre de Bloques.} El usuario debe poder seleccionar un bloque de la lista de categorías y arrastrarlo hasta el área de codificación. 
-	\\
-	\item \textbf{RF-004: Conexión de Bloques.} El sistema debe permitir la unión visual (con efecto de snap) y lógica de bloques compatibles mediante arrastrar y soltar. 
-	\\
-	\item \textbf{RF-005: Desconexión de Bloques.} El usuario debe poder separar bloques previamente conectados. 
-	\\
-	\item \textbf{RF-006: Edición de Campos de Bloques.} El sistema debe permitir al usuario editar valores en campos específicos de los bloques (ej. números, texto). 
-	\item \textbf{RF-007: Ejecución del Programa.} El usuario debe poder iniciar la ejecución de la secuencia de bloques mediante una acción específica (ej. click en bandera verde). 
-	\\
-	\item \textbf{RF-008: Detención del Programa.} El usuario debe poder detener la ejecución del programa en cualquier momento (ej. click en botón de stop). 
-	\\
-	\item \textbf{RF-009: Visualización del Robot y Simulación.} El sistema debe mostrar un modelo 3D de un robot LEGO WeDo 2.0 en un entorno de simulación. 
-	\\
-	\item \textbf{RF-010: Ejecución de Movimiento del Robot.} El robot simulado debe ejecutar las acciones de movimiento (ej. mover 10 pasos) programadas con bloques de forma visible en el entorno 3D. 
-	\\
-	\item \textbf{RF-011: Feedback Visual de Ejecución.} El sistema debe proporcionar feedback visual y textual (ej. mensajes, cuenta atrás, resaltado de bloque en ejecución) sobre el estado del programa y las acciones del robot. 
-	\\
-	\item \textbf{RF-012: Persistencia del Trabajo.} El usuario debe poder guardar y cargar el estado de sus programas de bloques para continuar editándolos en futuras sesiones.
-	\\
-	\item \textbf{RF-013: Carga de Definiciones de Bloques.} 
-	El sistema debe cargar las definiciones estructurales y visuales de los bloques (tipo, categoría, color, campos, conexiones permitidas) desde fuentes externas (archivos XML), permitiendo la configuración y expansión de la librería de bloques disponibles sin necesidad de modificar el código fuente principal de la aplicación.
-	\\
-	\item \textbf{RF-014: Interpretación Bloque-Acción.} 
-	Para cada bloque con comportamiento ejecutable, el sistema debe disponer de un intérprete específico capaz de traducir la lógica y los parámetros del bloque en una acción o secuencia de acciones programáticas en el entorno Unity (ej. convertir el valor 10 del bloque mover 10 pasos en una orden de desplazamiento para el robot).
-	\\
-	\item \textbf{RF-015: Gestión Lógica del Espacio de Trabajo.} 
-	El sistema debe mantener un modelo lógico del espacio de trabajo  que permita al usuario añadir, eliminar y reorganizar bloques. Este modelo debe gestionar la lista de bloques principales  y servir como la fuente autoritativa del estado del programa.
-	\\	
-	\item \textbf{RF-016: Descarte de Bloque.} 
-	El usuario debe poder eliminar bloques del espacio de trabajo, arrastrándolos fuera del área de codificación.  La eliminación debe resultar en la correcta desvinculación y disposición del bloque y sus descendientes.
-\\
-	\item \textbf{RF-017: Representación Visual de la Jerarquía de Bloques.} 
-	El sistema debe representar visualmente las pilas de bloques conectados secuencialmente  y los bloques anidados dentro de entradas de tipo sentencia, apilándolos y indentándolos correctamente en la interfaz para reflejar la estructura del programa al estilo Scratch.
-	
+	\item[\textbf{RF-001}] \textbf{Gestión de la interfaz principal:} El sistema debe presentar una interfaz de usuario que distinga claramente entre el área de selección de herramientas (desafíos) y el área principal de codificación (workspace).
+	\item[\textbf{RF-002}] \textbf{Selección de desafíos:} El usuario debe poder seleccionar un desafío desde un menú, y el sistema debe cargar el contexto y las instrucciones correspondientes en la interfaz de programación.
 \end{enumerate}
 
-\subsection{Requisitos No Funcionales (RNF)}
+
+\begin{enumerate}
+	\setcounter{enumi}{2}
+	\item[\textbf{RF-003}] \textbf{Gestión de categorías de bloques:} El usuario debe poder seleccionar una categoría para visualizar un conjunto filtrado de bloques de programación en una toolbox.
+	\item[\textbf{RF-004}] \textbf{Arrastre de bloques:} El usuario debe poder seleccionar un bloque de la toolbox y arrastrarlo hasta el área de codificación.
+	\item[\textbf{RF-005}] \textbf{Conexión y apilamiento de bloques:} El sistema debe permitir la unión visual (snap) y lógica de bloques compatibles, representando correctamente la jerarquía secuencial de un programa.
+	\item[\textbf{RF-006}] \textbf{Descarte de bloques:} El usuario debe poder eliminar bloques del espacio de trabajo arrastrándolos fuera del área de codificación.
+\end{enumerate}
+
+\begin{enumerate}
+	\setcounter{enumi}{6}
+	\item[\textbf{RF-007}] \textbf{Entrada de comandos textuales:} El sistema debe proporcionar una interfaz (un campo de texto) para que el usuario pueda escribir comandos según la sintaxis de un lenguaje de dominio específico (DSL).
+	\item[\textbf{RF-008}] \textbf{Visualización secuencial del código:} Cada comando textual añadido debe ser representado visualmente como un ítem en una lista secuencial, manteniendo una estructura clara y legible del programa.
+	\item[\textbf{RF-009}] \textbf{Parseo y validación del DSL:} El sistema debe analizar (parsear) el código textual, validar su sintaxis y proporcionar feedback inmediato y claro al usuario en caso de error.
+	\item[\textbf{RF-010}] \textbf{Limpieza del programa textual:} El usuario debe disponer de una opción para borrar todos los comandos textuales escritos y empezar de nuevo.
+\end{enumerate}
+
+\begin{enumerate}
+	\setcounter{enumi}{10}
+	\item[\textbf{RF-011}] \textbf{Ejecución unificada:} El usuario debe poder iniciar la ejecución del programa completo (sea por bloques, textual o híbrido) a través de una única acción.
+	\item[\textbf{RF-012}] \textbf{Interpretación y simulación del robot:} El motor de ejecución debe interpretar la secuencia de instrucciones (generada a partir de los bloques o del DSL) y traducirla en acciones visibles y coherentes del robot en el entorno 3D.
+	\item[\textbf{RF-013}] \textbf{Detección de colisiones:} El sistema debe detectar colisiones del robot con elementos del entorno y detener la ejecución del programa.
+	\item[\textbf{RF-014}] \textbf{Detención manual de la ejecución:} El usuario debe poder detener la simulación en cualquier momento a través de un control en la interfaz.
+\end{enumerate}
+
+
+\subsection{Requisitos no funcionales (RNF)}
 Estos requisitos describen las cualidades del sistema que garantizan un buen funcionamiento y una experiencia de usuario óptima.
 \begin{enumerate}
-	\item \textbf{RNF-001: Rendimiento de la Interfaz.} La interfaz de programación visual debe responder a las interacciones del usuario (arrastre, conexión) con una latencia mínima, garantizando una experiencia fluida.
+	\item \textbf{RNF-001: Rendimiento de la interfaz.} La interfaz de programación visual debe responder a las interacciones del usuario (arrastre, conexión) con una latencia mínima, garantizando una experiencia fluida.
 	\\
-	\item \textbf{RNF-002: Consistencia Visual.} El diseño visual de los bloques y la interfaz debe ser consistente con la estética de Scratch. 
+	\item \textbf{RNF-002: Consistencia visual.} El diseño visual de los bloques y la interfaz debe ser consistente con la estética de Scratch. 
 	\\
 	\item \textbf{RNF-003: Accesibilidad.} El sistema debe ser capaz de ejecutarse en dispositivos Android tipo tablet con hardware común, sin requerimientos técnicos elevados. 
 	\\
-	\item \textbf{RNF-004: Precisión de la Simulación.} El movimiento y el comportamiento del robot simulado deben ser perceptibles y acordes con la lógica programada en los bloques. 
+	\item \textbf{RNF-004: Precisión de la simulación.} El movimiento y el comportamiento del robot simulado deben ser perceptibles y acordes con la lógica programada en los bloques. 
 	\\
 	\item \textbf{RNF-005: Mantenibilidad.} La arquitectura del software debe facilitar la futura modificación y extensión del sistema de bloques y la lógica del robot.
 	\\
 	\item \textbf{RNF-006: Confiabilidad.} El sistema no debe experimentar caídas o bloqueos inesperados durante la interacción normal o la ejecución de programas.
 	\\
-	\item \textbf{RNF-007: Modularidad del Código.}
+	\item \textbf{RNF-007: Modularidad del código.}
 	La arquitectura del software del sistema debe estar organizada siguiendo el patrón Modelo-Vista-Controlador (MVC), promoviendo una clara separación de responsabilidades. Los componentes dentro de cada capa (Modelo, Vista y Controlador) deben diseñarse con principios de \textit{bajo acoplamiento} (interdependencia mínima entre módulos) y \textit{alta cohesión} (elementos dentro de un módulo con funcionalidades estrechamente relacionadas). Esta estructura facilitará la comprensión del código, la depuración, la modificación aislada de componentes y el mantenimiento general del sistema.
 	\\	
-	\item \textbf{RNF-008: Extensibilidad para Nuevos Bloques.}
+	\item \textbf{RNF-008: Extensibilidad para nuevos bloques.}
 	El diseño del sistema debe permitir la adición de nuevos tipos de bloques de programación con un impacto mínimo y localizado en el código fuente existente. La incorporación de un nuevo bloque debería, idealmente, implicar la creación de:
 	\begin{itemize}
 		\item Una definición de bloque.
@@ -90,7 +84,7 @@ Estos requisitos describen las cualidades del sistema que garantizan un buen fun
 	\end{itemize}
 	Estos nuevos componentes deben poder integrarse sin requerir modificaciones extensas en el núcleo del sistema o los controladores principales.
 	\\
-	\item \textbf{RNF-009: Usabilidad y Retroalimentación Visual Clara.}
+	\item \textbf{RNF-009: Usabilidad y retroalimentación visual clara.}
 	El sistema debe proporcionar indicaciones visuales claras e intuitivas al usuario durante las interacciones clave para facilitar su uso y comprensión:
 	\begin{itemize}
 		\item \textbf{Resaltado de Conexiones Válidas:} Durante la operación de arrastre de un bloque, las posibles conexiones compatibles con otros bloques deben resaltarse visualmente (ej. mediante un cambio de color o una superposición gráfica en el punto de snap) para guiar al usuario hacia una unión correcta. 
@@ -110,20 +104,19 @@ Un actor representa un rol desempeñado por un usuario humano, un dispositivo ha
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|} 
 		\hline
-		\multicolumn{2}{|c|}{\textbf{Actor A01: Estudiante (Usuario Principal)}} \\
+		\multicolumn{2}{|c|}{\textbf{Actor A01: Estudiante (Usuario principal)}} \\
 		\hline
-		\textbf{Descripción:} & Individuo (generalmente un niño, adolescente o persona en formación) que utiliza el laboratorio virtual para aprender conceptos de programación visual y robótica mediante la creación y ejecución de programas con bloques. \\
+		\textbf{Descripción:} & Individuo (generalmente un niño, adolescente o persona en formación) que utiliza el laboratorio virtual para aprender los fundamentos de la programación y la robótica mediante la creación y ejecución de programas. La plataforma le permite interactuar tanto con \textbf{bloques visuales para la estructura del programa} como con un \textbf{lenguaje de comandos textual} para definir acciones específicas. \\
 		\hline
 		\textbf{Tipo:} & Humano. \\
 		\hline
-		\textbf{Objetivo Principal:} & Crear programas de bloques para controlar un robot virtual y observar su comportamiento en un entorno de simulación 3D, con el fin de desarrollar habilidades de pensamiento computacional y lógica de programación. \\
+		\textbf{Objetivo Principal:} & \textbf{Resolver desafíos de robótica} mediante la construcción de programas híbridos para controlar un robot virtual, observando su comportamiento en un entorno de simulación 3D. El fin último es desarrollar habilidades de pensamiento computacional y facilitar la transición de la programación visual a la textual. \\
 		\hline
 		\textbf{Relaciones con Casos de Uso Principales:} & 
 		\begin{itemize}
-			\item Gestionar la interfaz de programación.
-			\item Construir programas con bloques.
-			\item Ejecutar y simular programas.
-			\item Gestionar proyectos de bloques.
+			\item Seleccionar un desafío de aprendizaje.
+			\item Construir programas de forma híbrida (bloques y texto).
+			\item Ejecutar y simular el comportamiento del robot.
 		\end{itemize} \\
 		\hline
 	\end{tabularx}
@@ -144,360 +137,146 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 	\label{fig:CU}
 \end{figure}
 \clearpage
-
-\subsubsection{CU01: Gestionar interfaz de programación} \label{sec:CU01_Interfaz}
-\begin{table}[H] 
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|} 
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Autor:} & Luis Ignacio de Luna Gómez \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \ref{tabla:Actor_A01_Estudiante}\\
-		\hline
-		\textbf{RF asociados:} & RF-001, RF-002 \\
-		\hline
-		\textbf{Descripción:} & El estudiante interactúa con la interfaz principal del laboratorio virtual para acceder a las herramientas de programación. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item El sistema ha sido iniciado correctamente.
-			\item La interfaz principal es visible.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante visualiza los paneles principales: panel de categorías de bloques, panel de listado de bloques, y área de codificación.
-			\item El Estudiante selecciona una categoría de bloques  en el panel de categorías.
-			\item El sistema actualiza el panel de listado de bloques para mostrar las plantillas de bloques correspondientes a la categoría seleccionada.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-			\item El panel de listado de bloques muestra los bloques de la categoría seleccionada.
-		 \\
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
-	\end{tabularx}
-	\caption{CU01 - Gestionar interfaz de programación.}
-	\label{tabla:CU01_Interfaz}
-\end{table}
+\subsection{CU-01: Seleccionar entorno del desafío}
 
 \begin{figure}[h!]
 	\centering 
-	\includegraphics[width=0.6\linewidth]{img/CU01-drawio.png} 
-	\caption{Diagrama de caso de uso CU01 - Gestionar interfaz de programación.}
+	\includegraphics[width=0.5\linewidth]{img/CU1-drawio.png} 
+	\caption{Diagrama de caso de uso CU - Diagrama seleccionar entorno del desafío.}
 	\label{fig:CU01}
 \end{figure}
 
-
-\subsubsection{CU02: Construir programa con bloques} \label{sec:CU02_Construccion}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|} 
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Autor:} & Luis Ignacio de Luna Gómez \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-003, RF-004, RF-005, RF-006, RF-016, RF-017 \\
-		\hline
-		\textbf{Descripción:} & El estudiante utiliza las herramientas visuales para seleccionar, arrastrar, conectar, desconectar y configurar bloques, con el fin de construir una secuencia lógica de instrucciones. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item El Estudiante ha iniciado la aplicación y la interfaz de programación es visible 
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		El Estudiante realiza una o más de las siguientes acciones de forma iterativa:
-		\begin{itemize}
-			\item Añadir un nuevo bloque al espacio de trabajo.
-			\item Conectar dos bloques compatibles.
-			\item Editar el valor de un campo en un bloque.
-			\item Desconectar bloques previamente unidos.
-			\item Eliminar un bloque del espacio de trabajo 
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item Se ha construido o modificado un programa visualmente coherente en el área de codificación.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
-	\end{tabularx}
-	\caption{CU02 - Construir programa con bloques.}
-	\label{tabla:CU02_Construccion}
-\end{table}
-
-\subsubsection{CU02.1: Añadir bloque al espacio de trabajo} \label{sec:CU02_1_AnadirBloque}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
 		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-003 \\
-		\hline
-		\textbf{Descripción :} & El estudiante selecciona una plantilla de bloque del panel de bloques o  toolbox y la incorpora al área de codificación. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item La interfaz de programación es visible y el panel de listado de bloques muestra plantillas de bloques.
-		\end{itemize} \\
-		\hline
+		\textbf{Versión:} & 1.0 \\ \hline
+		\textbf{Actor:} & A01 - Estudiante \\ \hline
+		\textbf{RF asociados:} & RF-001, RF-002 \\ \hline
+		\textbf{Descripción:} & El estudiante navega por el menú principal para seleccionar un desafío específico, lo que prepara el entorno de programación con los objetivos y la configuración necesarios. \\ \hline
+		\textbf{Precondición:} & El estudiante se encuentra en la escena del menú principal de la aplicación. \\ \hline
 		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante hace clic y mantiene presionado sobre una plantilla de bloque en el panel de bloques o toolbox.
-			\item El Estudiante arrastra la plantilla del bloque hacia el área de codificación.
-			\item El sistema crea una instancia visual del bloque que sigue al cursor.
-			\item El Estudiante suelta el bloque en una posición deseada dentro del área de codificación.
-			\item El sistema instancia el bloque lógico y su vista en el espacio de trabajo, posicionándolo como un bloque superior o topblock.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item Un nuevo bloque (instancia de la plantilla) es visible y está lógicamente presente en el área de codificación.
-		\end{itemize} \\
-		
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
+		\begin{enumerate}
+			\item El sistema muestra al estudiante una lista de desafíos disponibles.
+			\item El estudiante selecciona uno de los desafíos.
+			\item El sistema carga la información del desafío seleccionado (título, descripción).
+			\item El sistema transiciona a la escena de programación, pasando el contexto del desafío.
+		\end{enumerate} \\ \hline
+		\textbf{Postcondición:} & La interfaz de programación se muestra con las instrucciones y el entorno preparados para el desafío seleccionado. \\ \hline
+		\textbf{Importancia:} & Alta \\ \hline
 	\end{tabularx}
-	\caption{CU02.1 - Añadir bloque al espacio de trabajo.}
-	\label{tabla:CU02_1_AnadirBloque}
+	\caption{CU-01: Seleccionar Desafío de Aprendizaje.}
+	\label{tabla:CU01}
 \end{table}
 
-% --- Sub-Caso de Uso 2 ---
-\subsubsection{CU02.2: Conectar bloques} \label{sec:CU02_2_ConectarBloques}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-004, RF-017 \\
-		\hline
-		\textbf{Descripción:} & El estudiante une dos bloques compatibles en el área de codificación para formar una secuencia lógica o una relación de entrada/salida. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item Existen al menos dos bloques en el área de codificación (o uno en el área y otro siendo arrastrado desde la toolbox).
-			\item Los bloques poseen puntos de conexión compatibles .
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante arrastra un bloque (bloque A) hacia la proximidad de un punto de conexión de otro bloque (bloque B) que está en el área de codificación.
-			\item Si los puntos de conexión más cercanos entre el bloque A y el bloque B son compatibles, el sistema muestra un resaltado visual  en la conexión del bloque B que es el que la va a recibir.
-			\item El Estudiante suelta el bloque A.
-			\item El sistema realiza la conexión lógica  entre los bloques, actualizando el espacio de trabajo. 
-			\item El sistema ajusta la posición visual del bloque A para que encaje (snap) con el bloque B, actualizando su vista.
-			\item La pila de bloques se representa visualmente de forma coherente (indentación, apilamiento).
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item Los bloques A y B están conectados lógica y visualmente.
-			\item El layout de los bloques afectados se actualiza.
-		\end{itemize} \\
-	
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
-	\end{tabularx}
-	\caption{CU02.2 - Conectar bloques.}
-	\label{tabla:CU02_2_ConectarBloques}
-\end{table}
-
-% --- Sub-Caso de Uso 3 ---
-\subsubsection{CU02.3: Editar valor de campo en bloque} \label{sec:CU02_3_EditarCampo}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor):} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-006 \\
-		\hline
-		\textbf{Descripción:} & El estudiante modifica el valor de un campo editable dentro de un bloque para configurar su comportamiento. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item Existe un bloque en el área de codificación que contiene al menos un campo editable.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante hace clic (o pulsa) sobre un campo editable  dentro de un bloque.
-			\item El sistema activa la interfaz de edición para ese tipo de campo.
-			\item El Estudiante ingresa el nuevo valor .
-			\item El Estudiante confirma el cambio  presionando Enter.
-			\item El bloque actualiza el valor correspondiente
-			\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item El valor del campo en el modelo lógico  y en la vista ) está actualizado.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
-	\end{tabularx}
-	\caption{CU02.3 - Editar valor de campo en bloque.}
-	\label{tabla:CU02_3_EditarCampo}
-\end{table}
-
-% --- Sub-Caso de Uso 4 ---
-\subsubsection{CU02.4: Desconectar bloques} \label{sec:CU02_4_DesconectarBloques}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3.5cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-005 \\
-		\hline
-		\textbf{Descripción:} & El estudiante separa uno o más bloques de una pila o conexión existente. \\
-		\hline
-		\textbf{Precondicións:} & 
-		\begin{itemize}
-			\item Existen al menos dos bloques conectados en el área de codificación.
-		\end{itemize} \\
-		\hline
-		\textbf{Flujo Principal de Eventos (Acciones):} & 
-		\begin{itemize}
-			\item El Estudiante selecciona un bloque que está conectado a otro.
-			\item El Estudiante arrastra el bloque seleccionado lejos de su punto de conexión.
-			\item El sistema rompe la conexión lógica entre el bloque arrastrado y su antiguo bloque superior/padre.
-			\item La representación visual de los bloques se actualiza para mostrar que están separados.
-			\item El bloque arrastrado  se convierte en una nueva pila o bloque superior independiente.
-
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item El bloque seleccionado   ahora está separado de su conexión anterior.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Media (para la funcionalidad completa) / Alta (para la manipulación básica) \\
-		\hline
-	\end{tabularx}
-	\caption{CU02.4 - Desconectar bloques.}
-	\label{tabla:CU02_4_Desconectarbloques}
-\end{table}
-
-% --- Caso de Uso 5 (Antes RF-016) ---
-\subsubsection{CU02.5: Eliminar bloque del espacio de trabajo} \label{sec:CU05_EliminarBloque}
-
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-016 \\
-		\hline
-		\textbf{Descripción:} & El estudiante remueve permanentemente un bloque (y su sub-árbol de bloques conectados) del área de codificación. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item Hay al menos un bloque presente en el área de codificación que es candidato para eliminación.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante selecciona un bloque (que puede ser la raíz de una pila o un bloque individual).
-			\item El Estudiante arrastra el bloque seleccionado fuera del área de codificación principal.
-			\item Al soltar el bloque fuera del área designada para codificación, el sistema interpreta esto como una acción de eliminación.
-			\item El bloque se desvincula de cualquier conexión (UnPlug).
-			\item La vista correspondiente  se elimina de la interfaz.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item El bloque seleccionado ha sido eliminados del espacio de trabajo y ya no es visible.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Media \\
-		\hline
-
-
-	\end{tabularx}
-	\caption{CU05 - Eliminar Bloque del Espacio de Trabajo.}
-	\label{tabla:CU05_EliminarBloque}
-\end{table}
+\clearpage
+\subsection{CU-02: Construir programa}
 
 \begin{figure}[h!]
 	\centering 
-	\includegraphics[width=1\linewidth]{img/CU02-drawio.png} 
-	\caption{Diagrama de caso de uso CU02 - Construir programa con bloques.}
+	\includegraphics[width=0.8\linewidth]{img/CU2-drawio.png} 
+	\caption{Diagrama de caso de uso CU - Diagrama construir programa.}
 	\label{fig:CU02}
 \end{figure}
-\clearpage
-%\newpage
-\subsubsection{CU03: Ejecutar y simular programa del robot} \label{sec:CU03_Ejecucion}
+
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
-	\hline
-		\textbf{Versión:} & 1.0 \\
 		\hline
-		\textbf{Autor:} & Luis Ignacio de Luna Gómez \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-007, RF-008, RF-009, RF-010, RF-011, RF-014 \\
-		\hline
-		\textbf{Descripción :} & El estudiante interactúa con el sistema para iniciar, observar y detener la ejecución de un programa de bloques, visualizando el comportamiento del robot en un entorno 3D. \\
-		\hline
-		\textbf{Precondición:} & 
+		\textbf{Versión:} & 2.0 (Híbrida) \\ \hline
+		\textbf{Actor:} & A01 - Estudiante \\ \hline
+		\textbf{RF asociados:} & RF-003 a RF-010, RF-014 (para texto), RF-017 (para bloques) \\ \hline
+		\textbf{Descripción:} & El estudiante utiliza las herramientas de la interfaz para construir un programa que controle al robot. Puede hacerlo con bloques visuales, o con comandos textuales. \\ \hline
+		\textbf{Precondición:} & El estudiante se encuentra en la escena de programación. \\ \hline
+		\textbf{Flujo Principal:} & 
+		El estudiante realiza una o más de las siguientes acciones de forma iterativa:
 		\begin{itemize}
-			\item El Estudiante ha construido un programa ejecutable
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-	
-			El Estudiante sigue una secuencia que involucra:
-		\begin{itemize}
-			\item Iniciar la ejecución del programa.
-			\item Observar la simulación del robot.
-			\item (Opcional) Detener la ejecución del programa.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item El robot virtual ha ejecutado las acciones correspondientes a los bloques programados, y su estado final es visible en la simulación.
-			\item O bien, la ejecución ha sido detenida por el usuario, y el sistema ha retornado al modo de programación.
-			\item Se ha proporcionado feedback visual y/o textual al usuario sobre el proceso.
-		\end{itemize} \\
-	
-		\hline
-		\textbf{Importancia:} & Alta \\
-		\hline
-
+			\item Añadir y manipular bloques visuales (Extiende a \textbf{CU-02.1}).
+			\item Escribir y añadir comandos textuales (Extiende a \textbf{CU-02.2}).
+		\end{itemize} \\ \hline
+		\textbf{Postcondición:} & Se ha construido o modificado un programa en el área de trabajo, listo para ser ejecutado. \\ \hline
+		\textbf{Importancia:} & Alta \\ \hline
 	\end{tabularx}
+	\caption{CU-02: Construir programa.}
+	\label{tabla:CU02_Hibrido}
+\end{table}
 
-	\caption{CU03 - Ejecutar y simular programa del robot.}
-	\label{tabla:CU03_Ejecucion}
+\subsection{CU-02.1: Manipular bloques visuales}
+\begin{table}[H]
+
+	\centering
+	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
+		\hline
+		\textbf{Versión:} & 1.1 \\ \hline
+		\textbf{Extiende a:} & CU-02: Construir programa \\ \hline
+		\textbf{Descripción:} & El estudiante utiliza el paradigma de programación visual para seleccionar, arrastrar, conectar y configurar bloques, formando la estructura y lógica del programa. \\ \hline
+		\textbf{Acciones:} & 
+		El Estudiante puede realizar cualquiera de las siguientes acciones:
+		\begin{itemize}
+			\item \textbf{Añadir un nuevo bloque:} Selecciona un bloque de la toolbox y lo arrastra al área de codificación.
+			\item \textbf{Conectar bloques:} Une bloques compatibles mediante drag-and-drop, observando el feedback visual (resaltado y snap).
+			\item \textbf{Editar campos:} Modifica valores en los campos de un bloque (ej. número de pasos).
+			\item \textbf{Desconectar y Reorganizar bloques:} Separa bloques de una pila para reordenar la lógica.
+			\item \textbf{Eliminar bloques:} Descarta bloques no deseados arrastrándolos fuera del área de trabajo.
+		\end{itemize} \\ \hline
+	\end{tabularx}
+	\caption{CU-02.1: Manipular bloques visuales.}
+\end{table}
+
+\subsection{CU-02.2: Añadir comandos textuales}
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
+		\hline
+		\textbf{Versión:} & 1.0 \\ \hline
+		\textbf{Extiende a:} & CU-02: Construir programa \\ \hline
+		\textbf{RF asociados:} & RF-007, RF-008, RF-009, RF-010 \\ \hline
+		\textbf{Descripción:} & El estudiante utiliza la interfaz de programación textual para definir secuencias de acciones del robot. \\ \hline
+		\textbf{Precondición:} & El estudiante está en la vista de programación textual o utilizando un bloque que permite la inserción de código. \\ \hline
+		\textbf{Acciones:} & 
+		\begin{enumerate}
+			\item El estudiante escribe un comando del DSL (ej. mover 10 pasos) en el campo de texto de la IDE.
+			\item Pulsa el botón Añadir comando (+).
+			\item Si es válido, el sistema añade el comando al programa, creando una nueva representación visual en la lista de instrucciones.
+		\end{enumerate} \\ \hline
+		\textbf{Postcondición:} & El programa ha sido modificado con la nueva instrucción textual. \\ \hline
+		\textbf{Importancia:} & Alta \\ \hline
+	\end{tabularx}
+	\caption{CU-02.2: Añadir comandos textuales.}
+\end{table}
+
+%\clearpage
+\subsection{CU-03: Ejecutar y simular programa}
+
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
+		\hline
+		\textbf{Versión:} & 1.0 \\ \hline
+		\textbf{Actor:} & A01 - Estudiante \\ \hline
+		\textbf{RF asociados:} & RF-006, RF-008, RF-009, RF-010, RF-012 \\ \hline
+		\textbf{Descripción:} & El estudiante inicia la ejecución de su programa para validar su lógica y observar el comportamiento del robot en el entorno 3D. \\ \hline
+		\textbf{Precondición:} & Existe un programa (bloques, texto o híbrido) en el área de trabajo. \\ \hline
+		\textbf{Acciones:} & 
+		\begin{enumerate}
+			\item El estudiante pulsa el botón ejecutar.
+			\item El sistema analiza el programa.
+			\item \textbf{Flujo alternativo (error):} Si el código textual contiene un error de sintaxis, el sistema muestra un mensaje de error en la interfaz y la ejecución se detiene.
+			\item Si el programa es válido, el sistema inicia la simulación.
+			\item El motor de ejecución interpreta la secuencia de bloques y comandos, y el robot virtual realiza las acciones correspondientes en la escena 3D.
+			\item El estudiante observa el resultado.
+			\item La ejecución finaliza (por completitud, colisión o detención manual), y el sistema muestra un mensaje de resultado.
+		\end{enumerate} \\ \hline
+		\textbf{Postcondición:} & El estudiante ha recibido feedback sobre la ejecución de su programa y puede volver al modo de edición. \\ \hline
+		\textbf{Importancia:} & Alta \\ \hline
+	\end{tabularx}
+	\caption{CU-03: Ejecutar y Probar Programa.}
+	\label{tabla:CU03}
 \end{table}
 
 % --- Sub-Caso de Uso 3.1 ---
-\subsubsection{CU03.1: Iniciar Ejecución de Programa} \label{sec:CU03_1_IniciarEjecucion}
+\subsection{CU03.1: Iniciar ejecución de programa} \label{sec:CU03_1_IniciarEjecucion}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
@@ -508,26 +287,25 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 		\hline
 		\textbf{RF asociados:} & RF-007, RF-009 (parcial), RF-011 (parcial) \\
 		\hline
-		\textbf{Descripción:} & El estudiante activa el mecanismo para comenzar la ejecución de su programa de bloques, provocando la transición al modo de simulación y la preparación del entorno. \\
+		\textbf{Descripción:} & El estudiante activa el mecanismo para comenzar la ejecución de su programa, provocando la transición al modo de simulación y la preparación del entorno. \\
 		\hline
 		\textbf{Precondición:} & 
 		\begin{itemize}
-			\item El Estudiante ha construido un programa en el área de codificación que contiene un bloque de evento de inicio.
+			\item El Estudiante ha construido un programa en el área de codificación que.
 			\item El sistema se encuentra en el modo de programación.
 		\end{itemize} \\
 		\hline
 		\textbf{Acciones:} & 
 		\begin{itemize}
-			\item El Estudiante pulsa el botón/icono bandera verde en la interfaz principal.
+			\item El Estudiante pulsa el botón/icono en la interfaz principal para que el programa se ejecute.
 			\item El sistema realiza la transición al modo de simulación:
 			\begin{itemize}
-				\item Oculta los paneles de edición de bloques (categorías, toolbox, área de codificación).
+				\item En el caso de programación por bloques oculta los paneles de edición de bloques (categorías, toolbox, área de codificación).
 				\item Activa y muestra el entorno de simulación 3D.
 				\item El robot virtual se inicializa en la escena (posición/orientación por defecto).
 				\item Actualiza los controles de la interfaz y el botón stop se activa mientras el botón bandera verde se desactiva).
 			\end{itemize}
-			\item El sistema muestra una secuencia de cuenta atrás visual en la pantalla ("3, 2, 1, ¡GO!").
-		\end{itemize} \\
+			\end{itemize} \\
 		\hline
 		\textbf{Postcondición:} & 
 		\begin{itemize}
@@ -544,7 +322,7 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 \end{table}
 
 % --- Sub-Caso de Uso 3.2 ---
-\subsubsection{CU03.2: Observar Simulación del Robot durante Ejecución} \label{sec:CU03_2_ObservarSimulacion}
+\subsection{CU03.2: Observar simulación del robot durante ejecución} \label{sec:CU03_2_ObservarSimulacion}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
@@ -591,7 +369,7 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 \end{table}
 
 % --- Sub-Caso de Uso 3.3 ---
-\subsubsection{CU03.3: Detener ejecución de programa} \label{sec:CU03_3_DetenerEjecucion}
+\subsection{CU03.3: Detener ejecución de programa} \label{sec:CU03_3_DetenerEjecucion}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
@@ -640,11 +418,11 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 \begin{figure}[h!]
 	\centering 
 	\includegraphics[width=1\linewidth]{img/CU03-drawio.png} 
-	\caption{Diagrama de caso de uso CU023- Ejecutar y simular programa del robot.}
+	\caption{Diagrama de caso de uso CU03- Ejecutar y simular programa del robot.}
 	\label{fig:CU03}
 \end{figure}
 
-\subsubsection{CU04: Gestionar proyectos de bloques} \label{sec:CU04_GestionProyectos}
+\subsection{CU04: Gestionar proyectos de bloques} \label{sec:CU04_GestionProyectos}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3.5cm}|X|}
@@ -687,7 +465,7 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 \end{table}
 
 % --- Sub-Caso de Uso 4.1: Guardar Proyecto ---
-\subsubsection{CU04.1: Guardar proyecto de bloques} \label{sec:CU04_1_GuardarProyecto}
+\subsection{CU04.1: Guardar proyecto de bloques} \label{sec:CU04_1_GuardarProyecto}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
@@ -728,7 +506,7 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 \end{table}
 
 % --- Sub-Caso de Uso 4.2: Cargar proyecto ---
-\subsubsection{CU04.2: Cargar proyecto de bloques} \label{sec:CU04_2_CargarProyecto}
+\subsection{CU04.2: Cargar proyecto de bloques} \label{sec:CU04_2_CargarProyecto}
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3.5cm}|X|}

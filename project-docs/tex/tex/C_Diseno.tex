@@ -3,40 +3,43 @@
 \section{Introducción}
 Este apéndice presenta la especificación de diseño del prototipo del laboratorio ivrtual de programación y robótica. El diseño del software es una fase crítica que traduce los requisitos funcionales y no funcionales, detallados en el Apéndice B, en una descripción técnica y estructurada de la solución. El propósito de este documento es detallar la arquitectura del sistema, el diseño de los datos que maneja, y el diseño procedimental de sus interacciones clave.
 
+Se describirá tanto el \textbf{diseño inicial basado en un sistema de bloques visuales}, que sentó las bases conceptuales y arquitectónicas del proyecto, como el \textbf{diseño final del prototipo híbrido}, que representa la solución implementada.
+
 Se busca proporcionar una visión clara de cómo se han organizado los componentes del software, cómo interactúan entre sí y cómo se ha estructurado la lógica de la aplicación para cumplir con los objetivos del proyecto. Este diseño se ha enfocado en la modularidad, mantenibilidad y escalabilidad, sentando las bases para futuras expansiones del laboratorio virtual. Se presta especial atención a la adaptación de la librería UBlockly dentro del motor Unity y la implementación del patrón Modelo-Vista-Controlador (MVC).
 
-\section{Diseño de Datos}
+\section{Diseño del sistema de programación inicial (basado en bloques)}
+\subsection{Diseño de datos del modelo de bloques}
 El diseño de datos describe las principales entidades de información que el sistema gestiona, sus atributos y las relaciones entre ellas. Este diseño es fundamental para la persistencia, la lógica de negocio y la representación visual de los elementos del programa.
 
-\subsection{Entidades Principales del Modelo}
+\subsection{Entidades principales del modelo}
 El sistema se articula en torno a un conjunto de entidades modelo que representan los conceptos clave de la programación por bloques y la gestión del espacio de trabajo, heredadas y adaptadas de la estructura de UBlockly:
 
 \begin{itemize}
-	\item \textbf{\texttt{WorkSpaceModel}:} Representa el contenedor principal de todo el entorno de programación.
+	\item \textbf{\texttt{WorkSpace}:} Representa el contenedor principal de todo el entorno de programación.
 	\begin{itemize}
 		\item \textbf{Atributos Clave:} \texttt{Id} (identificador), \texttt{Options} (configuración), \texttt{TopBlocks} (lista de bloques raíz), \texttt{BlockDB} (diccionario de todos los bloques), \texttt{VariableMap} (gestor de variables), \texttt{ProcedureDB} (gestor de procedimientos), \texttt{ConnectionDBList} (bases de datos de conexiones optimizadas para búsqueda).
 		\item \textbf{Relaciones:} Contiene múltiples \texttt{BlockModel}s y gestiona las colecciones globales de variables y procedimientos.
 	\end{itemize}
 	
-	\item \textbf{\texttt{BlockModel}:} Representa la estructura lógica y el estado de un bloque individual de programación.
+	\item \textbf{\texttt{Block}:} Representa la estructura lógica y el estado de un bloque individual de programación.
 	\begin{itemize}
 		\item \textbf{Atributos Clave:} \texttt{ID}, \texttt{Type} (ej. motion\_movesteps), \texttt{XY} (posición lógica), \texttt{InputList}, \texttt{OutputConnection}, \texttt{PreviousConnection}, \texttt{NextConnection}, propiedades de estado (\texttt{Disabled}, \texttt{Movable}, \texttt{Collapsed}, etc.).
 		\item \textbf{Relaciones:} Puede tener un \texttt{ParentBlock} y múltiples \texttt{ChildBlocks} (a través de \texttt{NextConnection} o \texttt{InputModel} de tipo sentencia). Se conecta a otros \texttt{BlockModel}s mediante sus \texttt{ConnectionModel}s.
 	\end{itemize}
 	
-	\item \textbf{\texttt{ConnectionModel}:} Define un punto de conexión en un bloque.
+	\item \textbf{\texttt{Connection}:} Define un punto de conexión en un bloque.
 	\begin{itemize}
 		\item \textbf{Atributos Clave:} \texttt{SourceBlock}, \texttt{Type} (\texttt{EConnection}), \texttt{TargetConnection}, \texttt{Check} (tipos compatibles), \texttt{Location} (posición lógica para snapping), \texttt{InDB}, \texttt{DB}, \texttt{DBOpposite}.
 		\item \textbf{Relaciones:} Pertenece a un \texttt{SourceBlock}. Puede estar conectada a una \texttt{TargetConnection} de otro \texttt{BlockModel}.
 	\end{itemize}
 	
-	\item \textbf{\texttt{InputModel}:} Define una entrada dentro de un bloque, que puede contener campos o una conexión para otro bloque.
+	\item \textbf{\texttt{Input}:} Define una entrada dentro de un bloque, que puede contener campos o una conexión para otro bloque.
 	\begin{itemize}
 		\item \textbf{Atributos Clave:} \texttt{Name}, \texttt{Type} (\texttt{EConnection} como \texttt{InputValue}, \texttt{NextStatement} o \texttt{DummyInput}), \texttt{Connection} (si no es Dummy), \texttt{FieldRow} (lista de \texttt{FieldModel}s), \texttt{Align}.
 		\item \textbf{Relaciones:} Pertenece a un \texttt{BlockModel}. Su \texttt{Connection} puede enlazarse a la \texttt{OutputConnection} o \texttt{PreviousConnection} de otro \texttt{BlockModel}.
 	\end{itemize}
 	
-	\item \textbf{\texttt{FieldModel}:} Representa un campo individual dentro de un \texttt{InputModel} (ej. etiqueta, entrada de texto, desplegable).
+	\item \textbf{\texttt{Field}:} Representa un campo individual dentro de un \texttt{InputModel} (ej. etiqueta, entrada de texto, desplegable).
 	\begin{itemize}
 		\item \textbf{Atributos Clave:} \texttt{Name}, \texttt{Type} (ej. field\_label, field\_number), valor textual (\texttt{mText}), \texttt{IsEditable}.
 		\item \textbf{Relaciones:} Pertenece a un \texttt{InputModel} (a través de su \texttt{FieldRow}).
@@ -53,7 +56,7 @@ El sistema se articula en torno a un conjunto de entidades modelo que representa
 	% \end{figure}
 
 \subsection{Persistencia de datos (diseño lógico)}
-El diseño de persistencia para el prototipo se basa en la serialización del \texttt{WorkSpaceModel} completo a un formato \textbf{XML}.
+El diseño de persistencia para el prototipo se basa en la serialización del \texttt{WorkSpace} completo a un formato \textbf{XML}.
 \begin{itemize}
 	\item \textbf{Estructura XML:} La estructura del XML generado refleja la jerarquía de los bloques, sus inputs, fields, conexiones y valores. Los bloques \textit{TopBlocks} son los elementos raíz bajo la etiqueta \texttt{<xml>}. Los bloques anidados aparecen dentro de las etiquetas \texttt{<value>}, \texttt{<statement>} o \texttt{<next>} de sus bloques padres.
 	\item \textbf{Datos Serializados:} Se serializan el tipo de bloque, su ID, posición (x, y), estado (colapsado, deshabilitado), valores de los campos, y la estructura de conexión con otros bloques.
@@ -61,11 +64,52 @@ El diseño de persistencia para el prototipo se basa en la serialización del \t
 \end{itemize}
 Este diseño de datos y persistencia, aunque simple para el prototipo, establece una base que podría extenderse a sistemas de bases de datos más robustos en el futuro.
 
+
+\section{Pivote y diseño del sistema híbrido final}
+
+Tras la implementación de la arquitectura de bloques visuales, los desafíos técnicos encontrados en la creación de un motor de layout dinámico para los bloques de control de flujo motivaron un \textbf{pivote estratégico}. El nuevo diseño se centra en un sistema híbrido que simplifica la interacción visual y introduce un lenguaje de dominio específico (DSL) textual, manteniendo los principios de separación de responsabilidades.
+
+\subsection{Diseño de datos del sistema híbrido}
+La estructura de datos del sistema final se simplifica para gestionar los nuevos conceptos:
+
+\begin{itemize}
+	\item \textbf{\texttt{ChallengeData}:} Activo de tipo ScriptableObject que encapsula la información de cada desafío: título, descripción detallada, etc.
+	\item \textbf{\texttt{Instruction}:} Clase que representa un comando único y parseado. Contiene un CommandType (enum) y un Value (float). Para el comando repetir, esta clase contiene una List<Instruction> anidada.
+	\item \textbf{Lista de instrucciones (List<Instruction>):} Estructura de datos principal que representa el programa completo del usuario. Es el equivalente a un Árbol de Sintaxis Abstracto (AST) simplificado, generado por el CommandParser.
+\end{itemize}
+
+\subsection{Diseño arquitectónico híbrido}
+La arquitectura final se compone de un conjunto de gestores que orquestan el flujo de la aplicación.
+% (Puedes incluir aquí un nuevo diagrama de componentes para tu sistema híbrido)
+\begin{itemize}
+	\item \textbf{Gestores principales:} Se describe el rol de \texttt{GameManager}, \texttt{IDE\_UIManager} y \texttt{ChallengeLoader}.
+	\item \textbf{Núcleo de interpretación:} Se detalla el \texttt{CommandParser} como el componente de análisis y el \texttt{RobotController} como el motor de ejecución.
+\end{itemize}
+
+\section{Diseño procedimental del sistema híbrido}
+
+\subsection{Procedimiento: resolver un desafío}
+Este caso de uso encapsula el flujo completo del usuario en el prototipo final.
+\begin{enumerate}
+	\item \textbf{Selección del desafío:} El usuario selecciona un desafío en el MenuScene. El ChallengeLoader persiste esta selección.
+	\item \textbf{Carga del entorno:} El GameManager en la CodingScene lee el desafío desde el ChallengeLoader y configura la UI (IDE\_UIManager) con las instrucciones.
+	\item \textbf{Construcción del programa textual:} El usuario escribe comandos en el InputField. El IDE\_UIManager y el ProgramBuilder los recopilan y los muestran visualmente como una lista.
+	\item \textbf{Ejecución y parseo:} Al pulsar ejecutar, el GameManager envía el código fuente completo al CommandParser.
+	\begin{itemize}
+		\item \textbf{Flujo alternativo (error de sintaxis):} Si el parser detecta un error, se lo comunica al IDE\_UIManager, que muestra un mensaje al usuario. La ejecución se cancela.
+	\end{itemize}
+	\item \textbf{Simulación del robot:} Si el parseo es exitoso, el GameManager pasa la List<Instruction> al RobotController. Este inicia la corrutina ProcessInstructionList para ejecutar las acciones en el entorno 3D.
+	\item \textbf{Fin de la ejecución:} La simulación termina (éxito, colisión, etc.) y el RobotController notifica al GameManager, que a su vez instruye a la UI para mostrar el resultado final.
+\end{enumerate}
+
+
+
+
 \section{Diseño arquitectónico}
 La arquitectura del sistema se ha basado en el patrón \textbf{Modelo-Vista-Controlador (MVC)}, adaptado al entorno de desarrollo de Unity y a la estructura de la librería UBlockly.
 
-\subsection{Diagrama de arquitectura general (MVC)}
-Como se detalló en el Capítulo 3 (Conceptos Teóricos, subsección \textit{arquitectura general (Modelo-Vista-Controlador - MVC)}), el sistema se divide en tres capas principales. 
+\subsection{Diagrama de arquitectura general (MVC) primera versión }
+Como se detalló en el Capítulo 3 (Conceptos Teóricos, subsección \textit{arquitectura general (Modelo-Vista-Controlador - MVC)}), el sistema se dividío en tres capas principales. 
 
 	%  incluir aquí un diagrama de componentes MVC  o referenciar la descripción del Cap. 3
 \begin{figure}[H]
@@ -83,7 +127,7 @@ A continuación, se profundiza en los componentes clave de cada capa y sus inter
 \begin{itemize}
 	\item \textbf{Capa modelo (core UBlockly y lógica de simulación):}
 	\begin{itemize}
-		\item \texttt{WorkSpaceModel}, \texttt{BlockModel}, \texttt{ConnectionModel}, \texttt{InputModel}, \texttt{FieldModel}: Responsables del estado y la lógica de los bloques, heredados y adaptados de UBlockly.
+		\item \texttt{WorkSpace}, \texttt{Block}, \texttt{Connection}, \texttt{Input}, \texttt{Field}: Responsables del estado y la lógica de los bloques, heredados y adaptados de UBlockly.
 		\item \texttt{CSharpInterpreter}, \texttt{Cmdtor}, \texttt{CmdEnumerator}: Componentes del sistema de ejecución de UBlockly, encargados de la interpretación de los bloques.
 		\item \texttt{DataStruct}: Representación de tipos de datos en tiempo de ejecución.
 	\end{itemize}
@@ -145,11 +189,11 @@ La comunicación entre las capas sigue el patrón Observador y las interacciones
 	\begin{itemize}
 		\item El controlador interpreta la acción del usuario.
 		\item Realiza validaciones si es necesario.
-		\item Solicita modificaciones o consultas al modelo (ej. \texttt{WorkspaceController} pide al \texttt{WorkSpaceModel} que conecte dos \texttt{BlockModel}s).
+		\item Solicita modificaciones o consultas al modelo (ej. \texttt{WorkspaceController} pide al \texttt{WorkSpace} que conecte dos \texttt{Block}s).
 	\end{itemize}
 	\item \textbf{Actualización del modelo:}
 	\begin{itemize}
-		\item El modelo actualiza su estado interno (ej. \texttt{ConnectionModel.Connect()}).
+		\item El modelo actualiza su estado interno (ej. \texttt{Connection.Connect()}).
 		\item Si el estado cambia, el modelo dispara un evento a sus observadores (\texttt{BlockModel.FireUpdate()}).
 	\end{itemize}
 	\item \textbf{Actualización de la vista:}
@@ -159,47 +203,70 @@ La comunicación entre las capas sigue el patrón Observador y las interacciones
 	\end{itemize}
 	\item \textbf{Ejecución del programa:}
 	\begin{itemize}
-		\item El \texttt{ExecutionController}, al recibir la orden de ejecutar, pasa el \texttt{WorkSpaceModel} al \texttt{CSharpRunner}.
+		\item El \texttt{ExecutionController}, al recibir la orden de ejecutar, pasa el \texttt{WorkSpace} al \texttt{CSharpRunner}.
 		\item \texttt{CSharpRunner} itera sobre los bloques (\texttt{CmdEnumerator}) y sus intérpretes (\texttt{Cmdtor}).
 		\item Los \texttt{Cmdtor}s pueden leer datos del modelo (ej. valores de campos) y, a través del \texttt{BlockObserver}, enviar comandos a la Vista 3D (\texttt{RobotBehaviour}) para la simulación.
 	\end{itemize}
 \end{enumerate}
 
+\section{Diseño del sistema de programación híbrido final}
+% Itroduzco la nueva arquitectura como una evolución o añadido.
+
+\subsection{Ampliación del diseño de datos: Instrucciones y desafíos}
+% Esta nueva subsección describe las nuevas entidades.
+Además de las entidades del modelo de bloques, la arquitectura final introduce las siguientes estructuras de datos clave:
+
+\begin{itemize}
+	\item \textbf{\texttt{ChallengeData}:} Activo de tipo ScriptableObject que encapsula la información de cada desafío (título, descripción detallada). Este diseño permite crear y modificar el contenido educativo sin necesidad de recompilar la aplicación. Un gestor singleton (\texttt{ChallengeLoader}) se encarga de su persistencia entre escenas.
+	
+	\item \textbf{\texttt{Instruction}:} Clase que representa un comando único y parseado del DSL. Contiene principalmente un CommandType (enum que define la acción, ej. MoveForward, TurnLeft) y un Value (float para parámetros como distancia o grados). Para comandos de control de flujo como `repetir`, esta clase contiene una List<Instruction> anidada, creando así una estructura de árbol que representa el programa.
+\end{itemize}
+
+\subsection{Diseño arquitectónico híbrido}
+
+La arquitectura final integra el sistema de bloques visual con el nuevo sistema textual. Mientras que los bloques se gestionan mediante el patrón MVC descrito previamente, el flujo de programación textual y la ejecución final son orquestados por un conjunto de gestores simplificados:
+% Diagrama de componentes del sistema híbrido 
+\begin{itemize}
+	\item \textbf{\texttt{GameManager}:} Controlador central de la escena de simulación. Orquesta el flujo completo: recibe la orden de ejecución desde la UI, invoca al parser y, si es exitoso, pasa la lista de instrucciones al RobotController.
+	\item \textbf{\texttt{IDE\_UIManager}:} Actúa como la Vista y Controlador de la interfaz de programación textual. Captura la entrada de texto, gestiona la visualización de comandos y comunica las acciones del usuario al GameManager.
+	\item \textbf{\texttt{CommandParser}:} Componente estático que implementa la lógica del intérprete de DSL. Su única responsabilidad es transformar una cadena de texto en una List<Instruction> validada.
+	\item \textbf{\texttt{RobotController}:} Ejecuta la List<Instruction> mediante corrutinas, interactuando directamente con el componente `Rigidbody` del robot y el entorno 3D.
+\end{itemize}
 
 
 \section{Diseño procedimental}
 El diseño procedimental se centra en describir el flujo de control para las operaciones más significativas del sistema. A continuación, se detallan algunos procedimientos clave:
 
-\subsection{Procedimiento: Inicialización de la Interfaz Principal}
+\subsection{Procedimiento: inicialización de la interfaz principal - primera versión}
 Al iniciar la aplicación, el sistema debe construir y presentar la interfaz de usuario principal. Este proceso es orquestado principalmente por la clase \texttt{UICanvasView} durante su ciclo de vida \texttt{Awake()} o \texttt{Start()}.
 \begin{enumerate}
-	\item \textbf{Carga de Configuraciones Fundamentales:} La \texttt{UICanvasView} invoca al \texttt{BlockResMgr} para cargar configuraciones esenciales, como el archivo XML del \texttt{DefaultToolBox.xml} (que define las categorías y bloques de la toolbox) y los archivos de internacionalización (i18n). A partir de esta información, se inicializa el objeto \texttt{ToolboxConfig} y se cargan los colores asociados a cada categoría de bloques.
-	\item \textbf{Creación del Canvas Principal:} Se instancia el \texttt{GameObject} raíz del Canvas de Unity UI, junto con sus componentes esenciales (\texttt{Canvas}, \texttt{CanvasScaler}, \texttt{GraphicRaycaster}), configurándose para el modo \textit{Screen Space Overlay}.
-	\item \textbf{Construcción de Paneles de UI:} La \texttt{UICanvasView} procede a crear jerárquicamente los diferentes paneles que componen la interfaz:
+	\item \textbf{Carga de configuraciones fundamentales:} La \texttt{UICanvasView} invoca al \texttt{BlockResMgr} para cargar configuraciones esenciales, como el archivo XML del \texttt{DefaultToolBox.xml} (que define las categorías y bloques de la toolbox) y los archivos de internacionalización (i18n). A partir de esta información, se inicializa el objeto \texttt{ToolboxConfig} y se cargan los colores asociados a cada categoría de bloques.
+	\item \textbf{Creación del canvas Principal:} Se instancia el \texttt{GameObject} raíz del Canvas de Unity UI, junto con sps componentes esenciales (\texttt{Canvas}, \texttt{CanvasScaler}, \texttt{GraphicRaycaster}), configurándose para el modo \textit{Screen Space Overlay}.
+	\item \textbf{Construcción de paneles de UI:} La \texttt{UICanvasView} procede a crear jerárquicamente los diferentes paneles que componen la interfaz:
 	\begin{itemize}
-		\item \textit{Panel Superior de Control:} Se instancia el panel superior, añadiéndole el logo de la aplicación y los iconos interactivos (Bandera Verde, Stop, Guardar, Cargar).
-		\item \textit{Panel Izquierdo (Categorías):} Se crea el panel para los botones de selección de categorías, equipado con un \texttt{ScrollRect} y un contenedor con \texttt{VerticalLayoutGroup} para albergar los botones de categoría que se generarán posteriormente.
-		\item \textit{Paneles Centrales (Workspace):} Se crea un panel intermedio ("WorkArea") que a su vez contiene:
+		\item \textit{Panel superior de control:} Se instancia el panel superior, añadiéndole el logo de la aplicación y los iconos interactivos (Bandera Verde, Stop, Guardar, Cargar).
+		\item \textit{Panel izquierdo (Categorías):} Se crea el panel para los botones de selección de categorías, equipado con un \texttt{ScrollRect} y un contenedor con \texttt{VerticalLayoutGroup} para albergar los botones de categoría que se generarán posteriormente.
+		\item \textit{Paneles centrales (Workspace):} Se crea un panel intermedio (WorkArea) que a su vez contiene:
 		\begin{itemize}
 			\item El Panel de Toolbox (Centro-Izquierda, \texttt{BlockListPanelRect}), donde se instanciará \texttt{BlockListView} y que incluye un \texttt{ScrollRect} para la lista de bloques.
-			\item El Área de Codificación (Derecha, \texttt{CodingAreaPanelRect}), donde se instanciará \texttt{WorkSpaceView}.
+			\item El Área de codificación (Derecha, \texttt{CodingAreaPanelRect}), donde se instanciará \texttt{WorkSpaceView}.
 		\end{itemize}
-		\item \textit{Capa de Arrastre (\texttt{DragLayer}):} Se instancia un panel transparente superpuesto al área de codificación y la toolbox, destinado a ser el padre temporal de los bloques durante las operaciones de arrastre.
-		\item \textit{Paneles de Mensajes de Simulación:} Se crean los \texttt{GameObject}s para el texto de cuenta atrás y los mensajes del robot, inicialmente ocultos.
+		\item \textit{Capa de arrastre (\texttt{DragLayer}):} Se instancia un panel transparente superpuesto al área de codificación y la toolbox, destinado a ser el padre temporal de los bloques durante las operaciones de arrastre.
+		\item \textit{Paneles de mensajes de simulación:} Se crean los \texttt{GameObject}s para el texto de cuenta atrás y los mensajes del robot, inicialmente ocultos.
 	\end{itemize}
-	\item \textbf{Instanciación del Modelo Principal:} Se crea la instancia del \texttt{WorkSpaceModel}, que actuará como el contenedor lógico de todos los bloques y el estado del programa.
-	\item \textbf{Disponibilidad de la Interfaz:} La \texttt{UICanvasView} marca su inicialización como completa (\texttt{m\_isCoreComponentsReady = true}), permitiendo que otros controladores (\texttt{AppController}) procedan con la vinculación de modelos y la inicialización de funcionalidades más específicas (como la carga de la primera categoría en la Toolbox).
+	\item \textbf{Instanciación del modelo principal:} Se crea la instancia del \texttt{WorkSpace}, que actuará como el contenedor lógico de todos los bloques y el estado del programa.
+	\item \textbf{Disponibilidad de la interfaz:} La \texttt{UICanvasView} marca su inicialización como completa (\texttt{m\_isCoreComponentsReady = true}), permitiendo que otros controladores (\texttt{AppController}) procedan con la vinculación de modelos y la inicialización de funcionalidades más específicas (como la carga de la primera categoría en la Toolbox).
 \end{enumerate}
 
 
 \begin{figure}[H]
 	   \centering
 	   \includegraphics[width=\textwidth]{img/diagramasecuenciainicializacionIP.png} 
-	   \caption{Diagrama de Secuencia: Inicialización interfaz principal.}
+	   \caption{Diagrama de secuencia: Inicialización interfaz principal.}
 	   \label{fig:diagrama_secuencia_inicializacion_IP}
  \end{figure}
  
-\subsection{Procedimiento: Selección de Categoría y Carga de Bloques en Toolbox}
+\subsection{Procedimiento: selección de categoría y carga de bloques en toolbox}
 Una vez la interfaz está inicializada, el usuario puede interactuar con el panel de categorías para visualizar los bloques disponibles.
 \begin{enumerate}
 	\item El Estudiante pulsa un botón de categoría en el \texttt{Panel de Categorías} de la \texttt{UICanvasView}.
@@ -219,12 +286,12 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{img/diagramasecuencia_seleccion_categoria.png} 
-\caption{Diagrama de Secuencia: Selección de categoría y visualización de bloques en toolbox.}
+\caption{Diagrama de secuencia: Selección de categoría y visualización de bloques en toolbox.}
 	\label{fig:sec_select_category}
 \end{figure}
 
 
-\subsection{Procedimiento: Arrastre y conexión de un Bloque (\textit{Drag and Snap})}
+\subsection{Procedimiento: Arrastre y conexión de un bloque (\textit{Drag and Snap})}
 \begin{enumerate}
 	\item \textbf{Inicio del arrastre (\texttt{OnBeginDrag} en \texttt{BlockView} o \texttt{BlockTemplateDragSource}):}
 	
@@ -270,15 +337,15 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 		\item El \texttt{BlockConnectionController} finaliza la búsqueda y determina la mejor pareja de conexiones.
 		\item Si se encuentra una conexión válida (\textit{snap}):
 		\begin{itemize}
-			\item Se invoca \texttt{ConnectionModel.Connect()} en los modelos lógicos. Esto puede disparar la lógica de bumping para desplazar bloques existentes.
+			\item Se invoca \texttt{Connection.Connect()} en los modelos lógicos. Esto puede disparar la lógica de bumping para desplazar bloques existentes.
 			\item La \texttt{BlockView} del bloque arrastrado (o del bloque desplazado) se reparenta al contenedor visual apropiado del bloque padre (ej. \texttt{nextStatementContainer} o un \texttt{InputView}).
 			\item Se actualiza la posición (\texttt{anchoredPosition}) de la \texttt{BlockView} conectada para el encaje visual.
 			\item Se actualiza el layout de los bloques afectados.
 		\end{itemize}
 		\item Si no hay conexión válida, se gestiona la colocación en el espacio de trabajo o el descarte (\texttt{BlockConnectionController.HandleDropPlacement()}):
 		\begin{itemize}
-			\item Si se suelta en el área de codificación, el \texttt{BlockModel} se registra en el \texttt{WorkSpaceModel} (si es un clon nuevo) o su posición se actualiza. El \texttt{BlockView} se reparenta al \texttt{CodingAreaPanelRect}.
-			\item Si se suelta fuera de un área válida, el bloque se elimina (\texttt{BlockModel.Dispose()} y \texttt{BlockView.Dispose()}).
+			\item Si se suelta en el área de codificación, el \texttt{BlockModel} se registra en el \texttt{WorkSpace} (si es un clon nuevo) o su posición se actualiza. El \texttt{BlockView} se reparenta al \texttt{CodingAreaPanelRect}.
+			\item Si se suelta fuera de un área válida, el bloque se elimina (\texttt{Block.Dispose()} y \texttt{BlockView.Dispose()}).
 		\end{itemize}
 		\item Se resetea el estado de arrastre y los resaltados.
 	\end{itemize}
@@ -287,7 +354,7 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{img/finarrastre.png} 
-	\caption{Diagrama de Secuencia: Fin arrastre de un bloque.}
+	\caption{Diagrama de secuencia: Fin arrastre de un bloque.}
 	\label{fig:finarrastre}
 \end{figure}
 
@@ -303,21 +370,21 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 	\end{itemize}
 	\item \textbf{Procesamiento por \texttt{ExecutionController} y \texttt{CSharpRunner}:}
 	\begin{itemize}
-		\item \texttt{ExecutionController} valida el \texttt{WorkSpaceModel} y lo pasa a \texttt{CSharp.Runner.Run()}.
+		\item \texttt{ExecutionController} valida el \texttt{WorkSpace} y lo pasa a \texttt{CSharp.Runner.Run()}.
 		\item \texttt{CSharpRunner} identifica los bloques de inicio (ej. \texttt{event\_whenflagclicked}) y crea un \texttt{CmdRunner} por cada pila de ejecución.
 		\item Para cada \texttt{CmdRunner}, se crea un \texttt{CmdEnumerator} para el primer bloque ejecutable de la pila.
 	\end{itemize}
 	\item \textbf{Ejecución iterativa por \texttt{CmdRunner}:}
 	\begin{itemize}
 		\item El \texttt{CmdRunnier} inicia una corrutina (\texttt{Run()}) que procesa su pila de \texttt{CmdEnumerator}s.
-		\item En cada paso, toma el \texttt{CmdEnumerator} actual, obtiene su \texttt{Cmdtor} asociado (intérprete) e invoca su método \texttt{Run(blockModel)}.
+		\item En cada paso, toma el \texttt{CmdEnumerator} actual, obtiene su \texttt{Cmdtor} asociado (intérprete) e invoca su método \texttt{Run(block)}.
 		\item El \texttt{Cmdtor.Run()} (que devuelve un \texttt{IEnumerator}) se ejecuta.
 	\end{itemize}
 	\item \textbf{Interpretación del bloque (\texttt{Cmdtor}):}
 	\begin{itemize}
 		\item \textbf{Ejemplo \texttt{MotionBlockInterpreter}:}
 		\begin{itemize}
-			\item Obtiene los parámetros del \texttt{BlockModel} (ej. valor del input STEPS usando \texttt{CSharp.Interpreter.ValueReturn()}).
+			\item Obtiene los parámetros del \texttt{Block} (ej. valor del input STEPS usando \texttt{CSharp.Interpreter.ValueReturn()}).
 			\item Invoca un método en el \texttt{BlockObserver} (ej. \texttt{m\_BlockObserver.MoveRobot(stepsValue)}).
 			\item Realiza un \texttt{yield return} sobre la corrutina devuelta por el \texttt{BlockObserver}, pausando la ejecución del intérprete del bloque actual hasta que la acción del robot termine.
 		\end{itemize}
@@ -328,7 +395,7 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 		\item Invoca una corrutina en el \texttt{RobotBehaviour} (ej. \texttt{robotBehaviour.MoveRobotOverTime()}).
 		\item Esta corrutina del \texttt{RobotBehaviour} anima el movimiento del robot en la escena 3D a lo largo del tiempo (ej. usando \texttt{Vector3} y \texttt{yield return null}).
 	\end{itemize}
-	\item \textbf{Continuación del Flujo y Finalización:}
+	\item \textbf{Continuación del flujo y Finalización:}
 	\begin{itemize}
 		\item Una vez que la corrutina del \texttt{Cmdtor} (y por ende la del \texttt{BlockObserver} y \texttt{RobotBehaviour}) finaliza, el \texttt{CmdRunner} obtiene el siguiente \texttt{CmdEnumerator} de la pila (\texttt{CmdEnumerator.GetNextCmd()}) y repite el proceso.
 		\item Si no hay más bloques o se invoca \texttt{ExecutionController.StopExecution()}, la ejecución finaliza.
@@ -337,8 +404,93 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{img/ejecucionprograma.png} 
-	\caption{Diagrama de Secuencia: Ejecución de un programa de bloques}
+	\caption{Diagrama de secuencia: Ejecución de un programa de bloques}
 	\label{fig:ejecucionprograma}
 \end{figure}
 
+\subsection{Diseño procedimental del sistema híbrido}
 
+A continuación se detalla el procedimiento clave del sistema híbrido.
+
+\subsubsection{Procedimiento: Resolver un desafío}
+Este caso de uso encapsula el flujo completo del usuario en el prototipo final, integrando la selección del desafío, la construcción del programa y su simulación.
+\begin{enumerate}
+	\item \textbf{Selección y carga del desafío:}
+	\begin{itemize}
+		\item El usuario selecciona un desafío en el MenuScene.
+		\item ChallengeLoader almacena el ChallengeData seleccionado.
+		\item Al cargar la CodingScene, el GameManager obtiene el desafío del ChallengeLoader y se lo comunica al IDE\_UIManager.
+		\item El IDE\_UIManager muestra las instrucciones y el título del desafío.
+	\end{itemize}
+	
+	\item \textbf{Construcción del programa textual:}
+	\begin{itemize}
+		\item El usuario introduce un comando del DSL en el InputField.
+		\item Al pulsar añadir (+), el IDE\_UIManager añade el comando a su `ProgramBuilder` interno y crea un bloque de texto visual para feedback.
+	\end{itemize}
+	
+	\item \textbf{Ejecución y simulación:}
+	\begin{itemize}
+		\item El usuario pulsa ejecutar. El IDE\_UIManager notifica al GameManager.
+		\item El GameManager solicita el código completo al ProgramBuilder y se lo pasa al CommandParser.Parse().
+		\item Si el Parse() falla, devuelve un mensaje de error que el GameManager envía a la UI.
+		\item Si el Parse() tiene éxito, devuelve una List<Instruction>. El GameManager pasa esta lista al RobotController.ExecuteProgram().
+		\item El RobotController inicia una corrutina que itera sobre la lista, ejecutando cada instrucción (y sus sub-listas anidadas) de forma secuencial y esperando a que termine cada acción.
+		\item Durante la ejecución, el RobotController realiza SweepTest`ç para la detección proactiva de colisiones. Si detecta una, detiene su corrutina y notifica al GameManager.
+		\item Al finalizar (por éxito o colisión), el GameManager informa el resultado al IDE\_UIManager.
+	\end{itemize}
+\end{enumerate}
+
+% NUEVO Diagrama de secuencia para el sistema híbrido. 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/secuencia_hibrida.png} 
+	\caption{Diagrama de secuencia: Flujo de ejecución del programa textual.}
+	\label{fig:sec_hibrida}
+\end{figure}
+
+
+
+\subsection{Evolución arquitectónica: De bloques a híbrido}
+El pivote estratégico hacia un sistema híbrido conllevó una significativa refactorización de la capa de Controladores. Las responsabilidades originalmente distribuidas en múltiples clases para gestionar la interacción visual se consolidaron en gestores más específicos para el nuevo flujo de trabajo. La siguiente tabla resume la evolución de los principales componentes de control:
+
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\linewidth}{|p{3.5cm}|p{4.5cm}|X|}
+		\hline
+		\textbf{Responsabilidad} & \textbf{Componente en arquitectura nicial (Bloques - MVC)} & \textbf{Componente en arquitectura final (híbrido)} \\
+		\hline
+		
+		\textbf{Orquestación general de la aplicación} & 
+		\texttt{AppController} (Inicializa todos los sistemas y maneja estados globales como Play/Stop). & 
+		\texttt{GameManager} (Orquesta la escena de desafío y ejecución) y \texttt{ChallengeLoader} (Gestiona el flujo entre escenas). 
+		{BlocController} (Gestiona las relaciones entre el modelo de datos y la vista).&
+		\hline
+		
+		\textbf{Creación de programas (Lógica del usuario)} & 
+		Interacción directa del usuario con las vistas de los bloques, gestionada por varios controladores:
+		\begin{itemize}
+			\item \texttt{ToolboxController}: Maneja la creación de bloques desde la Toolbox.
+			\item \texttt{BlockController}: Gestiona el arrastre y las conexiones de un bloque ya en el workspace.
+		\end{itemize} & 
+		La lógica de creación recae en dos flujos distintos:
+		\begin{itemize}
+			\item \textbf{Textual:} \texttt{IDE\_UIManager} captura el texto y \texttt{ProgramBuilder} lo acumula.
+			\item \textbf{Visual (para estructura):} La lógica de arrastrar y soltar se mantiene para bloques estructurales, simplificando la necesidad de múltiples controladores.
+		\end{itemize} \\
+		\hline
+		
+		\textbf{Procesamiento del Programa} & 
+		El programa se define por la estructura de \texttt{Block}s interconectados. No hay una fase de parseo explícita. & 
+		\texttt{CommandParser}: Realiza el análisis léxico y sintáctico del DSL textual, generando una lista de \texttt{Instruction} (el AST del programa). \\
+		\hline
+		
+		\textbf{Ejecución del Programa} & 
+		\texttt{ExecutionController} que activa el \texttt{CSharp.Runner}. Este último recorre el árbol de bloques y ejecuta los intérpretes (`Cmdtor`) correspondientes. &
+		\texttt{RobotController}: Recibe la lista de instruction y la ejecuta de forma secuencial mediante corrutinas, sin necesidad de la pila de ejecución de UBlockly. \\
+		\hline
+		
+	\end{tabularx}
+	\caption{Tabla comparativa de la evolución de componentes arquitectónicos.}
+	\label{tab:evolucion_arquitectura}
+\end{table}
