@@ -115,7 +115,7 @@ Como se detalló en el Capítulo 3 (Conceptos Teóricos, subsección \textit{arq
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{img/diagrama MVC general.png} 
-	\caption{Visión General de la Arquitectura MVC del Prototipo.}
+	\caption{Visión general de la arquitectura MVC del prototipo - primera versión.}
 	\label{fig:diagramamvc}
 \end{figure}
 
@@ -231,6 +231,9 @@ La arquitectura final integra el sistema de bloques visual con el nuevo sistema 
 	\item \textbf{\texttt{IDE\_UIManager}:} Actúa como la Vista y Controlador de la interfaz de programación textual. Captura la entrada de texto, gestiona la visualización de comandos y comunica las acciones del usuario al GameManager.
 	\item \textbf{\texttt{CommandParser}:} Componente estático que implementa la lógica del intérprete de DSL. Su única responsabilidad es transformar una cadena de texto en una List<Instruction> validada.
 	\item \textbf{\texttt{RobotController}:} Ejecuta la List<Instruction> mediante corrutinas, interactuando directamente con el componente `Rigidbody` del robot y el entorno 3D.
+	\item \textbf{\texttt{BlockController}:} Lleva cabo la sincronización de los modelos con las vistas para la creación de los bloques sustituyendo con ello a los controladores de la primera versión. También gestiona el sistema de drag and drop entre bloques.
+	\item \textbf{\texttt{WorkSpaceController}:} Sustituye a los controladores iniciales que se encargaban de sincronizar los distintos espacios de trabajo.
+	\item \textbf{\texttt{ToolBoxController}:} Permite la instanciación de los paneles a implementar para la correcta replica del espacio de trabajo y sus cajas de herramientas para gestionar las categorías y bloques.
 \end{itemize}
 
 
