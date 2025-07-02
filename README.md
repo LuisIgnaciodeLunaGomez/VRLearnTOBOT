@@ -1,4 +1,6 @@
-[VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
+<p align="left">
+  <img src="https://raw.githubusercontent.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/master/project-app/Assets/background/logo.png" alt="VRLearnToBot Logo" width="400"/>
+</p>
 
 [![GitHub issues cerradas](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues)
 [![Último commit](https://img.shields.io/github/last-commit/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/commits)
@@ -6,9 +8,9 @@
 [![Lenguaje principal](https://img.shields.io/github/languages/top/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
 [![Tamaño del código](https://img.shields.io/github/languages/code-size/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
 [![Zube](https://img.shields.io/badge/zube-managed-blue?logo=zube)](https://zube.io/)
-![GitHub Release](https://img.shields.io/github/v/release/LuisIgnaciodeLunaGomez/VRLearnTOBOT?label=Release)
+[![GitHub Release](https://img.shields.io/github/v/release/LuisIgnaciodeLunaGomez/VRLearnTOBOT?label=Release)]
 
-<h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0)</h1>
+<h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0 + DSL)</h1>
 
 <h2><strong>Trabajo Fin de Grado curso 2024 -2025</strong>
 </h2>
