@@ -11,10 +11,10 @@ Los principales logros y aprendizajes del proyecto incluyen:
 
 \begin{itemize}
 	\item \textbf{Implementación de un motor de programación visual viable:} Se ha replicado con éxito la lógica de interacción visual de Scratch (arrastre, conexión, disposición de categorías) y se ha establecido un robusto motor de ejecución directa de bloques, basado en la adaptación de UBlockly. Este motor ha demostrado la capacidad de interpretar y ejecutar una secuencia lineal de bloques (\texttt{motion\_movesteps}, \texttt{event\_whenflagclicked}) y de gestionar corrutinas para la animación fluida del robot.
-	\item \textbf{Diseño de una arquitectura MVC efectiva:} La adopción del patrón Modelo-Vista-Controlador ha permitido una clara separación de intereses entre la lógica del programa (modelos de UBlockly como \texttt{BlockModel} y \texttt{ConnectionModel}), la representación visual (\texttt{BlockView} en Unity UI), y el control de interacciones (\texttt{BlockDragController}, \texttt{BlockConnectionController}). Esto garantiza la mantenibilidad y futura escalabilidad del sistema.
+	\item \textbf{Diseño de una arquitectura MVC efectiva:} La adopción del patrón Modelo-Vista-Controlador ha permitido una clara separación de intereses entre la lógica del programa (modelos de UBlockly como \texttt{Block} y \texttt{Connection}), la representación visual (\texttt{BlockView} en Unity UI), y el control de interacciones (\texttt{BlockController}}). Esto garantiza la mantenibilidad y futura escalabilidad del sistema.
 	\item \textbf{Integración exitosa de componentes:} Se ha logrado una integración fluida de los elementos de UBlockly (modelo de bloques, sistema de ejecución, serialización XML) con el entorno de Unity (UI Canvas, objetos 3D, corrutinas). Este proceso ha implicado resolver desafíos complejos relacionados con la sincronización de estados y posiciones entre los modelos lógicos y las vistas visuales de Unity.
 	\item \textbf{Validación de un flujo completo de simulación:} Se ha verificado que un programa básico de bloques (ej. al presionar bandera verde, mover 10 pasos) se traduce correctamente en una acción visible y controlada por el robot virtual en el entorno 3D, demostrando la validez del concepto central del laboratorio.
-	\item \textbf{Gestión de proyectos en un entorno Agile:} La aplicación de la metodología SCRUM, utilizando Zube y GitHub, ha sido fundamental para gestionar la complejidad, priorizar tareas y adaptarse a los retos técnicos emergentes durante el desarrollo del prototipo.
+	\item \textbf{Gestión de proyectos en un entorno agile:} La aplicación de la metodología SCRUM, utilizando Zube y GitHub, ha sido fundamental para gestionar la complejidad, priorizar tareas y adaptarse a los retos técnicos emergentes durante el desarrollo del prototipo.
 \end{itemize}
 
 \section{Líneas de trabajo futuras}
@@ -73,7 +73,7 @@ Lejos de ser un fracaso, este desafío representó un punto de inflexión críti
 
 Esta experiencia ha reforzado la conciencia sobre la dificultad de integrar sistemas complejos y ha subrayado la importancia de la modularidad y la arquitectura flexible, principios que guiaron tanto la refactorización inicial a MVC como el diseño final del prototipo. Los conocimientos adquiridos durante este proceso de adaptación y resolución de problemas constituyen uno de los aprendizajes más valiosos del proyecto
 
-\section{Conclusión Final}
+\section{Conclusión final}
 
 El desarrollo de este laboratorio virtual representa una trayectoria de ingeniería completa, desde la concepción de una idea ambiciosa hasta la entrega de un prototipo funcional y pragmático. La investigación inicial, centrada en la adaptación de UBlockly, demostró rápidamente la inmensa complejidad de replicar sistemas de programación visual como Scratch, especialmente en la generación dinámica de bloques de control de flujo. Este desafío, lejos de ser un fracaso, se convirtió en una valiosa lección sobre la gestión de la complejidad y la importancia de la adaptación estratégica.
 
