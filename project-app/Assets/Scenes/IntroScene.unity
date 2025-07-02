@@ -180,9 +180,9 @@ MonoBehaviour:
     displayName: Moviendo y Eliminando Bloques
     description: "Aprende lo b\xE1sico: c\xF3mo arrastrar bloques desde la caja de
       herramientas, conectarlos y eliminarlos si cometes un error."
-    videoPreviewClip: {fileID: 32900000, guid: b030e072e3d61874987a53d0d5b7a579, type: 3}
+    videoPreviewClip: {fileID: 32900000, guid: b6576d8dc254bcb468342ab32f7656a4, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSpriteName: move_erase_blocks
+    thumbnailSprite: {fileID: 0}
   - id: challenge_02_driving
     displayName: Conduciendo su robot
     description: "\xA1Hagamos que el robot se mueva! Utiliza el bloque 'mover x pasos'
@@ -190,7 +190,7 @@ MonoBehaviour:
       3D."
     videoPreviewClip: {fileID: 32900000, guid: 08fe9ae942945f14b90035e4b0f42a49, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSpriteName: conduciendo_su_robot
+    thumbnailSprite: {fileID: 0}
   - id: challenge_03_loops
     displayName: Usando Bucles
     description: "La eficiencia es clave. Aprende a usar el bloque 'repetir' para
@@ -198,7 +198,7 @@ MonoBehaviour:
       y otra vez."
     videoPreviewClip: {fileID: 32900000, guid: 151ac1df5a01d4f42af7ff9539e1bf61, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSpriteName: usando_bucles
+    thumbnailSprite: {fileID: 0}
   - id: challenge_04_cams
     displayName: "Usando las C\xE1maras"
     description: "Para una experiencia inmersiva es fundamental comprender el uso
@@ -207,7 +207,7 @@ MonoBehaviour:
       del robot en diferentes perspectivas. "
     videoPreviewClip: {fileID: 32900000, guid: cfd90f85d5673e84388fcd6e0ef5aace, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSpriteName: usando_camaras
+    thumbnailSprite: {fileID: 0}
   - id: challenge_05_collision
     displayName: Probando colisiones
     description: "En un entorno simulado la colsi\xF3n del robot con el l\xEDmite
@@ -216,7 +216,7 @@ MonoBehaviour:
       que ocurrir\xEDa en un entorno real."
     videoPreviewClip: {fileID: 32900000, guid: 1f5d0c14e1328af48bf529b41989cca5, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSpriteName: usando_camaras
+    thumbnailSprite: {fileID: 0}
 --- !u!1 &85872156
 GameObject:
   m_ObjectHideFlags: 0
@@ -1486,7 +1486,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 0
+  m_ChildAlignment: 1
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 300, y: 200}
@@ -2024,7 +2024,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1063331331
 RectTransform:
   m_ObjectHideFlags: 0

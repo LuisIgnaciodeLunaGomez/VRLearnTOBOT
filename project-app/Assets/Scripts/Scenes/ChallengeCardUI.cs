@@ -1,3 +1,20 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 22/06/2025
+ * 
+ * Versión: 1.0.0
+ * 
+ * Descripción: 
+ */
+
+
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -17,7 +34,7 @@ public class ChallengeCardUI : MonoBehaviour
     public Button previewButton;
     [Tooltip("El botón que carga el desafío en la escena de programación.")]
     public Button startButton;
-
+    private Image thumbnailImage;
     // Referencias internas para la lógica de los botones
     private IntroMenuController menuController;
     private IntroMenuController.ChallengeInfo currentChallenge;
@@ -52,6 +69,21 @@ public class ChallengeCardUI : MonoBehaviour
         {
             startButton.onClick.RemoveAllListeners();
             startButton.onClick.AddListener(OnStartClicked);
+        }
+
+        if (thumbnailImage != null)
+        {
+            // Si el desafío tiene un sprite asignado, lo usamos.
+            if (challengeData.thumbnailSprite != null)
+            {
+                thumbnailImage.sprite = challengeData.thumbnailSprite;
+                thumbnailImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                // Si no tiene sprite, ocultamos el componente de imagen.
+                thumbnailImage.gameObject.SetActive(false);
+            }
         }
     }
 

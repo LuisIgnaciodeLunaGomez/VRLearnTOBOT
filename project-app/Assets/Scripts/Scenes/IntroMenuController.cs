@@ -1,3 +1,19 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 22/06/2025
+ * 
+ * Versión: 1.0.0
+ * 
+ * Descripción: 
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -39,7 +55,7 @@ public class IntroMenuController : MonoBehaviour
         public string description;
         public VideoClip videoPreviewClip;
         public string targetSceneToLoad;
-        public string thumbnailSpriteName;
+        public Sprite thumbnailSprite;
     }
 
     [Header("Datos de los Desafíos")]
@@ -255,5 +271,13 @@ public class IntroMenuController : MonoBehaviour
             // ChallengeContext.SelectedChallengeId = challengeData.id;
             SceneManager.LoadScene(challengeData.targetSceneToLoad);
         }
+    }
+
+
+    public void GoToMainMenu()
+    {
+
+        Debug.Log("Volviendo a la escena del menú principal (mainMenu)...");
+        SceneManager.LoadScene("mainMenu");
     }
 }

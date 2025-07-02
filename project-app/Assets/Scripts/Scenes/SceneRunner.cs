@@ -1,3 +1,18 @@
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 22/06/2025
+ * 
+ * Versión: 1.0.0
+ * 
+ * Descripción: 
+ */
 using System.Collections;
 using UnityEngine;
 
@@ -6,111 +21,88 @@ namespace UBlockly
     public class SceneRunner : MonoBehaviour
     {
         private ExecutionTimerView m_timerView;
-        private Coroutine m_timerCoroutine;
-        private float m_executionTime;
-        private bool m_isTimerRunning;
 
+        // El observer necesita ser una variable de miembro para poder des-registrarlo.
+        private RunnerUpdateStateObserver m_runnerObserver;
 
+        // Start se ejecuta una sola vez al cargar la escena
         void Start()
         {
-            // 1. Comprobar si hay un script guardado para ejecutar.
+            // Forzamos el tiempo, la solución clave que encontramos antes.
+            Time.timeScale = 1f;
+
+            // Encontramos la vista del cronómetro en la escena
+            m_timerView = FindObjectOfType<ExecutionTimerView>();
+            if (m_timerView == null)
+            {
+                Debug.LogError("FATAL: SceneRunner no pudo encontrar un GameObject con el script 'ExecutionTimerView' en la escena.");
+                return;
+            }
+
+            // Comprobar si hay un script guardado para ejecutar
             if (string.IsNullOrEmpty(ScriptManager.WorkspaceXml))
             {
                 Debug.LogWarning("SceneRunner: No hay ningún script guardado en ScriptManager para ejecutar.");
+                m_timerView.ResetDisplay();
                 return;
             }
 
-            Debug.Log($"<color=orange><b>SceneRunner.Start:</b></color> Time.timeScale ANTES de forzarlo: {Time.timeScale}");
-            Time.timeScale = 1f;
-            Debug.Log($"<color=orange><b>SceneRunner.Start:</b></color> Time.timeScale DESPUÉS de forzarlo: {Time.timeScale}");
-
-            Debug.Log("SceneRunner: Se encontró un script guardado. Creando un workspace temporal para ejecutarlo.");
-
-            // 2. Crear un workspace temporal EN MEMORIA para ejecutar el script.
-         
-            Workspace executionWorkspace = new Workspace();
-
-            // 3. Cargar el XML en este workspace temporal.
-            var dom = Xml.TextToDom(ScriptManager.WorkspaceXml);
-            Xml.DomToWorkspace(dom, executionWorkspace);
-
-            // 4. ¡Ejecutar los bloques del workspace cargado!
-            CSharp.Runner.Run(executionWorkspace);
-
-            // 5. Limpiar el script para que no se vuelva a ejecutar
-           
-            ScriptManager.ClearStoredWorkspace();
-
-            // Busca la vista del cronómetro en esta escena
-            m_timerView = FindFirstObjectByType<ExecutionTimerView>();
-            if (m_timerView != null) m_timerView.ResetDisplay();
-
-            if (string.IsNullOrEmpty(ScriptManager.WorkspaceXml))
-            {
-                Debug.LogWarning("SceneRunner: No hay script guardado para ejecutar.");
-                return;
-            }
-
-            // Iniciar el cronómetro y la ejecución de bloques.
-            StartExecution();
+            // Si hay un script, iniciamos la única corrutina que gestionará todo
+            StartCoroutine(RunWorkspaceScript());
         }
 
-        public void StartExecution()
+        // Esta es NUESTRA corrutina principal. Gestiona todo el ciclo de vida de la ejecución.
+        private IEnumerator RunWorkspaceScript()
         {
-            // Resetear e iniciar el cronómetro
-            m_executionTime = 0f;
-            if (m_timerView != null) m_timerView.ResetDisplay();
+            Debug.Log("<color=orange><b>RunWorkspaceScript:</b></color> Iniciando la ejecución del script y el cronómetro.");
 
-            m_isTimerRunning = true;
-            m_timerCoroutine = StartCoroutine(TimerCoroutine()); // ¡AHORA SÍ PUEDE LLAMAR A StartCoroutine!
+            // 1. Resetear y preparar la UI del cronómetro
+            float executionTime = 0f;
+            m_timerView.ResetDisplay();
 
-            // Crear el workspace y ejecutarlo
+            // 2. Crear y cargar el workspace desde el XML guardado
             Workspace executionWorkspace = new Workspace();
             var dom = Xml.TextToDom(ScriptManager.WorkspaceXml);
             Xml.DomToWorkspace(dom, executionWorkspace);
+            ScriptManager.ClearStoredWorkspace();
 
+            // 3. Suscribirse a los eventos del Runner para saber cuándo termina
+            m_runnerObserver = new RunnerUpdateStateObserver();
+            CSharp.Runner.AddObserver(m_runnerObserver);
+
+            // 4. Iniciar la ejecución de los bloques (esto es una llamada rápida, no bloqueante)
             CSharp.Runner.Run(executionWorkspace);
 
-            // Suscribirse a los eventos del Runner para detener el cronómetro.
-            CSharp.Runner.AddObserver(new RunnerUpdateStateObserver(this));
-
-            ScriptManager.ClearStoredWorkspace();
-        }
-        private IEnumerator TimerCoroutine()
-        {
-            while (m_isTimerRunning)
+            // 5. El bucle principal de esta corrutina, se ejecuta cada frame MIENTRAS los bloques corren
+            while (CSharp.Runner.CurStatus == Runner.Status.Running || CSharp.Runner.CurStatus == Runner.Status.Pause)
             {
-                m_executionTime += Time.deltaTime;
-                if (m_timerView != null)
+                // Solo contamos el tiempo si no está en pausa
+                if (CSharp.Runner.CurStatus == Runner.Status.Running)
                 {
-                    m_timerView.UpdateTimerDisplay(m_executionTime);
+                    executionTime += Time.deltaTime;
+                    m_timerView.UpdateTimerDisplay(executionTime);
                 }
-                yield return null;
+
+                yield return null; // Esperar al siguiente frame
             }
+
+            // 6. El bucle ha terminado. La ejecución de los bloques ha finalizado.
+            CSharp.Runner.RemoveObserver(m_runnerObserver); // Limpiar el observador
+            Debug.Log($"<color=orange><b>RunWorkspaceScript:</b></color> La ejecución de bloques ha terminado. Tiempo final: {executionTime}");
         }
 
-        public void StopTimer()
-        {
-            m_isTimerRunning = false;
-            if (m_timerCoroutine != null)
-            {
-                StopCoroutine(m_timerCoroutine);
-                m_timerCoroutine = null;
-            }
-            Debug.Log("SceneRunner: Cronómetro detenido.");
-        }
-
+        // El observer ahora es mucho más simple. Ya no necesita una referencia a SceneRunner.
         private class RunnerUpdateStateObserver : IObserver<RunnerUpdateState>
         {
-            private SceneRunner m_sceneRunner;
-            public RunnerUpdateStateObserver(SceneRunner runner) { m_sceneRunner = runner; }
-
             public void OnUpdated(object subject, RunnerUpdateState args)
             {
+                // Este observador en realidad ya no necesita hacer nada, porque el bucle `while`
+                // en `RunWorkspaceScript` se encarga de todo.
+                // Lo mantenemos por si en el futuro queremos añadir lógica extra
+                // al recibir un evento de STOP (ej. mostrar un panel de "Misión Cumplida").
                 if (args.Type == RunnerUpdateState.Stop || args.Type == RunnerUpdateState.Error)
                 {
-                    m_sceneRunner.StopTimer();
-                    CSharp.Runner.RemoveObserver(this);
+                    Debug.Log("Observer: Se ha detectado el fin de la ejecución.");
                 }
             }
         }
