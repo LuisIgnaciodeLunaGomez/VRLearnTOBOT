@@ -8,7 +8,8 @@
 [![Lenguaje principal](https://img.shields.io/github/languages/top/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
 [![Tamaño del código](https://img.shields.io/github/languages/code-size/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/)
 [![Zube](https://img.shields.io/badge/zube-managed-blue?logo=zube)](https://zube.io/)
-[![GitHub Release](https://img.shields.io/github/v/release/LuisIgnaciodeLunaGomez/VRLearnTOBOT?label=Release)]
+![GitHub Release](https://img.shields.io/github/v/release/LuisIgnaciodeLunaGomez/VRLearnTOBOT?label=Release)
+[![Documentación en la Wiki](https://img.shields.io/badge/Documentación-Wiki-blue.svg)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/wiki)
 
 <h1>🚀 Laboratorio virtual  de Programación y Robótica (Scratch + Lego Wedo 2.0 + DSL)</h1>
 
