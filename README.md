@@ -23,55 +23,66 @@ Desarrollado por <strong>Luis Ignacio de Luna Gómez</strong>
 
  <h2>📌 Descripción del proyecto</h2>
 
-Este proyecto tiene como objetivo el desarrollo de un **laboratorio virtual de programación y robótica** utilizando el motor de videojuegos **Unity** para su desarrollo..
-La plataforma esta diseñada para servir como una herramienta educativa que permita a sus usuarios aprender concetos básicos de programación y robótica interactuando con **bloques de programación visual de scrtach** para simular la iteracción de un **robot Lego Wedo 2.0** simulado en un entorno 3D.
+**VRLearnTobot** es un prototipo de laboratorio virtual 3D desarrollado en **Unity** y **C#**, diseñado para enseñar los fundamentos de la programación algorítmica y la robótica a estudiantes en etapas preuniversitarias.
 
-El objetivo principal es crear una **alternativa accesible, interactica y didáctica** para la metodología **STEAM** (Cienca, Tecnología, Arte, Ingeniería y Matemáticas), especialmente enfocada a la enseñanza de la lógica de programación y el funcionamiento básico de robots, mediante el uso en dispositivos **Android** de tipo Tablets.
+El proyecto implementa un innovador **sistema de programación híbrido**. A diferencia de las plataformas tradicionales, combina una estructura de programa basada en **bloques visuales** con una interfaz de **codificación textual** basada en un Lenguaje de Dominio Específico (DSL) propio. Este enfoque único sirve como un **puente pedagógico**, facilitando la transición de los estudiantes desde entornos puramente visuales como Scratch hacia la programación textual.
 
-<h2>🎯  Características Principales</h2>
-<ul>
-<li>
-  🧱 <strong>Interfaz de programación visual:</strong> Se va a implementar un entorno gráfico basado en bloques, replicando el entorno de programación en scartch, para construir programas de forma intuitiva.
-</li>
-  <li> 
-  🤖 <strong>Simulación de robot LEGO Wedo 2.0: </strong>
-    <ul>
-    <li> Modelo 3D Interactivo del robot</li>
-    <li>Simulación y comportamiento del motor</li>
-    </ul>
-  <li>
-    <strong>Ejecución en tiempo real:</strong> Los programas creados con bloques se traducen y ejecutan para controlar al robot virtual dentro del entorno de simulación.
-  </li>
-  <li> <strong>Plataforma Android:</strong> La aplicación será diseñada para su ejecucción en tablets con el sistema operativo Android.
- <li>
- <strong> Enfoque educativo:</strong> La herramienta esta diseñada para servir de apoyo a la enseñanza de programación y robótica.  
- </li>
-<li>
-  <strong> Desarrollo en Unity: </strong>Esta herramienta nos permite el diseño del entorno de simulación 3D interactivo.
-</li>
- </ul>
+La plataforma presenta una serie de desafíos donde el usuario debe escribir o ensamblar secuencias de comandos para controlar un robot virtual, inspirado en la estética de kits como LEGO WeDo 2.0, en un entorno de simulación 3D interactivo. El objetivo final es ofrecer una herramienta educativa **accesible, didáctica y gratuita**, optimizada para su uso en tablets Android, y alineada con los Objetivos de Desarrollo Sostenible de democratizar la educación STEAM.
+
+<h2>🎯  Características principales</h2>
+
+-   🤖 **Simulador 3D interactivo:** Un robot virtual que responde en tiempo real a las instrucciones, en un entorno con detección de colisiones.
+-   ✍️ **Lenguaje de dominio específico (DSL):** Un lenguaje de comandos simple y textual (`mover`, `girar`, `repetir`) diseñado para ser intuitivo para principiantes.
+-   ⚙️ **Intérprete propio:** El proyecto incluye un parser que analiza el código del DSL, valida su sintaxis y lo traduce a una secuencia de instrucciones ejecutable.
+-   🧱 **Programación híbrida:** Permite la programación mediante bloques visuales (eventos, bucles) o mediante la entrada textual de comandos.
+-   🏆 **Aprendizaje basado en desafíos:** El contenido está organizado en desafíos con objetivos claros para contextualizar el aprendizaje y fomentar la resolución de problemas.
+-   📱 **Orientado a plataformas móviles:** Diseñado y optimizado para ejecutarse en dispositivos Android, especialmente tablets, haciéndolo accesible para un mayor número de estudiantes.
 
 <h2>🛠 Herramientas utilizadas:</h2>
-<ul>
-  <li> <strong>Motor de desarrollo utilizado</strong> Unity Versión: 6000.0.26f1</li>
-  <li> <strong>Lenguaje de programación principal</strong>: C#</li>
-  <li> <strong>Interfaz de bloques:</strong> Basado en el repositorio UBlockly, el cual ha sido adaptado a este proyecto</li>
- <li> <strong>Programa de modelado 3D </strong>Blender 4.4.</li>
- <li>Programa CAD para diseño de robots <strong> Studio 2.0</li>
-  <li> <strong>Control de versiones</strong>: Git / Github</li>
-  
-<li><strong>Gestión de proyectos</strong>: Zube (Metodológía Ágil)</li>  
-</ul>
+
+-   **Motor de desarrollo:** Unity 6
+-   **Lenguaje de programación:** C#
+-   **Interfaz y lógica híbrida:**
+    -   Base de programación por bloques adaptada desde **UBlockly**.
+    -   Intérprete de DSL textual (**CommandParser**) de desarrollo propio.
+-   **Modelado 3D:** Blender 4.4
+-   **Control de versiones:** Git / GitHub
+-   **Gestión de proyecto (Metodología ágil):** Zube
 
 <h2>🚧 Estado del Proyecto</h2>
 
-Actualmente el proyecto se encuentra en **desarrollo** como parte del Trabajo de Fin de Grado
+**Completado (Versión MVP para TFG)**. El proyecto ha culminado en un Producto Mínimo Viable (MVP) completamente funcional que demuestra la viabilidad técnica y pedagógica del enfoque híbrido. Las funcionalidades actuales incluyen la selección de desafíos, un entorno de programación híbrido, un intérprete de DSL funcional y una simulación 3D con detección de colisiones. Las futuras líneas de trabajo se centran en la expansión del catálogo de bloques visuales y la adición de nuevos comandos al DSL.
+
 
 <h2>🚀 Cómo Empezar (Instrucciones Preliminares)</h2>
 
 *Prerequisitos*
 
+-   Unity hub
+-   Unity editor **versión 6000.0.2f1** o superior.
+-   Módulo "Android Build Support" instalado en Unity.
+-   (Opcional) Un dispositivo Android con modo de depuración USB activado para pruebas.
+-   Configuración de pantalla mímina para la correcdta ejecución del programa 1920x1080
+
 *Instalacion y ejecucción*
+
+
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT
+    ```
+2.  **Abrir en Unity:**
+    -   Abrir Unity Hub y hacer clic en "Add project from disk".
+    -   Seleccionar la carpeta raíz del repositorio clonado.
+3.  **Ejecutar en el Editor:**
+    -   Navegar a la carpeta `Assets/Scenes/` y abrir la escena `MenuScene.unity`.
+    -   Presionar el botón "Play" en la barra de herramientas de Unity.
+
+4.  **Compilar para Android (.apk):**
+    -   Ir a `File > Build Settings`.
+    -   Seleccionar "Android" como plataforma y pulsar "Switch Platform".
+    -   Conectar un dispositivo Android o configurar un emulador.
+    -   Pulsar "Build and Run" para compilar e instalar directamente en el dispositivo.
 
 <h2>📬 <strong>Contacto</strong></h2
 
