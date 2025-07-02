@@ -1,4 +1,4 @@
-![VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
+[VRLearnToBot](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/blob/master/project-app/Assets/background/logo.png)
 
 [![GitHub issues cerradas](https://img.shields.io/github/issues-closed/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/issues)
 [![Último commit](https://img.shields.io/github/last-commit/LuisIgnaciodeLunaGomez/VRLearnTOBOT)](https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/commits)
