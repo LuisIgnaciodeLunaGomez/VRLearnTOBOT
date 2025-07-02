@@ -21,7 +21,7 @@ El modelo del robot se creó con \textbf{Blender}, tomando como referencia la es
 
 \begin{itemize}
 	\item \textbf{Base lógica para programación por bloques:} UBlockly proporcionó una estructura de referencia para la representación lógica de bloques (\texttt{Block}) y la gestión de sus conexiones (\texttt{Connection}). Esta base fue utilizada para implementar los bloques estructurales del sistema, como el bloque de evento inicial y los bucles, acelerando el desarrollo de la parte visual.
-	\item \textbf{Desarrollo de un lenguaje de dominio específico (DSL):} Para los comandos de acción del robot (movimiento y giro), se optó por diseñar e implementar un DSL textual. Esta decisión permitió un control más directo sobre la semántica de las acciones del robot y simplificó la ejecución, eliminando la necesidad de un motor de layout visual complejo para estos comandos. La implementación incluyó:
+	\item \textbf{Desarrollo de un lenguaje de dominio específico (DSL) \cite{lenguaje_DSL}: Para los comandos de acción del robot (movimiento y giro), se optó por diseñar e implementar un DSL textual. Esta decisión permitió un control más directo sobre la semántica de las acciones del robot y simplificó la ejecución, eliminando la necesidad de un motor de layout visual complejo para estos comandos. La implementación incluyó:
 	\begin{itemize}
 		\item Un Parser (\texttt{CommandParser}) que analiza el código escrito por el usuario.
 		\item Un Intérprete (\texttt{RobotController}) que ejecuta la secuencia de instrucciones resultante.
@@ -36,7 +36,7 @@ El modelo del robot se creó con \textbf{Blender}, tomando como referencia la es
 	\item \textbf{Persistencia del programa de usuario (No implementada en el MVP):} Aunque la arquitectura de UBlockly analizada incluía un sistema de serialización a XML, en la versión actual del prototipo no se ha implementado una funcionalidad de guardado/carga del programa creado por el usuario. La lógica de los desafíos está diseñada para ser resuelta en una sola sesión, enfocándose en la resolución de problemas y la ejecución inmediata del código. La implementación de la persistencia se considera una línea de trabajo futura.
 \end{itemize}
 
-\subsection{Herramientas Adicionales}
+\subsection{Herramientas adicionales}
 La persistencia de los desafíos se gestionó mediante \textbf{Scriptable Objects}. El control de versiones se realizó con \textbf{Git} y \textbf{GitHub}. Se utilizó \textbf{GitHub Copilot} como herramienta de asistencia a la codificación, y la memoria fue redactada en \textbf{LaTeX} con \textbf{TeXstudio}.
 
 

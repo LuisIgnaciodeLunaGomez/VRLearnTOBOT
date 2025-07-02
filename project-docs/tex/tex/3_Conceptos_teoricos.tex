@@ -1,120 +1,43 @@
 \capitulo{3}{Conceptos teóricos}
 
-La implementación del laboratorio virtual desarrollado en este Trabajo de Fin de Grado se fundamenta en un análisis de diversas plataformas de programación visual y en una arquitectura de software modular. Este capítulo detalla los conceptos teóricos que sustentan el prototipo, comenzando con la arquitectura inicial basada en programación por bloques (que inspiró la estructura del sistema) y culminando en los conceptos clave del sistema híbrido final, que combina bloques y código textual.
+Este capítulo establece el marco conceptual sobre el que se sustenta el laboratorio virtual. Se abordan los conceptos clave extraídos del núcleo del proyecto: la programación híbrida como enfoque pedagógico, los principios de los lenguajes de dominio específico (DSL) y sus intérpretes, y la arquitectura de simuladores 3D en Unity. Este análisis teórico justifica las decisiones de diseño y la arquitectura final implementada.
 
-\section{Plataformas de programación visual y kits de robótica}
+\section{Programación híbrida para la educación robótica}
+La programación visual por bloques, popularizada por plataformas como \textbf{Scratch} \cite{Paredes2023}, es una herramienta pedagógica de probada eficacia para introducir el pensamiento computacional, al abstraer la complejidad de la sintaxis. Por otro lado, la programación textual es fundamental para el desarrollo de habilidades profesionales. El prototipo desarrollado se sitúa en la intersección de ambos paradigmas, proponiendo un \textbf{modelo de programación híbrido}.
 
-\subsection{Comparación entre Scratch y Blockly (Google)}
-Actualmente, Scratch y Blockly son las plataformas dominantes en el ámbito de la programación visual basada en bloques para la educación. Su análisis comparativo ha sido fundamental para definir la dirección del presente proyecto, como se detalla en la Tabla \ref{tab:comparacion_scratch_blockly}: % << Texto introductorio
-\begin{table}[h!] % << h! para intentar forzar aquí
-	\centering
-	\begin{tabular}{|p{4cm}|p{4.5cm}|p{4.5cm}|}
-		\hline
-		\textbf{Característica} & \textbf{Scratch} & \textbf{Blockly} \\
-		\hline
-		\textbf{Paleta de colores} & Fija (según categorías) & Personalizable \\
-		\hline
-		\textbf{Categorización de bloques} & 
-		Movimiento, control, sensores, eventos, operadores, variables, funciones & 
-		Modular y personalizable \\
-		\hline
-		\textbf{Exportación de código} & No permite exportar código & Genera código en múltiples lenguajes (JavaScript, Python, Lua) \\
-		\hline
-		\textbf{Flexibilidad} & Cerrado, no permite modificar bloques & Altamente personalizable \\
-		\hline
-		\textbf{Uso principal} & Aprendizaje de programación visual en educación & Desarrollo de interfaces de programación visual para integración con código real \\
-		\hline
-	\end{tabular}
-	\caption{Comparación de Scratch y Blockly}
-	\label{tab:comparacion_scratch_blockly}
-\end{table}
+Este enfoque consiste en utilizar una representación estructuralmente visual, donde el flujo del programa y la lógica de acciones se presentan como una secuencia de bloques o mediante comandos textuales. Este modelo actúa como un puente pedagógico, facilitando la transición del estudiante desde un entorno puramente visual hacia la codificación tradicional. El objetivo no es replicar un sistema existente, sino ofrecer una herramienta de aprendizaje con una identidad propia, que combina la claridad de los bloques con la práctica de la escritura de código.
 
-\subsection{Comparación entre LEGO WeDo 2.0 y LEGO SPIKE Prime}
-La elección de LEGO WeDo 2.0 como el robot de referencia para la simulación en este proyecto se justifica al analizar sus diferencias fundamentales con otras plataformas de robótica educativa de LEGO, como se detalla en la Tabla \ref{tab:comparacion_lego}: % << Texto introductorio
-\begin{table}[h!] % << h! para intentar forzar aquí
-	\centering
-	\begin{tabular}{|p{4cm}|p{4.5cm}|p{4.5cm}|}
-		\hline
-		\textbf{Característica} & \textbf{LEGO WeDo 2.0} & \textbf{LEGO SPIKE Prime} \\
-		\hline
-		\textbf{Paleta de colores} & Basada en íconos & Adaptación de Scratch, con bloques en formato palabra e íconos \\
-		\hline
-		\textbf{Categorización de bloques} & Basada en hardware (motores, sensores) & Similar a Scratch, con bloques específicos para hardware LEGO \\
-		\hline
-		\textbf{Tipo de bloques} & Bloques verticales con íconos sin palabras & Bloques de palabras en horizontal y algunos bloques con íconos \\
-		\hline
-		\textbf{Exportación de código} & No permite exportar código & No permite exportar código \\
-		\hline
-		\textbf{Flexibilidad} & Cerrado, bloques predefinidos & Más flexible que WeDo 2.0, pero limitado al ecosistema LEGO \\
-		\hline
-		\textbf{Uso principal} & Programación básica para principiantes en robótica educativa & Programación avanzada para proyectos de robótica con mayor capacidad de personalización \\
-		\hline
-	\end{tabular}
-	\caption{Comparación de LEGO WeDo 2.0 y LEGO SPIKE Prime}
-	\label{tab:comparacion_lego}
-\end{table}
 
-LEGO SPIKE Prime es una adaptación de Scratch hecha por LEGO, por lo que mantiene una estructura de bloques similar a Scratch, pero ajustada a su ecosistema de hardware. LEGO WeDo 2.0 usa una interfaz más sencilla con bloques puramente icónicos (sin palabras), mientras que SPIKE Prime combina texto e íconos.
+\section{Lenguajes de dominio específico (DSL) y su interpretación}
 
-\section{Arquitectura del sistema de programación}
-La arquitectura del prototipo se diseñó de manera evolutiva. Inicialmente, se concibió un sistema puramente visual basado en la librería de código abierto UBlockly. A continuación se detalla esta arquitectura de referencia, ya que sus principios (Modelo-Vista, sistema de conexiones, etc.) fueron la base sobre la que se construyó el prototipo, incluso tras el pivote estratégico hacia un modelo híbrido.
+Una de las contribuciones técnicas centrales de este proyecto es el diseño e implementación de un lenguaje de dominio específico (DSL) \cite{DSL} y su sistema de procesamiento. Un DSL \cite{lenguaje_DSL}es un lenguaje informático diseñado para resolver problemas dentro de un dominio particular, en este caso, el control de un robot virtual básico.
 
-\subsection{Anatomía de un sistema basado en UBlockly bajo MVC} 
-
-Para superar las limitaciones de la estructura original de UBlockly, se  implementó una arquitectura basada en el patrón Modelo-Vista-Controlador (MVC). Esta separación de responsabilidades, que no estaba explícita en la librería base, fue crucial para organizar el código, facilitar la depuración y sentar las bases para un sistema escalable. La nueva estructura se organizó de la siguiente manera:
+\subsection{El Proceso de un intérprete: De texto a acción}
+El procesamiento de un DSL sigue un pipeline similar al de un compilador, aunque simplificado para su ejecución directa. El sistema implementado en este TFG consta de dos fases principales:
 
 \begin{itemize}
-	\item \textbf{Modelo:} Representa la lógica de negocio y el estado del programa. Incluye las estructuras de datos que definen los bloques (\texttt{Block}), sus conexiones (\texttt{Connectionl}), entradas (\texttt{Input}), campos (\texttt{Field}) y la organización del espacio de trabajo (\texttt{WorkSpace}), así como la gestión de variables (\texttt{VariableMap}) y procedimientos (\texttt{ProcedureDB}). Las operaciones de datos se abstraen de la presentación visual.
-	\item \textbf{Vista:} Se encarga de la representación visual del Modelo. Incluye todos los elementos de la interfaz de usuario de Unity (\texttt{UI.Image}, \texttt{TMPro.TextMeshProUGUI}, \texttt{UI.Button}) y la representación 3D del robot (\texttt{RobotBehaviour}). Las vistas observan los cambios en el modelo y se actualizan automáticamente sin modificar directamente los datos subyacentes.
-	\item \textbf{Controlador:} \textbf{Esta capa es una de las principales aportaciones del proyecto}, creando una serie de controladores que no existían en UBlockly para manejar la interacción del usuario y la lógica de la aplicación, coordinando las comunicaciones entre Modelos y Vistas. Clases como \texttt{WorkspaceController}, \texttt{BlockController}, \texttt{TollBoxController} operan en esta capa, traduciendo las entradas del usuario y las acciones del programa en manipulaciones del Modelo o actualizaciones de la Vista.
+	\item \textbf{Análisis (parsing):} El \textbf{parser} (\texttt{CommandParser}) es responsable del análisis léxico y sintáctico. Recibe el código fuente como una cadena de texto, lo divide en tokens (comandos y argumentos) y verifica si la secuencia cumple con la gramática definida para el DSL. Si la validación es exitosa, traduce el código a una estructura de datos intermedia, una lista de objetos \texttt{Instruction}, que funciona como un árbol de sintaxis abstracto (AST) simple y ejecutable.
+	
+	\item \textbf{Ejecución (interpretación):} El \textbf{intérprete} (\texttt{RobotController}) recibe la lista de instrucciones y la ejecuta de forma secuencial. Recorre la estructura de datos y, para cada instrucción, invoca la acción correspondiente en el entorno de simulación (ej. una corrutina de movimiento). Este modelo de ejecución directa es ideal para entornos interactivos, ya que proporciona feedback inmediato al usuario.
 \end{itemize}
 
-\subsection{Espacio de trabajo (\texttt{WorkSpace})}
+\section{Simulación de robótica en entornos 3D con Unity}
+El laboratorio virtual se ha desarrollado sobre el motor \textbf{Unity}, elegido por su capacidad para crear simulaciones 3D interactivas y su robusto motor de físicas. Un \textbf{simulador 3D} en robótica educativa permite democratizar el acceso a esta disciplina, eliminando la dependencia de hardware costoso.
 
-El sistema refactorizado se estructura en torno a un \textbf{espacio de trabajo} central, el \texttt{WorkSpace}, que actúa como contenedor principal para todos los elementos lógicos del programa. Gestiona la base de datos de bloques (\texttt{BlockDB}), las variables de usuario (\texttt{VariableMap}) y las bases de datos de conexiones (\texttt{ConnectionDBList}), que son esenciales para optimizar la búsqueda y validación de uniones entre bloques.
+\subsection{Arquitectura de la simulación}
+La simulación en este prototipo se ha estructurado siguiendo principios de separación de responsabilidades:
+\begin{itemize}
+	\item \textbf{Entorno de simulación:} La escena 3D que contiene el escenario del desafío (muros, objetivos, etc.).
+	\item \textbf{Agente robótico (\texttt{RobotController}):} Es el \texttt{GameObject} que representa al robot. Encapsula tanto su estado (posición, rotación) como su comportamiento (la lógica para moverse y girar). Interactúa con el entorno a través de su componente \texttt{Rigidbody} y detecta colisiones para reaccionar ante los límites del escenario.
+	\item \textbf{Gestor de simulación (\texttt{GameManager}):} Actúa como el orquestador que conecta el sistema de programación con el de simulación. Recibe las instrucciones del parser y las delega al \texttt{RobotController}, además de gestionar el estado del desafío (inicio, fin, éxito, fracaso).
+\end{itemize}
 
-\subsection{Ciclo de vida de bloques: Creación y eliminación}
-El ciclo de vida de los bloques es gestionado por una \texttt{BlockFactory}, que instancia los modelos lógicos (\texttt{Block}), y el método \texttt{Dispose()}, que asegura una eliminación limpia y recursiva de los bloques y sus hijos. Cada \textbf{bloque} se representa como una instancia de \texttt{Block}, que encapsula sus conexiones (\texttt{OutputConnection}, \texttt{PreviousConnection}, \texttt{NextConnection}), sus entradas (\texttt{InputList}) y sus campos de datos (\texttt{Field}). Los \texttt{Input} actúan como puntos de anclaje para otros bloques o contenedores para \texttt{Field}, mientras que las \texttt{Connection} definen las reglas de compatibilidad y la lógica de "bumping" al conectar bloques.
 
-La ejecución del programa se basa en un \textbf{motor de interpretación} asíncrono. Cada bloque funcional tiene asociado un intérprete (\texttt{Cmdtor}) que traduce su lógica a una corrutina de C\#. Un orquestador central, el \texttt{CSharpRunner}, gestiona una pila de ejecución para procesar estas corrutinas de manera secuencial, permitiendo animaciones fluidas y operaciones no bloqueantes.
-	
-	Finalmente, la \textbf{representación visual} de este modelo se logra en Unity mediante prefabs que contienen una jerarquía de vistas (\texttt{BlockView}, \texttt{InputView}, etc.). Se utiliza un \textbf{sistema de layout manual}, donde cada vista calcula su propio tamaño (\texttt{CalculateSize()}) y posición (\texttt{XY}), para acomodar las formas complejas de los bloques. Un componente clave en los prefabs es el \texttt{nextStatementContainer}, que actúa como anclaje visual para las pilas de bloques.
 
+\section{Aprendizaje basado en desafíos y objetivos de desarrollo sostenible}
+La eficacia de una herramienta educativa no solo reside en su tecnología, sino también en su enfoque pedagógico y su impacto social.
+\begin{itemize}
+	\item \textbf{Aprendizaje basado en desafíos:} En lugar de un sandbox libre, el prototipo se estructura en torno a desafíos predefinidos (\texttt{ChallengeData}). Este enfoque gamificado proporciona al estudiante un objetivo claro, aumentando la motivación y contextualizando el aprendizaje de la programación como una herramienta para la resolución de problemas concretos.
 	
-	\section{Arquitectura del prototipo final: Un sistema híbrido}
-	
-	Tras analizar la complejidad inherente a la implementación de un motor de layout visual completo, se tomó la decisión estratégica de pivotar el desarrollo hacia un Producto Mínimo Viable (MVP) que mantuviera la claridad de un sistema basado en bloques pero introdujera la escritura de código. Este enfoque híbrido aprovecha la base conceptual del MVC para desacoplar un nuevo sistema de programación textual de la simulación del robot en el entorno 3D.
-	
-	\subsection{Componentes del sistema híbrido}
-	La nueva arquitectura se compone de los siguientes elementos clave:
-	\begin{itemize}
-		\item \textbf{Gestor de desafíos (\texttt{ChallengeLoader}, \texttt{ChallengeData}):} Sistema basado en Scriptable Objects para definir y cargar los diferentes escenarios de aprendizaje, desacoplando el contenido de la lógica del programa.
-		\item \textbf{Interfaz de desarrollo (IDE - \texttt{IDE\_UIManager}):} Es la Vista principal para el usuario en la escena de programación. Gestiona la presentación de los objetivos del desafío, el área de entrada de código y la visualización del programa como una secuencia de instrucciones textuales. Actúa como el puente entre el usuario y el ProgramBuilder.
-		\item \textbf{Constructor del programa (\texttt{ProgramBuilder}):} Acumula las líneas de código introducidas por el usuario, actuando como un búfer o editor de texto simple. Al ejecutar, ensambla el código fuente completo.
-		\item \textbf{Analizador Sintáctico (\texttt{CommandParser}):} Este componente es el núcleo del intérprete del DSL. Su función es recibir el código fuente, tokenizarlo (dividirlo en comandos y argumentos) y validarlo sintácticamente. Si el código es válido, genera una estructura de datos intermedia: una lista de objetos \texttt{Instruction}, que es el análogo a un Árbol de Sintaxis Abstracto (AST) en un compilador tradicional.
-		\item \textbf{Intérprete y motor de simulación (\texttt{GameManager}, \texttt{RobotController}):} Reciben la lista de instrucciones y la ejecutan de manera secuencial, traduciendo cada \texttt{Instruction} en una acción concreta del robot (ej. una corrutina de movimiento o rotación). Este módulo gestiona el estado de la simulación y detecta eventos como las colisiones.
-	\end{itemize}
-	
-	\section{Objetivos de Desarrollo Sostenible (ODS) y su aplicación en el proyecto}
-	Los Objetivos de Desarrollo Sostenible (ODS) son una lista de 17 objetivos globales adoptados por la Asamblea General de la Organización de las Naciones Unidas (ONU) en 2015, como parte de la Agenda 2030 para el Desarrollo Sostenible. Estos objetivos universales e interconectados buscan abordar desafíos globales urgentes, como la pobreza, la desigualdad, el cambio climático, la degradación ambiental, la paz y la justicia. Su integración en proyectos de ingeniería informática refleja un compromiso con la creación de soluciones con un impacto positivo a nivel social, económico y ambiental.
-	
-	El presente TFG se alinea con los ODS al fomentar una educación inclusiva y al reducir las desigualdades, mediante la democratización del acceso a herramientas de aprendizaje tecnológico.
-	
-	\subsection{ODS 4: Educación de Calidad} 
-	El \textbf{ODS 4: Educación de Calidad} busca Garantizar una educación inclusiva y equitativa de calidad y promover oportunidades de aprendizaje permanente para todos\cite{ONU-ODS}.
-	En el contexto de este proyecto, se contribuye a este ODS de las siguientes maneras:
-	\begin{itemize}
-		\item \textbf{Acceso equitativo:} El laboratorio virtual reduce significativamente las barreras de entrada a la educación en programación y robótica. Al eliminar la necesidad de hardware físico costoso y laboratorios especializados, el proyecto democratiza el acceso, permitiendo a estudiantes de zonas con recursos limitados o sin acceso a infraestructuras dedicadas, participar en experiencias de aprendizaje enriquecedoras.
-		\item \textbf{Educación inclusiva:} Al ofrecer una interfaz basada en la programación por bloques tipo Scratch, accesible e intuitiva, se facilita el aprendizaje a niños y adolescentes con diversos niveles de experiencia y habilidades. El diseño del entorno está concebido para ser comprensible para un público amplio, desde principiantes hasta usuarios más avanzados.
-		\item \textbf{Aprendizaje permanente:} La adquisición de habilidades en pensamiento computacional y lógico desde edades tempranas sienta una base sólida para el aprendizaje continuo en el ámbito de las tecnologías.
-	\end{itemize}
-	De esta forma, el proyecto es una herramienta que promueve activamente la participación de una comunidad estudiantil más amplia en las disciplinas STEM \cite{ONU-ODS}.
-	
-	\subsection{ODS 10: Reducción de las Desigualdades}
-	El \textbf{ODS 10: Reducción de las Desigualdades} tiene como meta Reducir la desigualdad en los países y entre ellos \cite{ONU-ODS}. La contribución del proyecto se manifiesta en los siguientes aspectos:
-	\begin{itemize}
-		\item \textbf{Democratización del acceso a la tecnología educativa:} El coste de la tecnología educativa es un factor determinante que a menudo excluye a segmentos de la población. Al priorizar el desarrollo de una aplicación para dispositivos Android (como tablets de bajo coste) y utilizar software de código abierto (Unity Personal, C\#, UBlockly), el proyecto minimiza la inversión económica requerida para acceder a estas herramientas didácticas.
-		\item \textbf{Brecha digital y geográfica:} En regiones donde la infraestructura tecnológica y los recursos educativos son escasos, las simulaciones virtuales pueden compensar la falta de laboratorios físicos y equipamiento de robótica. Esto reduce la brecha digital y geográfica, permitiendo que estudiantes de entornos rurales o menos privilegiados accedan a la misma calidad de experiencia de aprendizaje que sus homólogos en áreas urbanas.
-	\end{itemize}
-	
-	Este proyecto no solo facilita el aprendizaje técnico, sino que también sirve como una herramienta para fomentar una sociedad más justa e igualitaria al hacer la educación en programación y robótica más accesible a todos.
+	\item \textbf{Alineación con los ODS:} El proyecto contribuye directamente a los objetivos de desarrollo sostenible (ODS). Al ser una solución de bajo coste y accesible en dispositivos comunes, aborda el \textbf{ODS 4 (Educación de Calidad)} al democratizar el acceso a la formación STEM. Asimismo, al reducir la brecha digital entre estudiantes con y sin acceso a laboratorios físicos, apoya el \textbf{ODS 10 (Reducción de las Desigualdades)}.
+\end{itemize}

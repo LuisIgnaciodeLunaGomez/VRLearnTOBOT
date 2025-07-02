@@ -1,37 +1,124 @@
 \capitulo{6}{Trabajos relacionados}
 
-Este apartado presenta un resumen comentado de los trabajos y proyectos más relevantes en el campo de la programación por bloques y la robótica educativa. El objetivo es contextualizar el prototipo desarrollado en este Trabajo Fin de Grado (TFG) dentro del panorama actual, identificando las tendencias, fortalezas y limitaciones de las soluciones existentes. Este análisis comparativo ha servido para fundamentar las decisiones de diseño e implementación del proyecto, buscando aportar valor y abordar necesidades específicas.
+Este capítulo presenta un análisis comparativo de las plataformas y herramientas más relevantes en el campo de la robótica educativa y la programación visual. El objetivo es contextualizar el prototipo desarrollado en este Trabajo Fin de Grado, identificando fortalezas, debilidades y oportunidades en el estado del arte. Esta evaluación ha sido fundamental para definir la contribución única del sistema híbrido propuesto.
 
 \section{Plataformas de programación por bloques}
-En el ámbito de la programación visual, existen plataformas consolidadas que han servido como inspiración y punto de partida teórico para este proyecto.
-\begin{itemize}
-	\item \textbf{Scratch \cite{Paredes2023}:} Desarrollado por el MIT Media Lab, es la referencia mundial para la enseñanza de la programación visual a niños y jóvenes. Su principal fortaleza reside en su interfaz intuitiva, el modelo de "drag and drop" de bloques, su categorización de colores, y su enfoque en la creación de narrativas y animaciones. Si bien es extremadamente accesible, su ecosistema es relativamente cerrado y no está diseñado para integraciones directas con entornos 3D o hardware robótico específico fuera de su plataforma.
-	\item \textbf{Blockly \cite{Munoz2015}:} Librería de Google de código abierto que proporciona el framework base para construir editores de programación por bloques. Destaca por su alta personalización y capacidad para generar código textual en múltiples lenguajes. Es la base técnica subyacente para numerosas soluciones, incluyendo extensiones hacia el aprendizaje de redes neuronales \cite{Wang2021_BlockDL} o el control de dispositivos IoT \cite{Ionescu2020_BlockIoT}. Aunque potente, carece de la capa de experiencia de usuario y del ecosistema lúdico inherente a Scratch.
-	\item \textbf{UBlockly \cite{UBlockly}:} Como implementación de Blockly en C\# para Unity, UBlockly ha sido la \textbf{principal referencia técnica para la fase inicial de este proyecto}. Su estructura modular y su capacidad para integrarse con el motor Unity (gestionando modelos de bloques y ejecución mediante corrutinas) la convirtieron en un excelente punto de partida para evaluar la viabilidad de un sistema de programación visual. Su estructura modular y su capacidad para integrarse con el motor Unity (gestionando modelos de bloques, ejecución mediante corrutinas, y serialización) la convierten en una excelente plataforma para el desarrollo de un editor de bloques funcional y extensible.  Aunque el prototipo final evolucionó hacia un sistema híbrido, el análisis de su arquitectura (y la refactorización a MVC que se realizó sobre ella) fue fundamental para definir los componentes clave del sistema final.
-\end{itemize}
-
-\section{Simuladores y entornos de robótica educativa}
-Para abordar la limitación de acceso a hardware físico, han surgido diversos simuladores que permiten a los estudiantes programar robots virtuales.
-\begin{itemize}
-	\item \textbf{Simuladores genéricos basados en Unity:} Existen esfuerzos para desarrollar simuladores 3D de robótica en Unity para la enseñanza de programación o inteligencia artificial \cite{Simulador3DUnity}. Estos proyectos, al igual que el presente TFG, aprovechan las potentes capacidades de renderizado 3D y el entorno de desarrollo versátil de Unity. Suelen enfocarse en una demostración de la viabilidad técnica o en contextos muy específicos (como la robótica industrial), pero a menudo carecen de una interfaz de programación por bloques totalmente integrada o de un fuerte enfoque en la educación preuniversitaria.
-	\item \textbf{Plataformas web con simulación 3D:}
-	\begin{itemize}
-		\item \textbf{Delightex (CoSpaces Edu):} Permite crear entornos 3D y aplicaciones de Realidad Virtual (VR)/Aumentada (AR) programables con bloques o JavaScript \cite{CoSpaces2020_Edu}. Es accesible vía navegador y ofrece un entorno visual atractivo para proyectos creativos, aunque la interacción con robots simulados es a menudo menos detallada que en motores dedicados.
-		\item \textbf{VEXcode VR y CoderZ:} Ofrecen entornos 3D para programar robots educativos específicos (VEX, GoPiGo) mediante bloques o lenguajes textuales. Son excelentes para aprender el currículo de robótica asociado a esos kits, pero son plataformas con licencias o enfoque más específicos que restringen la flexibilidad o la personalización de robots y escenarios, y a menudo no están optimizadas para la creación de contenido 3D personalizado de forma sencilla \cite{roboticaeducativa}.
-	\end{itemize}
-	\item \textbf{Simuladores para hardware específico:}
-	\begin{itemize}
-		\item \textbf{Robot Virtual Worlds :} Ofrece simuladores de alta fidelidad para robots LEGO EV3 o VEX. Proporcionan un alto grado de realismo físico y la capacidad de probar programas diseñados para robots específicos, siendo valiosos para entrenamientos detallados \cite{RobotVirtualWorlds}. No obstante, suelen requerir mayores recursos computacionales y están fuertemente ligados a sus marcas, limitando su adaptabilidad.
-		\item \textbf{Simuladores de robótica educativa de makeblock:} Existen simuladores como Makeblock mBlock que integran un editor de bloques con entornos virtuales 2D/3D para los robots de su marca, promoviendo el pensamiento computacional \cite{roboticaeducativa_makeblock}. Al igual que otros, están centrados en el ecosistema de la marca.
-	\end{itemize}
+Para comprender el panorama actual, se han analizado diversas soluciones, agrupándolas por su enfoque principal: plataformas de programación visual, entornos de simulación y herramientas de desarrollo. La Tabla \ref{tab:comparativa_trabajos_relacionados} resume este análisis.
+\begin{longtable}{| p{3cm} | p{2.5cm} | p{4.5cm} | p{4.5cm} |}
 	
-\end{itemize}
+	% --- Título de la tabla y etiqueta ---
+	\caption{Análisis comparativo de trabajos y herramientas relacionadas.}
+	\label{tab:comparativa_trabajos_relacionados} \\
+	
+	% --- CABECERA (se repetirá en cada página) ---
+	\hline
+	\textbf{Plataforma} & \textbf{Paradigma de prog.} & \textbf{Fortalezas clave} & \textbf{Limitaciones para el proyecto} \\
+	\hline
+	\endfirsthead % Indica que esta es la cabecera para la primera página
+	
+	\multicolumn{4}{r}{\small\textit{... continúa desde la página anterior}} \\ % Nota de continuación
+	\hline
+	\textbf{Plataforma} & \textbf{Paradigma de prog.} & \textbf{Fortalezas clave} & \textbf{Limitaciones para el proyecto} \\
+	\hline
+	\endhead % Indica la cabecera para el resto de páginas
+	
+	\hline
+	\multicolumn{4}{r}{\small\textit{continúa en la página siguiente ...}} \\
+	\endfoot % Pie de página para todas las páginas excepto la última
+	
+	\hline
+	\endlastfoot % Pie de página para la última página
 
-\section{Herramientas para el desarrollo de interfaces de bloques}
-Existen recursos y frameworks específicos diseñados para ayudar en la creación de interfaces de programación por bloques.
-\begin{itemize}
-	\item \textbf{Blocks Engine 2 \cite{Meadowgames}} Es un paquete de assets para Unity diseñado para facilitar el desarrollo de juegos y aplicaciones con interfaces de bloques. Este motor abstrae gran parte de la complejidad de la lógica de drag and drop, conexiones y validación de bloques en Unity. Representa una alternativa al enfoque de adaptar UBlockly. Si bien ofrece una solución más rápida lista para usar para la UI de bloques, mi decisión  inicial de adaptar UBlockly y la posterior evolución a un sistema textual propio se fundamentó en la necesidad de un control total sobre el motor de ejecución y la lógica de interpretación de comandos. El objetivo del TFG era precisamente profundizar en el diseño e implementación de un intérprete de lógica de programación (ya fuera visual o textual), no solo utilizar una herramienta "plug-and-play"
-\end{itemize}
+		\multicolumn{4}{|l|}{\textbf{Plataformas de programación visual de referencia}} \\ \hline
+		
+		\textbf{Scratch} \cite{Paredes2023} & 
+		Bloques visuales & 
+		\begin{itemize} \itemsep-0.5em
+			\item Interfaz altamente intuitiva y lúdica, ideal para principiantes.
+			\item Gran comunidad y abundancia de recursos educativos.
+			\item Enfoque en la creatividad (animaciones, historias).
+		\end{itemize} & 
+		\begin{itemize} \itemsep-0.5em
+			\item Ecosistema cerrado, no diseñado para ser extendido o integrado.
+			\item Sin capacidad nativa de exportación a código textual.
+			\item Integración compleja con entornos 3D personalizados.
+		\end{itemize} \\ \hline
+		
+		\textbf{Blockly} \cite{Munoz2015} & 
+		Framework de bloques &
+		\begin{itemize} \itemsep-0.5em
+			\item Código abierto, modular y altamente personalizable.
+			\item Generación de código a múltiples lenguajes (JS, Python).
+			\item Base técnica para innumerables proyectos educativos y comerciales \cite{Wang2021_BlockDL, Ionescu2020_BlockIoT}.
+		\end{itemize} & 
+		\begin{itemize} \itemsep-0.5em
+			\item Es una librería para desarrolladores, no una aplicación para el usuario final.
+			\item Requiere un esfuerzo significativo de desarrollo para la capa de interfaz de usuario.
+		\end{itemize} \\ \hline
+		
+
+		\multicolumn{4}{|l|}{\textbf{Entornos de simulación de robótica educativa}} \\ \hline
+		
+		\textbf{Simuladores genéricos en Unity} \cite{Simulador3DUnity} & 
+		Diverso (Bloques, Texto, APIs C\#) & 
+		\begin{itemize} \itemsep-0.5em
+			\item Aprovechan toda la potencia del motor Unity para renderizado 3D y físicas.
+			\item Máxima flexibilidad para crear escenarios y robots personalizados.
+		\end{itemize} & 
+		\begin{itemize} \itemsep-0.5em
+			\item Generalmente son proyectos de investigación o de nicho.
+			\item Suelen carecer de una interfaz de programación pulida para usuarios noveles.
+		\end{itemize} \\ \hline
+		
+		\textbf{CoSpaces Edu} \cite{CoSpaces2020_Edu} & 
+		Híbrido (Bloques, Texto JS/Python) &
+		\begin{itemize} \itemsep-0.5em
+			\item Plataforma web muy accesible, sin instalaciones.
+			\item Herramientas de creación 3D y soporte para VR/AR.
+		\end{itemize} &
+		\begin{itemize} \itemsep-0.5em
+			\item La simulación física de robots es a menudo más abstracta que en simuladores dedicados.
+		\end{itemize} \\ \hline
+		
+		\textbf{VEXcode VR \& CoderZ} \cite{roboticaeducativa} &
+		Híbrido (Bloques, Texto) &
+		\begin{itemize} \itemsep-0.5em
+			\item Simuladores de alta fidelidad para robots específicos (VEX, LEGO).
+			\item Alineados con competiciones y currículos STEM existentes.
+		\end{itemize} &
+		\begin{itemize} \itemsep-0.5em
+			\item Fuertemente ligados a ecosistemas de hardware y licencias específicas.
+			\item Poca o nula flexibilidad para personalizar el entorno o los robots.
+		\end{itemize} \\ \hline
+		
+
+		\multicolumn{4}{|l|}{\textbf{Herramientas y frameworks para Unity}} \\ \hline
+		
+		\textbf{UBlockly} \cite{UBlockly} &
+		Framework de bloques en C\# &
+		\begin{itemize} \itemsep-0.5em
+			\item Base de código abierto para implementar la lógica de bloques en Unity.
+			\item Proporciona un modelo de datos sólido y un motor de ejecución por corrutinas.
+		\end{itemize} &
+		\begin{itemize} \itemsep-0.5em
+			\item Proyecto no mantenido activamente.
+			\item La documentación es limitada, requiere ingeniería inversa.
+			\item No incluye un motor de layout visual dinámico.
+		\end{itemize} \\ \hline
+		
+		\textbf{Blocks Engine 2} \cite{Meadowgames} &
+		Asset Plug-and-play &
+		\begin{itemize} \itemsep-0.5em
+			\item Solución rápida y lista para usar.
+			\item Abstrae la mayor parte de la complejidad de la UI de bloques.
+		\end{itemize} &
+		\begin{itemize} \itemsep-0.5em
+			\item Actúa como una "caja negra", con menor control sobre el motor de ejecución y la lógica interna.
+			\item No alineado con el objetivo de este TFG de profundizar en el diseño de un intérprete.
+		\end{itemize} \\
+		
+	\end{longtable}
+
 
 \section{Síntesis de la contribución del proyecto}
 Tras el análisis de las herramientas existentes, la contribución fundamental de este Trabajo Fin de Grado se centra en los siguientes puntos:
@@ -39,7 +126,7 @@ Tras el análisis de las herramientas existentes, la contribución fundamental d
 \begin{itemize}
 	\item \textbf{Un puente pedagógico entre lo visual y lo textual:} A diferencia de las plataformas que son o 100\% visuales (Scratch) o que se centran en la programación textual tradicional, este proyecto propone una solución híbrida. El usuario construye su programa mediante la adición secuencial de bloques de texto, manteniendo la claridad estructural de la programación por bloques, pero al mismo tiempo practica la sintaxis de un lenguaje de comandos. Esto lo posiciona como una herramienta ideal para la transición del aprendizaje, un paso intermedio que facilita el salto de Scratch a lenguajes como Python.
 	
-	\item \textbf{Diseño e implementación de un lenguaje de dominio específico (DSL) y su Intérprete:} El núcleo de la aportación técnica no reside en la adaptación de una librería existente, sino en el diseño e implementación desde cero de un pequeño sistema de compilación:
+	\item \textbf{Diseño e implementación de un lenguaje de dominio específico (DSL) y su intérprete:} El núcleo de la aportación técnica no reside en la adaptación de una librería existente, sino en el diseño e implementación desde cero de un pequeño sistema de compilación:
 	\begin{itemize}
 		\item Un DSL con una gramática simple y orientada a la robótica.
 		\item Un Parser que actúa como analizador léxico y sintáctico.
