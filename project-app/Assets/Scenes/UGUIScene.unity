@@ -962,6 +962,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1208917850}
   - component: {fileID: 1208917849}
+  - component: {fileID: 1208917851}
   m_Layer: 0
   m_Name: SceneNavigation
   m_TagString: Untagged
@@ -996,6 +997,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1208917851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1208917848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e86db879197987c4e8e7dbf697661803, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabsToAnalyze:
+  - {fileID: 653456675221967846, guid: 05558b67cf546a34eb901527471e2135, type: 3}
+  outputFolderName: PrefabAnalysisLogs
+  _runFromContextMenu: 1
 --- !u!224 &1218417875 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 224562327138091018, guid: 30bdd5fddc725438796726c39f29cd83, type: 3}
