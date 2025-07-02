@@ -126,13 +126,9 @@ Los principales hitos que guiaron la evolución del prototipo fueron los siguien
 	
 	\item \textbf{Hito 7: Finalización y pruebas del MVP.} Pruebas integrales del flujo completo (selección de desafío -> escritura de código -> ejecución -> simulación con colisiones). Depuración final y completitud de la memoria del TFG.
 
-	
-
-
 \end{itemize}
 
 A continuación, se ofrece un desglose más detallado del trabajo realizado en cada sprint clave:
-
 
 \subsubsection{Sprint 0: Puesta en marcha, configuración del entorno e investigación inicial}
 
@@ -389,7 +385,6 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\item \textbf{Hito alcanzado:} Se logró una mejora significativa en el arrastre y posicionamiento inicial de los bloques en el área de codificación. Se identificaron y comenzaron a abordar los complejos desafíos del snap visual y la correcta gestión de coordenadas entre paneles. El descubrimiento sobre el uso óptimo de prefabs de UBlockly marcó un punto de inflexión para la estrategia de representación visual. Se dispone de una herramienta de depuración de conexiones. La escena básica para la simulación del robot está iniciada.
 \end{itemize}
 
-
 	% --- FIGURA LOGS DE DATOS CONEXIONES ---
 
 \begin{figure}
@@ -488,9 +483,9 @@ Se procedió a la redacción sistemática de cada uno de los capítulos y apénd
 	\item \textbf{Bibliografía:} Se recopilaron y formatearon todas las referencias bibliográficas utilizadas a lo largo del documento utilizando un gestor de citas compatible con LaTeX, asegurando la rigurosidad académica.
 \end{itemize}
 
-\item \textbf{Redacción de Apéndices y Anexos:}
+\item \textbf{Redacción de apéndices y anexos:}
 \begin{itemize}
-	\item \textbf{Anexo - Plan de Proyecto Software:} Se documentó de manera detallada todo el plan de gestión del proyecto, incluyendo:
+	\item \textbf{Anexo - Plan de proyecto software:} Se documentó de manera detallada todo el plan de gestión del proyecto, incluyendo:
 	\begin{itemize}
 		\item La descripción de la metodología SCRUM y las herramientas utilizadas (Zube, GitHub).
 		\item Un desglose de los hitos principales del proyecto.
@@ -562,9 +557,8 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 	\item \textbf{Diseño e implementación del intérprete de código textual:}
 	\begin{itemize}
 		\item \textbf{Definición del DSL:} Se diseñó la gramática para el lenguaje de comandos del robot, incluyendo mover, girar, y, crucialmente, las estructuras de control repetir N veces, repetir por\_siempre y su correspondiente cierre fin_repetir.
-		\item \textbf{Creación del Parser (\texttt{CommandParser}):} Se implementó el analizador que procesa el código fuente textual. Este componente valida la sintaxis, identifica los comandos y sus argumentos, y gestiona las estructuras anidadas mediante una pila (Stack), traduciendo el código a una lista de objetos Instruction.
+		\item \textbf{Creación del parser (\texttt{CommandParser}):} Se implementó el analizador que procesa el código fuente textual. Este componente valida la sintaxis, identifica los comandos y sus argumentos, y gestiona las estructuras anidadas mediante una pila (Stack), traduciendo el código a una lista de objetos Instruction.
 	\end{itemize}
-	
 	
 	\item \textbf{Integración del nuevo flujo de ejecución:}
 	\begin{itemize}
@@ -575,16 +569,16 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 	\item \textbf{Implementación del sistema de desafíos y escenas:}
 	\begin{itemize}
 		\item Se creó el sistema de ChallengeData (Scriptable Objects) y ChallengeLoader para gestionar la selección de desafíos desde una nueva escena de menú (MenuScene).
-		\item Se desarrollaron las primeras versiones de la \textbf{escena de introducción} y el **menú de selección**, estableciendo el flujo completo de la aplicación, desde el inicio hasta la programación y simulación.
+		\item Se desarrollaron las primeras versiones de la \textbf{escena de introducción} y el menú de selección, estableciendo el flujo completo de la aplicación, desde el inicio hasta la programación y simulación.
 	\end{itemize}
 	
-	\item \textbf{Pruebas del Sistema Híbrido:}
+	\item \textbf{Pruebas del sistema híbrido:}
 	\begin{itemize}
 		\item Se realizaron pruebas exhaustivas del nuevo sistema, validando que el robot ejecutaba correctamente secuencias complejas de comandos textuales, incluyendo bucles finitos e infinitos.
 		\item Se implementó la lógica de detección de colisiones (CollisionTextLogger, MuroController) para que el robot se detuviera al chocar, añadiendo una capa de interacción realista con el entorno.
 	\end{itemize}
 	
-	\item \textbf{Diseño de una Interfaz de Programación Híbrida (\texttt{IDE\_UIManager}):}
+	\item \textbf{Diseño de una interfaz de programación híbrida (\texttt{IDE\_UIManager}):}
 	
 	Se rediseñó la interfaz de usuario para dar cabida a dos modos de programación interconectados, sirviendo como un puente entre la codificación visual y la textual.
 	
@@ -608,7 +602,7 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 	
 \end{itemize}
 
-\item \textbf{Hito Alcanzado:} Se completó con éxito el pivote estratégico del proyecto. El resultado es un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
+\item \textbf{Hito alcanzado:} Se completó con éxito el pivote estratégico del proyecto. El resultado es un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
 
 \subsection{Sprint 10: Revisión producto mínimo viable y memoria TFG}
 
@@ -629,7 +623,7 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 	
 	\item \textbf{Pulido de la interfaz de usuario y la experiencia (UX):}
 	\begin{itemize}
-		\item Se realizó una revisión completa de todos los textos de la interfaz de usuario (`IDE\_UIManager`, menús, descripciones de desafíos), corrigiendo erratas y mejorando la claridad de los mensajes para el usuario final.
+		\item Se realizó una revisión completa de todos los textos de la interfaz de usuario (IDE\_UIManager, menús, descripciones de desafíos), corrigiendo erratas y mejorando la claridad de los mensajes para el usuario final.
 		\item Se ajustó la disposición y el anclaje de elementos visuales, como imágenes y botones, para asegurar una apariencia consistente y profesional en diferentes resoluciones de pantalla.
 	\end{itemize}
 	

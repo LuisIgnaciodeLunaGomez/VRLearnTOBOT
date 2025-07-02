@@ -86,7 +86,7 @@ Esta estructura busca separar claramente la lógica del núcleo de UBlockly, las
 % --- Directorios Heredados/Adaptados de UBlockly ---
 \item \textbf{\texttt{Assets/Source/}}: Contiene las clases fundamentales de la librería UBlockly que fueron adaptadas y sirvieron como base para el sistema de bloques visuales.
 \begin{itemize}
-	\item \texttt{Core/}: Lógica central del modelo de datos de UBlockly (Block.cs, Connection.cs, Workspace.cs,Field.cs, etc.) y el motor de ejecución (CSharpRunner.cs, Cmdtor.cs).
+	\item \texttt{Core/}: Lógica central del modelo de datos de UBlockly (Block.cs, Connection.cs, Workspace.cs,Field.cs, etc.) y el motor de ejecución (CSharpRunner.cs, Cmdtor.cs). Se incluye en este directorio el de controllers para la integración del MVC.
 	\item \texttt{CodeDB/}: Intérpretes (interpreters) y generadores (generators) originales de UBlockly para distintos tipos de bloques.
 	\item \texttt{UGUIView/}: Componentes de vista (\texttt{BlockView.cs}, etc.) y de la interfaz de usuario (Dialogs, Toolbox) de la implementación original de UBlockly.
 \end{itemize}
@@ -143,7 +143,7 @@ La arquitectura se organiza en torno a gestores que siguen los principios de sep
 \begin{itemize}
 	\item \textbf{\texttt{CommandParser.cs}:} Esta clase estática es el corazón del intérprete. Recibe una cadena de texto con el programa completo, la procesa línea por línea, valida la sintaxis de cada comando (mover, girar, repetir), y la traduce en una estructura de datos List<Instruction>, que es una representación intermedia y ejecutable del programa. Gestiona los bucles anidados mediante una Pila.
 	\item \textbf{\texttt{Instruction.cs}:} Estructura de datos simple que representa un comando individual con su tipo y valor, y opcionalmente, una lista de instrucciones anidadas para los bucles.
-	\item \textbf{\texttt{RobotController.cs}:} Recibe la List<Instruction> y la ejecuta de forma secuencial mediante corrutinas de Unity. Implementa la lógica de movimiento y giro del robot (MoveForwardRoutine, TurnRoutine), así como la detección de colisiones mediante `Rigidbody.SweepTest` para un comportamiento proactivo.
+	\item \textbf{\texttt{RobotController.cs}:} Recibe la List<Instruction> y la ejecuta de forma secuencial mediante corrutinas de Unity. Implementa la lógica de movimiento y giro del robot (MoveForwardRoutine, TurnRoutine), así como la detección de colisiones mediante`Rigidbody.SweepTest para un comportamiento proactivo.
 \end{itemize}
 Un desarrollador que desee \textbf{añadir un nuevo comando al DSL} necesitaría:
 \begin{enumerate}
@@ -187,7 +187,7 @@ Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} ne
 
 \subsection{Ejecución en el Editor de Unity}
 \begin{enumerate}
-	\item Una vez abierto el proyecto en Unity, localizar la escena principal (ej. en \texttt{Assets/Scenes/UIGUIVRLearnToBot.unity}).
+	\item Una vez abierto el proyecto en Unity, localizar la escena principal (ej. en \texttt{Assets/Scenes/MainMenu.unity}).
 	\item Abrir la escena principal.
 	\item Pulsar el botón play en la barra de herramientas superior del editor de Unity.
 	\item La aplicación se ejecutará en la ventana game del editor.
@@ -224,9 +224,8 @@ Dada la naturaleza de prototipo y el desarrollo individual de este TFG, las prue
 	\begin{itemize}
 		\item Escenario 1: Crear un programa simple (Bandera verde -> Mover 10 pasos). Ejecutar. Verificar que el robot se mueve correctamente.
 		\item Escenario 2: Crear un programa con múltiples bloques de movimiento. Ejecutar. Verificar secuencia.
-		\item Escenario 3: Guardar un programa. Limpiar el workspace. Cargar el programa guardado. Verificar que se restaura correctamente. Ejecutar.
-		\item Escenario 4: Probar la lógica de bumping al insertar bloques en una pila existente.
-		\item Escenario 5:  Probar el descarte de bloques para verificar que los mismos eran eliminados del espacio de trabajo.
+		\item Escenario 3:  Probar la lógica de bumping al insertar bloques en una pila existente.
+		\item Escenario 4:  Probar el descarte de bloques para verificar que los mismos eran eliminados del espacio de trabajo.
 	\end{itemize}
 	\item \textbf{Pruebas de usabilidad (informales):} Se evaluó la facilidad de uso de la interfaz de forma continua durante el desarrollo, intentando adoptar la perspectiva de un usuario final y corrigiendo flujos de interacción confusos o poco intuitivos.
 	\item \textbf{Pruebas en dispositivo Android (básicas):} Una vez generados los APKs, se realizaron pruebas en una tablet Android para verificar la funcionalidad básica del arrastre, la ejecución y la visualización de la simulación en la plataforma objetivo.
@@ -254,7 +253,7 @@ Con Katalon Studio, se crearon un conjunto de casos de prueba para validar los f
 \end{figure}
 
 \begin{enumerate}
-	\item \textbf{Caso de Prueba TP-01: Ejecución exitosa de un programa simple}
+	\item \textbf{Caso de prueba TP-01: Ejecución exitosa de un programa simple}
 	\begin{itemize}
 		\item \textbf{Objetivo:} Validar que un programa sintácticamente correcto se ejecuta completamente y el robot realiza la acción esperada.
 		\item \textbf{Pasos Automatizados:}
@@ -274,7 +273,7 @@ Con Katalon Studio, se crearon un conjunto de casos de prueba para validar los f
 		\caption{Prueba en dispositivo Android}
 		\label{fig:katalon_Android_prueba_1}
 	\end{figure}
-	\item \textbf{Caso de Prueba TP-02: Detección de error de sintaxis}
+	\item \textbf{Caso de prueba TP-02: Detección de error de sintaxis}
 	\begin{enumerate}
 		\item \textbf{Objetivo:} Verificar que el parser detecta correctamente un comando inválido y proporciona feedback al usuario.
 		\item \textbf{Pasos Automatizados:}
@@ -292,7 +291,7 @@ Con Katalon Studio, se crearon un conjunto de casos de prueba para validar los f
 		\caption{Grabacción de la prueba en dispositivo Android}
 		\label{fig:katalon_Android_grabacción_prueba_1}
 	\end{figure}
-	\item \textbf{Caso de Prueba TP-03: Validación de Bucle y Detección de Colisión}
+	\item \textbf{Caso de prueba TP-03: Validación de bucle y detección de colisión}
 	\begin{enumerate}
 		\item \textbf{Objetivo:} Asegurar que los bucles se ejecutan el número correcto de veces y que el sistema de colisiones detiene la ejecución.
 		\item \textbf{Pasos Automatizados:}
@@ -314,4 +313,3 @@ Con Katalon Studio, se crearon un conjunto de casos de prueba para validar los f
 
 El uso de Katalon Studio para la automatización de estas pruebas ha sido fundamental para garantizar la estabilidad del prototipo a lo largo de los ciclos de desarrollo, permitiendo detectar regresiones de forma temprana y eficiente.
 
-%esta pendiente de implementar pruebas en Unity mediante el framework correspondiente que actualmente da fallos en las mismas por lo que hay que terminar de refinarlas.
