@@ -1,0 +1,19 @@
+﻿=======================================
+    INFORME DE ANÁLISIS DE PREFABS (V2 - CON DETALLES)
+    Generado el: 20-06-2025 18:04:49
+=======================================
+
+--- Analizando Prefab: 'CommandBlock_Prefab_Template' (Ruta: Assets/Resources/Videoclips/Prefabs/CommandBlock_Prefab_Template.prefab) ---
+CommandBlock_Prefab_Template 
+    - CanvasRenderer
+    - Image
+      - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓    - LayoutElement
+      - Min Height: 40    CommandText 
+        - CanvasRenderer
+        - TextMeshProUGUI
+          - Text: "<i>New Text</i>" | Font Size: 36 | Raycast: ✓-----------------------------------------------------
+
+
+=======================================
+        FIN DEL INFORME
+=======================================

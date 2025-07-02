@@ -6,7 +6,7 @@ A continuación se proporciona la documentación técnica esencial para comprend
 
 El proyecto ha sido desarrollado en el motor de videojuegos \textbf{Unity (Versión 6000.0.2f1)} utilizando el lenguaje de programación \textbf{C\#} codificado en el IDE visual studio. La interfaz de programación por bloques se basa en una adaptación de la librería de código abierto \textbf{UBlockly} \cite{UBlockly} la cual ha sido modificada y adaptada al patrón MVC.
 
-\section{Estructura de Directorios del Proyecto Unity}
+\section{Estructura de directorios del proyecto primera versión}
 El proyecto en Unity sigue una estructura de directorios organizada para facilitar la navegación y la gestión de los diferentes tipos de activos y scripts. A continuación, se describe la organización de las carpetas principales dentro del directorio \texttt{Assets/}:
 
 \begin{itemize}
@@ -72,10 +72,47 @@ El proyecto en Unity sigue una estructura de directorios organizada para facilit
 \end{itemize}
 Esta estructura busca separar claramente la lógica del núcleo de UBlockly, las adaptaciones específicas para C\# y Unity, el código de la aplicación (MVC), y los recursos y configuraciones.
 
-\section{Manual del programador (clases y módulos Principales)}
+
+\section{Estructura de directorios del proyecto segunda versión}
+
+ \item \textbf{\texttt{Assets/Scripts/}}: Contiene la mayor parte del código C\# del prototipo.
+\begin{itemize}
+	\item \texttt{Desafios/}: Scripts centrales que gestionan el flujo de la aplicación híbrida: \texttt{GameManager.cs}, \texttt{IDE\_UIManager.cs}, \texttt{RobotController.cs}, \texttt{CommandParser.cs}, \texttt{Instruction.cs}, y el sistema de gestión de desafíos con \texttt{ChallengeData.cs} y \texttt{ChallengeLoader.cs}.
+	\item \texttt{Scenes/}: Scripts específicos para las escenas del menú principal (MenuManager.cs, SceneNavigator.cs).
+	\item \texttt{Debugger/}: Herramientas de depuración personalizadas, como el analizador de prefabs.
+	\item \texttt{Logger.cs}: Clase estática para la gestión centralizada de logs.
+\end{itemize}
+
+% --- Directorios Heredados/Adaptados de UBlockly ---
+\item \textbf{\texttt{Assets/Source/}}: Contiene las clases fundamentales de la librería UBlockly que fueron adaptadas y sirvieron como base para el sistema de bloques visuales.
+\begin{itemize}
+	\item \texttt{Core/}: Lógica central del modelo de datos de UBlockly (Block.cs, Connection.cs, Workspace.cs,Field.cs, etc.) y el motor de ejecución (CSharpRunner.cs, Cmdtor.cs).
+	\item \texttt{CodeDB/}: Intérpretes (interpreters) y generadores (generators) originales de UBlockly para distintos tipos de bloques.
+	\item \texttt{UGUIView/}: Componentes de vista (\texttt{BlockView.cs}, etc.) y de la interfaz de usuario (Dialogs, Toolbox) de la implementación original de UBlockly.
+\end{itemize}
+
+\item \textbf{\texttt{Assets/Resources/}:} Carpeta especial de Unity para activos cargados dinámicamente.
+\begin{itemize}
+	\item \texttt{Challenges/}: Contiene los activos ScriptableObject (\texttt{.asset}) para cada uno de los desafíos definidos.
+	\item \texttt{Icons/}: Imágenes utilizadas en la interfaz de usuario (bandera verde, logo, etc.).
+	\item \texttt{Prefabs/}: Prefabs de UI y otros elementos reutilizables.
+	\begin{itemize}
+		\item \texttt{CommandBlockPrefab.prefab}: Prefab para representar visualmente cada línea de código en la IDE textual.
+		\item \texttt{ChallengeCardPrefab.prefab}: Plantilla para las tarjetas de desafío en el menú.
+		\item \textit{(Y cualquier otro prefab clave de tu MVP)}
+	\end{itemize}
+\end{itemize}
+
+\item \textbf{\texttt{Assets/Scenes/}:} Contiene las escenas de Unity: \texttt{MenuScene} (menú principal y selección de desafíos) y \texttt{CodingScene} (entorno de programación y simulación).
+\end{itemize}
+Esta estructura distingue claramente el código del prototipo final, las librerías base utilizadas, y los recursos artísticos y de configuración.
+
+
+\section{Manual del programador (clases y módulos principales)}
 Dentro de este punto se ofrece una visión general de las clases más importantes y cómo interactúan, enfocándose en los componentes desarrollados o significativamente adaptados para este TFG.
 
-\subsection{Arquitectura MVC y flujo de control}
+\subsection{Arquitectura MVC y flujo de control primera versión}
+
 Como se detalló en el apéndice C (especificación de diseño), el sistema sigue un patrón MVC. A continuación, se destacan los roles de las clases controladoras clave:
 \begin{itemize}
 	\item \textbf{\texttt{AppController.cs}:} Orquesta la inicialización de la aplicación, incluyendo la carga de recursos, la creación de los modelos y vistas principales, y la instanciación de otros controladores. Maneja la transición entre el modo de programación y el modo de simulación.
@@ -89,10 +126,33 @@ Como se detalló en el apéndice C (especificación de diseño), el sistema sigu
 
 \subsection{Sistema de bloques (adaptación de UBlockly)}
 \begin{itemize}
-	\item \textbf{Modelos (\texttt{BlockModel}, \texttt{ConnectionModel}, etc.):} Se utiliza la estructura de modelos de UBlockly. La principal adaptación reside en cómo estos modelos son observados y renderizados por las Vistas en Unity UI y cómo interactúan con los controladores.
+	\item \textbf{Modelos (\texttt{Block}, \texttt{Connection}, etc.):} Se utiliza la estructura de modelos de UBlockly. La principal adaptación reside en cómo estos modelos son observados y renderizados por las Vistas en Unity UI y cómo interactúan con los controladores.
 	\item \textbf{Vistas (\texttt{BlockView}, \texttt{ConnectionView}, etc.):} Son componentes \texttt{MonoBehaviour} responsables del renderizado. Se han diseñado prefabs para cada tipo de bloque para asegurar una apariencia consistente con Scratch. El sistema de layout manual implementado en \texttt{BaseView} y sus herederos es crucial.
 	\item \textbf{Creación de bloques (\texttt{BlockFactory}, \texttt{BlockDataLoader}):} Los bloques se definen en XML y se cargan usando estas clases para crear instancias de \texttt{BlockModel} y \texttt{BlockDefinition}.
 \end{itemize}
+
+\subsection{Flujo de control y arquitectura del MVP - sistema híbrido}
+La arquitectura se organiza en torno a gestores que siguen los principios de separación de responsabilidades:
+\begin{itemize}
+	\item \textbf{\texttt{ChallengeLoader.cs}:} Utilizando el patrón Singleton, este script persiste la selección del desafío del usuario entre la MenuScene y la CodingScene, asegurando que el contexto correcto sea cargado.
+	\item \textbf{\texttt{GameManager.cs}:} Es el orquestador principal en la CodingScene. Al iniciarse, obtiene el desafío seleccionado del ChallengeLoader, instruye a la UI para que muestre la información, y al recibir la orden de ejecutar, coordina el proceso de parseo y la activación del robot.
+	\item \textbf{\texttt{IDE\_UIManager.cs}:} Actúa como la capa de Vista-Controlador para la interfaz. Gestiona todos los elementos de UI, captura la entrada de comandos del usuario, la añade a un \texttt{ProgramBuilder}, y notifica al GameManager cuando el usuario pulsa Ejecutar. También es responsable de mostrar el feedback del sistema (errores, mensajes de éxito, etc.).
+\end{itemize}
+
+\subsection{Intérprete del DSL (Parser y ejecutor)}
+\begin{itemize}
+	\item \textbf{\texttt{CommandParser.cs}:} Esta clase estática es el corazón del intérprete. Recibe una cadena de texto con el programa completo, la procesa línea por línea, valida la sintaxis de cada comando (mover, girar, repetir), y la traduce en una estructura de datos List<Instruction>, que es una representación intermedia y ejecutable del programa. Gestiona los bucles anidados mediante una Pila.
+	\item \textbf{\texttt{Instruction.cs}:} Estructura de datos simple que representa un comando individual con su tipo y valor, y opcionalmente, una lista de instrucciones anidadas para los bucles.
+	\item \textbf{\texttt{RobotController.cs}:} Recibe la List<Instruction> y la ejecuta de forma secuencial mediante corrutinas de Unity. Implementa la lógica de movimiento y giro del robot (MoveForwardRoutine, TurnRoutine), así como la detección de colisiones mediante `Rigidbody.SweepTest` para un comportamiento proactivo.
+\end{itemize}
+Un desarrollador que desee \textbf{añadir un nuevo comando al DSL} necesitaría:
+\begin{enumerate}
+	\item Añadir un nuevo valor al enum CommandType.
+	\item Extender la lógica del switch-case en \texttt{CommandParser.cs} para reconocer la nueva sintaxis.
+	\item Añadir una nueva corrutina o método en \texttt{RobotController.cs} para implementar la acción física del comando.
+	\item Añadir un nuevo caso en el bucle de ejecución de \texttt{ProcessInstructionList} en RobotController.cs para invocar la nueva acción.
+\end{enumerate}
+
 
 \subsection{Sistema de ejecución y simulación}
 \begin{itemize}
@@ -110,7 +170,7 @@ Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} ne
 
 \section{Compilación, instalación y ejecución del proyecto}
 
-\subsection{Requisitos Previos}
+\subsection{Requisitos previos}
 \begin{itemize}
 	\item \textbf{Unity Hub} y \textbf{Unity Editor (Versión 6000.0.2f1 o compatible)}.
 	\item Módulo de \textbf{Android Build Support} instalado en Unity (si se va a compilar para Android).
@@ -118,7 +178,7 @@ Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} ne
 	\item Git, para clonar el repositorio.
 \end{itemize}
 
-\subsection{Obtención del Código Fuente}
+\subsection{Obtención del código fuente}
 \begin{enumerate}
 	\item Clonar el repositorio desde GitHub: \\
 	\texttt{git clone [https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT]}
@@ -131,7 +191,7 @@ Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} ne
 	\item Abrir la escena principal.
 	\item Pulsar el botón play en la barra de herramientas superior del editor de Unity.
 	\item La aplicación se ejecutará en la ventana game del editor.
-\end{itemize}
+\end{enumerate}
 
 %incluir capturas de pantalla que permitan entender mejor esta parte
 \subsection{Compilación y ejecución en dispositivo Android (APK)}
@@ -143,15 +203,17 @@ Un desarrollador que desee añadir un \textbf{nuevo tipo de bloque funcional} ne
 	\item Asegurarse de que el dispositivo de prueba esté detectado por Unity (aparecerá en la lista de Run Device).
 	\item Pulsar \texttt{Build And Run}. Unity compilará el proyecto, generará un archivo \texttt{.apk}, lo instalará en el dispositivo conectado y lo ejecutará.
 	\item Alternativamente, pulsar \texttt{Build} para generar solo el archivo \texttt{.apk}, que luego se puede transferir e instalar manualmente en cualquier dispositivo Android compatible.
-\end{itemize}
+\end{enumerate}
 
 \section{Pruebas del sistema}
 Dada la naturaleza de prototipo y el desarrollo individual de este TFG, las pruebas se han centrado principalmente en la \textbf{verificación funcional manual} y la \textbf{depuración iterativa} durante el desarrollo de cada característica.
 
 \subsection{Tipos de pruebas realizadas}
 \begin{itemize}
-	\item \textbf{Pruebas de unidad (conceptuales):} Durante el desarrollo de clases individuales (\texttt{BlockModel}, \texttt{ConnectionModel}, intérpretes, controladores), se realizaron pruebas aisladas de sus métodos principales mediante logs (\texttt{Debug.Log}) y el inspector de Unity para verificar que la lógica interna funcionaba como se esperaba antes de su integración. Se diseño una clase específica llamada Logger que permitía ofrecer mayor información en la depuración incluyendo la hora de la ejecución que era fundamental para poder seguir el contenido del archivo editor.log.
-	\item \textbf{Pruebas de integración (amnuales):} Tras la implementación de cada nueva funcionalidad que involucraba múltiples componentes MVC (ej. drag and drop, conexión de bloques, ejecución del robot), se realizaron pruebas manuales exhaustivas en el editor de Unity para verificar que los componentes interactuaban correctamente. Se prestó especial atención a:
+	\item \textbf{Pruebas de unidad (conceptuales):} Durante el desarrollo de clases individuales (\texttt{Block}, \texttt{Connection}, intérpretes, controladores), se realizaron pruebas aisladas de sus métodos principales mediante logs (\texttt{Debug.Log}) y el inspector de Unity para verificar que la lógica interna funcionaba como se esperaba antes de su integración. Se diseño una clase específica llamada Logger que permitía ofrecer mayor información en la depuración incluyendo la hora de la ejecución que era fundamental para poder seguir el contenido del archivo editor.log.
+	 \item \textbf{Pruebas de sistema automatizadas (con Katalon Studio):} Para la validación del sistema completo desde la perspectiva del usuario final, se utilizó la herramienta \textbf{Katalon Studio}. Se desarrollaron scripts de prueba automatizados para ejecutar casos de uso de extremo a extremo, asegurando la consistencia y la ausencia de regresiones tras cada iteración de desarrollo.
+	\end{itemize}
+	\item \textbf{Pruebas de integración (manuales):} Tras la implementación de cada nueva funcionalidad que involucraba múltiples componentes MVC (ej. drag and drop, conexión de bloques, ejecución del robot), se realizaron pruebas manuales exhaustivas en el editor de Unity para verificar que los componentes interactuaban correctamente. Se prestó especial atención a:
 	\begin{itemize}
 		\item La correcta creación y vinculación de modelos y vistas.
 		\item El flujo de eventos entre vistas, controladores y modelos.
@@ -179,5 +241,77 @@ Dada la naturaleza de prototipo y el desarrollo individual de este TFG, las prue
 \end{itemize}
 
 Aunque no se implementó un framework de pruebas unitarias automatizadas (como NUnit o Unity Test Framework) debido a las limitaciones de tiempo y el enfoque en el desarrollo del prototipo funcional, las estrategias de depuración y pruebas manuales iterativas han sido fundamentales para asegurar la calidad y funcionalidad del sistema entregado.
+
+
+\subsection{Diseño de casos de prueba automatizados}
+Con Katalon Studio, se crearon un conjunto de casos de prueba para validar los flujos de trabajo más críticos. Estas pruebas se pueden clasificar como \textbf{pruebas de regresión funcional} y \textbf{pruebas de aceptación del sistema}. A continuación, se describen algunos ejemplos representativos:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/katalon01.png} 
+	\caption{Inicialización pruebas en dispositivo Android}
+	\label{fig:katalon_Android}
+\end{figure}
+
+\begin{enumerate}
+	\item \textbf{Caso de Prueba TP-01: Ejecución exitosa de un programa simple}
+	\begin{itemize}
+		\item \textbf{Objetivo:} Validar que un programa sintácticamente correcto se ejecuta completamente y el robot realiza la acción esperada.
+		\item \textbf{Pasos Automatizados:}
+		\begin{enumerate}
+			\item Iniciar la aplicación y navegar al menú de selección de desafíos.
+			\item Hacer clic en el Desafío de Movimiento Básico.
+			\item En la escena de programación, introducir el comando mover 10 pasos en el campo de texto y añadirlo al programa.
+			\item Hacer clic en el botón ejecutar.
+			\item \textbf{Verificación:} Comprobar que (a) la simulación se inicia, (b) el robot avanza, y (c) al finalizar, el texto de salida muestra un mensaje de ¡Ejecución Completada!.
+		\end{enumerate}
+	\end{itemize}
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{img/katalon02.png} 
+		\caption{Prueba en dispositivo Android}
+		\label{fig:katalon_Android_prueba_1}
+	\end{figure}
+	\item \textbf{Caso de Prueba TP-02: Detección de error de sintaxis}
+	\begin{enumerate}
+		\item \textbf{Objetivo:} Verificar que el parser detecta correctamente un comando inválido y proporciona feedback al usuario.
+		\item \textbf{Pasos Automatizados:}
+		\begin{enumerate}
+			\item ... (Iniciar y seleccionar desafío) ...
+			\item Introducir un comando erróneo como mover diez pasos en el campo de texto.
+			\item Hacer clic en el botón ejecutar.
+			\item \textbf{Verificación:} Comprobar que la simulación no se inicia y que el texto de salida muestra un mensaje de error de sintaxis específico.
+		\end{enumerate}
+	\end{enumerate}
+	
+		\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{img/katalon03.png} 
+		\caption{Grabacción de la prueba en dispositivo Android}
+		\label{fig:katalon_Android_grabacción_prueba_1}
+	\end{figure}
+	\item \textbf{Caso de Prueba TP-03: Validación de Bucle y Detección de Colisión}
+	\begin{enumerate}
+		\item \textbf{Objetivo:} Asegurar que los bucles se ejecutan el número correcto de veces y que el sistema de colisiones detiene la ejecución.
+		\item \textbf{Pasos Automatizados:}
+		\begin{enumerate}
+			\item ... (Seleccionar un desafío con un muro cercano) ...
+			\item Introducir el programa: repetir 4 veces, mover 5 pasos, fin\_repetir.
+			\item Hacer clic en el botón ejecutar.
+			\item \textbf{Verificación:} Comprobar que (a) el robot se mueve repetidamente pero (b) la simulación se detiene antes de completar las 4 iteraciones y (c) el texto de salida muestra un mensaje de ¡Colisión!.
+		\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/katalon_04.png} 
+	\caption{Ejecución exitosa caso de prueba }
+	\label{fig:katalon_Android_casodeprueba}
+\end{figure}
+
+El uso de Katalon Studio para la automatización de estas pruebas ha sido fundamental para garantizar la estabilidad del prototipo a lo largo de los ciclos de desarrollo, permitiendo detectar regresiones de forma temprana y eficiente.
 
 %esta pendiente de implementar pruebas en Unity mediante el framework correspondiente que actualmente da fallos en las mismas por lo que hay que terminar de refinarlas.

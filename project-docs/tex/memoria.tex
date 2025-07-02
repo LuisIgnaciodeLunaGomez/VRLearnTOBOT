@@ -9,7 +9,8 @@
 \usepackage{microtype}
 \usepackage{placeins}
 \RequirePackage{booktabs}
-
+\usepackage{longtable} 
+\usepackage{array}    
 \RequirePackage[table]{xcolor}
 \RequirePackage{xtab}
 \RequirePackage{multirow}
@@ -390,11 +391,11 @@
 		
 		\noindent\includegraphics[width=\textwidth]{\cabecera}\vspace{1cm}
 		
-		\noindent D. Carlos López Nozal, profesor del departamento de nombre departamento, área de nombre área.
+		\noindent D. Carlos López Nozal, profesor del departamento de Ingeniería Informática, área de Lenguajes y Sistemas Informáticos..
 		
 		\noindent Expone:
 		
-		\noindent Que el alumno D. \nombre, con DNI 34809179J, ha realizado el Trabajo final de Grado en Ingeniería Informática titulado título de TFG. 
+		\noindent Que el alumno D. \nombre, con DNI 34809179J, ha realizado el Trabajo final de Grado en Ingeniería Informática titulado {\tituloTFG}
 		
 		\noindent Y que dicho trabajo ha sido realizado por el alumno bajo la dirección del que suscribe, en virtud de lo cual se autoriza su presentación y defensa.
 		
@@ -424,26 +425,27 @@
 		
 		% para casos con solo un tutor comentar lo anterior
 		% y descomentar lo siguiente
-		%Vº. Bº. del Tutor:\\[2cm]
-		%D. nombre tutor D. {\nombreTutor}
+		Vº. Bº. del Tutor:\\[2cm]
+		D. nombre tutor D. {\nombreTutor}
 		
 		
 		\newpage\null\thispagestyle{empty}\newpage
 		
-		
-		
-		
+	
 		\frontmatter
 		
 		% Abstract en castellano
 		\renewcommand*\abstractname{Resumen}
 		\begin{abstract}
-			En este primer apartado se hace una \textbf{breve} presentación del tema que se aborda en el proyecto.
+			 El presente Trabajo Fin de Grado aborda el diseño e implementación de un prototipo de laboratorio virtual 3D para la enseñanza de los fundamentos de la programación y la robótica, con un enfoque en la accesibilidad y la motivación de estudiantes en etapas preuniversitarias. Desarrollado en el motor Unity con C\#, el proyecto introduce un sistema de programación híbrido que combina una representación visual de la estructura del programa con la escritura de comandos textuales.
+			
+			La principal contribución técnica es la creación de un Lenguaje de Dominio Específico (DSL) simple, junto con un parser que traduce el código fuente a una secuencia de instrucciones ejecutables, y un motor de simulación que interpreta dichas instrucciones para controlar un robot virtual en tiempo real. La arquitectura del sistema, inspirada en el patrón Modelo-Vista-Controlador (MVC), gestiona la interacción del usuario en un entorno de desafíos gamificados. El proyecto culmina en un Producto Mínimo Viable (MVP) que no solo demuestra la viabilidad técnica de la solución, sino que también funciona como un puente pedagógico, facilitando la transición de la programación por bloques a la codificación textual tradicional y alineándose con los Objetivos de Desarrollo Sostenible de democratizar la educación tecnológica.
 		\end{abstract}
 		
 		\renewcommand*\abstractname{Descriptores}
 		\begin{abstract}
-			Palabras separadas por comas que identifiquen el contenido del proyecto Ej: servidor web, buscador de vuelos, android \ldots
+		    Robótica Educativa, Unity, Programación Híbrida, Lenguaje de Dominio Específico (DSL), Simulador 3D, Parser, Intérprete, Pensamiento Computacional, STEAM.
+		
 		\end{abstract}
 		
 		\clearpage
@@ -451,12 +453,15 @@
 		% Abstract en inglés
 		\renewcommand*\abstractname{Abstract}
 		\begin{abstract}
-			A \textbf{brief} presentation of the topic addressed in the project.
+This Final Degree Project addresses the design and implementation of a 3D virtual laboratory prototype for teaching the fundamentals of programming and robotics, with a focus on accessibility and motivation for pre-university students. Developed in the Unity engine with C\#, the project introduces a hybrid programming system that combines a visual representation of the program's structure with the writing of textual commands.
+
+The main technical contribution is the creation of a simple Domain-Specific Language (DSL), along with a parser that translates the source code into a sequence of executable instructions, and a simulation engine that interprets these instructions to control a virtual robot in real-time. The system's architecture, inspired by the Model-View-Controller (MVC) pattern, manages user interaction within a gamified challenge-based environment. The project culminates in a Minimum Viable Product (MVP) that not only demonstrates the technical feasibility of the solution but also serves as a pedagogical bridge, facilitating the transition from block-based programming to traditional textual coding, and aligning with the Sustainable Development Goals of democratizing technology education.
 		\end{abstract}
 		
 		\renewcommand*\abstractname{Keywords}
 		\begin{abstract}
-			keywords separated by commas.
+		    Educational Robotics, Unity, Hybrid Programming, Domain-Specific Language (DSL), 3D Simulator, Parser, Interpreter, Computational Thinking, STEAM.
+		
 		\end{abstract}
 		
 		\clearpage

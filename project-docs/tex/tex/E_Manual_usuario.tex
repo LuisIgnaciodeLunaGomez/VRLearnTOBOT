@@ -1,7 +1,7 @@
 \apendice{Documentación de Usuario}
 
 \section{Introducción}
-Bienvenido al Laboratorio Virtual de Programación y Robótica. Esta guía está diseñada para ayudarte a instalar, configurar y utilizar todas las funcionalidades de esta herramienta educativa. El objetivo principal de este laboratorio es proporcionar un entorno accesible e interactivo donde puedas aprender los fundamentos de la programación visual mediante bloques, al estilo de Scratch, y observar cómo tus programas controlan un robot virtual en un entorno 3D.
+Bienvenido al Laboratorio Virtual de Programación y Robótica VRLearnTobot. Esta guía está diseñada para ayudarte a instalar y utilizar todas las funcionalidades de esta herramienta educativa. El objetivo principal de este laboratorio es proporcionar un entorno accesible e interactivo donde puedas aprender los fundamentos de la programación mediante un \textbf{lenguaje de comandos textual o programación por bloques}, y observar cómo tus programas controlan un robot virtual en un \textbf{entorno 3D basado en desafíos}.
 
 Este manual te guiará a través de los requisitos del sistema, el proceso de instalación en un dispositivo Android (Tablet), y el uso paso a paso de las características principales, desde la creación de tu primer programa hasta la simulación del comportamiento del robot.
 
@@ -29,7 +29,7 @@ La aplicación no requiere acceso a internet para su funcionamiento básico (pro
 El Laboratorio Virtual de Programación y Robótica se distribuye como un archivo \texttt{.apk} para su instalación directa en dispositivos Android. Sigue estos pasos:
 
 \begin{enumerate}
-	\item \textbf{Obtener el archivo \texttt{.apk}:} Descarga el archivo \texttt{VrLearnToBOT\_3\_0.apk}  desde la ubicación https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/tree/master/project-app/Release/64bits.
+	\item \textbf{Obtener el archivo \texttt{.apk}:} Descarga el archivo \texttt{VrLearnToBOT.apk}  desde la ubicación https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT/tree/master/project-app/Release/64bits.
 	\item \textbf{Habilitar Fuentes Desconocidas:}
 	\begin{itemize}
 		\item En tu dispositivo Android, ve a \texttt{Ajustes > Seguridad} (la ruta exacta puede variar según el fabricante y la versión de Android).
@@ -39,64 +39,165 @@ El Laboratorio Virtual de Programación y Robótica se distribuye como un archiv
 	\item \textbf{Instalar el \texttt{.apk}:}
 	\begin{itemize}
 		\item Navega hasta la ubicación donde descargaste el archivo \texttt{.apk} utilizando un gestor de archivos.
-		\item Pulsa sobre el archivo \texttt{VrLearnToBOT\_3\_0.apk}.
+		\item Pulsa sobre el archivo \texttt{VrLearnToBOT.apk}.
 		\item El sistema te preguntará si deseas instalar la aplicación. Confirma la instalación.
 		\item Espera a que el proceso de instalación finalice.
 	\end{itemize}
 	\item \textbf{Abrir la Aplicación:} Una vez instalada, encontrarás el icono del Laboratorio Virtual en tu lista de aplicaciones. Púlsalo para iniciar.
 \end{enumerate}
 
-\section{Manual de usuario del prototipo}
+\section{Manual de usuario del prototipo código escrito}
 Esta sección te guiará a través de las funcionalidades principales del prototipo del laboratorio virtual.
 
-\subsection{Interfaz principal y navegación}
-Al iniciar la aplicación, serás recibido por la interfaz principal, que se divide en varias áreas clave (ver Figura~\ref{fig:interfaz_principal_overview}):
+NOTA: Para volver hacia atrás en cualquier pantalla solo debes de pulsar en el logotipo de la aplicación y te llevará a la pantalla anterior.
+
+\subsection{Paso 1: Seleccionar un desafío}
+Al iniciar la aplicación, serás recibido por el \textbf{Menú principal}, donde podrás elegir tu misión.
+
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[width=0.8\linewidth]{img/menuinicial.png}
+	\caption{Vista del menú principal .}
+	\label{fig:menu_inicial}
+\end{figure}
+
+
+\begin{enumerate}
+	\item Tras seleccionar código escrito se te mostrará una lista de \textbf{tarjetas de desafío} disponibles. Cada tarjeta contiene el título y una breve descripción del objetivo.
+	\item Pulsa sobre la tarjeta del desafío que desees resolver (ej. secuenciación).
+	\item Una vez seleccionado, el sistema te llevará automáticamente al entorno de programación, con el desafío ya cargado.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{img/menu_seleccion_desafio.png}
+	\caption{Vista del menú principal para la selección de desafíos.}
+	\label{fig:menu_desafios}
+\end{figure}
+
+\subsection{Paso 2: La interfaz de programación (IDE)}
+Una vez dentro, te encontrarás en el Entorno de Desarrollo Integrado (IDE). La interfaz se divide en las siguientes áreas clave (ver Figura~\ref{fig:interfaz_programacion}):
 \begin{itemize}
-	\item \textbf{Panel de categorías de bloques (izquierda):} Muestra una lista de categorías de bloques disponibles (ej. Movimiento, Eventos). Al pulsar sobre una categoría, se actualizará el panel de la Toolbox.
-	\item \textbf{Panel de Toolbox/Lista de Bloques (centro-izquierda):} Muestra las plantillas de los bloques correspondientes a la categoría seleccionada. Desde aquí puedes arrastrar bloques al área de codificación. En este prototipo no se han añadido todos los bloques que se podrían utilizar para llevar a cabo secuencias de programación completas.
-	\item \textbf{Área de codificación (derecha):} Es el espacio principal donde construirás tus programas arrastrando y conectando bloques.
-	\item \textbf{Panel superior de control:} Contiene los botones para iniciar la ejecución del programa (Bandera Verde), detenerla (Botón Stop), y las opciones para Guardar y Cargar proyectos.
+	\item \textbf{Panel de instrucciones del desafío (arriba):} Muestra el título y la descripción detallada del objetivo que debes cumplir. ¡Léelo con atención!
+	\item \textbf{Área de programa:} Aquí es donde se visualizará tu programa, línea por línea, a medida que añades comandos.
+	\item \textbf{Panel de comandos:} Es tu zona de trabajo principal. Contiene un campo de texto para escribir los comandos del robot.
+	\item \textbf{Panel de salida y feedback :} Muestra mensajes importantes, como errores de sintaxis en tu código, el estado de la ejecución, o mensajes de éxito y colisión.
 \end{itemize}
 
 \begin{figure}[H]
-	 \centering
-	   \includegraphics[width=0.8\linewidth]{img/interfaz_principal_overview.png}
-	   \caption{Vista general de la Interfaz Principal del Laboratorio Virtual.}
-    \label{fig:interfaz_principal_overview}
- \end{figure}
+	\centering
 
-\subsection{Creación de un programa de bloques}
+	\includegraphics[width=0.8\linewidth]{img/interfaz_programación_hibrida.png}
+	\caption{Vista general de la Interfaz de Programación (IDE).}
+	\label{fig:interfaz_programacion}
+\end{figure}
+
+\subsection{Paso 3: Construir tu programa}
+Tu misión es escribir la secuencia correcta de comandos para que el robot cumpla el objetivo del desafío.
+
 \begin{enumerate}
-	\item \textbf{Seleccionar una Categoría:} Pulsa sobre una categoría en el panel izquierdo (ej. Eventos).
-	\item \textbf{Arrastrar un Bloque:} En el panel de la Toolbox, mantén pulsado un bloque (ej. el bloque Al hacer clic en Bandera Verde) y arrástralo hacia el Área de Codificación a la derecha. Suelta el bloque en el área.
-	\item \textbf{Añadir más Bloques:} Repite el proceso para otros bloques. Por ejemplo, selecciona la categoría Movimiento y arrastra un bloque Mover 10 Pasos.
-	\item \textbf{Conectar Bloques:} Arrastra el bloque Mover 10 Pasos de forma que su muesca superior se alinee con la pestaña inferior del bloque Al hacer clic en Bandera Verde. El sistema debería mostrar un resaltado visual indicando una conexión válida. Al soltar, los bloques se unirán (snap). Puedes apilar múltiples bloques de esta manera para crear una secuencia.
+	\item \textbf{Escribir un comando:} En el panel de comandos, pulsa sobre el \textbf{campo de texto} para activar el teclado. Escribe tu primer comando. El lenguaje es simple y directo. Ejemplos de comandos válidos:
+	\begin{itemize}
+		\item \texttt{mover 10 pasos}
+		\item \texttt{girar derecha}
+		\item \texttt{repetir 4 veces}
+	\end{itemize}
+	\item \textbf{Añadir el comando al programa:} Una vez escrito el comando, pulsa el botón \textbf{+}. El comando se añadirá como un nuevo bloque de texto en el area de programa a la izquierda.
+	\item \textbf{Construir la secuencia:} Repite el proceso para añadir todos los comandos necesarios en el orden correcto. Si te equivocas, puedes usar el botón \textbf{Borrar} para limpiar todo el programa y empezar de nuevo.
+	\item \textbf{Manejo de bucles:} Para crear un bucle, primero escribe el comando repetir N veces y añádelo. Luego, añade todos los comandos que irán dentro del bucle. Finalmente, añade el comando fin\_repetir para cerrar el bloque.
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+
+	\includegraphics[width=0.8\linewidth]{img/programa_textual_construido.png}
+	\caption{Ejemplo de un programa construido con comandos textuales.}
+	\label{fig:programa_construido}
+\end{figure}
+
+\subsection{Paso 4: Ejecutar y simular el programa}
+\begin{enumerate}
+	\item \textbf{Iniciar simulación:} Cuando creas que tu programa es correcto, pulsa el botón \textbf{ejecutar}.
+	\item \textbf{Verificación del código:} El sistema analizará tu código. Si encuentra un error de sintaxis, aparecerá un mensaje en rojo en el panel de salida. ¡Deberás corregir tu código y volver a intentarlo!
+	\item \textbf{Observar al robot:} Si el código es correcto, la simulación comenzará. Observa cómo el robot ejecuta tus comandos en el entorno 3D. Un cronómetro medirá el tiempo de ejecución.
+	\item \textbf{Resultado del desafío:} La ejecución puede terminar de varias maneras:
+	\begin{itemize}
+		\item \textbf{Éxito:} Si el robot completa el objetivo, recibirás un mensaje de felicitación.
+		\item \textbf{Colisión:} Si el robot choca con un muro, la ejecución se detendrá y verás un mensaje de colisión.
 	
-	\item \textbf{Editar Valores de los Bloques:} Si un bloque tiene un campo editable (como el número en Mover 10 Pasos), pulsa sobre ese campo. Se mostrará un teclado o un selector para que ingreses el nuevo valor.
+	\end{itemize}
 \end{enumerate}
+
+
+\subsection{Cambio de cámara}
+Durante la simulación, puedes pulsar el botón de \textbf{cambio de cámara} para obtener diferentes perspectivas de la acción del robot, lo que te ayudará a entender mejor su comportamiento y a depurar tu programa.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{img/changecam.png}
+	\caption{Simulación con cámara trasera.}
+	\label{fig:changecam}
+\end{figure}
+
+
+\section{Manual de usuario del prototipo programación por bloques}
+Esta sección te guiará a través de las funcionalidades principales del prototipo del laboratorio virtual.
+
+NOTA: Para volver hacia atrás en cualquier pantalla solo debes de pulsar en el logotipo de la aplicación y te llevará a la pantalla anterior.
+
+\subsection{Paso 1: Seleccionar itinerario}
+Si en el menú principal has seleccionado la opción bloques de colores , serás recibido por el \textbf{Menú principal}, donde podrás elegir entre programación libre o seleccionar un desafio de programación por bloques.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\linewidth]{img/unionbloques.png}
-	\caption{Bloques vinculados en el área de codificación.}
-	\label{fig:unionbloques}
+	
+	\includegraphics[width=0.8\linewidth]{img/blockprograming.png}
+	\caption{Vista del menú principal bloques de colores.}
+	\label{fig:menu_inicial_bloques}
 \end{figure}
 
-\subsection{Ejecución y simulación del programa}
-\begin{enumerate}
-	\item \textbf{Iniciar simulación:} Una vez que hayas construido tu programa, pulsa el icono de la \textbf{Bandera Verde} en el panel superior.
-	\item \textbf{Transición a simulación:} La interfaz cambiará para mostrar el entorno de simulación 3D. El robot virtual (inspirado en LEGO WeDo 2.0) aparecerá en la escena.
-	\item \textbf{Cuenta Atrás:} Se mostrará una breve cuenta atrás visual antes de que comience la ejecución del programa.
-	\item \textbf{Ejecución del Robot:} El robot comenzará a ejecutar las acciones programadas en tus bloques. Por ejemplo, si has conectado Mover 10 Pasos, el robot se desplazará hacia adelante.
-	\item \textbf{Feedback Visual:} Observarás el movimiento del robot en tiempo real. .
-	\item \textbf{Detener Simulación:} En cualquier momento, puedes pulsar el \textbf{Botón Stop} (icono rojo) en el panel superior. La ejecución del programa y el movimiento del robot se detendrán, y la interfaz volverá al modo de programación.
-\end{enumerate}
+\subsection{Paso 2: Seleccionar desafío}
+
+Si has seleccionado desafío el sistema te ofrecerá distintos desafíos para que aprendas a programar y resolver distintos retos.
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[width=0.8\linewidth]{img/selectprogramming.png}
+	\caption{Vista del menú de desafíos.}
+	\label{fig:selectprogramming}
+\end{figure}
+
+\subsection{Paso 3: Descripción del desafío}
+
+Una vez has seleccionado un desafío se abrira una pantalla con un video de demostración de este y algunas instrucciones. Si presionas en iniciar desafio te llevará a la pantalla de programación.
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[width=0.8\linewidth]{img/briefchallenge.png}
+	\caption{Vista de la descripción del desafío.}
+	\label{fig:briefchallenge}
+\end{figure}
+
+\subsection{Paso 4: Iniciar desafío}
+
+Has pulsado en iniciar el desafío propuesto por lo que estarás en la pantalla de programación por bloques donde deberás de hacer el programa para que el robot se mueva.
+\begin{figure}[H]
+	\centering
+	
+	\includegraphics[width=0.8\linewidth]{img/solvingchallenge.png}
+	\caption{Vista de la pantalla de programación por bloques.}
+	\label{fig:solvingchallenge}
+\end{figure}
+
+\subsection{Paso 5: Ejecutar desafío}
+
+Una vez has programado un desafío pulsa en la bandera verde para que se abra la zona de simulación donde el robot debe de ejecutar las acciones que le has indicado.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\linewidth]{img/simulacion_robot.png}
-	\caption{Pantalla de simulador de ejecucción sin bloques vinculados.}
-	\label{fig:simulacion_robo}
+	
+	\includegraphics[width=0.8\linewidth]{img/executionchallenge.png}
+	\caption{Vista de la pantalla de simulación.}
+	\label{fig:executionchallenge}
 \end{figure}
-
 

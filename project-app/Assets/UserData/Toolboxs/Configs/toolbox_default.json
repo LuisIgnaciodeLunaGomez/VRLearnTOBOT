@@ -1,0 +1,20 @@
+{
+     "Style": "classic",
+     "BlockCategoryList": [
+          {
+               "CategoryName": "MOVER",
+               "ColorHex": "#4C97FF",
+               "BlockTypePrefix": "motion"
+          },
+          {
+               "CategoryName": "EVENTS",
+               "ColorHex": "#FFBF00",
+               "BlockTypePrefix": "event"
+          },
+          {
+               "CategoryName": "CONTROL",
+               "ColorHex": "#FFAB19",
+               "BlockTypePrefix": "controls"
+          }
+     ]
+}

@@ -9,8 +9,23 @@ EditorBuildSettings:
     path: Assets/Scenes/ScratchDisplay.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 2f3650ba01340f14195b3c5aed03ab6c
+  - enabled: 1
+    path: Assets/Scenes/MenuScene.unity
+    guid: 82ca2276856ce014ca9e0c63d601399e
+  - enabled: 1
+    path: Assets/Scenes/CodingScene.unity
+    guid: c2f0b4df9a728244982d4472e4771c1a
+  - enabled: 1
+    path: Assets/Scenes/IntroScene.unity
+    guid: d94b6ff40f372cd4c93c3658c7d21d99
+  - enabled: 1
     path: Assets/Scenes/UIGUIVRLearnToBot.unity
     guid: fcdc1d9bae954304aa948589d1aab3e8
+  - enabled: 0
+    path: Assets/Scenes/RobotsLearnToBot.unity
+    guid: dd616bf2a40e4c04cb85634835d4e967
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 812bbaba6bd291343abfefc4ca92d1a9, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
