@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que controla la UI de una tarjeta de desafío en el menú de introducción.
  */
 
 

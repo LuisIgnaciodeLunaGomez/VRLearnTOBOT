@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que controla el menú de introducción del juego,
  */
 
 using System.Collections;

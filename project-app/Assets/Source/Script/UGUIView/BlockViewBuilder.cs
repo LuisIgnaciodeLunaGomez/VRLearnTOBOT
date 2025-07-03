@@ -165,7 +165,7 @@ namespace UBlockly.UGUI
             //2. build new inputviews
             for (int i = 0; i < block.InputList.Count; i++)
             {
-                Input input = block.InputList[i];
+                InputModel input = block.InputList[i];
                 
                 // build new line group view 
                 bool newLine = i > 0 &&
@@ -229,7 +229,7 @@ namespace UBlockly.UGUI
             }
         }
 
-        public static InputView BuildInputView(Input input, LineGroupView groupView, BlockView blockView)
+        public static InputView BuildInputView(InputModel input, LineGroupView groupView, BlockView blockView)
         {
             GameObject inputPrefab;
             ConnectionInputViewType viewType;
@@ -261,8 +261,8 @@ namespace UBlockly.UGUI
             inputView.AlignRight = input.Align == Define.EAlign.Right;
             
             // build child field views of this input view 
-            List<Field> fields = input.FieldRow;
-            foreach (Field field in fields)
+            List<FieldModel> fields = input.FieldRow;
+            foreach (FieldModel field in fields)
             {
                 FieldView fieldView = BuildFieldView(field);
                 inputView.AddChild(fieldView);
@@ -290,7 +290,7 @@ namespace UBlockly.UGUI
             return inputView;
         }
 
-        public static FieldView BuildFieldView(Field field)
+        public static FieldView BuildFieldView(FieldModel field)
         {
             FieldView fieldView = null;
             GameObject fieldObj = null;

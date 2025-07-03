@@ -1,4 +1,19 @@
-
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 21/06/2025
+ * 
+ * Versión: 1.0.0
+ * 
+ * Descripción: Controlador principal de bloques en el workspace.
+ * 
+ */
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -9,11 +24,9 @@ namespace UBlockly.UGUI
     {
         // Referencia al controlador principal para acceder a otras partes como la Toolbox
         private readonly WorkspaceController mWorkspaceController;
-
         
-       
-        private Connection mClosestConnection;
-        private Connection mAttachingConnection;
+        private ConnectionModel mClosestConnection;
+        private ConnectionModel mAttachingConnection;
         private Vector2 mTouchOffset;
 
         public BlockController(WorkspaceController workspaceController)
@@ -56,10 +69,10 @@ namespace UBlockly.UGUI
 
             // 1. El controlador actualiza la posición EN EL MODELO.
             blockView.XY = newPosition; /* localPos + mTouchOffset;*/
-            // La vista se actualizará automáticamente gracias a su observador del modelo.
+// La vista se actualizará automáticamente gracias a su observador del modelo.
 
-            // 2. El controlador se encarga de buscar conexiones.
-            FindClosestConnection(blockView);
+// 2. El controlador se encarga de buscar conexiones.
+FindClosestConnection(blockView);
 
             // 3. El controlador notifica al controlador principal que verifique la papelera.
             mWorkspaceController.Toolbox.CheckBin(blockView);
@@ -75,7 +88,7 @@ namespace UBlockly.UGUI
             {
                 // El controlador actualiza el modelo para realizar la conexión.
                 mClosestConnection.Connect(mAttachingConnection);
-                mClosestConnection.FireUpdate(Connection.UpdateState.UnHighlight);
+                mClosestConnection.FireUpdate(ConnectionModel.UpdateState.UnHighlight);
             }
 
            
@@ -112,9 +125,9 @@ namespace UBlockly.UGUI
             if (oldClosest != mClosestConnection)
             {
                 if (oldClosest != null)
-                    oldClosest.FireUpdate(Connection.UpdateState.UnHighlight);
+                    oldClosest.FireUpdate(ConnectionModel.UpdateState.UnHighlight);
                 if (mClosestConnection != null)
-                    mClosestConnection.FireUpdate(Connection.UpdateState.Highlight);
+                    mClosestConnection.FireUpdate(ConnectionModel.UpdateState.Highlight);
             }
         }
     }

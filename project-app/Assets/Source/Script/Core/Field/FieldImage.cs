@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 
 namespace UBlockly
 {
-    public sealed class FieldImage : Field
+    public sealed class FieldImage : FieldModel
     {
         [FieldCreator(FieldType = "field_image")]
         private static FieldImage CreateFromJson(JObject json)

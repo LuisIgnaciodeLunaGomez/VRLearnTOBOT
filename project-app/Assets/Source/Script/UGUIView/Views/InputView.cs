@@ -25,7 +25,7 @@ namespace UBlockly.UGUI
     public class InputView : BaseView
     {
         [SerializeField] private bool m_AlignRight = false;
-        private Input mInput;
+        private InputModel mInput;
         public bool AlignRight
         {
             get { return m_AlignRight; }
@@ -38,7 +38,7 @@ namespace UBlockly.UGUI
         }
 
      
-        public Input Input { get { return mInput; } }
+        public InputModel Input { get { return mInput; } }
 
         /// <summary>
         /// Check if this input group has a connection
@@ -58,7 +58,7 @@ namespace UBlockly.UGUI
             return Childs.Count > 0 ? Childs[Childs.Count - 1] as ConnectionInputView : null;
         }
 
-        public void BindModel(Input input)
+        public void BindModel(InputModel input)
         {
             if (mInput == input) return;
             if (mInput != null) UnBindModel();

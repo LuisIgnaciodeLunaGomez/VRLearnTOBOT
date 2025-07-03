@@ -1,0 +1,31 @@
+﻿=======================================
+    INFORME DE ANÁLISIS DE PREFABS (V3 - CON DETALLES Y POSICIONES)
+    Generado el: 25-06-2025 13:23:18
+=======================================
+
+--- Analizando Prefab: 'mesa' (Ruta: ) ---
+mesa 
+    Cube 
+        - MeshFilter
+        - MeshRenderer
+    Cube.001 
+        - MeshFilter
+        - MeshRenderer
+    Cube.002 
+        - MeshFilter
+        - MeshRenderer
+    Cube.003 
+        - MeshFilter
+        - MeshRenderer
+    Cube.004 
+        - MeshFilter
+        - MeshRenderer
+    Light (Inactivo)
+        - Light
+        - UniversalAdditionalLightData
+-----------------------------------------------------
+
+
+=======================================
+        FIN DEL INFORME
+=======================================

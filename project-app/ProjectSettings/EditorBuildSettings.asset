@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/IntroScene.unity
     guid: d94b6ff40f372cd4c93c3658c7d21d99
   - enabled: 1
+    path: Assets/Scenes/UGUIScene.unity
+    guid: 25bf886d65bedbb4fbe336ae9ef8de83
+  - enabled: 1
     path: Assets/Scenes/UIGUIVRLearnToBot.unity
     guid: fcdc1d9bae954304aa948589d1aab3e8
   - enabled: 0

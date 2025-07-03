@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace UBlockly
 {
-    public class ConnectionDB : List<Connection>
+    public class ConnectionDB : List<ConnectionModel>
     {
         /// <summary>
         /// Database of connections. 
@@ -35,7 +35,7 @@ namespace UBlockly
         /// <summary>
         /// Add a connection to the database.  Must not already exist in DB.
         /// </summary>
-        public void AddConnection(Connection connection)
+        public void AddConnection(ConnectionModel connection)
         {
             if (connection.InDB)
             {
@@ -53,7 +53,7 @@ namespace UBlockly
         /// then linearly searches nearby for the exact connection.
         /// </summary>
         /// <returns>The index of the connection, or -1 if the connection was not found.</returns>
-        public int FindConnection(Connection connection)
+        public int FindConnection(ConnectionModel connection)
         {
             if (this.Count == 0)
                 return -1;
@@ -89,7 +89,7 @@ namespace UBlockly
         /// This will be in the correct y order but makes no guarantees about ordering in the x axis.
         /// </summary>
         /// <returns>The candidate index.</returns>
-        public int FindPositionForConnection(Connection connection)
+        public int FindPositionForConnection(ConnectionModel connection)
         {
             if (this.Count == 0)
             {
@@ -121,7 +121,7 @@ namespace UBlockly
         /// <summary>
         /// Remove a connection from the database.  Must already exist in DB.
         /// </summary>
-        public void RemoveConnection(Connection connection)
+        public void RemoveConnection(ConnectionModel connection)
         {
             if (!connection.InDB) return;
 
@@ -138,7 +138,7 @@ namespace UBlockly
         /// Type checking does not apply, since this function is used for bumping.
         /// </summary>
         /// <param name="maxRadius">The maximum radius to another connection.</param>
-        public List<Connection> GetNeighbours(Connection connection, int maxRadius)
+        public List<ConnectionModel> GetNeighbours(ConnectionModel connection, int maxRadius)
         {
             var currentX = connection.Location.x;
             var currentY = connection.Location.y;
@@ -156,7 +156,7 @@ namespace UBlockly
                 pointerMid = (pointerMin + pointerMax) / 2;
             }
 
-            List<Connection> neighbours = new List<Connection>();
+            List<ConnectionModel> neighbours = new List<ConnectionModel>();
 
             //Computes if the current connection is within the allowed radius of another connection.
             Func<int, bool> checkConnection = (yIndex) =>
@@ -194,8 +194,8 @@ namespace UBlockly
         /// <param name="dxy">Offset between this connection's location in the database and the current location (as a result of dragging).</param>
         /// <param name="closestConnection"></param>
         /// <param name="closestRadius">the distance to closestConnection found.</param>
-        public void SearchForClosest(Connection connection, int maxRadius, Vector2<int> dxy, 
-                                     out Connection closestConnection, out int closestRadius)
+        public void SearchForClosest(ConnectionModel connection, int maxRadius, Vector2<int> dxy, 
+                                     out ConnectionModel closestConnection, out int closestRadius)
         {
             closestConnection = null;
             closestRadius = maxRadius;
@@ -213,7 +213,7 @@ namespace UBlockly
             // and back, so search on both sides of the index.
             var closestIndex = FindPositionForConnection(connection);
 
-            Connection temp;
+            ConnectionModel temp;
 
             //Is the candidate connection close to the reference connection.
             Func<int, int, int, bool> isInYRange = (idx, refY, refRadius) => Math.Abs(this[idx].Y - refY) <= refRadius;

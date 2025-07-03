@@ -335,7 +335,7 @@ namespace UBlockly
                 //disconnect prior value blocks
                 for (int i = 0; i < oldArgCount; i++)
                 {
-                    Input argInput = callMutator.GetArgumenInput(i);
+                    InputModel argInput = callMutator.GetArgumenInput(i);
                     BlockModel valueBlock = argInput.ConnectedBlock;
                     if (valueBlock != null)
                     {
@@ -354,7 +354,7 @@ namespace UBlockly
                         BlockModel originalValue = oldValues[indexUpdate.Before];
                         if (originalValue != null)
                         {
-                            Input argInput = callMutator.GetArgumenInput(indexUpdate.After);
+                            InputModel argInput = callMutator.GetArgumenInput(indexUpdate.After);
                             argInput.Connection.Connect(originalValue.OutputConnection);
                         }
                     }

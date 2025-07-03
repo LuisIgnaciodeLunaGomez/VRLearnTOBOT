@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que permite cargar escenas por su nombre.
  */
 
 using UnityEngine;

@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 
 namespace UBlockly
 {
-    public class FieldTextInput : Field
+    public class FieldTextInput : FieldModel
     {
         [FieldCreator(FieldType = "field_input")]
         private static FieldTextInput CreateFromJson(JObject json)

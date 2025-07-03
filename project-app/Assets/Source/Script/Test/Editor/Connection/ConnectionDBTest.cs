@@ -35,27 +35,27 @@ namespace UBlockly.Test
             Workspace workspace = new Workspace();
             var db = new ConnectionDB();
             
-            var o2 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o2 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o2.Y = 2;
             db.AddConnection(o2);
             VerifyDB("Adding connection #2", new ConnectionDB() {o2}, db);
 
-            var o4 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o4 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o4.Y = 4;
             db.AddConnection(o4);
             VerifyDB("Adding connection #4", new ConnectionDB() {o2, o4}, db);
             
-            var o1 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o1 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o1.Y = 1;
             db.AddConnection(o1);
             VerifyDB("Adding connection #1", new ConnectionDB() {o1, o2, o4}, db);
             
-            var o3a = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o3a = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o3a.Y = 3;
             db.AddConnection(o3a);
             VerifyDB("Adding connection #3a", new ConnectionDB() {o1, o2, o3a, o4}, db);
             
-            var o3b = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o3b = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o3b.Y = 3;
             db.AddConnection(o3b);
             VerifyDB("Adding connection #3a", new ConnectionDB() {o1, o2, o3b, o3a, o4}, db);
@@ -67,22 +67,22 @@ namespace UBlockly.Test
             Workspace workspace = new Workspace();
             var db = new ConnectionDB();
             
-            var o1 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o1 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o1.Y = 1;
             
-            var o2 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o2 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o2.Y = 2;
             
-            var o3a = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o3a = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o3a.Y = 3;
             
-            var o3b = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o3b = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o3b.Y = 3;
             
-            var o3c = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o3c = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o3c.Y = 3;
             
-            var o4 = new Connection(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
+            var o4 = new ConnectionModel(new BlockModel{Workspace = workspace}, Define.EConnection.InputValue);
             o4.Y = 4;
             
             db.AddConnection(o1);
@@ -270,7 +270,7 @@ namespace UBlockly.Test
                     Movable = true,
                     IsShadow = false
                 };
-                var tempConnection = new Connection(block, Define.EConnection.PrevStatement);
+                var tempConnection = new ConnectionModel(block, Define.EConnection.PrevStatement);
                 tempConnection.Location = new Vector2<int>(0, i);
                 db.AddConnection(tempConnection);
             }
@@ -293,20 +293,20 @@ namespace UBlockly.Test
             Assert.AreEqual(5, result.Y);
         }
 
-        List<Connection> GetNeighbours(ConnectionDB db, Vector2<int> location, int radius)
+        List<ConnectionModel> GetNeighbours(ConnectionDB db, Vector2<int> location, int radius)
         {
             return db.GetNeighbours(CreateConnection(location, Define.EConnection.NextStatement, new Workspace()), radius);
         }
 
-        private Connection CreateConnection(Vector2<int> location, Define.EConnection type, Workspace workspace)
+        private ConnectionModel CreateConnection(Vector2<int> location, Define.EConnection type, Workspace workspace)
         {
-            return new Connection(new BlockModel() {Workspace = workspace}, type)
+            return new ConnectionModel(new BlockModel() {Workspace = workspace}, type)
             {
                 Location = location
             };
         }
 
-        private Connection SearchDB(ConnectionDB db, Vector2<int> location, int radius, Workspace workspace)
+        private ConnectionModel SearchDB(ConnectionDB db, Vector2<int> location, int radius, Workspace workspace)
         {
             BlockModel block = new BlockModel()
             {
@@ -314,9 +314,9 @@ namespace UBlockly.Test
                 Movable = true,
                 IsShadow = false
             };
-            var tempConnection = new Connection(block, Define.EConnection.NextStatement);
+            var tempConnection = new ConnectionModel(block, Define.EConnection.NextStatement);
             tempConnection.Location = location;
-            Connection closet;
+            ConnectionModel closet;
             int distance;
             db.SearchForClosest(tempConnection, radius, new Vector2<int>(0, 0), out closet, out distance);
             return closet;

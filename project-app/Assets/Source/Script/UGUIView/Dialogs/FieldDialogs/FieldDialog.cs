@@ -20,10 +20,10 @@ namespace UBlockly.UGUI
 {
     public abstract class FieldDialog : BaseDialog
     {
-        protected Field mField;
-        public Field Field { get { return mField; } }
+        protected FieldModel mField;
+        public FieldModel Field { get { return mField; } }
         
-        public void Init(Field field)
+        public void Init(FieldModel field)
         {
             mField = field;
             mBlock = field.SourceBlock;

@@ -79,7 +79,7 @@ namespace UBlockly
 
         protected void UpdateInternal(bool divisible)
         {
-            Input divisorInput = mBlock.GetInput(DIVISOR_INPUT);
+            InputModel divisorInput = mBlock.GetInput(DIVISOR_INPUT);
             if (divisible && divisorInput == null)
             {
                 divisorInput = InputFactory.Create(Define.EConnection.InputValue, DIVISOR_INPUT, Define.EAlign.Left, CHECK);

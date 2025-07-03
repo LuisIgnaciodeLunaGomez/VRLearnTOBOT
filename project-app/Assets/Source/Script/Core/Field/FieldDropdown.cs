@@ -34,7 +34,7 @@ namespace UBlockly
     }
     
     //todo: maoling currently not support image value
-    public class FieldDropdown : Field
+    public class FieldDropdown : FieldModel
     {
         [FieldCreator(FieldType = "field_dropdown")]
         private static FieldDropdown CreateFromJson(JObject json)

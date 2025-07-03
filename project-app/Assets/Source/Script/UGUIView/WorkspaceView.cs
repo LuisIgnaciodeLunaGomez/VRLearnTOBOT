@@ -134,13 +134,13 @@ namespace UBlockly.UGUI
             {
                 BuildBlockView(childBlock);
              
-                Connection connection = null;
+                ConnectionModel connection = null;
                 if (childBlock.PreviousConnection != null)
                     connection = childBlock.PreviousConnection.TargetConnection;
                 else if (childBlock.OutputConnection != null)
                     connection = childBlock.OutputConnection.TargetConnection;
                 if (connection != null)
-                    connection.FireUpdate(Connection.UpdateState.Connected);
+                    connection.FireUpdate(ConnectionModel.UpdateState.Connected);
             }
             return view;
         }

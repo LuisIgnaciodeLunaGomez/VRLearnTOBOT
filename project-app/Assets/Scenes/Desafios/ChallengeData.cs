@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Carga la información de un desafío específico
  */
 
 using UnityEngine;

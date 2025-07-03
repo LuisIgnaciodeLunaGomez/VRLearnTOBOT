@@ -1,0 +1,58 @@
+﻿=======================================
+    INFORME DE ANÁLISIS DE PREFABS (V3 - CON DETALLES Y POSICIONES)
+    Generado el: 02-07-2025 11:51:01
+=======================================
+
+--- Analizando Prefab: 'Block_event_when_flag_clicked 1' (Ruta: Assets/UBlocklyData/BlockGenPrefabs/Block_event_when_flag_clicked 1.prefab) ---
+Block_event_when_flag_clicked 1 
+    -> RectT: Pos(0,00, 0,00) Size(184,00, 60,00) Pivot(0,0, 1,0)
+             Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+    - CanvasRenderer
+    - CustomMeshImage
+      - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+    - BlockView
+      - <b><color=#00BCD4>DefinitionName:</color></b> "<b>Block_event_when_flag_clicked 1</b>"
+    Connection_next 
+        -> RectT: Pos(11,20, 6,90) Size(33,00, 12,00) Pivot(0,0, 1,0)
+                 Anchors: Min(0,0, 0,0) Max(0,0, 0,0)
+        - ConnectionView
+          - <b><color=#00BCD4>DefinitionName:</color></b> "<b>Connection_next</b>"
+        - CanvasRenderer
+        - Image
+          - Image Type: <color=orange>Simple</color> | Raycast: ✓
+    LineGroup 
+        -> RectT: Pos(0,00, 0,00) Size(184,00, 60,00) Pivot(0,0, 1,0)
+                 Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+        - LineGroupView
+          - <b><color=#00BCD4>DefinitionName:</color></b> "<b>LineGroup</b>"
+        Input_ 
+            -> RectT: Pos(10,00, 0,00) Size(164,00, 60,00) Pivot(0,0, 1,0)
+                     Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+            - InputView
+              - <b><color=#00BCD4>DefinitionName:</color></b> "<b>Input_</b>"
+            Field_label 
+                -> RectT: Pos(0,00, 0,00) Size(120,00, 60,00) Pivot(0,0, 1,0)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - FieldLabelView
+                  - <b><color=#00BCD4>DefinitionName:</color></b> "<b>Field_label</b>"
+                Label 
+                    -> RectT: Pos(0,00, -10,00) Size(0,00, 40,00) Pivot(0,0, 1,0)
+                             Anchors: Min(0,0, 1,0) Max(1,0, 1,0)
+                    - CanvasRenderer
+                    - Text
+            Field_FIELDNAME_DEFAULT 
+                -> RectT: Pos(140,00, 0,00) Size(24,00, 60,00) Pivot(0,0, 1,0)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - FieldImageView
+                  - <b><color=#00BCD4>DefinitionName:</color></b> "<b>Field_FIELDNAME_DEFAULT</b>"
+                Image 
+                    -> RectT: Pos(0,00, 0,00) Size(24,00, 24,00) Pivot(0,5, 0,5)
+                             Anchors: Min(0,5, 0,5) Max(0,5, 0,5)
+                    - CanvasRenderer
+                    - RawImage
+-----------------------------------------------------
+
+
+=======================================
+        FIN DEL INFORME
+=======================================

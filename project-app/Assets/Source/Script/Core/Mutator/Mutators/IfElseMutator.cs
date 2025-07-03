@@ -108,11 +108,11 @@ namespace UBlockly
         /// </summary>
         private void UpdateInternal()
         {
-            List<Input> oldInputs = new List<Input>(mBlock.InputList);
-            List<Input> newInputs = new List<Input>();
+            List<InputModel> oldInputs = new List<InputModel>(mBlock.InputList);
+            List<InputModel> newInputs = new List<InputModel>();
             
             // Set aside the else input for the end.
-            Input elseInput = mBlock.GetInput(ELSE_INPUT_NAME);
+            InputModel elseInput = mBlock.GetInput(ELSE_INPUT_NAME);
             if (elseInput != null)
                 oldInputs.Remove(elseInput);
             
@@ -133,11 +133,11 @@ namespace UBlockly
                 else
                 {
                     // IFi value input
-                    Input inputValue = InputFactory.Create(Define.EConnection.InputValue, IF_INPUT_PREFIX + i, ALIGN, new List<string>() {CHECK});
+                    InputModel inputValue = InputFactory.Create(Define.EConnection.InputValue, IF_INPUT_PREFIX + i, ALIGN, new List<string>() {CHECK});
                     inputValue.AppendField(new FieldLabel(null, I18n.Get(MsgDefine.CONTROLS_IF_MSG_ELSEIF)));
 
                     // DOi statement input
-                    Input inputStatement = InputFactory.Create(Define.EConnection.NextStatement, DO_INPUT_PREFIX + i, ALIGN, null);
+                    InputModel inputStatement = InputFactory.Create(Define.EConnection.NextStatement, DO_INPUT_PREFIX + i, ALIGN, null);
                     inputStatement.AppendField(new FieldLabel(null, I18n.Get(MsgDefine.CONTROLS_IF_MSG_THEN)));
                     
                     newInputs.Add(inputValue);
@@ -162,7 +162,7 @@ namespace UBlockly
             }
 
             // Clean up extra inputs
-            foreach (Input input in oldInputs)
+            foreach (InputModel input in oldInputs)
                 input.Dispose();
             oldInputs.Clear();
             

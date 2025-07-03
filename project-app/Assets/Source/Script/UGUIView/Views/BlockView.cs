@@ -283,9 +283,9 @@ namespace UBlockly.UGUI
 
         private Vector2 mTouchOffset;
         // closest connection found when dragging
-        private Connection mClosestConnection = null;
+        private ConnectionModel mClosestConnection = null;
         // local connection opposite to closest connection found
-        private Connection mAttachingConnection = null;
+        private ConnectionModel mAttachingConnection = null;
         
         public void OnBeginDrag(PointerEventData eventData)
         {

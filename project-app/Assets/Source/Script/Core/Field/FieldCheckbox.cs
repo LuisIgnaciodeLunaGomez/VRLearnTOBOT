@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 
 namespace UBlockly
 {
-    public sealed class FieldCheckbox : Field
+    public sealed class FieldCheckbox : FieldModel
     {
         [FieldCreator(FieldType = "field_checkbox")]
         private static FieldCheckbox CreateFromJson(JObject json)

@@ -27,7 +27,7 @@ namespace UBlockly.UGUI
     public class ConnectionView : BaseView
     {
         [SerializeField] protected Define.EConnection m_ConnectionType;
-        protected Connection mConnection;
+        protected ConnectionModel mConnection;
         protected BlockView mSourceBlockView;
         protected BlockView mTargetBlockView;
         protected GameObject mHighlightObj;
@@ -54,7 +54,7 @@ namespace UBlockly.UGUI
             }
         }
         
-        public Connection Connection { get { return mConnection; } }
+        public ConnectionModel Connection { get { return mConnection; } }
 
         public BlockView SourceBlockView
         {
@@ -69,7 +69,7 @@ namespace UBlockly.UGUI
 
         
 
-        public virtual void BindModel(Connection connection)
+        public virtual void BindModel(ConnectionModel connection)
         {
             if (mConnection == connection) return;
             if (mConnection != null) UnBindModel();
@@ -121,11 +121,11 @@ namespace UBlockly.UGUI
                 mTargetBlockView.OnXYUpdated();
         }
 
-        protected void OnConnectStateUpdated(Connection.UpdateState updateState)
+        protected void OnConnectStateUpdated(ConnectionModel.UpdateState updateState)
         {
             switch (updateState)
             {
-                case Connection.UpdateState.Connected:
+                case ConnectionModel.UpdateState.Connected:
                 {
                     if (!mConnection.IsSuperior)
                         throw new Exception("ConnectionView- OnConnectStateUpdated: Only Superior can accept the \"Connected\" message.");
@@ -134,7 +134,7 @@ namespace UBlockly.UGUI
                     OnAttached();
                     break;
                 }
-                case Connection.UpdateState.Disconnected:
+                case ConnectionModel.UpdateState.Disconnected:
                 {
                     if (!mConnection.IsSuperior)
                         throw new Exception("ConnectionView- OnConnectStateUpdated: Only Superior can accept the \"Disconnected\" message.");
@@ -143,7 +143,7 @@ namespace UBlockly.UGUI
                     OnDetached();
                     break;
                 }
-                case Connection.UpdateState.BumpedAway:
+                case ConnectionModel.UpdateState.BumpedAway:
                 {
                     if (mConnection.IsSuperior)
                         throw new Exception("ConnectionView- OnConnectStateUpdated: Only Inferior can accept the \"BumpedAway\" message.");
@@ -152,12 +152,12 @@ namespace UBlockly.UGUI
                     mSourceBlockView.XY += BlockViewSettings.Get().BumpAwayOffset;
                     break;
                 }
-                case Connection.UpdateState.Highlight:
+                case ConnectionModel.UpdateState.Highlight:
                 {
                     Highlight(true);
                     break;
                 }
-                case Connection.UpdateState.UnHighlight:
+                case ConnectionModel.UpdateState.UnHighlight:
                 {
                     Highlight(false);
                     break;
@@ -185,9 +185,9 @@ namespace UBlockly.UGUI
             detachedView.SetOrphan();
         }
 
-        public bool SearchClosest(int searchLimit, ref Connection closest, ref int closestRadius)
+        public bool SearchClosest(int searchLimit, ref ConnectionModel closest, ref int closestRadius)
         {
-            Connection closestFound;
+            ConnectionModel closestFound;
             int radius;
             mConnection.DBOpposite.SearchForClosest(mConnection, searchLimit, new Vector2<int>(0, 0), out closestFound, out radius);
             if (closestFound != null)
@@ -233,7 +233,7 @@ namespace UBlockly.UGUI
             mHighlightObj.SetActive(active);
         }
 
-        private class MemorySafeConnectionObserver : IObserver<Connection.UpdateState>
+        private class MemorySafeConnectionObserver : IObserver<ConnectionModel.UpdateState>
         {
             private ConnectionView mViewRef;
 
@@ -242,10 +242,10 @@ namespace UBlockly.UGUI
                 mViewRef = viewRef;
             }
 
-            public void OnUpdated(object connection, Connection.UpdateState newValue)
+            public void OnUpdated(object connection, ConnectionModel.UpdateState newValue)
             {
                 if (mViewRef == null || mViewRef.ViewTransform == null || mViewRef.Connection != connection)
-                    ((Connection) connection).RemoveObserver(this);
+                    ((ConnectionModel) connection).RemoveObserver(this);
                 else
                     mViewRef.OnConnectStateUpdated(newValue);
             }

@@ -50,7 +50,7 @@ namespace UBlockly
             if (mMutatorDict == null)
             {
                 mMutatorDict = new Dictionary<string, Type>();
-                Assembly assem = Assembly.GetAssembly(typeof(Field));
+                Assembly assem = Assembly.GetAssembly(typeof(FieldModel));
                 foreach (Type type in assem.GetTypes())
                 {
                     if (type.IsSubclassOf(typeof(Mutator)))

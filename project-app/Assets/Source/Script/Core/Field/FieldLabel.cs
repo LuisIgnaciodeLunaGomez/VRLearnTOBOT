@@ -21,7 +21,7 @@ using UnityEngine;
 
 namespace UBlockly
 {
-    public sealed class FieldLabel : Field
+    public sealed class FieldLabel : FieldModel
     {
         [FieldCreator(FieldType = "field_label")]
         private static FieldLabel CreateFromJson(JObject json)

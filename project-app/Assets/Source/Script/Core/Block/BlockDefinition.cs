@@ -84,37 +84,37 @@ namespace UBlockly
             }
         }
 
-        public Connection CreateOutputConnection()
+        public ConnectionModel CreateOutputConnection()
         {
             if (!mHasOutput) return null;
             
-            Connection connection = new Connection(Define.EConnection.OutputValue);
+            ConnectionModel connection = new ConnectionModel(Define.EConnection.OutputValue);
             connection.SetCheck(mOutputChecks != null ? mOutputChecks.ToList() : null);
             return connection;
         }
 
-        public Connection CreatePreviousStatementConnection()
+        public ConnectionModel CreatePreviousStatementConnection()
         {
             if (!mHasPreviousStatement) return null;
 
-            Connection connection = new Connection(Define.EConnection.PrevStatement);
+            ConnectionModel connection = new ConnectionModel(Define.EConnection.PrevStatement);
             connection.SetCheck(mPreviousStatementChecks != null ? mPreviousStatementChecks.ToList() : null);
             return connection;
         }
 
-        public Connection CreateNextStatementConnection()
+        public ConnectionModel CreateNextStatementConnection()
         {
             if (!mHasNextStatement) return null;
 
-            Connection connection = new Connection(Define.EConnection.NextStatement);
+            ConnectionModel connection = new ConnectionModel(Define.EConnection.NextStatement);
             connection.SetCheck(mNextStatementChecks != null ? mNextStatementChecks.ToList() : null);
             return connection;
         }
 
-        public List<Input> CreateInputList()
+        public List<InputModel> CreateInputList()
         {
-            List<Input> inputs = new List<Input>();
-            List<Field> fields = new List<Field>();
+            List<InputModel> inputs = new List<InputModel>();
+            List<FieldModel> fields = new List<FieldModel>();
 
             int i = 0;
             while (!mJson["message" + i].IsNullOrUndefined())
@@ -153,8 +153,8 @@ namespace UBlockly
                             }
                             else if (Define.INPUT_TYPES.Contains(elementType))
                             {
-                                Input input = InputFactory.CreateFromJson(element);
-                                foreach (Field field in fields)
+                                InputModel input = InputFactory.CreateFromJson(element);
+                                foreach (FieldModel field in fields)
                                     input.AppendField(field);
                                 fields.Clear();
                                 inputs.Add(input);
@@ -183,8 +183,8 @@ namespace UBlockly
                     {
                         dummyInputJson["align"] = mJson["lastDummyAlign" + i];
                     }
-                    Input input = InputFactory.CreateFromJson(dummyInputJson);
-                    foreach (Field field in fields)
+                    InputModel input = InputFactory.CreateFromJson(dummyInputJson);
+                    foreach (FieldModel field in fields)
                         input.AppendField(field);
                     fields.Clear();
                     inputs.Add(input);

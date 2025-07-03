@@ -89,15 +89,15 @@ namespace UBlockly
             }
         }
 
-        protected override List<Input> BuildUpdatedInputs()
+        protected override List<InputModel> BuildUpdatedInputs()
         {
-            List<Input> newInputs = new List<Input>();
+            List<InputModel> newInputs = new List<InputModel>();
             newInputs.Add(BuildNewHeader());
             if (mProcedure.DefinitionHasStatementBody)
                 newInputs.Add(GetStatementsInput());
 
             // For procedures_defreturn_mutator
-            Input returnInput = mBlock.GetInput(ProcedureDB.RETURN_INPUT_NAME);
+            InputModel returnInput = mBlock.GetInput(ProcedureDB.RETURN_INPUT_NAME);
             if (returnInput != null)
                 newInputs.Add(returnInput);
             
@@ -125,11 +125,11 @@ namespace UBlockly
         /// but updated argument list.
         /// </summary>
         /// <returns>a new header reflecting the latest mutator state.</returns>
-        protected Input BuildNewHeader()
+        protected InputModel BuildNewHeader()
         {
-            Input descriptionInput = mBlock.InputList[0];
-            List<Field> oldFields = descriptionInput.FieldRow;
-            Input input = InputFactory.Create(Define.EConnection.DummyInput, null, Define.EAlign.Left, null);
+            InputModel descriptionInput = mBlock.InputList[0];
+            List<FieldModel> oldFields = descriptionInput.FieldRow;
+            InputModel input = InputFactory.Create(Define.EConnection.DummyInput, null, Define.EAlign.Left, null);
             input.SourceBlock = mBlock;
             input.AppendField(oldFields[0]);
             input.AppendField(oldFields[1]);
@@ -140,9 +140,9 @@ namespace UBlockly
         /// <summary>
         /// An Input to contain the procedure body statements. 
         /// </summary>
-        protected Input GetStatementsInput()
+        protected InputModel GetStatementsInput()
         {
-            Input stackInput = mBlock.GetInput(ProcedureDB.STATEMENT_INPUT_NAME);
+            InputModel stackInput = mBlock.GetInput(ProcedureDB.STATEMENT_INPUT_NAME);
             if (stackInput == null)
             {
                 stackInput = InputFactory.Create(Define.EConnection.NextStatement, ProcedureDB.STATEMENT_INPUT_NAME,

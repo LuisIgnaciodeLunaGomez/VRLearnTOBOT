@@ -1,0 +1,151 @@
+﻿=======================================
+    INFORME DE ANÁLISIS DE PREFABS (V3 - CON DETALLES Y POSICIONES)
+    Generado el: 26-06-2025 12:10:00
+=======================================
+
+--- Analizando Prefab: 'Canvas' (Ruta: ) ---
+Canvas 
+    -> RectT: Pos(960,00, 540,00) Size(1920,00, 1080,00) Pivot(0,5, 0,5)
+             Anchors: Min(0,0, 0,0) Max(0,0, 0,0)
+    - Canvas
+    - CanvasScaler
+    - GraphicRaycaster
+    BackGroundImage 
+        -> RectT: Pos(0,00, 0,00) Size(0,00, 0,00) Pivot(0,5, 0,5)
+                 Anchors: Min(0,0, 0,0) Max(1,0, 1,0)
+        - CanvasRenderer
+        - Image
+          - Image Type: <color=orange>Simple</color> | Raycast: ✓
+    TopPanel 
+        -> RectT: Pos(0,00, 0,00) Size(0,00, 76,07) Pivot(0,5, 1,0)
+                 Anchors: Min(0,0, 1,0) Max(1,0, 1,0)
+        - CanvasRenderer
+        - Image
+          - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+        Título 
+            -> RectT: Pos(0,00, 0,00) Size(500,00, 50,00) Pivot(0,5, 0,5)
+                     Anchors: Min(0,5, 0,5) Max(0,5, 0,5)
+            - CanvasRenderer
+            - TextMeshProUGUI
+              - Text: "<i>Selecciona el desafio</i>" | Font Size: 48 | Raycast: ✓
+    ChallengeSelectionPanel 
+        -> RectT: Pos(0,00, 75,00) Size(-200,00, -450,00) Pivot(0,5, 0,5)
+                 Anchors: Min(0,0, 0,0) Max(1,0, 1,0)
+        - CanvasRenderer
+        - Image
+          - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+        - HorizontalLayoutGroup
+          - Padding: (L:15, R:15, T:15, B:15)
+          - Spacing: 15
+          - Alignment: MiddleCenter
+          - Control Size: (W:✓, H:✓)
+          - Force Expand: (W:✓, H:✓)
+        ChallengeCard_Template(Clone) 
+            -> RectT: Pos(291,67, -315,00) Size(553,33, 600,00) Pivot(0,5, 0,5)
+                     Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+            - CanvasRenderer
+            - Image
+              - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+            - LayoutElement
+              - Preferred Width: 200
+              - Preferred Height: 250
+            - VerticalLayoutGroup
+              - Padding: (L:20, R:20, T:20, B:20)
+              - Spacing: 0
+              - Alignment: UpperLeft
+              - Control Size: (W:x, H:x)
+              - Force Expand: (W:x, H:x)
+            - Button
+            - Outline
+            Título desafío 
+                -> RectT: Pos(120,00, -45,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>Desafío 1: Secuenciación</i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+                  - Preferred Height: 60
+            Descripción 
+                -> RectT: Pos(120,00, -95,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>Vamos a hacer que el robot se desplace haciendo una Z  </i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+        ChallengeCard_Template(Clone) 
+            -> RectT: Pos(860,00, -315,00) Size(553,33, 600,00) Pivot(0,5, 0,5)
+                     Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+            - CanvasRenderer
+            - Image
+              - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+            - LayoutElement
+              - Preferred Width: 200
+              - Preferred Height: 250
+            - VerticalLayoutGroup
+              - Padding: (L:20, R:20, T:20, B:20)
+              - Spacing: 0
+              - Alignment: UpperLeft
+              - Control Size: (W:x, H:x)
+              - Force Expand: (W:x, H:x)
+            - Button
+            - Outline
+            Título desafío 
+                -> RectT: Pos(120,00, -45,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>Desafío 2: Bucles</i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+                  - Preferred Height: 60
+            Descripción 
+                -> RectT: Pos(120,00, -95,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>En este desafio vas a aprender a usar bucles para que el robot haga las mismas instrucciones varias veces.</i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+        ChallengeCard_Template(Clone) 
+            -> RectT: Pos(1428,33, -315,00) Size(553,33, 600,00) Pivot(0,5, 0,5)
+                     Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+            - CanvasRenderer
+            - Image
+              - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+            - LayoutElement
+              - Preferred Width: 200
+              - Preferred Height: 250
+            - VerticalLayoutGroup
+              - Padding: (L:20, R:20, T:20, B:20)
+              - Spacing: 0
+              - Alignment: UpperLeft
+              - Control Size: (W:x, H:x)
+              - Force Expand: (W:x, H:x)
+            - Button
+            - Outline
+            Título desafío 
+                -> RectT: Pos(120,00, -45,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>Desafío 3: Depuración y Bugs</i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+                  - Preferred Height: 60
+            Descripción 
+                -> RectT: Pos(120,00, -95,00) Size(200,00, 50,00) Pivot(0,5, 0,5)
+                         Anchors: Min(0,0, 1,0) Max(0,0, 1,0)
+                - CanvasRenderer
+                - TextMeshProUGUI
+                  - Text: "<i>El programa que se adjunta debería de dibujar una "L" pero no es así tiene errores ¿Eres capaz de corregirlo?</i>" | Font Size: 36 | Raycast: ✓
+                - LayoutElement
+    Logo 
+        -> RectT: Pos(0,00, -405,00) Size(526,00, 109,00) Pivot(0,5, 0,5)
+                 Anchors: Min(0,5, 0,5) Max(0,5, 0,5)
+        - CanvasRenderer
+        - Image
+          - Image Type: <b><color=#4CAF50>Sliced</color></b> | Raycast: ✓
+        - Button
+-----------------------------------------------------
+
+
+=======================================
+        FIN DEL INFORME
+=======================================

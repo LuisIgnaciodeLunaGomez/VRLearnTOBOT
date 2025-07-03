@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción:  script que permite pasar información simple entre escenas,
  *//// <summary>
 /// Clase estática y global para pasar información simple entre escenas,
 /// como el ID del desafío seleccionado.

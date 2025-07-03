@@ -22,7 +22,7 @@ namespace UBlockly.UGUI
 {
     public abstract class FieldView : BaseView
     {
-        protected Field mField;
+        protected FieldModel mField;
         private MemorySafeFieldObserver mFieldObserver;
 
         protected abstract void SetComponents();
@@ -33,7 +33,7 @@ namespace UBlockly.UGUI
             get { return ViewType.Field; }
         }
        
-        public Field Field { get { return mField; } }
+        public FieldModel Field { get { return mField; } }
 
         protected BlockView mSourceBlockView
         {
@@ -46,7 +46,7 @@ namespace UBlockly.UGUI
             }
         }
 
-        public void BindModel(Field field)
+        public void BindModel(FieldModel field)
         {
             if (mField == field) return;
             if (mField != null) UnBindModel();
@@ -109,7 +109,7 @@ namespace UBlockly.UGUI
             public void OnUpdated(object field, string newValue)
             {
                 if (mViewRef == null || mViewRef.ViewTransform == null || mViewRef.Field != field)
-                    ((Field) field).RemoveObserver(this);
+                    ((FieldModel) field).RemoveObserver(this);
                 else
                     mViewRef.OnValueChanged(newValue);
             }

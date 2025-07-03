@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Gestor del juego que maneja la lógica de ejecución del desafío.
  */
 
 using System.Collections;

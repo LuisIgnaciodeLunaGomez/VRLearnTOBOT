@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que gestiona el almacenamiento y recuperación de scripts
  */using UBlockly.UGUI;
 using UnityEngine;
 

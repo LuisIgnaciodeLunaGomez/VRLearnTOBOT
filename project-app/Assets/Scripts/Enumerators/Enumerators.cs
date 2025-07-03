@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: Archivo que contiene los enumeradores utilizados en la aplicación
+ * Descripción: Archivo que contiene los enumeradores utilizados en la aplicación versión uno 
  */
 
 public enum UpdateState

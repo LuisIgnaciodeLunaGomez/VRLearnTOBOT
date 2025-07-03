@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Sistema de cronómetro para medir el tiempo de ejecución de un desafío.
  */
 using UnityEngine;
 using UnityEngine.UI; // o TMPro si usas TextMeshPro

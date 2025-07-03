@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que contiene la API del juego.
  */
 using UnityEngine;
 using System.Collections; // Necesario para IEnumerator

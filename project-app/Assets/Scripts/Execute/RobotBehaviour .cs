@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.
  * 
- * Descripción: 
+ * Descripción: Script que controla el comportamiento del robot en la escena.
  */
 
 using UnityEngine;

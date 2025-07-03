@@ -43,15 +43,15 @@ namespace UBlockly
         /// <summary>
         /// create field from json object
         /// </summary>
-        public static Field CreateFromJson(JObject json)
+        public static FieldModel CreateFromJson(JObject json)
         {
             if (mFieldDict == null)
             {
                 mFieldDict = new Dictionary<string, MethodInfo>();
-                Assembly assem = Assembly.GetAssembly(typeof(Field));
+                Assembly assem = Assembly.GetAssembly(typeof(FieldModel));
                 foreach (Type type in assem.GetTypes())
                 {
-                    if (type.IsSubclassOf(typeof(Field)))
+                    if (type.IsSubclassOf(typeof(FieldModel)))
                     {
                         MethodInfo methodInfo = type.GetMethod("CreateFromJson", BindingFlags.Static | BindingFlags.NonPublic);
                         if (methodInfo == null)
@@ -77,7 +77,7 @@ namespace UBlockly
                     "You should add one in the corresponding field class, and don't forget to add a \"FieldCreatorAttribute\" to the method.",
                     fieldType));
 
-            return fieldCreator.Invoke(null, new object[] {json}) as Field;
+            return fieldCreator.Invoke(null, new object[] {json}) as FieldModel;
         }
         
         /*/// <summary>

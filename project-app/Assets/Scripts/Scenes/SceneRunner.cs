@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que gestiona la ejecución de un script guardado en el ScriptManager.
  */
 using System.Collections;
 using UnityEngine;

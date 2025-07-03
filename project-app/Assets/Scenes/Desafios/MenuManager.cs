@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: Gestor del menú principal de selección de desafíos.
  */
 
 

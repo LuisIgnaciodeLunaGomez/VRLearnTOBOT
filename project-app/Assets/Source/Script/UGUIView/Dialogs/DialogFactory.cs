@@ -67,7 +67,7 @@ namespace UBlockly.UGUI
             return CreateMutatorDialog(block, parent) as T;
         }
 
-        public static FieldDialog CreateFieldDialog(Field field, Transform parent = null)
+        public static FieldDialog CreateFieldDialog(FieldModel field, Transform parent = null)
         {
             GameObject prefab = BlockResMgr.Get().LoadDialogPrefab(field.Type);
             if (prefab == null)
@@ -82,7 +82,7 @@ namespace UBlockly.UGUI
             return dialog;
         }
 
-        public static T CreateFieldDialog<T>(Field field, Transform parent = null) where T : FieldDialog
+        public static T CreateFieldDialog<T>(FieldModel field, Transform parent = null) where T : FieldDialog
         {
             return CreateFieldDialog(field, parent) as T;
         }

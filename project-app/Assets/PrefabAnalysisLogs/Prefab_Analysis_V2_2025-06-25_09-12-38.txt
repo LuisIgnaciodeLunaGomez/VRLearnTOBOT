@@ -1,0 +1,206 @@
+﻿=======================================
+    INFORME DE ANÁLISIS DE PREFABS (V3 - CON DETALLES Y POSICIONES)
+    Generado el: 25-06-2025 09:12:38
+=======================================
+
+--- Analizando Prefab: 'RobotControlador' (Ruta: ) ---
+RobotControlador 
+    - RobotBehaviour
+    milo 
+        ModelPivot 
+            00000_Milo.io 
+                00001_3738.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00002_3738.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00003_32059.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00004_32530.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00005_32530.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00006_3702.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00007_unión 
+                    00008_3709b.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00009_3709b.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00010_3003.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00011_92013.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00012_3003.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00013_3706.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00014_59443.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00015_3702.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00016_3706.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00017_3713.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00018_3713.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00019_motor 
+                    00020_21980.dat 
+                        00021_u9327c01.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                            00022_u9327.dat 
+                                - MeshFilter
+                                - MeshRenderer
+                            00023_u9328.dat 
+                                - MeshFilter
+                                - MeshRenderer
+                            00024_s\u9219s01.dat 
+                                - MeshFilter
+                                - MeshRenderer
+                        00025_47157.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                    00026_32062.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00027_55982.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00028_19071c01.dat 
+                    00029_19071.dat 
+                        00030_19066.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00031_19065.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00032_19070.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00033_19068.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00034_22994.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00035_u9320.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00036_u9320.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                    00037_19079.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00038_60479.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00039_60479.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00040_2654.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00041_placa 
+                    00042_4032a.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00043_2654.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00044_4185.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00045_4185.dat 
+                    - MeshFilter
+                    - MeshRenderer
+                00046_rueda 
+                    00047_55982.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00048_56891.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00049_rueda 
+                    00050_55982.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00051_56891.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00052_cabeza 
+                    00053_3709b.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00054_92013.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00055_87087.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00056_87087.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00057_44728.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00058_44728.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00059_73587p01.dat copy 
+                        00060_4592.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00061_4593.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                    00062_73587p01.dat copy 
+                        00063_4592.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                        00064_4593.dat 
+                            - MeshFilter
+                            - MeshRenderer
+                    00065_3069b.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00066_3069b.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00067_14769p01.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                00068_cuello 
+                    00069_32474.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00070_3737.dat 
+                        - MeshFilter
+                        - MeshRenderer
+                    00071_32474.dat 
+                        - MeshFilter
+                        - MeshRenderer
+-----------------------------------------------------
+
+
+=======================================
+        FIN DEL INFORME
+=======================================

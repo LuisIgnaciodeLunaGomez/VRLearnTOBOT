@@ -215,7 +215,7 @@ namespace UBlockly
                     element.AppendChild(container);
             }
 
-            Action<Field> fieldToDom = delegate(Field field)
+            Action<FieldModel> fieldToDom = delegate(FieldModel field)
             {
 //                if  TODO: editable is true (!string.IsNullOrEmpty(field.Name) && field.Editable)
                 if (!string.IsNullOrEmpty(field.Name))
@@ -377,7 +377,7 @@ namespace UBlockly
                     // Ignore any text at the <block>level. It's all whitespace anyway.
                     continue;
                 }
-                Input input = null;
+                InputModel input = null;
                 // Find any enclosed blocks or shadows in this tag.
                 XmlNode childBlockNode = null;
                 XmlNode childShadowNode = null;

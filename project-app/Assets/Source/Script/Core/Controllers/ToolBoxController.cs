@@ -1,3 +1,20 @@
+
+/*
+ * Trabajo fin de grado 2024-2025 - VRLearnTOBOT
+ *
+ * Grado en Ingeniería Informática - Universidad de Burgos
+ *
+ * Autor: Luis Ignacio de Luna Gómez
+ * 
+ * email: ldg1008@alu.ubu.es
+ * 
+ * Fecha: 21/06/2025
+ * 
+ * Versión: 1.0.0
+ * 
+ * Descripción: Controlador de la toolbox para gestionar la creación y arrastre de bloques.
+ */
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 

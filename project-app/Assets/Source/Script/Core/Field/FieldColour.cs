@@ -23,7 +23,7 @@ using Newtonsoft.Json.Linq;
 
 namespace UBlockly
 {
-    public sealed class FieldColour : Field
+    public sealed class FieldColour : FieldModel
     {
         [FieldCreator(FieldType = "field_colour")]
         private static FieldColour CreateFromJson(JObject json)

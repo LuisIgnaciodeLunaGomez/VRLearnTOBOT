@@ -166,7 +166,7 @@ namespace UBlockly
             {
                 bool isAt = isAts[i];
                 AtData data = mAtDatas[i];
-                Input atInput = mBlock.GetInput(data.inputName);
+                InputModel atInput = mBlock.GetInput(data.inputName);
                 if (isAt)
                 {
                     if (atInput == null)

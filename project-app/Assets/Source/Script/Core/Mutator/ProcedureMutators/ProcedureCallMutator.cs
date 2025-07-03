@@ -35,7 +35,7 @@ namespace UBlockly
         /// This retrieves the block's Input that represents the nth argument.
         /// </summary>
         /// <param name="index">The index of the argument asked for.</param>
-        public Input GetArgumenInput(int index)
+        public InputModel GetArgumenInput(int index)
         {
             return index <= mBlock.InputList.Count ? mBlock.InputList[index + 1] : null;
         }
@@ -58,11 +58,11 @@ namespace UBlockly
         /// <summary>
         /// A new set of Inputs reflecting the current Procedure state.
         /// </summary>
-        protected override List<Input> BuildUpdatedInputs()
+        protected override List<InputModel> BuildUpdatedInputs()
         {
             List<string> args = mProcedure.Arguments;
             int argCount = args.Count;
-            List<Input> inputs = new List<Input>();
+            List<InputModel> inputs = new List<InputModel>();
             
             // Procedure name
             inputs.Add(mBlock.InputList[0]);  
@@ -70,7 +70,7 @@ namespace UBlockly
             // Argument inputs
             for (int i = 0; i < argCount; ++i)
             {
-                Input stackInput = InputFactory.Create(Define.EConnection.InputValue, "ARG" + i, Define.EAlign.Right, null);
+                InputModel stackInput = InputFactory.Create(Define.EConnection.InputValue, "ARG" + i, Define.EAlign.Right, null);
                 
                 // add "with: " label
                 if (i == 0)

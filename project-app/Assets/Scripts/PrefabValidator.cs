@@ -12,7 +12,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: Esta clase valida que el sprite generado sea correcto y que los bloques tengan  su componente blockView.
+ * Descripción: Esta clase valida que el sprite generado sea correcto y que los bloques tengan  su componente blockView. Se cambio por el prefabDebugger
  */
 
 using UnityEditor;

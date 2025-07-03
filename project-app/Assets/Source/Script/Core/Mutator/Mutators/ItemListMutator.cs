@@ -63,7 +63,7 @@ namespace UBlockly
 
         protected override void OnAttached()
         {
-            Input defaultInput = mBlock.InputList[0];
+            InputModel defaultInput = mBlock.InputList[0];
             defaultInput.SetName(EMPTY_NAME);
             FieldLabel field = defaultInput.FieldRow[0] as FieldLabel;
             mLabelText = field.GetText();
@@ -73,7 +73,7 @@ namespace UBlockly
         private void UpdateInternal()
         {
             // currently reserve the dummy input, it will only show the Label Field on UI
-            Input emptyInput = mBlock.GetInput(EMPTY_NAME);
+            InputModel emptyInput = mBlock.GetInput(EMPTY_NAME);
             if (mItemCount > 0 && emptyInput != null)
             {
                 mBlock.RemoveInput(emptyInput);
@@ -89,7 +89,7 @@ namespace UBlockly
             int i = 0;
             for (i = 0; i < mItemCount; i++)
             {
-                Input addInput = mBlock.GetInput("ADD" + i);
+                InputModel addInput = mBlock.GetInput("ADD" + i);
                 if (addInput == null)
                 {
                     addInput = InputFactory.Create(Define.EConnection.InputValue, ADD_INPUT_PREFIX + i, Define.EAlign.Right, null);
@@ -105,7 +105,7 @@ namespace UBlockly
             // remove deleted inputs
             while (true)
             {
-                Input addInput = mBlock.GetInput("ADD" + i);
+                InputModel addInput = mBlock.GetInput("ADD" + i);
                 if (addInput == null)
                     break;
 

@@ -106,7 +106,7 @@ namespace UBlockly
         }
         
         protected abstract void SetProcedureNameInternal(string name);
-        protected abstract List<Input> BuildUpdatedInputs();
+        protected abstract List<InputModel> BuildUpdatedInputs();
         protected abstract XmlElement SerializeProcedure(Procedure info);
         protected abstract Procedure DeserializeProcedure(XmlElement xmlElement);
     }

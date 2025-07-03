@@ -7,10 +7,10 @@ namespace UBlockly.Test
     public class ConnectionTest
     {
         private Workspace mWorkspace;
-        private Connection mInput;
-        private Connection mOutput;
-        private Connection mPrevious;
-        private Connection mNext;
+        private ConnectionModel mInput;
+        private ConnectionModel mOutput;
+        private ConnectionModel mPrevious;
+        private ConnectionModel mNext;
 
         void Setup()
         {
@@ -23,10 +23,10 @@ namespace UBlockly.Test
                 return block;
             };
 
-            mInput = new Connection(createBlock(), Define.EConnection.InputValue);
-            mOutput = new Connection(createBlock(), Define.EConnection.OutputValue);
-            mPrevious = new Connection(createBlock(), Define.EConnection.PrevStatement);
-            mNext = new Connection(createBlock(), Define.EConnection.NextStatement);
+            mInput = new ConnectionModel(createBlock(), Define.EConnection.InputValue);
+            mOutput = new ConnectionModel(createBlock(), Define.EConnection.OutputValue);
+            mPrevious = new ConnectionModel(createBlock(), Define.EConnection.PrevStatement);
+            mNext = new ConnectionModel(createBlock(), Define.EConnection.NextStatement);
         }
 
         void TearDown()
@@ -40,9 +40,9 @@ namespace UBlockly.Test
 
         private Func<bool> mIsMovableFn = () => true;
 
-        private Connection CreateConnection(BlockModel sourceBlock, Vector2<int> location, Define.EConnection type)
+        private ConnectionModel CreateConnection(BlockModel sourceBlock, Vector2<int> location, Define.EConnection type)
         {
-            return new Connection(sourceBlock, type)
+            return new ConnectionModel(sourceBlock, type)
             {
                 Location = location
             };
@@ -62,7 +62,7 @@ namespace UBlockly.Test
         public void TestCanConnectWithReason_TargetNull()
         {
             Setup();
-            Assert.AreEqual(Connection.REASON_TARGET_NULL, mInput.CanConnectWithReason(null));
+            Assert.AreEqual(ConnectionModel.REASON_TARGET_NULL, mInput.CanConnectWithReason(null));
             TearDown();
         }
 
@@ -71,9 +71,9 @@ namespace UBlockly.Test
         {
             Setup();
 
-            var tempConnection = new Connection(new BlockModel() {Workspace = mWorkspace}, Define.EConnection.OutputValue);
-            Connection.ConnectReciprocally(mInput, tempConnection);
-            Assert.AreEqual(Connection.CAN_CONNECT, mInput.CanConnectWithReason(mOutput));
+            var tempConnection = new ConnectionModel(new BlockModel() {Workspace = mWorkspace}, Define.EConnection.OutputValue);
+            ConnectionModel.ConnectReciprocally(mInput, tempConnection);
+            Assert.AreEqual(ConnectionModel.CAN_CONNECT, mInput.CanConnectWithReason(mOutput));
             
             TearDown();
         }
@@ -83,8 +83,8 @@ namespace UBlockly.Test
         {
             Setup();
 
-            mInput = new Connection(new BlockModel() {Workspace = new Workspace()}, Define.EConnection.InputValue);
-            Assert.AreEqual(Connection.REASON_DIFFERENT_WORKSPACES, mInput.CanConnectWithReason(mOutput));
+            mInput = new ConnectionModel(new BlockModel() {Workspace = new Workspace()}, Define.EConnection.InputValue);
+            Assert.AreEqual(ConnectionModel.REASON_DIFFERENT_WORKSPACES, mInput.CanConnectWithReason(mOutput));
             
             TearDown();
         }
@@ -93,7 +93,7 @@ namespace UBlockly.Test
         public void TestCanConnectWithReason_Self()
         {
             Setup();
-            Assert.AreEqual(Connection.REASON_SELF_CONNECTION, mInput.CanConnectWithReason(mInput));
+            Assert.AreEqual(ConnectionModel.REASON_SELF_CONNECTION, mInput.CanConnectWithReason(mInput));
             TearDown();
         }
 
@@ -102,17 +102,17 @@ namespace UBlockly.Test
         {
             Setup();
 
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mInput.CanConnectWithReason(mPrevious));
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mInput.CanConnectWithReason(mNext));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mInput.CanConnectWithReason(mPrevious));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mInput.CanConnectWithReason(mNext));
             
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mOutput.CanConnectWithReason(mPrevious));
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mOutput.CanConnectWithReason(mNext));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mOutput.CanConnectWithReason(mPrevious));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mOutput.CanConnectWithReason(mNext));
             
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mPrevious.CanConnectWithReason(mInput));
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mPrevious.CanConnectWithReason(mOutput));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mPrevious.CanConnectWithReason(mInput));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mPrevious.CanConnectWithReason(mOutput));
             
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mNext.CanConnectWithReason(mInput));
-            Assert.AreEqual(Connection.REASON_WRONG_TYPE, mNext.CanConnectWithReason(mOutput));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mNext.CanConnectWithReason(mInput));
+            Assert.AreEqual(ConnectionModel.REASON_WRONG_TYPE, mNext.CanConnectWithReason(mOutput));
             
             TearDown();
         }
@@ -122,10 +122,10 @@ namespace UBlockly.Test
         {
             Setup();
             
-            Assert.AreEqual(Connection.CAN_CONNECT, mPrevious.CanConnectWithReason(mNext));
-            Assert.AreEqual(Connection.CAN_CONNECT, mNext.CanConnectWithReason(mPrevious));
-            Assert.AreEqual(Connection.CAN_CONNECT, mInput.CanConnectWithReason(mOutput));
-            Assert.AreEqual(Connection.CAN_CONNECT, mOutput.CanConnectWithReason(mInput));
+            Assert.AreEqual(ConnectionModel.CAN_CONNECT, mPrevious.CanConnectWithReason(mNext));
+            Assert.AreEqual(ConnectionModel.CAN_CONNECT, mNext.CanConnectWithReason(mPrevious));
+            Assert.AreEqual(ConnectionModel.CAN_CONNECT, mInput.CanConnectWithReason(mOutput));
+            Assert.AreEqual(ConnectionModel.CAN_CONNECT, mOutput.CanConnectWithReason(mInput));
             
             TearDown();
         }
@@ -250,10 +250,10 @@ namespace UBlockly.Test
             Setup();
             
             BlockModel sourceBlock = MakeSourceBlock();
-            Connection one = CreateConnection(sourceBlock, new Vector2<int>(5, 10), Define.EConnection.InputValue);
+            ConnectionModel one = CreateConnection(sourceBlock, new Vector2<int>(5, 10), Define.EConnection.InputValue);
 
             sourceBlock = MakeSourceBlock();
-            Connection two = CreateConnection(sourceBlock, new Vector2<int>(10, 15), Define.EConnection.OutputValue);
+            ConnectionModel two = CreateConnection(sourceBlock, new Vector2<int>(10, 15), Define.EConnection.OutputValue);
 
             Assert.True(one.IsConnectionAllowed(two, 20));
 
@@ -269,17 +269,17 @@ namespace UBlockly.Test
             Setup();
             
             BlockModel sourceBlock = MakeSourceBlock();
-            Connection one = CreateConnection(sourceBlock, new Vector2<int>(5, 10), Define.EConnection.InputValue);
+            ConnectionModel one = CreateConnection(sourceBlock, new Vector2<int>(5, 10), Define.EConnection.InputValue);
             
             sourceBlock = MakeSourceBlock();
-            Connection two = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.OutputValue);
+            ConnectionModel two = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.OutputValue);
             
             Assert.True(one.IsConnectionAllowed(two));
             
             sourceBlock = MakeSourceBlock();
-            Connection three = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.InputValue);
+            ConnectionModel three = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.InputValue);
 
-            Connection.ConnectReciprocally(two, three);
+            ConnectionModel.ConnectReciprocally(two, three);
             Assert.False(one.IsConnectionAllowed(two));
 
             two = CreateConnection(one.SourceBlock, new Vector2<int>(0, 0), Define.EConnection.OutputValue);
@@ -294,18 +294,18 @@ namespace UBlockly.Test
             Setup();
             
             BlockModel sourceBlock = MakeSourceBlock();
-            Connection one = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.NextStatement);
+            ConnectionModel one = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.NextStatement);
             one.SourceBlock.NextConnection = one;
             
             sourceBlock = MakeSourceBlock();
-            Connection two = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.PrevStatement);
+            ConnectionModel two = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.PrevStatement);
             
             Assert.True(two.IsConnectionAllowed(one));
             
             sourceBlock = MakeSourceBlock();
-            Connection three = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.PrevStatement);
+            ConnectionModel three = CreateConnection(sourceBlock, new Vector2<int>(0, 0), Define.EConnection.PrevStatement);
             three.SourceBlock.PreviousConnection = three;
-            Connection.ConnectReciprocally(one, three);
+            ConnectionModel.ConnectReciprocally(one, three);
             
             Assert.True(two.IsConnectionAllowed(one));
             

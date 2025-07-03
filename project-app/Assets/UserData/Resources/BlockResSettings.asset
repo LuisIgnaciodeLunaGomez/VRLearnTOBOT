@@ -37,16 +37,19 @@ MonoBehaviour:
   m_BlockViewPrefabs:
   - IndexName: event_when_flag_clicked
     ResName: Block_event_when_flag_clicked
-    Prefab: {fileID: 8281536058422022361, guid: e50c337e2ef5ecd4e97a43303907535d, type: 3}
+    Prefab: {fileID: 653456675221967846, guid: 05558b67cf546a34eb901527471e2135, type: 3}
   - IndexName: controls_repeat
     ResName: Block_controls_repeat
-    Prefab: {fileID: 6035745930954242202, guid: f90cf2310e49b0344b4de7ac07290561, type: 3}
-  - IndexName: controls_whileUntil
-    ResName: Block_controls_whileUntil
-    Prefab: {fileID: 16300963641776508, guid: 661fca29f8db5af45bc8e367be622700, type: 3}
+    Prefab: {fileID: 3534507102868638383, guid: f90cf2310e49b0344b4de7ac07290561, type: 3}
   - IndexName: motion_move_steps
     ResName: Block_motion_move_steps
-    Prefab: {fileID: 7360168679975924787, guid: b36ff0ede92f6bf45b3e54746cbf412b, type: 3}
+    Prefab: {fileID: 201170946428192393, guid: b36ff0ede92f6bf45b3e54746cbf412b, type: 3}
+  - IndexName: motion_turn_right
+    ResName: Block_motion_turn_right
+    Prefab: {fileID: 7991885294026834733, guid: eb94b59a566a9fc41a3f3cb0eca10916, type: 3}
+  - IndexName: motion_turn_left
+    ResName: Block_motion_turn_left
+    Prefab: {fileID: 8333385976399777425, guid: 84c1dc95547664843a3e8e77e783c2f7, type: 3}
   m_DialogPrefabs:
   - IndexName: variable_nae
     ResName: Dialog_variable_name

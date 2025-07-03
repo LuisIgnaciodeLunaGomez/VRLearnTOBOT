@@ -182,7 +182,7 @@ MonoBehaviour:
       herramientas, conectarlos y eliminarlos si cometes un error."
     videoPreviewClip: {fileID: 32900000, guid: b6576d8dc254bcb468342ab32f7656a4, type: 3}
     targetSceneToLoad: UGUIScene
-    thumbnailSprite: {fileID: 0}
+    thumbnailSprite: {fileID: 21300000, guid: 24dd32d216cd323458d26d7dc36e67c7, type: 3}
   - id: challenge_02_driving
     displayName: Conduciendo su robot
     description: "\xA1Hagamos que el robot se mueva! Utiliza el bloque 'mover x pasos'
@@ -1484,7 +1484,7 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 0
+    m_Top: 50
     m_Bottom: 0
   m_ChildAlignment: 1
   m_StartCorner: 0
@@ -1922,7 +1922,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 307.7466, y: 13.94}
+  m_AnchoredPosition: {x: 307.74658, y: 13.939941}
   m_SizeDelta: {x: 615.4967, y: 27.88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1051158654
@@ -2713,7 +2713,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

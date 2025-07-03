@@ -22,7 +22,7 @@ using Newtonsoft.Json.Linq;
 
 namespace UBlockly
 {
-    public sealed class FieldDate : Field
+    public sealed class FieldDate : FieldModel
     {
         [FieldCreator(FieldType = "field_date")]
         private static FieldDate CreateFromJson(JObject json)

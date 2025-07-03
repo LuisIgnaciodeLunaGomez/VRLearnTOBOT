@@ -11,7 +11,7 @@
  * 
  * Versión: 1.0.0
  * 
- * Descripción: 
+ * Descripción: script que permite probar el comportamiento del robot en la escena de pruebas.
  */using UnityEngine;
 
 public class RobotTester : MonoBehaviour
