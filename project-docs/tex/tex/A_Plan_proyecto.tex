@@ -1,14 +1,15 @@
 \apendice{Plan de proyecto software}
 \section{Introducción}
-En este  plan de proyecto software se detallan los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del laboratorio virtual de programación y robótica. El presente anexo tiene como objetivo establecer un marco de referencia para la ejecución de este trabajo, asegurando que el producto mínimo viable se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
-\\ %salto de línea
+En este  apartado se detallan los aspectos clave de la planificación, gestión y viabilidad del desarrollo del prototipo del laboratorio virtual de programación y robótica. El presente anexo tiene como objetivo establecer un marco de referencia para la ejecución de este trabajo, asegurando que el producto mínimo viable se desarrolle de manera eficiente y cumpla con los objetivos establecidos.
+ %salto de línea
+
 La planificación se ha enfocado en un desarrollo iterativo, aplicando principios de metodologías ágiles (SCRUM) para dividir el proyecto en tareas, sprints y entregables incrementales. Esto ha permitido una adaptación continua a los desafíos técnicos y una validación temprana de las funcionalidades principales. 
 \\
 
 En este apéndice, también se incluye un análisis de la viabilidad del proyecto, considerando los recursos humanos y materiales involucrados, los costes asociados estimados para el desarrollo del prototipo y una evaluación básica de los aspectos legales relevantes. El objetivo es demostrar que el proyecto, dentro de su alcance como TFG, es factible y se ha gestionado de manera responsable.
 
 \section{Planificación temporal}
-La ejecución de este Trabajo Fin de Grado se ha gestionado mediante una adaptación de la metodología ágil \textbf{SCRUM}. Esta elección metodológica se fundamenta en la necesidad de un desarrollo iterativo e incremental, permitiendo flexibilidad ante los desafíos técnicos y la evolución de los requisitos inherentes a un proyecto de prototipado y desarrollo de software. La planificación se ha estructurado en ciclos de trabajo o \textit{sprints}, de duración variable (generalmente entre una y tres semanas), con el objetivo de producir incrementos funcionales del laboratorio virtual y facilitar una validación continua del progreso.
+La ejecución de este TFG se ha gestionado mediante una adaptación de la metodología ágil \textbf{SCRUM}. Esta elección metodológica se fundamenta en la necesidad de un desarrollo iterativo e incremental, permitiendo flexibilidad ante los desafíos técnicos y la evolución de los requisitos inherentes a un proyecto de prototipado y desarrollo de software. La planificación se ha estructurado en ciclos de trabajo o \textit{sprints}, de duración variable (generalmente entre una y tres semanas), con el objetivo de producir incrementos funcionales del laboratorio virtual y facilitar una validación continua del progreso.
 
  %\vspace{-4.3\baselineskip} %eliminación de espacios en blanco amplios
  
@@ -18,7 +19,7 @@ Para llevar a cabo la planificación temporal y el seguimiento del proyecto, se 
 % \vspace{-3.0\baselineskip} %eliminación de espacios en blanco amplios
  
 	\begin{itemize}
-	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 17 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura \ref{fig:github_branches}).
+	\item \textbf{GitHub:} Ha funcionado como el sistema de control de versiones (Git) y el repositorio centralizado para todo el código fuente. Una estrategia fundamental en su uso ha sido la \textbf{gestión mediante ramas} (branches) siendo un total de 18 las creadas. Cada nueva funcionalidad significativa o la corrección de errores complejos se abordó en una rama separada ejemplos de ramas utilizadas durante el desarrollo se pueden observar en la Figura \ref{fig:github_branches}).
 	
 	Este enfoque permitió aislar el desarrollo de estas características, experimentar con soluciones sin afectar la estabilidad de la rama principal (\texttt{master}), y facilitó la revisión e integración controlada de los cambios. El historial de \textit{commits} (ver figura \ref{fig:historicocommits}) en cada rama ha proporcionado una trazabilidad detallada de la evolución específica de cada módulo o funcionalidad. Adicionalmente, las funcionalidades de \textit{issues} de GitHub se emplearon para el registro y seguimiento de tareas, así como para la gestión de errores o mejoras identificadas durante el desarrollo.
 	
@@ -105,22 +106,19 @@ El desarrollo del prototipo se articuló en torno a una serie de \textbf{hitos p
 Los principales hitos que guiaron la evolución del prototipo fueron los siguientes:
 \begin{itemize}
 	\item \textbf{Hito 1: Fundamentos y arquitectura inicial.}
-	Configuración del entorno de desarrollo, análisis de la librería UBlockly para analizar la posibilidad de reutilizarla en el proyecto.
+	Configuración del entorno de desarrollo, análisis de la librería UBlockly\cite{UBlockly} para analizar la posibilidad de reutilizarla en el proyecto.
 
-	
 	\item \textbf{Hito 2: Definición del proyecto y marco teórico.}
 	Consolidación de los objetivos del TFG, estudio comparativo de plataformas de robótica y programación visual, y estructuración inicial de la memoria.
-
 	
 	\item \textbf{Hito 3: Prototipo básico de interfaz y pruebas APK.}
 	Desarrollo de la interfaz de usuario para mostrar paneles y categorías de bloques, y primeras pruebas de generación de APK para Android.
-
 	
 	\item \textbf{Hito 4: Funcionalidad del robot y reestructuración de la simulación.}
 	Superación de las limitaciones de la simulación inicial, desarrollo del \texttt{RobotBehaviour}, implementación de los intérpretes de movimiento y evento, y validación del movimiento básico del robot virtual.
 
 	
-	\item \textbf{Hito 5: Reto técnico y pivote estratégico.} Tras la implementación de las bases, se identificó que la creación de un motor de layout dinámico para los bloques de control de flujo complejos (ej. bucles anidados) era un desafío técnico mayor de lo previsto. En línea con la metodología ágil, tomé la decisión estratégica de pivotar hacia un sistema híbrido. El objetivo era mantener una estructura visual pero introducir un DSL textual para los comandos, asegurando así la viabilidad del proyecto.
+	\item \textbf{Hito 5: Reto técnico y pivote estratégico.} Tras la implementación de las bases, se identificó que la creación de un motor de layout dinámico para los bloques de control de flujo complejos (ej. bucles anidados) era un desafío técnico mayor de lo previsto. En línea con la metodología ágil, se tomó la decisión estratégica de pivotar hacia un sistema híbrido reutilizando la implementación de Ublockly para la representación de bloques y la creación de un sistema para la codificación mediante texto. El objetivo era mantener una estructura visual pero introducir un DSL textual para los comandos, asegurando así la viabilidad del proyecto.
 
 	\item \textbf{Hito 6: Desarrollo del sistema híbrido (MVP).} Implementación del CommandParser, el ProgramBuilder y el IDE\_UIManager. Adaptación del GameManager y RobotController para ejecutar la List<Instruction> generada por el parser. Diseño de la estructura de ChallengeData para los desafíos.
 	
@@ -144,7 +142,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 
 \begin{itemize}
 	\item \textbf{Duración:} Semana 1 (del 15 al 22 de enero de 2025). 
-	\item \textbf{Objetivo principal:} Establecer las bases del proyecto, configurar el entorno de desarrollo y realizar una investigación exhaustiva de las herramientas y librerías clave, con especial foco en UBlockly.
+	\item \textbf{Objetivo principal:} Establecer las bases del proyecto, configurar el entorno de desarrollo y realizar una investigación exhaustiva de las herramientas y librerías clave, con especial foco en UBlockly \cite{UBlockly}.
 	    \item \textbf{Contexto:} Tras las reuniones iniciales con el tutor para definir el alcance y los objetivos del TFG, este primer sprint se centró en preparar toda la infraestructura técnica y conceptual necesaria para iniciar la implementación y la configuración de las diferentes partes del repositorio en el que se iba a trabajar.
 	\item \textbf{Tareas principales y resultados:}
 	\begin{itemize}
@@ -175,16 +173,15 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	\item \textbf{Tareas clave realizadas} :
 	\begin{itemize}
 		\item Elaboración de un resumen de los objetivos del proyecto, con un enfoque específico en la integración y adaptación de los paradigmas de LEGO, Scratch y Unity.
-		\item Creación y refinamiento de la lista de acrónimos a utilizar en la documentación.
 		\item Sistematización del etiquetado de \textit{issues} y del flujo de \textit{commits} en GitHub para facilitar el seguimiento del tutor.
 		\item Realización de un estudio comparativo de diferentes kits de robótica educativa y sus entornos de programación para concretar el modelo de robot virtual a simular y sus propiedades fundamentales.
 		\item Investigación de las paletas de trabajo y tipos de bloques utilizados tanto en Scratch (como estándar de código abierto para la programación visual educativa) como en entornos LEGO, identificando qué estructuras son más adecuadas para el tipo de robot objetivo.
 		\item Definición detallada de las propiedades del robot virtual que se iban a implementar y simular en el prototipo.
 		\item Ajuste de la terminología interna del proyecto (ej. cambiar etiqueta formación a learning).
 		\item Concreción de los objetivos educativos del laboratorio, alineándolos con conceptos de accesibilidad, herramientas de calidad y desarrollo sostenible (ODS).
-		\item Inicio de la sección de Trabajos Relacionados de la memoria, incluyendo la preparación de una tabla comparativa con las plataformas analizadas.
+		\item Inicio de la sección de trabajos relacionados de la memoria, incluyendo la preparación de una tabla comparativa con las plataformas analizadas.
 	
-		\item Delimitación conceptual del Laboratorio Virtual frente a un entorno virtual genérico.
+		\item Delimitación conceptual del laboratorio virtual frente a un entorno virtual genérico.
 		\item Avance en la documentación contextualizada del proyecto, asegurando que cada concepto teórico estuviera bien anclado y justificado.
 		\item Documentación de las decisiones de diseño y técnicas tomadas hasta la fecha.
 	\end{itemize}
@@ -221,7 +218,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 		\item Revisión y mejora de la introducción y la sección de objetivos de la memoria del TFG.
 		\item Definición de los componentes de la prueba en 3D con el robot virtual, incluyendo:
 		\begin{itemize}
-			\item Modelado 3D básico del robot.
+			\item Modelado 3D básico del robot en Blender - no se diseña animaciones de las ruedas del robot por no ser un aspecto importante en el proyecto.
 			\item Diseño de la interfaz de usuario (UI) inicial para la interacción con los bloques y la simulación.
 		\end{itemize}
 		\item Elaboración del resumen y título del trabajo para ser incluidos en la memoria.
@@ -273,7 +270,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 	
 
 \end{itemize}
-	\item \textbf{Hito alcanzado:} Se dio forma al prototipo funcional con un robot físico que ejecutaba secuencias de bloques de movimiento iniciadas por un bloque de evento que marcan la base para el prototipo a desarrollar. Se logró la capacidad de generar un APK funcional para pruebas en dispositivo, superando las limitaciones anteriores. Se define además que las versiones deberán ser en 32 y 64 bits por incompatibilidad del Tutor para ponerlo a prueba.
+	\item \textbf{Hito alcanzado:} Se dio forma al prototipo funcional con un robot físico que ejecutaba secuencias de bloques de movimiento iniciadas por un bloque de evento que marcan la base para el prototipo a desarrollar. Se logró la capacidad de generar un APK funcional para pruebas en dispositivo, superando las limitaciones anteriores. Se define además que las versiones deberán ser en 32 y 64 bits por incompatibilidad del Tutor para ponerlo a prueba. Se diseñaron bloques prototipo que representaban a los bloques mover y eventos.
 \end{itemize}
 
 	% --- FIGURA XML ---
@@ -281,7 +278,7 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 \begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\linewidth]{img/especificación XML de un bloque.png} 
-	\caption{Formato inicial de archivo XML para la configuración de los bloques y su jerarquía.}
+	\caption{Formato inicial de archivo XML para la configuración de los bloques y su jerarquía - Fase 1 del desarrollo.}
 	\label{fig:xmlbloque}
 \end{figure}
 
@@ -454,9 +451,15 @@ A continuación, se ofrece un desglose más detallado del trabajo realizado en c
 
 \subsection{Sprint 7: Diseño y fundamentos del sistema} 
 
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=1\linewidth]{img/Burndown SP7 - Diseño y fundamentos del sistema.png} 
+	\caption{Burndown sprint 7}
+	\label{fig:burndownsp7}
+\end{figure} 
 \item \textbf{Duración: Del 29 de mayo de 2025 al 5 de junio de 2025}
 
-\item\textbf{Objetivo principal:} Producir una primera versión íntegra y de alta calidad de la memoria del Trabajo Fin de Grado, documentando todo el proceso, desde la investigación inicial y la implementación de la arquitectura de bloques.
+\item\textbf{Objetivo principal:} Producir una primera versión íntegra y de alta calidad de la memoria del TFG, documentando todo el proceso, desde la investigación inicial y la implementación de la arquitectura de bloques.
 
 \item\textbf{Contexto y motivación:} La primera fase de desarrollo habría concluido. Era fundamental dedicar un sprint completo a la consolidación de la documentación para asegurar que la memoria reflejase de manera precisa, honesta y profesional todo el trabajo realizado hasta este momento, las decisiones tomadas y los aprendizajes obtenidos, preparando la documentación para ser posteriormente revisada en otro sprint para su preparación de cara a una defensa final.
 
@@ -481,7 +484,7 @@ Se procedió a la redacción sistemática de cada uno de los capítulos y apénd
 	\item \textbf{Capítulo 7 - Conclusiones y Líneas de Trabajo Futuras:} Se redactaron las conclusiones principales, enfatizando los logros alcanzados y los aprendizajes obtenidos. Se propusieron líneas futuras del trabajo realizado hasta esta fecha.
 	
 	\item \textbf{Bibliografía:} Se recopilaron y formatearon todas las referencias bibliográficas utilizadas a lo largo del documento utilizando un gestor de citas compatible con LaTeX, asegurando la rigurosidad académica.
-\end{itemize}
+
 
 \item \textbf{Redacción de apéndices y anexos:}
 \begin{itemize}
@@ -499,6 +502,12 @@ Se procedió a la redacción sistemática de cada uno de los capítulos y apénd
 
 \subsection{Sprint 8: Introducción guiada y desafios de programación}
 
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=1\linewidth]{img/Burndown SP8.png} 
+	\caption{Burndown sprint 8}
+	\label{fig:burndownsp8}
+\end{figure} 
 \item \textbf{Duración:} Del 5 de junio de 2025 al 12 de junio de 2025
 \item\textbf{Objetivo principal:} Transformar el prototipo de un simple sandbox de programación en una herramienta educativa estructurada, mediante el diseño e implementación de un sistema de desafíos guiados. El objetivo era crear un flujo de usuario completo, desde un menú principal hasta la resolución de un problema concreto en el entorno de simulación.
 \item\textbf{Contexto y motivación:} Con un motor de simulación funcional donde el robot se movía y giraba de forma predecible, el siguiente paso lógico era darle un propósito educativo a estas acciones. Se identificó que, para maximizar el aprendizaje y la motivación del usuario, era necesario contextualizar la programación dentro de objetivos específicos y medibles. Este sprint representó un punto de inflexión clave, desplazando el foco desde la pura mecánica de la programación (visual o textual) hacia la aplicación de la lógica para la resolución de problemas.
@@ -540,23 +549,31 @@ Se procedió a la redacción sistemática de cada uno de los capítulos y apénd
 
 \subsection{Sprint 9: Simulador de código y robot}
 
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=1\linewidth]{img/Burndown SP9.png} 
+	\caption{Burndown sprint 9}
+	\label{fig:burndownsp9}
+\end{figure} 
 \item \textbf{Duración:} Del 19 de junio al 26 de junio de 2025.
 
-\item \textbf{Objetivo Principal:} Realizar un pivote estratégico en el enfoque del proyecto ante los desafíos técnicos encontrados con la generación de bloques complejos. A propuesta del tutor, el nuevo objetivo era desarrollar un prototipo funcional basado en un sistema de programación híbrido, que combinara una estructura de bloques visual para la organización del programa con un lenguaje de comandos textual (DSL) para las acciones del robot.
+\item \textbf{Objetivo Principal:} Realizar un pivote estratégico en el enfoque del proyecto ante los desafíos técnicos encontrados con la generación de bloques complejos. A propuesta del tutor, el nuevo objetivo era desarrollar un prototipo funcional basado en un sistema de programación híbrido, que combinara una estructura de bloques visual para la organización del programa con un lenguaje de comandos textual (DSL) \cite{DSL}\cite{lenguaje_DSL} para las acciones del robot. Este sprint fue un punto de inflexión en el que se abordo la viabilidad de continuar o no el presente TFG. 
 
 \item \textbf{Contexto y motivación (El desafío de los bloques tipo C):}
-El trabajo realizado en sprints anteriores había permitido establecer una arquitectura MVC robusta y un sistema funcional de arrastre y conexión para bloques simples. Sin embargo, al intentar implementar bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), se encontraron obstáculos técnicos que excedían las estimaciones iniciales. La replicación de estos bloques requería un motor de layout dinámico extremadamente complejo, capaz de redimensionar y reorganizar geométricamente los bloques contenedores en tiempo real, una tarea de una magnitud considerable
+El trabajo realizado en sprints anteriores había permitido establecer una arquitectura MVC robusta y un sistema funcional de arrastre y conexión para bloques simples. Era posible crear bloques como los de mover o eventos y desplazarlos por el área de trabajo, soltarlos y vincularlos. Sin embargo, al intentar implementar bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), se encontraron obstáculos técnicos que excedían las estimaciones iniciales. La replicación de estos bloques requería un motor de layout dinámico extremadamente complejo, capaz de redimensionar y reorganizar geométricamente los bloques contenedores en tiempo real, una tarea de una magnitud considerable por lo que el tutor recomendo seguir por otra vía.
 
-Este desafío representó un punto de inflexión crítico, no solo desde una perspectiva técnica, sino también metodológica. Puso de manifiesto una realidad fundamental en cualquier proyecto de ingeniería: la necesidad de tomar decisiones importantes para asegurar la entrega de un Producto Mínimo Viable (MVP) funcional cuando surgen complejidades imprevistas. El considerable esfuerzo y las horas dedicadas a la investigación y al desarrollo de la arquitectura inicial no podían quedar en un proyecto inacabado.
+Este desafío, como ya he comentado anteriormente, representó un punto de inflexión crítico, no solo desde una perspectiva técnica, sino también metodológica. Puso de manifiesto una realidad fundamental en cualquier proyecto de ingeniería: \textbf{la necesidad de tomar decisiones importantes} para asegurar la entrega de un Producto Mínimo Viable (MVP) funcional cuando surgen complejidades imprevistas. El considerable esfuerzo y las horas dedicadas a la investigación y al desarrollo de la arquitectura inicial no podían quedar en un proyecto inacabado.
 
 Asimismo, este momento subrayó la enorme dificultad que implica el desarrollo de un sistema complejo por una única persona. Fue la tenacidad y la convicción en el valor del trabajo realizado hasta la fecha lo que impulsó la búsqueda de una solución alternativa. En lugar de percibir el obstáculo como un fracaso, se abordó como una oportunidad para redefinir el problema y pivotar estratégicamente.
 
-La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una decisión consciente y pragmática. Se optó por un sistema híbrido que, manteniendo la claridad visual de un programa estructurado, introdujera la codificación textual manteniendo la programación por bloques adaptando el diseño de bloques al código diseñado en el repositorio de referencia. Este reenfoque permitió aprovechar todo el trabajo de base realizado (simulador 3D, arquitectura de control del robot) y centrar el esfuerzo restante en un nuevo núcleo técnico, el diseño de un DSL y su intérprete, que aportaría un valor pedagógico y técnico igualmente significativo.
+La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una decisión consciente y pragmática. Se optó por un sistema híbrido que, manteniendo la claridad visual de un programa estructurado, introdujera la codificación textual manteniendo la programación por bloques adaptando el diseño de bloques al código diseñado en el repositorio de referencia. Este reenfoque permitió aprovechar todo el trabajo de base realizado (simulador 3D, arquitectura de control del robot) y centrar el esfuerzo restante en un nuevo núcleo técnico, el diseño de un DSL\cite{DSL}\cite{lenguaje_DSL} y su intérprete, que aportaría un valor pedagógico y técnico igualmente significativo.
+
+También supuso tomar la decisión de abordar la creación de bloques aplicando el desarrollo que se había realizado en el proyecto de UBlockly y viendo como sería posible replicar bloques lo más parecidos posible a los de scratch. Esto motivo la reformulación del MVC inicial, eliminando controladores y creando nuevos para la estructura del proyecto de UBlockly.
 \item \textbf{Tareas clave realizadas y resultados:}
 \begin{itemize}
 	\item \textbf{Diseño e implementación del intérprete de código textual:}
 	\begin{itemize}
-		\item \textbf{Definición del DSL:} Se diseñó la gramática para el lenguaje de comandos del robot, incluyendo mover, girar, y, crucialmente, las estructuras de control repetir N veces, repetir por\_siempre y su correspondiente cierre fin_repetir.
+		\item \textbf{Definición del DSL\cite{DSL}\cite{lenguaje_DSL}:} Se diseñó la gramática para el lenguaje de comandos del robot, incluyendo mover, girar, y, crucialmente, las estructuras de control repetir N veces, repetir por\_siempre y su correspondiente cierre fin\_repetir.
 		\item \textbf{Creación del parser (\texttt{CommandParser}):} Se implementó el analizador que procesa el código fuente textual. Este componente valida la sintaxis, identifica los comandos y sus argumentos, y gestiona las estructuras anidadas mediante una pila (Stack), traduciendo el código a una lista de objetos Instruction.
 	\end{itemize}
 	
@@ -577,13 +594,13 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 		\item Se realizaron pruebas exhaustivas del nuevo sistema, validando que el robot ejecutaba correctamente secuencias complejas de comandos textuales, incluyendo bucles finitos e infinitos.
 		\item Se implementó la lógica de detección de colisiones (CollisionTextLogger, MuroController) para que el robot se detuviera al chocar, añadiendo una capa de interacción realista con el entorno.
 	\end{itemize}
-	
+\end{itemize}
 	\item \textbf{Diseño de una interfaz de programación híbrida (\texttt{IDE\_UIManager}):}
 	
 	Se rediseñó la interfaz de usuario para dar cabida a dos modos de programación interconectados, sirviendo como un puente entre la codificación visual y la textual.
 	
-	\begin{itemize}
-		\item \textbf{Modo de programación textual (basado en DSL):} Se implementó una nueva vista para que los usuarios pudieran aprender a programar con código escrito y ver su ejecución inmediata en la simulación del robot. Esta vista incluye:
+\begin{itemize}
+		\item \textbf{Modo de programación textual (basado en DSL \cite{DSL}\cite{lenguaje_DSL}: Se implementó una nueva vista para que los usuarios pudieran aprender a programar con código escrito y ver su ejecución inmediata en la simulación del robot. Esta vista incluye:
 		\begin{itemize}
 			\item Un campo de entrada de texto donde el usuario introduce los comandos del DSL.
 			\item Un sistema que, al añadir un comando, instancia un prefab visual (\texttt{commandBlockPrefab}), creando una representación secuencial del programa que mantiene la claridad de un sistema de bloques.
@@ -595,16 +612,22 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 			\item Arrastrar y conectar los bloques de evento y movimiento (\texttt{motion\_movesteps}) que ya eran funcionales.
 			\item Ejecutar las secuencias de bloques directamente a través del motor de UBlockly (CSharp.Runner), traduciendo las acciones al mismo RobotController utilizado por el modo textual.
 			\item uso de bloques tipo C para repetir X veces.
+			\item Se eliminan controladores desarrollados como Appcontroller, BlockDragController, BlockConnectionController, ExecutionController, InputController etc. y se crean nuevos como BlockController, ToolBoxController, WorkSpacecontroller.
 		
 		\end{itemize}
-	\end{itemize}
+
 	Esta doble funcionalidad permite al usuario elegir su método de aprendizaje preferido o incluso transicionar de uno a otro, validando la flexibilidad de la arquitectura y la viabilidad de ambos enfoques dentro del mismo prototipo.
 	
-\end{itemize}
-
-\item \textbf{Hito alcanzado:} Se completó con éxito el pivote estratégico del proyecto. El resultado es un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
+\item \textbf{Hito alcanzado:} Se completó con éxito el pivote estratégico del proyecto. Lo que en un principio abocaba a un fracaso en la creación del proyecto provoco un giro hacia un nuevo desarrollo. El resultado fue un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado, regenerando la generación de bloques. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
 
 \subsection{Sprint 10: Revisión producto mínimo viable y memoria TFG}
+
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=1\linewidth]{img/Burndown SP10 .png} 
+	\caption{Burndown sprint 10}
+	\label{fig:burndownsp10}
+\end{figure} 
 
 \item \textbf{Duración:} Del 26 de junio al 4 de julio de 2025.
 
@@ -643,47 +666,77 @@ La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una de
 
 \item \textbf{Hito alcanzado:} Entrega de un MVP estable, pulido y funcional. Se completó la versión final de la memoria del TFG y sus anexos, listos para su presentación. El proyecto se encuentra en un estado consolidado que no solo cumple con los objetivos redefinidos, sino que también documenta de manera transparente y profesional todo el ciclo de vida del desarrollo. 
 
-
 \section{Estudio de viabilidad}
+\subsection{Viabilidad Económica}
+Aunque el desarrollo de este Trabajo Fin de Grado se ha realizado utilizando recursos preexistentes y licencias de software gratuitas, a continuación se presenta una estimación de costes simulada. El objetivo de este análisis es evaluar la viabilidad económica del desarrollo de este prototipo si se llevara a cabo como un proyecto independiente por un pequeño equipo de desarrollo durante un periodo de 6 meses.
 
-\subsection{Viabilidad económica}
-Dado que este proyecto se desarrolla en el marco de un Trabajo Fin de Grado, los costes económicos se limitan principalmente a los recursos de hardware y software ya disponibles por el estudiante y la universidad, y a servicios de bajo o nulo coste para desarrolladores individuales.
+\subsubsection{Estimación de Costes de Personal}
+El coste más significativo en cualquier proyecto de software es el de los recursos humanos. Para este prototipo, se ha estimado el tiempo dedicado en horas y se le ha asignado un valor de mercado hipotético para un perfil de desarrollador junior.
 
-\subsection{Costes de personal}
-El desarrollo ha sido realizado por un único estudiante como parte de su formación académica. No se contemplan costes salariales directos asociados al desarrollo del prototipo. El tiempo dedicado se considera inversión en aprendizaje y cumplimiento de los requisitos del TFG.
-La labor de tutorización por parte del profesor D. Carlos López Nozal se enmarca dentro de sus funciones docentes en la Universidad de Burgos.
-
-\subsection{Costes de hardware}
 \begin{itemize}
-	\item \textbf{Equipo de desarrollo:} Se ha utilizado un ordenador personal estándar con capacidad suficiente para ejecutar Unity, Blender y las herramientas de desarrollo. 
-	\item \textbf{Dispositivo de prueba (Tablet Android):} Para las pruebas de portabilidad y usabilidad, se ha utilizado una tablet Android genérica.
-	\item \textbf{Coste estimado de amortización de hardware (simulado):} Si se tuviera que estimar un coste de amortización para un proyecto independiente, se podría considerar un valor simbólico, pero para este TFG, los costes directos son nulos.
+	\item \textbf{Horas totales de desarrollo estimadas:} Se estima una dedicación de aproximadamente \textbf{480 horas} a lo largo del TFG (equivalente a 20 horas semanales durante 6 meses).
+	\item \textbf{Tarifa por hora (perfil junior):} Se establece una tarifa conservadora de \textbf{15 €/hora} (brutos, sin incluir costes de seguridad social).
+	\item \textbf{Coste total de personal:} 480 horas * 15 €/hora = \textbf{7,200 €}.
 \end{itemize}
 
-\subsection{Costes de software y servicios}
-\begin{itemize}
-	\item \textbf{Unity 6 (Personal Edition):} Licencia gratuita para estudiantes y desarrolladores individuales.
-	\item \textbf{C\# y Visual Studio Community:} Herramientas gratuitas.
-	\item \textbf{UBlockly:} Repositorio de código abierto, sin coste de licencia.
-	\item \textbf{Blender:} Software de modelado 3D de código abierto y gratuito.
-	\item \textbf{LEGO Digital Designer / Studio 2.0:} Software gratuito de LEGO para diseño.
-	\item \textbf{GitHub:} Plan gratuito para repositorios públicos o privados (si aplica cuenta de estudiante).
-	\item \textbf{Zube:} Ofrece planes gratuitos o de bajo coste para pequeños equipos o uso individual en proyectos de código abierto. Se ha utilizado bajo estas condiciones o como herramienta de prueba.
+La labor de tutorización y supervisión del proyecto (rol de \textit{Product Owner/Scrum Master}), realizada por el profesor D. Carlos López Nozal, no se ha cuantificado económicamente al formar parte de sus funciones docentes. En un entorno comercial, este rol añadiría un coste adicional significativo.
 
-\end{itemize}
-En resumen, los costes económicos directos para el desarrollo del prototipo han sido \textbf{mínimos o nulos}, aprovechando licencias educativas, software de código abierto y recursos preexistentes.
+\subsubsection{Estimación de Costes de Hardware y Software}
+La siguiente tabla detalla los costes asociados al equipamiento y las licencias necesarias, distinguiendo entre el coste real (en el contexto del TFG) y una estimación de mercado para un proyecto nuevo.
 
-\subsection{Viabilidad legal y ética}
+% --- INICIO DE LA TABLA DE COSTES ---
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{\linewidth}{|l|X|r|r|}
+		\hline
+		\textbf{Categoría} & \textbf{Elemento} & \textbf{Coste Real (TFG)} & \textbf{Coste Estimado} \\
+		\hline
+		
+		% Encabezado del grupo
+		\multicolumn{4}{|c|}{\textbf{Hardware}} \\ \hline
+		
+		% Fila del Ordenador
+		Equipo de Desarrollo & 
+		Ordenador PC (CPU, GPU, RAM) & 
+		0 € \textit{(Existente)} & 
+		699 € \\ \hline
+		
+		% Fila de la Tablet
+		Dispositivo de Pruebas & 
+		Tablet Android (Gama media) & 
+		0 € \textit{(Existente)} & 
+		100 € \\[10pt] 
+		
+		\hline
+		
+		% Encabezado del grupo
+		\multicolumn{4}{|c|}{\textbf{Software y Licencias}} \\ \hline
+		
 
-\subsection{Licencias de software}
-\begin{itemize}
-	\item \textbf{Unity Personal Edition:} Su licencia permite el desarrollo y distribución de proyectos siempre que no se superen ciertos umbrales de ingresos o financiación, lo cual no aplica a este TFG.
-	\item \textbf{UBlockly:} Generalmente distribuido bajo una licencia permisiva de código abierto (Apache 2.0). Se ha respetado la licencia original al adaptar el código, manteniendo las atribuciones correspondientes si fueran necesarias (aunque en este caso, la adaptación es para un TFG y no para redistribución comercial del UBlockly original).
-	\item \textbf{Otros componentes (Blender, etc.):} Se han utilizado bajo sus respectivas licencias de código abierto.
-\end{itemize}
+		Motor de Videojuegos & Unity Personal Edition & 0 € & 0 € \\ \hline
+		IDE de Programación & Visual Studio Community & 0 € & 0 € \\ \hline
+		Modelado 3D & Blender & 0 € & 0 € \\ \hline
+		Control de Versiones & GitHub (Plan Gratuito) & 0 € & 0 € \\ \hline
+		Gestión de Proyectos & Zube (Plan Gratuito) & 0 € & 0 € \\ \hline
+		Librería Base & UBlockly (Open Source) & 0 € & 0 € \\ \hline
+		
+		% Fila del subtotal
+		\multicolumn{2}{|r|}{\textbf{Subtotal (Hardware y Software)}} & \textbf{0 €} & \textbf{799 €} \\
+		\hline
+		
+	\end{tabularx}
+	\caption{Tabla de estimación de costes de hardware y software.}
+	\label{tab:costes}
+\end{table}
+% --- FIN DE LA TABLA ---
+
+\subsubsection{Síntesis de la Viabilidad Económica}
+El coste real para la realización de este TFG ha sido prácticamente nulo, demostrando que es posible desarrollar prototipos educativos de alta calidad aprovechando software de código abierto y licencias gratuitas.
+
+En una simulación de proyecto comercial, el coste estimado para el desarrollo de este MVP sería de aproximadamente \textbf{7,999 €} (7,200 € en personal + 799€ en equipamiento). Este coste, relativamente bajo para el desarrollo de una aplicación de software completa, subraya la viabilidad económica del proyecto para ser llevado a cabo por una startup o un pequeño equipo de desarrollo, especialmente considerando su potencial impacto educativo y social.
 
 \subsection{Propiedad intelectual}
-El código fuente desarrollado específicamente para este TFG, así como los diseños y modelos 3D originales creados, son propiedad intelectual del autor (Luis Ignacio de Luna Gómez) y de la Universidad de Burgos, según la normativa aplicable a Trabajos Fin de Grado. La adaptación del código de UBlockly se ha realizado con el fin de crear una nueva obra derivada para un propósito académico y de investigación.
+El código fuente desarrollado específicamente para este TFG, así como los diseños y modelos 3D originales creados, son propiedad intelectual del autor (Luis Ignacio de Luna Gómez) y de la Universidad de Burgos, según la normativa aplicable a Trabajos Fin de Grado. La adaptación del código de UBlockly se ha realizado con el fin de crear una nueva obra derivada para un propósito académico y de investigación respetando la licencia original.
 
 \subsection{Privacidad de datos}
 Los requisitos de normativas de protección de datos como GDPR son mínimos en esta fase. Si en futuras líneas de trabajo se integrasen servicios en la nube que manejen datos de usuario, sería necesario realizar un análisis exhaustivo y aplicar las políticas de privacidad correspondientes.
@@ -696,7 +749,7 @@ La viabilidad técnica del prototipo se ha demostrado mediante su implementació
 \begin{itemize}
 	\item \textbf{Tecnologías maduras:} Unity y C\# son tecnologías robustas y ampliamente documentadas, lo que ha facilitado el desarrollo.
 	\item \textbf{Adaptabilidad de UBlockly:} A pesar de no estar diseñado para replicar Scratch directamente, la arquitectura de UBlockly ha demostrado ser lo suficientemente flexible para ser adaptada a los requisitos del proyecto mediante la implementación de un patrón MVC y la personalización de vistas y controladores.
-	\item \textbf{Limitaciones del prototipo:} El prototipo actual implementa un conjunto limitado de bloques y funcionalidades. La viabilidad de expandirlo a un sistema completo con todas las características de Scratch dependería de un esfuerzo de desarrollo continuado, pero las bases técnicas establecidas son sólidas.
+	\item \textbf{Limitaciones del prototipo:} El prototipo actual implementa un conjunto limitado de bloques, comandos textuales y funcionalidades. La viabilidad de expandirlo a un sistema completo con todas las características de Scratch y comandos del DSL dependería de un esfuerzo de desarrollo continuado, pero las bases técnicas establecidas son sólidas.
 	\item \textbf{Rendimiento:} El prototipo, con su alcance actual, funciona de manera fluida en un equipo de desarrollo estándar y se espera un rendimiento aceptable en tablets Android de gama media, aunque esto requeriría pruebas específicas en la plataforma objetivo como parte de una línea futura.
 \end{itemize}
 En conclusión, el proyecto se considera viable tanto económica como legal y técnicamente dentro del contexto de un Trabajo Fin de Grado enfocado en el desarrollo de un prototipo funcional.

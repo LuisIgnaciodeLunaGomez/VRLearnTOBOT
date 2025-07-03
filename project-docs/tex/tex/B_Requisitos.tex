@@ -1,4 +1,4 @@
-\apendice{Especificación de Requisitos}
+\apendice{Especificación de requisitos}
 
 \section{Introducción}
 Dentro de este apéndice, se detalla la especificación de requisitos del proyecto del laboratorio virtual de programación y robótica. Una adecuada definición y gestión de los requisitos es fundamental en ingeniería de software para asegurar que el sistema desarrollado satisfaga las necesidades y expectativas de los usuarios, así como para guiar las fases posteriores de diseño e implementación. Dada la naturaleza de prototipo del presente Trabajo Fin de Grado, esta especificación se centrará en los requisitos que guían la funcionalidad actual del prototipo, así como aquellos objetivos clave que sentarán las bases para futuras expansiones. Los requisitos se clasifican en funcionales (qué debe hacer el sistema) y no funcionales (cómo debe funcionar, relativo a la calidad).
@@ -112,7 +112,7 @@ Un actor representa un rol desempeñado por un usuario humano, un dispositivo ha
 		\hline
 		\textbf{Objetivo Principal:} & \textbf{Resolver desafíos de robótica} mediante la construcción de programas híbridos para controlar un robot virtual, observando su comportamiento en un entorno de simulación 3D. El fin último es desarrollar habilidades de pensamiento computacional y facilitar la transición de la programación visual a la textual. \\
 		\hline
-		\textbf{Relaciones con Casos de Uso Principales:} & 
+		\textbf{Relaciones con casos de uso principales:} & 
 		\begin{itemize}
 			\item Seleccionar un desafío de aprendizaje.
 			\item Construir programas de forma híbrida (bloques y texto).
@@ -422,134 +422,3 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 	\label{fig:CU03}
 \end{figure}
 
-\subsection{CU04: Gestionar proyectos de bloques} \label{sec:CU04_GestionProyectos}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3.5cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Autor:} & Luis Ignacio de Luna Gómez \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF Asociados:} & RF-012, RF-013, RF-015 \\
-		\hline
-		\textbf{Descripción :} & El estudiante puede guardar su progreso en un programa de bloques y recuperar trabajos previos, permitiendo la continuidad entre sesiones de uso del laboratorio virtual. \\
-		\hline
-		\textbf{Precondiciones :} & 
-		\begin{itemize}
-			\item El sistema ha sido iniciado correctamente y la interfaz principal es visible.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			  El Estudiante realiza una de las siguientes acciones:
-			\item Guardar el proyecto actual.
-			\item  Cargar un proyecto existent.
-			\item El sistema almacena el XML generado de forma persistente.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item  El estado del proyecto ha sido gestionado (guardado o cargado) según la acción del Estudiante.
-		\end{itemize} \\
-	
-		\hline
-		\textbf{Importancia:} & Media \\
-		\hline
-	
-	\end{tabularx}
-	\caption{CU04 - Gestionar proyectos de bloques.}
-	\label{tabla:CU04_GestionProyectos}
-\end{table}
-
-% --- Sub-Caso de Uso 4.1: Guardar Proyecto ---
-\subsection{CU04.1: Guardar proyecto de bloques} \label{sec:CU04_1_GuardarProyecto}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor(es) Principal(es):} & A01 - Estudiante \\
-		\hline
-		\textbf{RFs asociados:} & RF-012 \\
-		\hline
-		\textbf{Descripción:} & El estudiante guarda el estado actual de su programa de bloques para poder recuperarlo en una sesión posterior. \\
-		\hline
-		\textbf{Precondiciones:} & 
-		\begin{itemize}
-			\item El Estudiante tiene un programa (nuevo o modificado) en el área de codificación.
-			\item La interfaz de programación está activa.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{enumerate}
-			\item El Estudiante pulsa el botón/icono guardar en la interfaz principal.
-			\item El sistema serializa el estado actual del entorno de trabajo  (incluyendo todos los bloques, sus conexiones y los valores de sus campos) a un formato XML.
-			\item El sistema almacena el XML generado de forma persistente en el almacenamiento local del dispositivo.
-			\item (Opcional) El sistema muestra un mensaje de confirmación al Estudiante 
-		\end{enumerate} \\
-		\hline
-		\textbf{Postcondiciones:} & 
-		\begin{itemize}
-			\item El estado actual del programa de bloques del Estudiante está guardado persistentemente en el dispositivo.
-			\item El Estudiante puede continuar trabajando o cerrar la aplicación con la seguridad de que su progreso está almacenado.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Media \\
-		\hline
-	\end{tabularx}
-	\caption{CU04.1 - Guardar proyecto de bloques.}
-	\label{tabla:CU04_1_GuardarProyecto}
-\end{table}
-
-% --- Sub-Caso de Uso 4.2: Cargar proyecto ---
-\subsection{CU04.2: Cargar proyecto de bloques} \label{sec:CU04_2_CargarProyecto}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\linewidth}{|p{3.5cm}|X|}
-		\hline
-		\textbf{Versión:} & 1.0 \\
-		\hline
-		\textbf{Actor:} & A01 - Estudiante \\
-		\hline
-		\textbf{RF asociados:} & RF-012, RF-013 y RF-015 \\
-		\hline
-		\textbf{Descripción:} & El estudiante carga un programa de bloques previamente guardado para continuar trabajando en él o ejecutarlo. \\
-		\hline
-		\textbf{Precondición:} & 
-		\begin{itemize}
-			\item Existe al menos un proyecto previamente guardado por el sistema en el almacenamiento local.
-			\item La interfaz de programación está activa.
-		\end{itemize} \\
-		\hline
-		\textbf{Acciones:} & 
-		\begin{itemize}
-			\item El Estudiante pulsa el botón/icono cargar en la interfaz principal.
-			\item El sistema recupera los datos XML del proyecto guardado desde el almacenamiento local .
-			\item El sistema limpia el espacio de trabajo actual (eliminando todos los bloques existentes) y las vistas correspondientes del área de codificación.
-			\item El sistema deserializa el contenido XML y reconstruye la estructura lógica del entorno de trabajo, incluyendo todos los bloques, sus conexiones y los valores de sus campos.
-			\item El sistema genera y muestra las vistass correspondientes en el área de codificación, reflejando el estado del programa cargado.
-		\end{itemize} \\
-		\hline
-		\textbf{Postcondición:} & 
-		\begin{itemize}
-			\item El área de codificación muestra el programa de bloques que fue previamente guardado.
-			\item El Estudiante puede continuar editando o ejecutar el programa cargado.
-		\end{itemize} \\
-		\hline
-		\textbf{Importancia:} & Media \\
-		\hline
-	\end{tabularx}
-	\caption{CU04.2 - Cargar proyecto de bloques.}
-	\label{tabla:CU04_2_CargarProyecto}
-\end{table}
-
-\begin{figure}[h!]
-	\centering 
-	\includegraphics[width=1\linewidth]{img/CU04-drawio.png} 
-	\caption{Diagrama de caso de uso CU04 - Gestionar proyectos de bloques.}
-	\label{fig:CU04}
-\end{figure}

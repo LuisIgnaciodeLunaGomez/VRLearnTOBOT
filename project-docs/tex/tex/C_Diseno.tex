@@ -1,4 +1,4 @@
-\apendice{Especificación de Diseño}
+\apendice{Especificación de diseño}
 
 \section{Introducción}
 Este apéndice presenta la especificación de diseño del prototipo del laboratorio ivrtual de programación y robótica. El diseño del software es una fase crítica que traduce los requisitos funcionales y no funcionales, detallados en el Apéndice B, en una descripción técnica y estructurada de la solución. El propósito de este documento es detallar la arquitectura del sistema, el diseño de los datos que maneja, y el diseño procedimental de sus interacciones clave.
@@ -101,9 +101,6 @@ Este caso de uso encapsula el flujo completo del usuario en el prototipo final.
 	\item \textbf{Simulación del robot:} Si el parseo es exitoso, el GameManager pasa la List<Instruction> al RobotController. Este inicia la corrutina ProcessInstructionList para ejecutar las acciones en el entorno 3D.
 	\item \textbf{Fin de la ejecución:} La simulación termina (éxito, colisión, etc.) y el RobotController notifica al GameManager, que a su vez instruye a la UI para mostrar el resultado final.
 \end{enumerate}
-
-
-
 
 \section{Diseño arquitectónico}
 La arquitectura del sistema se ha basado en el patrón \textbf{Modelo-Vista-Controlador (MVC)}, adaptado al entorno de desarrollo de Unity y a la estructura de la librería UBlockly.
