@@ -65,7 +65,7 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 -   Unity editor **versión 6000.0.2f1** o superior.
 -   Módulo "Android Build Support" instalado en Unity.
 -   (Opcional) Un dispositivo Android con modo de depuración USB activado para pruebas.
--   Configuración de pantalla mímina para la correcdta ejecución del programa 1920x1080
+-   Configuración de pantalla mímina para la correcta ejecución del programa 1920x1080
 
 *Instalacion y ejecucción*
 
