@@ -3,7 +3,7 @@
 \section{Introducción}
 Este apéndice presenta la especificación de diseño del prototipo del laboratorio ivrtual de programación y robótica. El diseño del software es una fase crítica que traduce los requisitos funcionales y no funcionales, detallados en el Apéndice B, en una descripción técnica y estructurada de la solución. El propósito de este documento es detallar la arquitectura del sistema, el diseño de los datos que maneja, y el diseño procedimental de sus interacciones clave.
 
-Se describirá tanto el \textbf{diseño inicial basado en un sistema de bloques visuales}, que sentó las bases conceptuales y arquitectónicas del proyecto, como el \textbf{diseño final del prototipo híbrido}, que representa la solución implementada.
+Se describirá tanto el \textbf{diseño inicial basado en un sistema de bloques visuales}, que sentó las bases conceptuales y arquitectónicas del proyecto, como el \textbf{diseño final del prototipo}, que representa la solución implementada.
 
 Se busca proporcionar una visión clara de cómo se han organizado los componentes del software, cómo interactúan entre sí y cómo se ha estructurado la lógica de la aplicación para cumplir con los objetivos del proyecto. Este diseño se ha enfocado en la modularidad, mantenibilidad y escalabilidad, sentando las bases para futuras expansiones del laboratorio virtual. Se presta especial atención a la adaptación de la librería UBlockly dentro del motor Unity y la implementación del patrón Modelo-Vista-Controlador (MVC).
 
@@ -65,11 +65,11 @@ El diseño de persistencia para el prototipo se basa en la serialización del \t
 Este diseño de datos y persistencia, aunque simple para el prototipo, establece una base que podría extenderse a sistemas de bases de datos más robustos en el futuro.
 
 
-\section{Pivote y diseño del sistema híbrido final}
+\section{Pivote y diseño del sistema final}
 
-Tras la implementación de la arquitectura de bloques visuales, los desafíos técnicos encontrados en la creación de un motor de layout dinámico para los bloques de control de flujo motivaron un \textbf{pivote estratégico}. El nuevo diseño se centra en un sistema híbrido que simplifica la interacción visual y introduce un lenguaje de dominio específico (DSL) textual, manteniendo los principios de separación de responsabilidades.
+Tras la implementación de la arquitectura de bloques visuales, los desafíos técnicos encontrados en la creación de un motor de layout dinámico para los bloques de control de flujo motivaron un \textbf{pivote estratégico}. El nuevo diseño se centra en un sistema que simplifica la interacción visual y introduce un lenguaje de dominio específico (DSL) textual, manteniendo los principios de separación de responsabilidades.
 
-\subsection{Diseño de datos del sistema híbrido}
+\subsection{Diseño de datos del sistema }
 La estructura de datos del sistema final se simplifica para gestionar los nuevos conceptos:
 
 \begin{itemize}
@@ -78,15 +78,15 @@ La estructura de datos del sistema final se simplifica para gestionar los nuevos
 	\item \textbf{Lista de instrucciones (List<Instruction>):} Estructura de datos principal que representa el programa completo del usuario. Es el equivalente a un Árbol de Sintaxis Abstracto (AST) simplificado, generado por el CommandParser.
 \end{itemize}
 
-\subsection{Diseño arquitectónico híbrido}
+\subsection{Diseño arquitectónico }
 La arquitectura final se compone de un conjunto de gestores que orquestan el flujo de la aplicación.
-% (Puedes incluir aquí un nuevo diagrama de componentes para tu sistema híbrido)
+% (Puedes incluir aquí un nuevo diagrama de componentes para tu sistema )
 \begin{itemize}
 	\item \textbf{Gestores principales:} Se describe el rol de \texttt{GameManager}, \texttt{IDE\_UIManager} y \texttt{ChallengeLoader}.
 	\item \textbf{Núcleo de interpretación:} Se detalla el \texttt{CommandParser} como el componente de análisis y el \texttt{RobotController} como el motor de ejecución.
 \end{itemize}
 
-\section{Diseño procedimental del sistema híbrido}
+\section{Diseño procedimental del sistema }
 
 \subsection{Procedimiento: resolver un desafío}
 Este caso de uso encapsula el flujo completo del usuario en el prototipo final.
@@ -206,7 +206,7 @@ La comunicación entre las capas sigue el patrón Observador y las interacciones
 	\end{itemize}
 \end{enumerate}
 
-\section{Diseño del sistema de programación híbrido final}
+\section{Diseño del sistema de programación final}
 % Itroduzco la nueva arquitectura como una evolución o añadido.
 
 \subsection{Ampliación del diseño de datos: Instrucciones y desafíos}
@@ -219,10 +219,10 @@ Además de las entidades del modelo de bloques, la arquitectura final introduce 
 	\item \textbf{\texttt{Instruction}:} Clase que representa un comando único y parseado del DSL. Contiene principalmente un CommandType (enum que define la acción, ej. MoveForward, TurnLeft) y un Value (float para parámetros como distancia o grados). Para comandos de control de flujo como `repetir`, esta clase contiene una List<Instruction> anidada, creando así una estructura de árbol que representa el programa.
 \end{itemize}
 
-\subsection{Diseño arquitectónico híbrido}
+\subsection{Diseño arquitectónico }
 
 La arquitectura final integra el sistema de bloques visual con el nuevo sistema textual. Mientras que los bloques se gestionan mediante el patrón MVC descrito previamente, el flujo de programación textual y la ejecución final son orquestados por un conjunto de gestores simplificados:
-% Diagrama de componentes del sistema híbrido 
+% Diagrama de componentes del sistema  
 \begin{itemize}
 	\item \textbf{\texttt{GameManager}:} Controlador central de la escena de simulación. Orquesta el flujo completo: recibe la orden de ejecución desde la UI, invoca al parser y, si es exitoso, pasa la lista de instrucciones al RobotController.
 	\item \textbf{\texttt{IDE\_UIManager}:} Actúa como la Vista y Controlador de la interfaz de programación textual. Captura la entrada de texto, gestiona la visualización de comandos y comunica las acciones del usuario al GameManager.
@@ -408,9 +408,9 @@ Una vez la interfaz está inicializada, el usuario puede interactuar con el pane
 	\label{fig:ejecucionprograma}
 \end{figure}
 
-\subsection{Diseño procedimental del sistema híbrido}
+\subsection{Diseño procedimental del sistema 
 
-A continuación se detalla el procedimiento clave del sistema híbrido.
+A continuación se detalla el procedimiento clave del sistema .
 
 \subsubsection{Procedimiento: Resolver un desafío}
 Este caso de uso encapsula el flujo completo del usuario en el prototipo final, integrando la selección del desafío, la construcción del programa y su simulación.
@@ -441,7 +441,7 @@ Este caso de uso encapsula el flujo completo del usuario en el prototipo final, 
 	\end{itemize}
 \end{enumerate}
 
-% NUEVO Diagrama de secuencia para el sistema híbrido. 
+% NUEVO Diagrama de secuencia para el sistem. 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{img/secuencia_hibrida.png} 
@@ -451,14 +451,14 @@ Este caso de uso encapsula el flujo completo del usuario en el prototipo final, 
 
 
 
-\subsection{Evolución arquitectónica: De bloques a híbrido}
-El pivote estratégico hacia un sistema híbrido conllevó una significativa refactorización de la capa de Controladores. Las responsabilidades originalmente distribuidas en múltiples clases para gestionar la interacción visual se consolidaron en gestores más específicos para el nuevo flujo de trabajo. La siguiente tabla resume la evolución de los principales componentes de control:
+\subsection{Evolución arquitectónica: De bloques a DSL}
+El pivote estratégico hacia un sistema conllevó una significativa refactorización de la capa de Controladores. Las responsabilidades originalmente distribuidas en múltiples clases para gestionar la interacción visual se consolidaron en gestores más específicos para el nuevo flujo de trabajo. La siguiente tabla resume la evolución de los principales componentes de control:
 
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\linewidth}{|p{3.5cm}|p{4.5cm}|X|}
 		\hline
-		\textbf{Responsabilidad} & \textbf{Componente en arquitectura nicial (Bloques - MVC)} & \textbf{Componente en arquitectura final (híbrido)} \\
+		\textbf{Responsabilidad} & \textbf{Componente en arquitectura nicial (Bloques - MVC)} & \textbf{Componente en arquitectura final } \\
 		\hline
 		
 		\textbf{Orquestación general de la aplicación} & 
