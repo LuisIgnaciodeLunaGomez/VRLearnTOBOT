@@ -118,9 +118,9 @@ Los principales hitos que guiaron la evolución del prototipo fueron los siguien
 	Superación de las limitaciones de la simulación inicial, desarrollo del \texttt{RobotBehaviour}, implementación de los intérpretes de movimiento y evento, y validación del movimiento básico del robot virtual.
 
 	
-	\item \textbf{Hito 5: Reto técnico y pivote estratégico.} Tras la implementación de las bases, se identificó que la creación de un motor de layout dinámico para los bloques de control de flujo complejos (ej. bucles anidados) era un desafío técnico mayor de lo previsto. En línea con la metodología ágil, se tomó la decisión estratégica de pivotar hacia un sistema híbrido reutilizando la implementación de Ublockly para la representación de bloques y la creación de un sistema para la codificación mediante texto. El objetivo era mantener una estructura visual pero introducir un DSL textual para los comandos, asegurando así la viabilidad del proyecto.
+	\item \textbf{Hito 5: Reto técnico y pivote estratégico.} Tras la implementación de las bases, se identificó que la creación de un motor de layout dinámico para los bloques de control de flujo complejos (ej. bucles anidados) era un desafío técnico mayor de lo previsto. En línea con la metodología ágil, se tomó la decisión estratégica de pivotar hacia un sistema que permitirá reutilizar la implementación de Ublockly para la representación de bloques y la creación de un sistema para la codificación mediante texto. El objetivo era mantener una estructura visual pero introducir un DSL textual para los comandos, asegurando así la viabilidad del proyecto.
 
-	\item \textbf{Hito 6: Desarrollo del sistema híbrido (MVP).} Implementación del CommandParser, el ProgramBuilder y el IDE\_UIManager. Adaptación del GameManager y RobotController para ejecutar la List<Instruction> generada por el parser. Diseño de la estructura de ChallengeData para los desafíos.
+	\item \textbf{Hito 6: Desarrollo del sistema de programación con DSL (MVP).} Implementación del CommandParser, el ProgramBuilder y el IDE\_UIManager. Adaptación del GameManager y RobotController para ejecutar la List<Instruction> generada por el parser. Diseño de la estructura de ChallengeData para los desafíos.
 	
 	\item \textbf{Hito 7: Finalización y pruebas del MVP.} Pruebas integrales del flujo completo (selección de desafío -> escritura de código -> ejecución -> simulación con colisiones). Depuración final y completitud de la memoria del TFG.
 
@@ -557,7 +557,7 @@ Se procedió a la redacción sistemática de cada uno de los capítulos y apénd
 \end{figure} 
 \item \textbf{Duración:} Del 19 de junio al 26 de junio de 2025.
 
-\item \textbf{Objetivo Principal:} Realizar un pivote estratégico en el enfoque del proyecto ante los desafíos técnicos encontrados con la generación de bloques complejos. A propuesta del tutor, el nuevo objetivo era desarrollar un prototipo funcional basado en un sistema de programación híbrido, que combinara una estructura de bloques visual para la organización del programa con un lenguaje de comandos textual (DSL) \cite{DSL}\cite{lenguaje_DSL} para las acciones del robot. Este sprint fue un punto de inflexión en el que se abordo la viabilidad de continuar o no el presente TFG. 
+\item \textbf{Objetivo Principal:} Realizar un pivote estratégico en el enfoque del proyecto ante los desafíos técnicos encontrados con la generación de bloques complejos. A propuesta del tutor, el nuevo objetivo era desarrollar un prototipo funcional basado en un sistema de programación que combinara una estructura de bloques visual para la organización del programa con un lenguaje de comandos textual (DSL) \cite{DSL}\cite{lenguaje_DSL} para las acciones del robot. Este sprint fue un punto de inflexión en el que se abordo la viabilidad de continuar o no el presente TFG. 
 
 \item \textbf{Contexto y motivación (El desafío de los bloques tipo C):}
 El trabajo realizado en sprints anteriores había permitido establecer una arquitectura MVC robusta y un sistema funcional de arrastre y conexión para bloques simples. Era posible crear bloques como los de mover o eventos y desplazarlos por el área de trabajo, soltarlos y vincularlos. Sin embargo, al intentar implementar bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), se encontraron obstáculos técnicos que excedían las estimaciones iniciales. La replicación de estos bloques requería un motor de layout dinámico extremadamente complejo, capaz de redimensionar y reorganizar geométricamente los bloques contenedores en tiempo real, una tarea de una magnitud considerable por lo que el tutor recomendo seguir por otra vía.
@@ -566,7 +566,7 @@ Este desafío, como ya he comentado anteriormente, representó un punto de infle
 
 Asimismo, este momento subrayó la enorme dificultad que implica el desarrollo de un sistema complejo por una única persona. Fue la tenacidad y la convicción en el valor del trabajo realizado hasta la fecha lo que impulsó la búsqueda de una solución alternativa. En lugar de percibir el obstáculo como un fracaso, se abordó como una oportunidad para redefinir el problema y pivotar estratégicamente.
 
-La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una decisión consciente y pragmática. Se optó por un sistema híbrido que, manteniendo la claridad visual de un programa estructurado, introdujera la codificación textual manteniendo la programación por bloques adaptando el diseño de bloques al código diseñado en el repositorio de referencia. Este reenfoque permitió aprovechar todo el trabajo de base realizado (simulador 3D, arquitectura de control del robot) y centrar el esfuerzo restante en un nuevo núcleo técnico, el diseño de un DSL\cite{DSL}\cite{lenguaje_DSL} y su intérprete, que aportaría un valor pedagógico y técnico igualmente significativo.
+La nueva dirección, por tanto, no fue un abandono de los objetivos, sino una decisión consciente y pragmática. Se optó por un sistema que, manteniendo la claridad visual de un programa estructurado, introdujera la codificación textual manteniendo la programación por bloques adaptando el diseño de bloques al código diseñado en el repositorio de referencia. Este reenfoque permitió aprovechar todo el trabajo de base realizado (simulador 3D, arquitectura de control del robot) y centrar el esfuerzo restante en un nuevo núcleo técnico, el diseño de un DSL\cite{DSL}\cite{lenguaje_DSL} y su intérprete, que aportaría un valor pedagógico y técnico igualmente significativo.
 
 También supuso tomar la decisión de abordar la creación de bloques aplicando el desarrollo que se había realizado en el proyecto de UBlockly y viendo como sería posible replicar bloques lo más parecidos posible a los de scratch. Esto motivo la reformulación del MVC inicial, eliminando controladores y creando nuevos para la estructura del proyecto de UBlockly.
 \item \textbf{Tareas clave realizadas y resultados:}
@@ -589,7 +589,7 @@ También supuso tomar la decisión de abordar la creación de bloques aplicando 
 		\item Se desarrollaron las primeras versiones de la \textbf{escena de introducción} y el menú de selección, estableciendo el flujo completo de la aplicación, desde el inicio hasta la programación y simulación.
 	\end{itemize}
 	
-	\item \textbf{Pruebas del sistema híbrido:}
+	\item \textbf{Pruebas del sistema:}
 	\begin{itemize}
 		\item Se realizaron pruebas exhaustivas del nuevo sistema, validando que el robot ejecutaba correctamente secuencias complejas de comandos textuales, incluyendo bucles finitos e infinitos.
 		\item Se implementó la lógica de detección de colisiones (CollisionTextLogger, MuroController) para que el robot se detuviera al chocar, añadiendo una capa de interacción realista con el entorno.
@@ -618,7 +618,7 @@ También supuso tomar la decisión de abordar la creación de bloques aplicando 
 
 	Esta doble funcionalidad permite al usuario elegir su método de aprendizaje preferido o incluso transicionar de uno a otro, validando la flexibilidad de la arquitectura y la viabilidad de ambos enfoques dentro del mismo prototipo.
 	
-\item \textbf{Hito alcanzado:} Se completó con éxito el pivote estratégico del proyecto. Lo que en un principio abocaba a un fracaso en la creación del proyecto provoco un giro hacia un nuevo desarrollo. El resultado fue un prototipo MVP completamente funcional basado en un sistema híbrido y original, con un intérprete de comandos propio y un flujo de desafíos estructurado, regenerando la generación de bloques. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
+\item \textbf{Hito alcanzado:} Se completó con éxito el pivote estratégico del proyecto. Lo que en un principio abocaba a un fracaso en la creación del proyecto provoco un giro hacia un nuevo desarrollo. El resultado fue un prototipo MVP completamente funcional, con un intérprete de comandos propio y un flujo de desafíos estructurado, regenerando la generación de bloques. Este hito no solo representa una solución técnica robusta a los problemas encontrados, sino también un enfoque pedagógico innovador que sirve de puente entre la programación visual y la textual.
 
 \subsection{Sprint 10: Revisión producto mínimo viable y memoria TFG}
 
@@ -633,7 +633,7 @@ También supuso tomar la decisión de abordar la creación de bloques aplicando 
 
 \item \textbf{Objetivo principal:}  Realizar una revisión exhaustiva del prototipo para asegurar su estabilidad y pulir la experiencia de usuario. Completar la redacción final de la memoria y sus anexos, garantizando la coherencia, precisión y calidad del documento para su entrega y defensa.
 
-\item \textbf{Contexto y motivación:} Con el producto mínimo viable (MVP) híbrido completamente funcional, este último sprint se dedicó a la fase de estabilización y empaquetado. El enfoque se desplazó del desarrollo de nuevas funcionalidades a la mejora de la calidad del producto existente y a la producción de una documentación técnica que reflejara con exactitud el trabajo realizado, los desafíos superados y los aprendizajes obtenidos.
+\item \textbf{Contexto y motivación:} Con el producto mínimo viable (MVP) completamente funcional, este último sprint se dedicó a la fase de estabilización y empaquetado. El enfoque se desplazó del desarrollo de nuevas funcionalidades a la mejora de la calidad del producto existente y a la producción de una documentación técnica que reflejara con exactitud el trabajo realizado, los desafíos superados y los aprendizajes obtenidos.
 
 \item \textbf{Tareas clave realizadas y resultados:}
 \begin{itemize}
@@ -652,7 +652,7 @@ También supuso tomar la decisión de abordar la creación de bloques aplicando 
 	
 	\item \textbf{Consolidación de la memoria del TFG:}
 	\begin{itemize}
-		\item Se redactó la versión final de todos los capítulos de la memoria, asegurando que la narrativa del pivote estratégico y el sistema híbrido fuera coherente a lo largo de todo el documento con respecto a la versión que se realizo en otro sprint anterior.
+		\item Se redactó la versión final de todos los capítulos de la memoria, asegurando que la narrativa del pivote estratégico y el sistema fuera coherente a lo largo de todo el documento con respecto a la versión que se realizo en otro sprint anterior.
 		\item Se revisaron y corrigieron todas las secciones para mejorar la cohesión, la claridad y la precisión técnica, incorporando el feedback del tutor.
 		\item Se regeneraron todas las figuras (diagramas, capturas de pantalla) y tablas, asegurando que estuvieran correctamente numeradas, etiquetadas y referenciadas en el texto.
 		\item Se reviso  la bibliografía, verificando que todas las citas estuvieran correctamente incluidas.
