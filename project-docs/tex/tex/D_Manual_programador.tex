@@ -131,7 +131,7 @@ Como se detalló en el apéndice C (especificación de diseño), el sistema sigu
 	\item \textbf{Creación de bloques (\texttt{BlockFactory}, \texttt{BlockDataLoader}):} Los bloques se definen en XML y se cargan usando estas clases para crear instancias de \texttt{BlockModel} y \texttt{BlockDefinition}.
 \end{itemize}
 
-\subsection{Flujo de control y arquitectura del MVP - sistema híbrido}
+\subsection{Flujo de control y arquitectura del MVP}
 La arquitectura se organiza en torno a gestores que siguen los principios de separación de responsabilidades:
 \begin{itemize}
 	\item \textbf{\texttt{ChallengeLoader.cs}:} Utilizando el patrón Singleton, este script persiste la selección del desafío del usuario entre la MenuScene y la CodingScene, asegurando que el contexto correcto sea cargado.
