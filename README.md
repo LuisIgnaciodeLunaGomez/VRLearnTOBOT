@@ -71,9 +71,8 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 
 
 ### 1.  **Clonar el repositorio:**
-    ``` bash
     git clone https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT
-    ```
+   
 ### 2.  **Abrir en Unity:**
     -   Abrir Unity Hub y hacer clic en "Add project from disk".
     -   Seleccionar la carpeta raíz del repositorio clonado.
