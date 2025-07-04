@@ -71,7 +71,7 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 
 
 ### 1.  **Clonar el repositorio:**
-    ```bash
+    ``` bash
     git clone https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT
     ```
 ### 2.  **Abrir en Unity:**
