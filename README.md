@@ -28,7 +28,7 @@ Desarrollado por <strong>Luis Ignacio de Luna Gómez</strong>
 
 **VRLearnTobot** es un prototipo de laboratorio virtual 3D desarrollado en **Unity** y **C#**, diseñado para enseñar los fundamentos de la programación algorítmica y la robótica a estudiantes en etapas preuniversitarias.
 
-El proyecto implementa un innovador **sistema de programación híbrido**. A diferencia de las plataformas tradicionales, combina una estructura de programa basada en **bloques visuales** con una interfaz de **codificación textual** basada en un Lenguaje de Dominio Específico (DSL) propio. Este enfoque único sirve como un **puente pedagógico**, facilitando la transición de los estudiantes desde entornos puramente visuales como Scratch hacia la programación textual.
+El proyecto implementa un **sistema de programación**. A diferencia de las plataformas tradicionales, combina una estructura de programa basada en **bloques visuales** con una interfaz de **codificación textual** basada en un Lenguaje de Dominio Específico (DSL) propio. Este enfoque único sirve como un **puente pedagógico**, facilitando la transición de los estudiantes desde entornos puramente visuales como Scratch hacia la programación textual.
 
 La plataforma presenta una serie de desafíos donde el usuario debe escribir o ensamblar secuencias de comandos para controlar un robot virtual, inspirado en la estética de kits como LEGO WeDo 2.0, en un entorno de simulación 3D interactivo. El objetivo final es ofrecer una herramienta educativa **accesible, didáctica y gratuita**, optimizada para su uso en tablets Android, y alineada con los Objetivos de Desarrollo Sostenible de democratizar la educación STEAM.
 
@@ -37,7 +37,7 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 -   🤖 **Simulador 3D interactivo:** Un robot virtual que responde en tiempo real a las instrucciones, en un entorno con detección de colisiones.
 -   ✍️ **Lenguaje de dominio específico (DSL):** Un lenguaje de comandos simple y textual (`mover`, `girar`, `repetir`) diseñado para ser intuitivo para principiantes.
 -   ⚙️ **Intérprete propio:** El proyecto incluye un parser que analiza el código del DSL, valida su sintaxis y lo traduce a una secuencia de instrucciones ejecutable.
--   🧱 **Programación híbrida:** Permite la programación mediante bloques visuales (eventos, bucles) o mediante la entrada textual de comandos.
+-   🧱 **Programación:** Permite la programación mediante bloques visuales (eventos, bucles) o mediante la entrada textual de comandos.
 -   🏆 **Aprendizaje basado en desafíos:** El contenido está organizado en desafíos con objetivos claros para contextualizar el aprendizaje y fomentar la resolución de problemas.
 -   📱 **Orientado a plataformas móviles:** Diseñado y optimizado para ejecutarse en dispositivos Android, especialmente tablets, haciéndolo accesible para un mayor número de estudiantes.
 
@@ -45,7 +45,7 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 
 -   **Motor de desarrollo:** Unity 6
 -   **Lenguaje de programación:** C#
--   **Interfaz y lógica híbrida:**
+-   **Interfaz y lógica:**
     -   Base de programación por bloques adaptada desde **UBlockly**.
     -   Intérprete de DSL textual (**CommandParser**) de desarrollo propio.
 -   **Modelado 3D:** Blender 4.4
@@ -70,22 +70,72 @@ La plataforma presenta una serie de desafíos donde el usuario debe escribir o e
 *Instalacion y ejecucción*
 
 
-1.  **Clonar el repositorio:**
+### 1.  **Clonar el repositorio:**
     ```bash
     git clone https://github.com/LuisIgnaciodeLunaGomez/VRLearnTOBOT
     ```
-2.  **Abrir en Unity:**
+### 2.  **Abrir en Unity:**
     -   Abrir Unity Hub y hacer clic en "Add project from disk".
     -   Seleccionar la carpeta raíz del repositorio clonado.
-3.  **Ejecutar en el Editor:**
+### 3.  **Ejecutar en el Editor:**
     -   Navegar a la carpeta `Assets/Scenes/` y abrir la escena `MenuScene.unity`.
     -   Presionar el botón "Play" en la barra de herramientas de Unity.
 
-4.  **Compilar para Android (.apk):**
+### 4.  **Compilar para Android (.apk):**
     -   Ir a `File > Build Settings`.
     -   Seleccionar "Android" como plataforma y pulsar "Switch Platform".
     -   Conectar un dispositivo Android o configurar un emulador.
     -   Pulsar "Build and Run" para compilar e instalar directamente en el dispositivo.
+
+## 📖 Guía Rápida de Usuario
+
+Al iniciar la aplicación, el menú principal te permitirá elegir entre dos itinerarios de aprendizaje:
+
+### 1. Itinerario de programación por código escrito
+
+Ideal para familiarizarse con la sintaxis de la programación.
+1.  **Selecciona un desafío:** Elige una de las tarjetas para acceder al entorno de programación.
+2.  **Lee las instrucciones:** En la parte superior de la pantalla verás la descripción del desafío y los comandos que puedes usar.
+3.  **Programa tu solución:**
+    -   Escribe un comando en el campo de texto inferior.
+    -   Pulsa el botón **`+`** para añadirlo a tu secuencia de programa.
+    -   Los comandos aparecerán en el panel central, formando tu programa.
+4.  **Ejecuta y prueba:**
+    -   Pulsa el botón **Ejecutar**. El sistema verificará tu código.
+    -   Si hay errores de sintaxis, se mostrará un aviso.
+    -   Si es correcto, el robot en la ventana 3D ejecutará tus instrucciones.
+    -   El feedback final te indicará si has tenido éxito o si ha habido una colisión.
+
+#### Referencia rápida de comandos (DSL)
+
+| Comando              | Sintaxis                       | Descripción                                  |
+| -------------------- | ------------------------------ | -------------------------------------------- |
+| **Mover**            | `mover <N> pasos`              | Mueve el robot hacia adelante `N` pasos.     |
+| **Girar**            | `girar <izquierda / derecha>`  | Rota el robot 90 grados.                     |
+| **Bucle Finito**     | `repetir <N> veces`            | Repite los comandos anidados `N` veces.      |
+| **Bucle Infinito**   | `repetir por_siempre`          | Repite los comandos anidados indefinidamente.  |
+| **Fin de Bucle**     | `fin_repetir`                  | Marca el final de un bloque `repetir`.         |
+| **Mover por Tiempo** | `mover_durante <N> segundos`   | Mueve el robot durante `N` segundos.         |
+
+
+### 2. Itinerario de programación por bloques visuales
+
+Ideal para entender la estructura y el flujo de un programa de forma intuitiva.
+1.  **Pantalla del Desafío:** Primero verás una descripción del objetivo y un vídeo de demostración.
+2.  **Entorno de bloques:**
+    -   **Panel izquierdo:** Selecciona una categoría de bloques (Movimiento, Eventos, etc.).
+    -   **Panel central:** Aquí aparecen los bloques de la categoría seleccionada.
+    -   **Panel derecho:** Es tu área de trabajo. **Arrastra** los bloques aquí para construir tu programa.
+3.  **Construye tu Programa:**
+    -   **Arrastra y suelta** los bloques en el área de trabajo.
+    -   **Conecta los bloques** como si fueran piezas de un puzle. El sistema te ayudará a unirlos con un efecto "snap".
+4.  **Ejecuta la simulación:**
+    -   Una vez que tu programa de bloques esté listo, pulsa el **botón de la bandera verde**.
+    -   Observa cómo el robot cobra vida en la ventana 3D y ejecuta tus instrucciones.
+
+En todas las pantallas puedes volver a la pantalla anterior pulsando sobre el logo de la aplicación
+---
+
 
 <h2>📬 <strong>Contacto</strong></h2
 
