@@ -77,7 +77,7 @@ Esta estructura busca separar claramente la lógica del núcleo de UBlockly, las
 
  \item \textbf{\texttt{Assets/Scripts/}}: Contiene la mayor parte del código C\# del prototipo.
 \begin{itemize}
-	\item \texttt{Desafios/}: Scripts centrales que gestionan el flujo de la aplicación híbrida: \texttt{GameManager.cs}, \texttt{IDE\_UIManager.cs}, \texttt{RobotController.cs}, \texttt{CommandParser.cs}, \texttt{Instruction.cs}, y el sistema de gestión de desafíos con \texttt{ChallengeData.cs} y \texttt{ChallengeLoader.cs}.
+	\item \texttt{Scenes/Desafios/}: Scripts centrales que gestionan el flujo de la aplicación: \texttt{GameManager.cs}, \texttt{IDE\_UIManager.cs}, \texttt{RobotController.cs}, \texttt{CommandParser.cs}, \texttt{Instruction.cs}, y el sistema de gestión de desafíos con \texttt{ChallengeData.cs} y \texttt{ChallengeLoader.cs}.
 	\item \texttt{Scenes/}: Scripts específicos para las escenas del menú principal (MenuManager.cs, SceneNavigator.cs).
 	\item \texttt{Debugger/}: Herramientas de depuración personalizadas, como el analizador de prefabs.
 	\item \texttt{Logger.cs}: Clase estática para la gestión centralizada de logs.
@@ -104,7 +104,7 @@ Esta estructura busca separar claramente la lógica del núcleo de UBlockly, las
 \end{itemize}
 
 \item \textbf{\texttt{Assets/Scenes/}:} Contiene las escenas de Unity: \texttt{MenuScene} (menú principal y selección de desafíos) y \texttt{CodingScene} (entorno de programación y simulación).
-\end{itemize}
+
 Esta estructura distingue claramente el código del prototipo final, las librerías base utilizadas, y los recursos artísticos y de configuración.
 
 
@@ -126,12 +126,12 @@ Como se detalló en el apéndice C (especificación de diseño), el sistema sigu
 
 \subsection{Sistema de bloques (adaptación de UBlockly)}
 \begin{itemize}
-	\item \textbf{Modelos (\texttt{Block}, \texttt{Connection}, etc.):} Se utiliza la estructura de modelos de UBlockly. La principal adaptación reside en cómo estos modelos son observados y renderizados por las Vistas en Unity UI y cómo interactúan con los controladores.
+	\item \textbf{Modelos (\texttt{BlockModel}, \texttt{ConnectionModel}, etc.):} Se utiliza la estructura de modelos de UBlockly. La principal adaptación reside en cómo estos modelos son observados y renderizados por las Vistas en Unity UI y cómo interactúan con los controladores.
 	\item \textbf{Vistas (\texttt{BlockView}, \texttt{ConnectionView}, etc.):} Son componentes \texttt{MonoBehaviour} responsables del renderizado. Se han diseñado prefabs para cada tipo de bloque para asegurar una apariencia consistente con Scratch. El sistema de layout manual implementado en \texttt{BaseView} y sus herederos es crucial.
 	\item \textbf{Creación de bloques (\texttt{BlockFactory}, \texttt{BlockDataLoader}):} Los bloques se definen en XML y se cargan usando estas clases para crear instancias de \texttt{BlockModel} y \texttt{BlockDefinition}.
 \end{itemize}
 
-\subsection{Flujo de control y arquitectura del MVP}
+\subsection{Flujo de control y arquitectura del MVP - sistema híbrido}
 La arquitectura se organiza en torno a gestores que siguen los principios de separación de responsabilidades:
 \begin{itemize}
 	\item \textbf{\texttt{ChallengeLoader.cs}:} Utilizando el patrón Singleton, este script persiste la selección del desafío del usuario entre la MenuScene y la CodingScene, asegurando que el contexto correcto sea cargado.
@@ -210,7 +210,7 @@ Dada la naturaleza de prototipo y el desarrollo individual de este TFG, las prue
 
 \subsection{Tipos de pruebas realizadas}
 \begin{itemize}
-	\item \textbf{Pruebas de unidad (conceptuales):} Durante el desarrollo de clases individuales (\texttt{Block}, \texttt{Connection}, intérpretes, controladores), se realizaron pruebas aisladas de sus métodos principales mediante logs (\texttt{Debug.Log}) y el inspector de Unity para verificar que la lógica interna funcionaba como se esperaba antes de su integración. Se diseño una clase específica llamada Logger que permitía ofrecer mayor información en la depuración incluyendo la hora de la ejecución que era fundamental para poder seguir el contenido del archivo editor.log.
+	\item \textbf{Pruebas de unidad (conceptuales):} Durante el desarrollo de clases individuales (\texttt{BlockModel}, \texttt{ConnectionModel}, intérpretes, controladores), se realizaron pruebas aisladas de sus métodos principales mediante logs (\texttt{Debug.Log}) y el inspector de Unity para verificar que la lógica interna funcionaba como se esperaba antes de su integración. Se diseño una clase específica llamada Logger que permitía ofrecer mayor información en la depuración incluyendo la hora de la ejecución que era fundamental para poder seguir el contenido del archivo editor.log.
 	 \item \textbf{Pruebas de sistema automatizadas (con Katalon Studio):} Para la validación del sistema completo desde la perspectiva del usuario final, se utilizó la herramienta \textbf{Katalon Studio}. Se desarrollaron scripts de prueba automatizados para ejecutar casos de uso de extremo a extremo, asegurando la consistencia y la ausencia de regresiones tras cada iteración de desarrollo.
 	\end{itemize}
 	\item \textbf{Pruebas de integración (manuales):} Tras la implementación de cada nueva funcionalidad que involucraba múltiples componentes MVC (ej. drag and drop, conexión de bloques, ejecución del robot), se realizaron pruebas manuales exhaustivas en el editor de Unity para verificar que los componentes interactuaban correctamente. Se prestó especial atención a:
