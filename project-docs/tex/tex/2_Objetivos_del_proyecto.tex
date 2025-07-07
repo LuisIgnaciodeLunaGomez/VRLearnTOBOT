@@ -2,37 +2,34 @@
 
 \section{Introducción}
 
-El presente Trabajo Fin de Grado tiene como objetivo principal el desarrollo de un \textbf{prototipo de laboratorio virtual de programación y robótica}  \textbf{enfocado en la enseñanza de los fundamentos de la lógica algorítmica a través de un sistema de desafíos interactivos}  que permita a los estudiantes aprender programación mediante bloques y código escrito. Este laboratorio ha sido desarrollado con el motor de videojuegos \textbf{Unity 6} junto con el lenguaje de programación \textbf{CSharp} para la programación de las clases necesarias para que se lleve a cabo su ejecución.
+El presente TFG tiene como objetivo principal el desarrollo de un \textbf{prototipo de laboratorio virtual de programación y robótica}  \textbf{enfocado en la enseñanza de la programación a través de un sistema de desafíos interactivos}  que permita a los estudiantes aprender programación mediante bloques y código escrito. Desarrollado con el motor de videojuegos \textbf{Unity 6} y el lenguaje de programación \textbf{C\#}, este laboratorio ofrece una plataforma  que permite a los estudiantes aprender a programar tanto mediante \textbf{código escrito} como con \textbf{bloques visuales}.
 
-La educación en robótica y programación ha demostrado ser una herramienta clave en el aprendizaje del pensamiento computacional. Sin embargo, uno de los principales desafíos en la enseñanza de la robótica es la dependencia de hardware físico, lo que limita el acceso a estudiantes en contextos de escasos recursos.
+La educación en robótica y programación ha demostrado ser una herramienta clave en el aprendizaje del pensamiento computacional. Sin embargo, uno de los principales desafíos en la enseñanza de la robótica es la dependencia de hardware físico, lo que limita el acceso a estudiantes en contextos de escasos recursos y en zonas menos favorecidas.
 
-Para abordar esta problemática, el laboratorio virtual combinará un \textbf{entorno de simulación 3D}, que permitirá visualizar la ejecución de los programas, con un \textbf{sistema de programación basado en un lenguaje de comandos textual}. Este sistema se inspira en la robótica educativa, con la intención de simular un robot tipo LEGO WeDo 2.0 virtual, implementándose en este prototipo los mecanismos de movimiento fundamentales.
+Para resolver este problema, el laboratorio virtual ofrece una solución dual. Por un lado, los estudiantes pueden programar el robot en un entorno 3D utilizando un sistema de bloques de colores, similar a Scratch, que permite arrastrar y conectar instrucciones de forma intuitiva. Por otro lado, y aquí reside la principal innovación, también pueden resolver los mismos desafíos escribiendo comandos directamente en un lenguaje de programación textual simple, diseñado específicamente para ser fácil de aprender. Ambas formas de programar controlan al mismo robot virtual, inspirado en kits como LEGO WeDo 2.0, permitiendo a los usuarios elegir el método que prefieran o transicionar de uno a otro.
 
-Para ello, se establecen los siguientes objetivos específicos que se han perseguido y alcanzado, parcial o totalmente, durante el desarrollo del prototipo:
+Para guiar el desarrollo de este prototipo, se establecieron los siguientes objetivos específicos:
 
 \section{Objetivos funcionales}
 
 Estos objetivos están relacionados con las funcionalidades que el prototipo de laboratorio virtual debe cumplir para ofrecer una experiencia educativa inicial.
 
 \begin{enumerate}
-	\item \textbf{Diseñar y desarrollar un sistema híbrido de programación para robótica educativa.}
+	\item \textbf{Diseñar y desarrollar un sistema de programación para robótica educativa.}
 	\begin{itemize}
-		\item Crear un entorno de programación que combine la programación visual por bloques para las estructuras principales del programa, con la programación textual para la definición de secuencias de comandos específicas.
-		\item Implementar el núcleo de un sistema de programación por bloques inspirado en Scratch, enfocado en los elementos esenciales para la estructuración de un programa:
-		\begin{itemize}
-			\item \textbf{Bloque de evento de inicio:}  como punto de partida de la ejecución.
-			\item \textbf{Bloques de programación estructurada:} como bucles o condicionales que sirven de contenedores para otras instrucciones.
-			\item \textbf{Bloques de movimiento: } Bloques específicos que permitan al robot girar o moverse en alguna dirección.
-		\end{itemize}
-		\item Desarrollar un Lenguaje de Dominio Específico (DSL) \cite{DSL} \cite{lenguaje_DSL}  textual para los comandos de bajo nivel del robot (mover, girar), y un \textbf{parser} para validar y procesar dichos comandos.
+		\item Crear un entorno de programación que combine la programación visual por bloques con la programación textual.
+		\item Replicar el sistema de programación por bloques simulando a Scratch
+		\item Desarrollar un Lenguaje de Dominio Específico (DSL) \cite{DSL} \cite{lenguaje_DSL}  textual para los comandos de bajo nivel del robot (mover, girar. repetir), y un \textbf{parser} para validar y procesar dichos comandos.
 	\end{itemize}
 
-\item \textbf{Integrar el sistema de programación híbrido con un entorno de simulación 3D.}
+\item \textbf{Integrar el sistema de programación con un entorno de simulación 3D.}
 \begin{itemize}
-	\item Implementar un área de trabajo  interactiva en Unity donde se puedan arrastrar y conectar los bloques visuales.
-	\item Desarrollar un motor de ejecución  que recorra la estructura de bloques y, cuando encuentre un bloque de código textual, invoque al parser y ejecute las instrucciones resultantes en el robot simulado.
-	\item Configurar un entorno de simulación 3D  que permita la visualización en tiempo real del comportamiento del robot, respondiendo tanto a la estructura de bloques como a los comandos textuales.
-	\item Implementar un sistema de detección de colisiones que detenga la ejecución y proporcione feedback inmediato al usuario.
+	\item  Replicar la lógica fundamental de interacción de Scratch, permitiendo arrastrar, soltar y conectar bloques visuales en un área de trabajo.
+	\item Desarrollar un motor de ejecución (CSharpRunner) que interprete la secuencia de bloques visuales y la traduzca en acciones para el robot simulado.
+	\item Crear una librería de bloques básicos funcionales, incluyendo un bloque de evento para iniciar el programa, un bloque de control para repetir acciones y bloques de acción como mover pasos y girar
+	\item Diseñar la gramática de un Lenguaje de Dominio Específico (DSL) simple y orientado a la robótica (mover, girar, repetir, ...).
+	\item Desarrollar un parser que analice el código fuente del DSL, valide su sintaxis y lo transforme en una lista de instrucciones ejecutable.
+	\item Crear una interfaz de desarrollo (IDE) específica para este modo, donde el usuario escribe comandos y recibe feedback visual inmediato de su programa.
 \end{itemize}
 
 \item \textbf{Implementar un prototipo de laboratorio virtual basado en desafíos.}
@@ -40,7 +37,6 @@ Estos objetivos están relacionados con las funcionalidades que el prototipo de 
 	\item Crear un modelo 3D de un robot genérico inspirado en la estética de kits educativos como el robot Lego Wedo 2.0.
 	\item Dotar al robot virtual de las funcionalidades de movimiento y rotación necesarias para completar los desafíos.
 	\item Diseñar un sistema de gestión de desafíos que permita definir objetivos concretos, cargando dinámicamente las instrucciones y la configuración de la escena.
-	\item Asegurar que el prototipo demuestre el flujo completo desde la construcción del programa híbrido hasta la simulación de su resultado en el entorno 3D.
 \end{itemize}
 \end{enumerate}
 
@@ -58,7 +54,7 @@ Estos objetivos se enfocan en las cualidades transversales de la solución, como
 	
 	\item \textbf{Investigación y análisis.}
 	\begin{itemize}
-		\item Investigar y analizar plataformas existentes de programación y simulación robótica (ej. CoSpaces Edu, Robot Virtual Worlds, VEXcode VR y CoderZ) para comprender sus fortalezas y limitaciones.
+		\item Investigar y analizar plataformas existentes de programación y simulación robótica para comprender sus fortalezas y limitaciones.
 		\item Definir qué aspectos de las soluciones existentes pueden ser mejorados o adaptados en la solución propuesta de este TFG, sentando las bases para futuras evoluciones del sistema.
 	\end{itemize}
 	
@@ -68,6 +64,3 @@ Estos objetivos se enfocan en las cualidades transversales de la solución, como
 		\item Aplicar buenas prácticas en el diseño de software y en la integración de sistemas de programación visual dentro de un motor de simulación, incluyendo la aplicación de patrones de diseño (MVC, Observador, Fábrica) y la gestión eficiente de estructuras de datos.
 	\end{itemize}
 \end{enumerate}
-
-
-
