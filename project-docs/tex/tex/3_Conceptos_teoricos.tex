@@ -1,11 +1,18 @@
 \capitulo{3}{Conceptos teóricos}
 
-Este capítulo establece el marco conceptual sobre el que se sustenta el laboratorio virtual. Se abordan los conceptos clave extraídos del núcleo del proyecto: la programación híbrida como enfoque pedagógico, los principios de los lenguajes de dominio específico (DSL) y sus intérpretes, y la arquitectura de simuladores 3D en Unity. Este análisis teórico justifica las decisiones de diseño y la arquitectura final implementada.
+Este capítulo establece el marco conceptual sobre el que se sustenta el laboratorio virtual. Dado que el prototipo ofrece dos modalidades de programación distintas, este análisis abordará los fundamentos teóricos de ambos enfoques. 
 
-\section{Programación adaptada para la educación robótica}
-La programación visual por bloques, popularizada por plataformas como \textbf{Scratch} \cite{Paredes2023}, es una herramienta pedagógica de probada eficacia para introducir el pensamiento computacional, al abstraer la complejidad de la sintaxis. Por otro lado, la programación textual es fundamental para el desarrollo de habilidades profesionales. El prototipo desarrollado se sitúa en la intersección de ambos paradigmas, proponiendo un \textbf{modelo de programación híbrido}.
+En primer lugar, se explorarán los principios de la \textbf{programación visual por bloques}, que sirvió como base para la arquitectura inicial y uno de los itinerarios de aprendizaje. A continuación, se detallarán los conceptos de los \textbf{Lenguajes de Dominio Específico (DSL)} y sus intérpretes, que constituyen el núcleo técnico del segundo itinerario. Finalmente, se expondrán las bases de la \textbf{arquitectura de simuladores 3D en Unity}, el entorno común donde ambos sistemas de programación convergen para controlar al robot. Este análisis teórico justifica las decisiones de diseño y la arquitectura final implementada.
 
-Este enfoque consiste en utilizar una representación estructuralmente visual, donde el flujo del programa y la lógica de acciones se presentan como una secuencia de bloques o mediante comandos textuales. Este modelo actúa como un puente pedagógico, facilitando la transición del estudiante desde un entorno puramente visual hacia la codificación tradicional. El objetivo no es replicar un sistema existente, sino ofrecer una herramienta de aprendizaje con una identidad propia, que combina la claridad de los bloques con la práctica de la escritura de código.
+\section{Paradigmas de programación  para la educación robótica}
+
+
+
+La programación visual por bloques, popularizada por plataformas como \textbf{Scratch} \cite{Paredes2023}, es una herramienta pedagógica de probada eficacia para introducir el pensamiento computacional, al abstraer la complejidad de la sintaxis. Por otro lado, la programación textual es fundamental para el desarrollo de habilidades profesionales.
+
+El prototipo desarrollado se sitúa en la intersección de ambos paradigmas,  ofreciendo al usuario dos rutas de aprendizaje flexibles dentro del mismo laboratorio virtual.
+
+La coexistencia de estos dos paradigmas dentro del prototipo no es casual, sino una decisión de diseño deliberada para crear un puente pedagógico. El estudiante puede comenzar con los bloques para asimilar conceptos abstractos de flujo y control, y posteriormente, aplicar ese conocimiento lógico en la modalidad textual, donde el desafío se centra en la sintaxis y la estructura del código escrito. De este modo, la herramienta acompaña al usuario en su curva de aprendizaje, desde los fundamentos visuales hasta la codificación práctica.
 
 
 \section{Lenguajes de dominio específico (DSL) y su interpretación}
@@ -20,6 +27,39 @@ El procesamiento de un DSL sigue un pipeline similar al de un compilador, aunque
 	
 	\item \textbf{Ejecución (interpretación):} El \textbf{intérprete} (\texttt{RobotController}) recibe la lista de instrucciones y la ejecuta de forma secuencial. Recorre la estructura de datos y, para cada instrucción, invoca la acción correspondiente en el entorno de simulación (ej. una corrutina de movimiento). Este modelo de ejecución directa es ideal para entornos interactivos, ya que proporciona feedback inmediato al usuario.
 \end{itemize}
+
+\subsection{Gramática del DSL }
+Para definir el lenguaje, se ha establecido una gramática simple pero funcional, compuesta por un conjunto de comandos y reglas de sintaxis. Esta gramática define qué programas son válidos y cómo deben ser escritos por el usuario. La Tabla \ref{tab:gramatica_dsl} resume los comandos principales.
+
+% --- TABLA DE LA GRAMÁTICA ---
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|l|l|p{4cm}|}
+		\hline
+		\textbf{Comando} & \textbf{Sintaxis} & \textbf{Descripción} \\
+		\hline
+		\texttt{mover} & \texttt{mover <número> pasos} & Mueve el robot hacia adelante una cantidad de pasos especificada por <número>. \\
+		\hline
+		\texttt{girar} & \texttt{girar <dirección>} & Rota el robot 90 grados sobre su eje. <dirección> debe ser izquierda o derecha. \\
+		\hline
+		\texttt{mover\_durante} & \texttt{mover\_durante <número> segundos} & Mueve el robot hacia adelante a velocidad predefinida durante un tiempo específico. \\
+		\hline
+		\texttt{repetir} & \texttt{repetir <N> veces} \newline \texttt{ repetir por\_siempre} & Estructura de control para bucles. Requiere una instrucción de cierre \texttt{fin\_repetir}. \\
+		\hline
+		\texttt{fin\_repetir} & \texttt{fin\_repetir} & Cierra un bloque de bucle \texttt{repetir} abierto. \\
+		\hline
+	\end{tabular}
+	\caption{Resumen de la gramática y comandos del DSL implementado.}
+	\label{tab:gramatica_dsl}
+\end{table}
+
+Además de la sintaxis de cada comando, el lenguaje sigue unas reglas generales:
+\begin{itemize}
+	\item Los comandos no distinguen entre mayúsculas y minúsculas.
+	\item Se ignora el espaciado extra entre los tokens de una misma línea.
+	\item Las líneas en blanco o aquellas que comienzan con // se consideran comentarios y son ignoradas por el parser.
+\end{itemize}
+
 
 \section{Simulación de robótica en entornos 3D con Unity}
 El laboratorio virtual se ha desarrollado sobre el motor \textbf{Unity}, elegido por su capacidad para crear simulaciones 3D interactivas y su robusto motor de físicas. Un \textbf{simulador 3D} en robótica educativa permite democratizar el acceso a esta disciplina, eliminando la dependencia de hardware costoso.
@@ -37,7 +77,7 @@ La simulación en este prototipo se ha estructurado siguiendo principios de sepa
 \section{Aprendizaje basado en desafíos y objetivos de desarrollo sostenible}
 La eficacia de una herramienta educativa no solo reside en su tecnología, sino también en su enfoque pedagógico y su impacto social.
 \begin{itemize}
-	\item \textbf{Aprendizaje basado en desafíos:} En lugar de un sandbox libre, el prototipo se estructura en torno a desafíos predefinidos (\texttt{ChallengeData}). Este enfoque gamificado proporciona al estudiante un objetivo claro, aumentando la motivación y contextualizando el aprendizaje de la programación como una herramienta para la resolución de problemas concretos.
+	\item \textbf{Aprendizaje basado en desafíos:} En lugar de un sandbox libre, el prototipo se estructura en torno a desafíos predefinidos (\texttt{ChallengeData}). Este enfoque proporciona al estudiante un objetivo claro, aumentando la motivación y contextualizando el aprendizaje de la programación como una herramienta para la resolución de problemas concretos.
 	
-	\item \textbf{Alineación con los ODS:} El proyecto contribuye directamente a los objetivos de desarrollo sostenible (ODS). Al ser una solución de bajo coste y accesible en dispositivos comunes, aborda el \textbf{ODS 4 (Educación de Calidad)} al democratizar el acceso a la formación STEM. Asimismo, al reducir la brecha digital entre estudiantes con y sin acceso a laboratorios físicos, apoya el \textbf{ODS 10 (Reducción de las Desigualdades)}.
+	\item \textbf{Alineación con los ODS:} El proyecto contribuye directamente a los objetivos de desarrollo sostenible (ODS). Al ser una solución de bajo coste y accesible en dispositivos comunes, aborda el \textbf{ODS 4 (educación de calidad)} al democratizar el acceso a la formación STEM. Asimismo, al reducir la brecha digital entre estudiantes con y sin acceso a laboratorios físicos, apoya el \textbf{ODS 10 (reducción de las desigualdades)}.
 \end{itemize}
