@@ -4,6 +4,8 @@ Este capítulo presenta un análisis comparativo de las plataformas y herramient
 
 \section{Plataformas de programación por bloques}
 Para comprender el panorama actual, se han analizado diversas soluciones, agrupándolas por su enfoque principal: plataformas de programación visual, entornos de simulación y herramientas de desarrollo. La Tabla \ref{tab:comparativa_trabajos_relacionados} resume este análisis.
+
+\clearpage
 \begin{longtable}{| p{3cm} | p{2.5cm} | p{4.5cm} | p{4.5cm} |}
 	
 	% --- Título de la tabla y etiqueta ---
@@ -124,17 +126,17 @@ Para comprender el panorama actual, se han analizado diversas soluciones, agrup�
 Tras el análisis de las herramientas existentes, la contribución fundamental de este Trabajo Fin de Grado se centra en los siguientes puntos:
 
 \begin{itemize}
-	\item \textbf{Un puente pedagógico entre lo visual y lo textual:} A diferencia de las plataformas que son o 100\% visuales (Scratch) o que se centran en la programación textual tradicional, este proyecto propone una solución híbrida. El usuario construye su programa mediante la adición secuencial de bloques de texto, manteniendo la claridad estructural de la programación por bloques, pero al mismo tiempo practica la sintaxis de un lenguaje de comandos. Esto lo posiciona como una herramienta ideal para la transición del aprendizaje, un paso intermedio que facilita el salto de Scratch a lenguajes como Python.
+	\item \textbf{Un puente pedagógico entre lo visual y lo textual:} A diferencia de las plataformas que son o 100\% visuales (Scratch) o que se centran en la programación textual tradicional, este proyecto propone una solución diferente. El usuario construye su programa mediante la adición secuencial de bloques de texto, manteniendo la claridad estructural de la programación por bloques, pero al mismo tiempo practica la sintaxis de un lenguaje de comandos. Esto lo posiciona como una herramienta ideal para la transición del aprendizaje, un paso intermedio que facilita el salto de Scratch a lenguajes como Python.
 	
 	\item \textbf{Diseño e implementación de un lenguaje de dominio específico (DSL) y su intérprete:} El núcleo de la aportación técnica no reside en la adaptación de una librería existente, sino en el diseño e implementación desde cero de un pequeño sistema de compilación:
 	\begin{itemize}
-		\item Un DSL con una gramática simple y orientada a la robótica.
-		\item Un Parser que actúa como analizador léxico y sintáctico.
-		\item Un motor de ejecución que interpreta la estructura de datos generada por el parser.
+		\item Un \textbf{DSL} con una gramática simple y orientada a la robótica.
+		\item Un \textbf{parser} que actúa como analizador léxico y sintáctico.
+		\item Un \textbf{motor de ejecución} que interpreta la estructura de datos generada por el parser.
 	\end{itemize}
 	Este ciclo completo de código fuente -> análisis -> ejecución es una demostración práctica de conceptos fundamentales de la ingeniería informática.
 	
-	\item \textbf{Integración completa en un entorno de simulación 3D accesible:} El proyecto integra esta lógica de programación en un entorno 3D interactivo construido en Unity, con un enfoque en la accesibilidad para plataformas móviles (tablets) y sin la dependencia de hardware costoso. Se logra así un laboratorio virtual completo y autónomo, alineado con los Objetivos de Desarrollo Sostenible de democratizar la educación tecnológica.
+	\item \textbf{Integración completa en un entorno de simulación 3D accesible:} El proyecto integra esta lógica de programación en un entorno 3D interactivo construido en Unity, con un enfoque en la accesibilidad para plataformas móviles (tablets) y sin la dependencia de hardware costoso. Se logra así un laboratorio virtual completo y autónomo, alineado con los objetivos de desarrollo sostenible de democratizar la educación tecnológica.
 	
 \end{itemize}
 En síntesis, este TFG no se limita a replicar una solución existente, sino que aporta un prototipo con un enfoque pedagógico y técnico original, abordando el nicho de la transición a la programación textual mediante un entorno de desafíos gamificado y accesible.
