@@ -7,13 +7,12 @@ Dentro de este apéndice, se detalla la especificación de requisitos del proyec
 Los objetivos generales que guían el desarrollo de este laboratorio virtual han sido definidos previamente en el Capítulo 2 de la memoria. Estos objetivos, que se persiguen tanto a nivel funcional como no funcional, se sintetizan a continuación:
 
 \begin{itemize}
-	\item \textbf{Desarrollar un prototipo de laboratorio virtual de programación y robótica} que permita a los estudiantes aprender programación mediante bloques y código escrito.
-	\item \textbf{Replicar la experiencia de usuario y la lógica fundamental de Scratch} en un entorno Unity para después ejecutar una aplicación en un dispositivo android.
-	\item \textbf{Integrar el sistema de bloques con una simulación 3D en Unity} para la visualización de acciones del robot.
-	\item \textbf{Implementar una simulación básica de un robot LEGO WeDo 2.0} en el entorno virtual.
-	\item \textbf{Garantizar la accesibilidad y portabilidad del prototipo} a plataformas Android (Tablets).
-	\item \textbf{Investigar y analizar plataformas existentes} para informar futuras mejoras.
-	\item \textbf{Adquirir conocimientos técnicos} en Unity y C\# en el contexto del desarrollo de programación visual y simulación.
+	\item Desarrollar una plataforma educativa que ofrezca \textbf{dos itinerarios de programación paralelos}: uno visual por bloques y otro textual mediante un DSL.
+	\item Implementar un sistema funcional de \textbf{programación por bloques} para la estructura del programa, inspirado en la interacción de Scratch.
+	\item Diseñar y construir un \textbf{intérprete completo para un DSL textual propio}, incluyendo su parser y motor de ejecución.
+	\item Integrar ambos sistemas de programación con un \textbf{motor de simulación 3D unificado} y con detección de colisiones.
+	\item Estructurar el aprendizaje en un \textbf{sistema de desafíos} modular y escalable.
+	\item Garantizar la \textbf{accesibilidad y portabilidad} del prototipo, con un enfoque en dispositivos Android.
 \end{itemize}
 
 \section{Catálogo de requisitos}
@@ -24,36 +23,25 @@ Estos requisitos describen las funcionalidades específicas que el laboratorio v
 
 \subsection{Gestión del entorno y desafíos}
 
-
 \begin{enumerate}
-	\item[\textbf{RF-001}] \textbf{Gestión de la interfaz principal:} El sistema debe presentar una interfaz de usuario que distinga claramente entre el área de selección de herramientas (desafíos) y el área principal de codificación (workspace).
-	\item[\textbf{RF-002}] \textbf{Selección de desafíos:} El usuario debe poder seleccionar un desafío desde un menú, y el sistema debe cargar el contexto y las instrucciones correspondientes en la interfaz de programación.
+  \item[\textbf{RF-001}] \textbf{Selección de desafíos:} El sistema debe ofrecer una interfaz para que el usuario seleccione un desafío de aprendizaje.
+	\item[\textbf{RF-002}] \textbf{Carga de contexto:} Al elegir un desafío, el entorno debe cargarse mostrando las instrucciones y configuración específicas de dicho desafío.
+	\item[\textbf{RF-003}] \textbf{Selección de modalidad de programación:} La interfaz debe permitir al usuario elegir entre el itinerario de programación por bloques o el itinerario textual.
+
+	\item[\textbf{RF-004}] \textbf{Manipulación de bloques:} El usuario debe poder arrastrar bloques desde una toolbox, soltarlos en un área de trabajo, y conectarlos/desconectarlos para formar secuencias lógicas.
+	\item[\textbf{RF-005}] \textbf{Librería de bloques estructurales:} El sistema debe proveer bloques funcionales para el evento de inicio y para estructuras de control básicas (ej. bucles).
+	\item[\textbf{RF-006}] \textbf{Eliminación de bloques:} El usuario debe poder eliminar bloques del área de trabajo.
+	
+	 \item[\textbf{RF-007}] \textbf{Entrada de comandos:} El sistema debe proporcionar una interfaz para que el usuario escriba comandos del DSL.
+	\item[\textbf{RF-008}] \textbf{Validación sintáctica (Parsing):} El sistema debe analizar el código textual y notificar al usuario de cualquier error de sintaxis.
+	\item[\textbf{RF-009}] \textbf{Visualización del programa textual:} Los comandos válidos deben representarse visualmente como una lista secuencial.
+	 \item[\textbf{RF-010}] \textbf{Ejecución unificada:} El usuario debe poder iniciar la ejecución del programa, independientemente del modo, con una única acción.
+	\item[\textbf{RF-011}] \textbf{Interpretación de instrucciones:} El motor de ejecución debe interpretar el programa (ya sea el árbol de bloques o la lista de instrucciones del DSL) y traducirlo a acciones del robot.
+	\item[\textbf{RF-012}] \textbf{Simulación 3D del robot:} El robot virtual debe moverse y rotar en el entorno 3D según las instrucciones.
+	\item[\textbf{RF-013}] \textbf{Detección de colisiones:} La ejecución debe detenerse automáticamente si el robot colisiona con un obstáculo.
+
 \end{enumerate}
 
-
-\begin{enumerate}
-	\setcounter{enumi}{2}
-	\item[\textbf{RF-003}] \textbf{Gestión de categorías de bloques:} El usuario debe poder seleccionar una categoría para visualizar un conjunto filtrado de bloques de programación en una toolbox.
-	\item[\textbf{RF-004}] \textbf{Arrastre de bloques:} El usuario debe poder seleccionar un bloque de la toolbox y arrastrarlo hasta el área de codificación.
-	\item[\textbf{RF-005}] \textbf{Conexión y apilamiento de bloques:} El sistema debe permitir la unión visual (snap) y lógica de bloques compatibles, representando correctamente la jerarquía secuencial de un programa.
-	\item[\textbf{RF-006}] \textbf{Descarte de bloques:} El usuario debe poder eliminar bloques del espacio de trabajo arrastrándolos fuera del área de codificación.
-\end{enumerate}
-
-\begin{enumerate}
-	\setcounter{enumi}{6}
-	\item[\textbf{RF-007}] \textbf{Entrada de comandos textuales:} El sistema debe proporcionar una interfaz (un campo de texto) para que el usuario pueda escribir comandos según la sintaxis de un lenguaje de dominio específico (DSL).
-	\item[\textbf{RF-008}] \textbf{Visualización secuencial del código:} Cada comando textual añadido debe ser representado visualmente como un ítem en una lista secuencial, manteniendo una estructura clara y legible del programa.
-	\item[\textbf{RF-009}] \textbf{Parseo y validación del DSL:} El sistema debe analizar (parsear) el código textual, validar su sintaxis y proporcionar feedback inmediato y claro al usuario en caso de error.
-	\item[\textbf{RF-010}] \textbf{Limpieza del programa textual:} El usuario debe disponer de una opción para borrar todos los comandos textuales escritos y empezar de nuevo.
-\end{enumerate}
-
-\begin{enumerate}
-	\setcounter{enumi}{10}
-	\item[\textbf{RF-011}] \textbf{Ejecución unificada:} El usuario debe poder iniciar la ejecución del programa completo (sea por bloques, textual o híbrido) a través de una única acción.
-	\item[\textbf{RF-012}] \textbf{Interpretación y simulación del robot:} El motor de ejecución debe interpretar la secuencia de instrucciones (generada a partir de los bloques o del DSL) y traducirla en acciones visibles y coherentes del robot en el entorno 3D.
-	\item[\textbf{RF-013}] \textbf{Detección de colisiones:} El sistema debe detectar colisiones del robot con elementos del entorno y detener la ejecución del programa.
-	\item[\textbf{RF-014}] \textbf{Detención manual de la ejecución:} El usuario debe poder detener la simulación en cualquier momento a través de un control en la interfaz.
-\end{enumerate}
 
 
 \subsection{Requisitos no funcionales (RNF)}
@@ -198,7 +186,7 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 		\textbf{Importancia:} & Alta \\ \hline
 	\end{tabularx}
 	\caption{CU-02: Construir programa.}
-	\label{tabla:CU02_construirPrograma}
+	\label{tabla:CU02_Hibrido}
 \end{table}
 
 \subsection{CU-02.1: Manipular bloques visuales}
@@ -421,4 +409,3 @@ A continuación, se detallan los casos de uso (CU) que describen las interaccion
 	\caption{Diagrama de caso de uso CU03- Ejecutar y simular programa del robot.}
 	\label{fig:CU03}
 \end{figure}
-
