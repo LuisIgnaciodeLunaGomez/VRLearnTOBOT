@@ -4,17 +4,30 @@ Todo proyecto debe incluir las conclusiones que se derivan de su desarrollo, des
 
 \section{Conclusiones}
 
-El presente Trabajo Fin de Grado ha culminado con el desarrollo de un prototipo funcional de un laboratorio virtual para la enseñanza de la programación y la robótica, implementado en el motor Unity 6 con C\#. El proyecto ha logrado con éxito el objetivo principal de crear un entorno de aprendizaje híbrido, que combina una interfaz visualmente estructurada con un sistema de programación textual basado en un lenguaje de dominio específico (DSL) propio. Esta solución ha demostrado la viabilidad técnica de un modelo pedagógico de transición, donde los usuarios aprenden los fundamentos de la algoritmia y el control de un robot 3D sin la curva de aprendizaje inicial de la sintaxis compleja, pero practicando la escritura de código.
+El presente Trabajo Fin de Grado ha culminado con el desarrollo de un prototipo funcional de un laboratorio virtual para la enseñanza de la programación y la robótica, implementado en el motor Unity 6 con C\#. 
+
+El proyecto ha logrado con éxito el objetivo principal de crear un entorno de aprendizaje,que ofrece dos itinerarios de programación paralelos: uno visual por bloques y otro textual mediante un lenguaje de dominio específico (DSL). Esta solución dual ha demostrado ser una plataforma viable para la enseñanza, funcionando como un puente pedagógico que facilita la transición de la programación visual a la textual.
 
 
 Los principales logros y aprendizajes del proyecto incluyen:
-
 \begin{itemize}
-	\item \textbf{Implementación de un motor de programación visual viable:} Se ha replicado con éxito la lógica de interacción visual de Scratch (arrastre, conexión, disposición de categorías) y se ha establecido un robusto motor de ejecución directa de bloques, basado en la adaptación de UBlockly. Este motor ha demostrado la capacidad de interpretar y ejecutar una secuencia lineal de bloques (\texttt{motion\_movesteps}, \texttt{event\_whenflagclicked}) y de gestionar corrutinas para la animación fluida del robot.
-	\item \textbf{Diseño de una arquitectura MVC efectiva:} La adopción del patrón Modelo-Vista-Controlador ha permitido una clara separación de intereses entre la lógica del programa (modelos de UBlockly como \texttt{Block} y \texttt{Connection}), la representación visual (\texttt{BlockView} en Unity UI), y el control de interacciones (\texttt{BlockController}}). Esto garantiza la mantenibilidad y futura escalabilidad del sistema.
-	\item \textbf{Integración exitosa de componentes:} Se ha logrado una integración fluida de los elementos de UBlockly (modelo de bloques, sistema de ejecución, serialización XML) con el entorno de Unity (UI Canvas, objetos 3D, corrutinas). Este proceso ha implicado resolver desafíos complejos relacionados con la sincronización de estados y posiciones entre los modelos lógicos y las vistas visuales de Unity.
-	\item \textbf{Validación de un flujo completo de simulación:} Se ha verificado que un programa básico de bloques (ej. al presionar bandera verde, mover 10 pasos) se traduce correctamente en una acción visible y controlada por el robot virtual en el entorno 3D, demostrando la validez del concepto central del laboratorio.
-	\item \textbf{Gestión de proyectos en un entorno agile:} La aplicación de la metodología SCRUM, utilizando Zube y GitHub, ha sido fundamental para gestionar la complejidad, priorizar tareas y adaptarse a los retos técnicos emergentes durante el desarrollo del prototipo.
+	\item \textbf{Implementación de una arquitectura MVC robusta y adaptable:}
+	Partiendo de la librería UBlockly, se diseñó e implementó con éxito una arquitectura Modelo-Vista-Controlador. Esta refactorización,  ha permitido gestionar la complejidad y ha demostrado ser lo suficientemente flexible para soportar todo el sistema de programación visual por bloques.
+	
+	\item \textbf{Desarrollo de un sistema funcional de programación visual:}
+	Se ha replicado la lógica de interacción de Scratch para un conjunto básico de bloques. El sistema permite arrastrar, conectar y ejecutar secuencias de bloques de evento (event\_whenflagclicked) y de movimiento (motion\_movesteps), gestionando la simulación del robot a través de corrutinas para una animación fluida.
+	
+	\item \textbf{Creación de un intérprete para un DSL propio:}
+	Como solución a los desafíos técnicos del layout visual, se diseñó e implementó un sistema de programación textual completo. Esto incluye la definición de la gramática de un DSL, un \textit{CommandParser} para el análisis léxico y sintáctico, y un motor de ejecución en el \textit{RobotController} que interpreta las instrucciones generadas.
+	
+	\item \textbf{Validación de un flujo de simulación 3D unificado:}
+	Se ha verificado que ambos sistemas de programación (visual y textual) son capaces de controlar al mismo robot virtual en el entorno 3D. El robot responde coherentemente a las instrucciones, y el sistema de detección de colisiones proporciona un feedback inmediato y funcional.
+	
+	\item \textbf{Establecimiento de un marco educativo basado en desafíos:}
+	Mediante el uso de \textit{ScriptableObjects}, se ha creado una estructura escalable para definir desafíos de aprendizaje, dotando a la herramienta de un propósito pedagógico claro y un flujo de usuario completo, desde la selección del reto hasta su resolución.
+	
+	\item \textbf{Aplicación exitosa de metodologías ágiles:}
+	La gestión del proyecto con SCRUM no solo facilitó la organización y el seguimiento, sino que fue indispensable para tomar la decisión estratégica de pivotar el alcance, demostrando la importancia de la flexibilidad en la ingeniería de software real.
 \end{itemize}
 
 \section{Líneas de trabajo futuras}
@@ -24,7 +37,7 @@ El presente proyecto establece una base sólida sobre la que se pueden desarroll
 \subsection{Extensión y diversificación del sistema de bloques}
 Inicialmente, el prototipo implementa un conjunto limitado de bloques para demostrar su viabilidad. Para una solución completa, se plantea:
 \begin{itemize}
-	\item \textbf{Ampliación de categorías de bloques:} Incorporar todas las categorías estándar de Scratch (ej. Sonido, Apariencia, Sensores).
+	\item \textbf{Ampliación de categorías de bloques:} Incorporar todas las categorías necesarias para dotar al robot de más acciones (ej. Sonido, Apariencia, Sensores).
 	\item \textbf{Implementación de bloques avanzados:} Extender la funcionalidad para incluir estructuras de control más complejas como bucles, condicionales, funciones (procedimientos y bloques My Blocks), listas y operaciones con variables y operadores lógicos/matemáticos avanzados. Esto implicaría la adaptación de los intérpretes (\texttt{Cmdtor}s) y la generación de prefabs visuales para cada nuevo tipo de bloque.
 	\item \textbf{Expansión del modelo de eventos:} Desarrollar la capacidad para gestionar y responder a un rango más amplio de eventos, más allá de la bandera verde, permitiendo interacciones más complejas con el entorno virtual.
 	\item \textbf{Sistema de depuración visual interactiva:} Crear herramientas visuales en la interfaz que permitan a los estudiantes seguir el flujo de ejecución del programa paso a paso, visualizar el estado de las variables y detectar errores en tiempo real, facilitando la comprensión y la resolución de problemas de lógica.
@@ -37,7 +50,7 @@ Actualmente, la simulación se centra en el movimiento básico del robot. Para m
 	\item \textbf{Entornos dinámicos e interactivos:} Diseñar escenarios 3D donde el robot pueda interactuar con obstáculos, objetos móviles o elementos activables (puertas, palancas), y responder a estímulos del entorno simulado (ej. zonas con distinto tipo de terreno que afecten el movimiento, etc.).
 	\item \textbf{Simulación de física avanzada:} Integrar el motor de físicas de Unity (\texttt{Rigidbody}, \texttt{Collider}) de forma más compleja para dotar al robot y a los objetos del entorno de un comportamiento físico más realista (ej. colisiones, gravedad, rozamiento), lo que afectaría de manera auténtica la movilidad del robot y sus interacciones.
 	\item \textbf{Soporte para múltiples modelos de robots:} Expandir el sistema para incluir y permitir la programación de distintos modelos de robots educativos (además del LEGO WeDo 2.0 básico), como LEGO SPIKE Essential, LEGO SPIKE Prime o LEGO MINDSTORMS EV3, cada uno con sus características y modelos 3D detallados.
-	\item \textbf{Realidad Virtual (VR) y Aumentada (AR):} Explorar la portabilidad y adaptación del prototipo a plataformas de Realidad Virtual (VR) o Aumentada (AR), utilizando las capacidades nativas de Unity para ofrecer experiencias aún más inmersivas y atractivas para el aprendizaje.
+	\item \textbf{Realidad virtual (VR) y aumentada (AR):} Explorar la portabilidad y adaptación del prototipo a plataformas de Realidad Virtual (VR) o Aumentada (AR), utilizando las capacidades nativas de Unity para ofrecer experiencias aún más inmersivas y atractivas para el aprendizaje.
 \end{itemize}
 
 \subsection{Evaluación de la efectividad educativa y usabilidad}
@@ -69,7 +82,7 @@ Una de las lecciones más significativas aprendidas durante este TFG ha sido la 
 
 El proceso de ingeniería inversa para comprender el funcionamiento interno de UBlockly, una librería con documentación limitada, requirió un gran esfuerzo de investigación y análisis. Lo que inicialmente parecía un problema sutil de implementación de layouts visuales se convirtió en un obstáculo significativo, especialmente en la recreación de bloques de control de flujo complejos (los denominados bloques de tipo C, como \texttt{if/else} o bucles), que requieren una manipulación dinámica de la geometría y la jerarquía de las vistas.
 
-Lejos de ser un fracaso, este desafío representó un punto de inflexión crítico y formativo. Puso de manifiesto la importancia de la evaluación realista de los plazos y del alcance en un proyecto de ingeniería de software. La decisión de pivotar hacia un modelo híbrido no fue un abandono del objetivo, sino una redefinición estratégica para garantizar la entrega de un producto funcional y coherente, centrando el esfuerzo en los aspectos donde se podía aportar mayor valor: el diseño de un lenguaje, su intérprete y la simulación interactiva.
+Lejos de ser un fracaso, este desafío representó un punto de inflexión crítico y formativo. Puso de manifiesto la importancia de la evaluación realista de los plazos y del alcance en un proyecto de ingeniería de software. La decisión de pivotar hacia un modelo diferente no fue un abandono del objetivo, sino una redefinición estratégica para garantizar la entrega de un producto funcional y coherente, centrando el esfuerzo en los aspectos donde se podía aportar mayor valor: el diseño de un lenguaje, su intérprete y la simulación interactiva.
 
 Esta experiencia ha reforzado la conciencia sobre la dificultad de integrar sistemas complejos y ha subrayado la importancia de la modularidad y la arquitectura flexible, principios que guiaron tanto la refactorización inicial a MVC como el diseño final del prototipo. Los conocimientos adquiridos durante este proceso de adaptación y resolución de problemas constituyen uno de los aprendizajes más valiosos del proyecto
 
@@ -77,7 +90,7 @@ Esta experiencia ha reforzado la conciencia sobre la dificultad de integrar sist
 
 El desarrollo de este laboratorio virtual representa una trayectoria de ingeniería completa, desde la concepción de una idea ambiciosa hasta la entrega de un prototipo funcional y pragmático. La investigación inicial, centrada en la adaptación de UBlockly, demostró rápidamente la inmensa complejidad de replicar sistemas de programación visual como Scratch, especialmente en la generación dinámica de bloques de control de flujo. Este desafío, lejos de ser un fracaso, se convirtió en una valiosa lección sobre la gestión de la complejidad y la importancia de la adaptación estratégica.
 
-El pivote hacia un enfoque híbrido ha culminado en un prototipo que valida un modelo pedagógico original y técnicamente sólido. La aplicación de los conocimientos del Grado en Ingeniería Informática ha sido fundamental, no solo para implementar el sistema final de intérprete de comandos, sino también para analizar la arquitectura inicial, identificar sus obstáculos y tomar decisiones de diseño informadas. El proyecto resultante es, por tanto, una prueba de las habilidades de ingeniería desarrolladas y un reflejo del compromiso con la creación de herramientas educativas accesibles, en línea con los Objetivos de Desarrollo Sostenible.
+El pivote hacia un enfoque diferente ha culminado en un prototipo que valida un modelo pedagógico original y técnicamente sólido. La aplicación de los conocimientos del Grado en Ingeniería Informática ha sido fundamental, no solo para implementar el sistema final de intérprete de comandos, sino también para analizar la arquitectura inicial, identificar sus obstáculos y tomar decisiones de diseño informadas. El proyecto resultante es, por tanto, una prueba de las habilidades de ingeniería desarrolladas y un reflejo del compromiso con la creación de herramientas educativas accesibles, en línea con los objetivos de desarrollo sostenible.
 
 Las líneas de trabajo futuras, que incluyen retomar la implementación completa del sistema visual, no se plantean como una tarea pendiente, sino como el siguiente paso lógico en un proyecto de mayor envergadura. Personalmente, este Trabajo Fin de Grado ha sido un aprendizaje profundo en arquitectura de software, desarrollo avanzado en Unity y resolución de problemas complejos. La intención de continuar esta línea de investigación, posiblemente durante un futuro máster en diseño de videojuegos, subraya la pasión y el conocimiento generados por este TFG, que considero un primer paso firme y exitoso.
 
